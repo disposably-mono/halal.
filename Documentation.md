@@ -1,10 +1,9 @@
-# halal. — Phase 1 Setup Documentation
+# halal. — Project Documentation
 
 > **Project:** halal. — School Election Management System
 > **Organization:** OLPS COMELEC
-> **Phase:** 1 — Foundation & Project Scaffold
-> **Date Completed:** March 29, 2026
-> **Status:** ✅ Complete
+> **Current Phase:** 2 — Admin Panel (In Progress)
+> **Last Updated:** March 30, 2026
 
 ---
 
@@ -16,16 +15,29 @@ The system replaces manual election processes (paper ballots, hand-tallied count
 
 ---
 
+## Phase Status
+
+| Phase | Focus | Status |
+|-------|-------|--------|
+| Phase 1 | Scaffold, schema, Docker, shadcn/ui | ✅ Complete |
+| Phase 2 | Admin panel — auth, dashboard, election management | 🔄 In Progress |
+| Phase 3 | Voter-facing pages with full COMELEC branding | ⏳ Planned |
+| Phase 4 | Real-time SSE tallying, results embargo | ⏳ Planned |
+| Phase 5 | Docker full-stack, Nginx, school server deployment | ⏳ Planned |
+
+---
+
 ## Technology Stack
 
 | Layer | Technology | Version |
 |-------|-----------|---------|
-| Framework | Next.js | 14.x |
+| Framework | Next.js | 14.2.35 |
 | Language | TypeScript | 5.x |
 | Styling | Tailwind CSS + shadcn/ui | Latest |
 | Component Library | Radix UI (via shadcn) | Latest |
 | Database | PostgreSQL | 16 (Alpine) |
-| ORM | Prisma | 7.x |
+| ORM | Prisma | 7.6.0 |
+| DB Adapter | @prisma/adapter-pg | Latest |
 | Auth | NextAuth.js (Auth.js) | Beta |
 | Container | Docker + Docker Compose | 29.x |
 | Runtime | Node.js | 24.x |
@@ -33,8 +45,6 @@ The system replaces manual election processes (paper ballots, hand-tallied count
 ---
 
 ## Prerequisites
-
-The following tools must be installed before setting up the project:
 
 | Tool | Minimum Version | Notes |
 |------|----------------|-------|
@@ -46,22 +56,11 @@ The following tools must be installed before setting up the project:
 
 ### Fedora-Specific Docker Setup
 
-On Fedora Linux, Docker requires additional setup after install:
-
 ```bash
-# Enable and start the Docker daemon
 sudo systemctl enable docker --now
-
-# Install the Compose v2 plugin
 sudo dnf install docker-compose-plugin
-
-# Add your user to the docker group (avoids sudo on every command)
 sudo usermod -aG docker $USER
-
-# Apply group change in current shell
 newgrp docker
-
-# Verify all three work
 docker --version
 docker compose version
 docker ps
@@ -74,11 +73,22 @@ docker ps
 ```
 halal/
 ├── app/
-│   ├── globals.css         # Global styles — Tailwind directives + CSS variables
-│   ├── layout.tsx          # Root layout — metadata, font setup
-│   └── page.tsx            # Default Next.js landing (placeholder — replaced in Phase 3)
+│   ├── admin/
+│   │   ├── login/
+│   │   │   └── page.tsx        # Two-step admin login page
+│   │   ├── elections/
+│   │   │   └── new/
+│   │   │       └── page.tsx    # Election creation form
+│   │   └── page.tsx            # Admin dashboard — election list
+│   ├── api/
+│   │   └── auth/
+│   │       └── [...nextauth]/
+│   │           └── route.ts    # NextAuth route handler
+│   ├── globals.css
+│   ├── layout.tsx
+│   └── page.tsx
 ├── components/
-│   └── ui/                 # shadcn/ui components (owned by the project, fully editable)
+│   └── ui/                     # shadcn/ui components (fully owned)
 │       ├── button.tsx
 │       ├── input.tsx
 │       ├── card.tsx
@@ -87,29 +97,32 @@ halal/
 │       ├── table.tsx
 │       └── tabs.tsx
 ├── lib/
-│   ├── prisma.ts           # Prisma client singleton (prevents connection leaks in dev)
-│   └── utils.ts            # shadcn utility (cn() classname helper)
+│   ├── prisma.ts               # Prisma client singleton with PrismaPg adapter
+│   └── utils.ts
 ├── prisma/
-│   ├── schema.prisma       # Full database schema — all 6 models defined
+│   ├── schema.prisma           # Full database schema — 6 models
+│   ├── seed.ts                 # Seeds first AdminUser (Commissioner)
 │   └── migrations/
-│       └── 20260329075323_init/
-│           └── migration.sql   # Initial migration — all tables created
-├── public/                 # Static assets (COMELEC logo SVG goes here in Phase 3)
-├── .env                    # Environment variables — DO NOT COMMIT
-├── .gitignore              # Includes .env
-├── docker-compose.yml      # PostgreSQL 16 container definition
-├── prisma.config.ts        # Prisma 7 config — connects schema to DATABASE_URL
-├── tailwind.config.ts      # Tailwind config with full shadcn color token set
-├── next.config.mjs         # Next.js configuration
-├── tsconfig.json           # TypeScript configuration
+│       ├── 20260329075323_init/
+│       └── 20260329140513_add_section_eligible_grades_officer_key/
+├── types/
+│   └── next-auth.d.ts          # Extends Session type with role and id
+├── auth.ts                     # Full NextAuth config — Node.js runtime (db + bcrypt)
+├── auth.config.ts              # Edge-safe NextAuth config — used by middleware only
+├── middleware.ts               # Route protection — redirects unauthenticated to /admin/login
+├── prisma.config.ts            # Prisma 7 config — datasource URL + seed command
+├── .env                        # Environment variables — DO NOT COMMIT
+├── .gitignore
+├── docker-compose.yml
+├── tailwind.config.ts
+├── next.config.mjs
+├── tsconfig.json
 └── package.json
 ```
 
 ---
 
 ## Environment Variables
-
-The `.env` file in the project root must contain:
 
 ```env
 # PostgreSQL connection — matches docker-compose.yml credentials
@@ -125,8 +138,6 @@ NEXTAUTH_URL="http://localhost:3000"
 ---
 
 ## Docker — PostgreSQL Database
-
-The database runs in a Docker container defined in `docker-compose.yml`:
 
 ```yaml
 services:
@@ -150,60 +161,44 @@ volumes:
 ### Database Commands
 
 ```bash
-# Start the database (run once — restarts automatically after reboot)
-docker compose up -d
-
-# Stop the database
-docker compose down
-
-# View container status
-docker ps
-
-# View database logs
-docker logs halal_db
+docker compose up -d       # Start
+docker compose down        # Stop
+docker ps                  # Status
+docker logs halal_db       # Logs
 ```
 
 ---
 
 ## Database Schema
 
-Six models are defined in `prisma/schema.prisma`. The schema enforces **ballot anonymity** at the database level — `Vote` records contain no reference to `Voter`.
-
-### Models
+Six models defined in `prisma/schema.prisma`. Ballot anonymity enforced at the database level — `Vote` records contain no reference to `Voter`.
 
 | Model | Purpose |
 |-------|---------|
 | `Election` | A single election event for one division (GS / JHS / SHS) |
-| `Position` | A position on the ballot (e.g., President, Vice President) |
+| `Position` | A position on the ballot. `eligibleGrades` restricts grade-level visibility |
 | `Candidate` | A candidate encoded by COMELEC for a specific position |
-| `Voter` | An eligible student voter with a unique single-use voter code |
-| `Vote` | An anonymized vote record — **no voter reference stored** |
-| `AdminUser` | A COMELEC officer with admin panel access |
+| `Voter` | An eligible student voter with a unique structured control number |
+| `Vote` | An anonymized vote record — no voter reference stored |
+| `AdminUser` | A COMELEC officer with admin panel access and unique `officerKey` |
 
 ### Enums
 
 ```prisma
-enum Division      { GS, JHS, SHS }
+enum Division       { GS, JHS, SHS }
 enum ElectionStatus { DRAFT, SCHEDULED, OPEN, CLOSED }
-enum AdminRole     { COMMISSIONER, OFFICER }
+enum AdminRole      { COMMISSIONER, OFFICER }
 ```
-
-### Key Design Decisions
-
-**Ballot Anonymity:** The `Vote` model has no `voterId` field. This is intentional — once a voter submits, their ballot cannot be traced back to them at the database level. The `Voter.hasVoted` flag is set to `true` to prevent double voting, but the actual vote content is anonymous.
-
-**Abstentions:** Handled via `Vote.isAbstain = true` with `candidateId` set to `null`. This avoids creating fake "Abstain" candidate records in the database.
-
-**Cascading Deletes:** Positions cascade-delete when their Election is deleted. Candidates cascade-delete when their Position is deleted. This keeps the database clean if an election is removed before it goes live.
 
 ---
 
 ## Prisma Configuration
 
-Prisma 7 separates the database URL from `schema.prisma`. The URL is configured in `prisma.config.ts` instead:
+### prisma.config.ts
+
+Prisma 7 separates the database URL from `schema.prisma`:
 
 ```typescript
-// prisma.config.ts
 import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
@@ -211,6 +206,7 @@ export default defineConfig({
   schema: "prisma/schema.prisma",
   migrations: {
     path: "prisma/migrations",
+    seed: 'ts-node --compiler-options {"module":"CommonJS"} prisma/seed.ts',
   },
   datasource: {
     url: process.env["DATABASE_URL"],
@@ -218,99 +214,114 @@ export default defineConfig({
 });
 ```
 
-The `datasource` block in `schema.prisma` only declares the provider:
+### Prisma Client (lib/prisma.ts)
 
-```prisma
-datasource db {
-  provider = "postgresql"
-}
-```
-
-### Prisma Commands
-
-```bash
-# Apply schema changes and create a new migration
-npx prisma migrate dev --name <migration-name>
-
-# Open Prisma Studio (database browser UI)
-npx prisma studio
-
-# Regenerate Prisma client after schema changes
-npx prisma generate
-
-# Reset database (drops all data — development only)
-npx prisma migrate reset
-```
-
-> **Note:** Prisma Studio shows a stream error on Node.js v24 — this is a known compatibility bug and can be safely ignored. The UI still works correctly.
-
----
-
-## Prisma Client Singleton
-
-`lib/prisma.ts` exports a single shared Prisma client instance. This prevents connection pool exhaustion during Next.js hot-reloads in development:
+Prisma 7.6 requires an explicit database adapter. The `@prisma/adapter-pg` package is used to connect to PostgreSQL:
 
 ```typescript
-// lib/prisma.ts
 import { PrismaClient } from "@prisma/client";
+import { PrismaPg } from "@prisma/adapter-pg";
+import "dotenv/config";
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-export const prisma =
-  globalForPrisma.prisma ??
-  new PrismaClient({
-    log: ["query"],
-  });
+function createPrismaClient() {
+  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+  return new PrismaClient({ adapter, log: ["query"] });
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient();
 
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
 ```
 
-Import this in any API route or Server Action:
-```typescript
-import { prisma } from "@/lib/prisma";
+> **Why the adapter?** Prisma 7.6 defaults to its new "client" engine which requires either a driver adapter or `accelerateUrl`. The `engineType = "library"` generator option exists but is silently ignored in 7.6. Using `@prisma/adapter-pg` is the stable solution for self-hosted PostgreSQL.
+
+### Prisma Commands
+
+```bash
+npx prisma migrate dev --name <name>   # Apply schema changes
+npx prisma generate                    # Regenerate client
+npx prisma db seed                     # Run seed script
+npx prisma studio                      # Database browser (localhost:5555)
+npx prisma migrate reset               # Reset database — dev only
 ```
 
----
-
-## shadcn/ui Components
-
-shadcn/ui copies component source code directly into `components/ui/` — these are files you own and can edit freely. The following components are installed:
-
-| Component | File | Used For |
-|-----------|------|----------|
-| Button | `components/ui/button.tsx` | CTAs — "Cast Your Vote", "Submit", admin actions |
-| Input | `components/ui/input.tsx` | Voter code entry field |
-| Card | `components/ui/card.tsx` | Division cards, candidate cards, ballot position cards |
-| Badge | `components/ui/badge.tsx` | Election status chips (OPEN / CLOSED / DRAFT) |
-| Dialog | `components/ui/dialog.tsx` | Vote confirmation modal |
-| Table | `components/ui/table.tsx` | Admin panel — voter lists, candidate lists |
-| Tabs | `components/ui/tabs.tsx` | Results page — GS / JHS / SHS switcher |
+> **Note:** Prisma Studio shows a stream error on Node.js v24 — cosmetic only, safely ignored.
 
 ---
 
-## Tailwind Configuration
+## Authentication
 
-The `tailwind.config.ts` was updated from the default Next.js scaffold to include the full shadcn/ui color token set. Without this, classes like `border-border`, `bg-background`, and `text-foreground` used by shadcn components will not resolve.
+### Architecture
 
-The COMELEC brand colors (navy, gold, maroon) will be added to this config in **Phase 3** when the voter-facing pages are built.
+NextAuth Beta (Auth.js v5) is split into two files to support both the Node.js runtime (API routes, server actions) and the Edge runtime (middleware):
+
+| File | Runtime | Purpose |
+|------|---------|---------|
+| `auth.config.ts` | Edge-safe | Route authorization logic only — no db or bcrypt imports |
+| `auth.ts` | Node.js | Full auth config — credentials provider, bcrypt, Prisma |
+| `middleware.ts` | Edge | Uses `auth.config.ts` to protect `/admin` routes |
+
+> **Why the split?** `middleware.ts` runs on the Edge runtime which does not support Node.js modules like `crypto`. Importing `auth.ts` (which pulls in `pg` via Prisma) into middleware causes a build error. The split keeps middleware edge-compatible.
+
+### Two-Step Login Flow
+
+Admin login requires two factors submitted together in a single `signIn` call:
+
+1. **Step 1 (client-side):** Collect email + password. Advance to step 2 without a server round-trip — this avoids leaking whether an email exists.
+2. **Step 2:** Collect officer key. Submit all three fields together. Both factors are verified server-side in `authorize()`.
+
+If either factor fails, the full error is shown and the form resets to step 1. This prevents an attacker from knowing which factor was wrong.
+
+### Session
+
+- Strategy: JWT
+- Expiry: 2 hours (`maxAge: 7200`)
+- Custom fields: `session.user.role`, `session.user.id` (extended via `types/next-auth.d.ts`)
+
+### Default Seed Credentials
+
+Created by `npx prisma db seed`:
+
+| Field | Value |
+|-------|-------|
+| Email | `comelec@olps.edu.ph` |
+| Password | `comelec2026` |
+| Officer Key | `***REMOVED***` |
+| Role | `COMMISSIONER` |
+
+> ⚠️ Change these before any production or UAT deployment.
+
+---
+
+## Admin Panel — Pages Built (Phase 2 Progress)
+
+| Page | Route | Status | Notes |
+|------|-------|--------|-------|
+| Login | `/admin/login` | ✅ Done | Two-step form — credentials then officer key |
+| Dashboard | `/admin` | ✅ Done | Lists all elections with status badges, voter/vote counts |
+| New Election | `/admin/elections/new` | ✅ Done | Creates election, redirects to candidates page |
+| Candidates | `/admin/elections/[id]/candidates` | ⏳ Next | Encode candidates per position with grade eligibility |
+| Voters | `/admin/elections/[id]/voters` | ⏳ Planned | CSV upload, control number generation, export |
 
 ---
 
 ## Running the Project Locally
 
 ```bash
-# 1. Start the database (if not already running)
+# 1. Start the database
 docker compose up -d
 
-# 2. Start the Next.js dev server
+# 2. Start the dev server
 npm run dev
 
 # 3. Open the app
-# http://localhost:3000
+# http://localhost:3000/admin/login
 
-# 4. (Optional) Open the database browser
+# 4. (Optional) Open database browser
 npx prisma studio
 # http://localhost:5555
 ```
@@ -321,119 +332,40 @@ npx prisma studio
 
 | Issue | Cause | Resolution |
 |-------|-------|------------|
-| `docker compose: unknown command` | Docker Compose v2 plugin not installed on Fedora | `sudo dnf install docker-compose-plugin` |
+| `docker compose: unknown command` | Compose v2 plugin not installed on Fedora | `sudo dnf install docker-compose-plugin` |
 | `docker: permission denied` | User not in docker group | `sudo usermod -aG docker $USER` then `newgrp docker` |
-| Prisma `url` property error | Prisma 7 moved DB URL out of `schema.prisma` | Removed `url` from schema, configured in `prisma.config.ts` |
-| `border-border` class not found | shadcn Nova preset didn't add color tokens to Tailwind config | Manually added full shadcn token set to `tailwind.config.ts` |
-| `Unknown font: Geist` | shadcn init modified `layout.tsx` with a font Next.js 14 couldn't resolve | Replaced `layout.tsx` with a clean version using no custom font |
-| Prisma Studio stream error | Known Node.js v24 compatibility bug in Prisma | Cosmetic — safely ignored, UI functions correctly |
-| `version` attribute warning in docker-compose | `version` key is obsolete in Compose v2 | Removed the `version: '3.8'` line |
-| Database migration drift | Remote changes missing from local migrations (officerKey, eligibleGrades, section) | Manually created migration file `20260329140513_add_section_eligible_grades_officer_key` |
+| Prisma `url` property error | Prisma 7 moved DB URL out of `schema.prisma` | Configured in `prisma.config.ts` instead |
+| `border-border` class not found | shadcn Nova preset didn't add color tokens | Manually added full shadcn token set to `tailwind.config.ts` |
+| `Unknown font: Geist` | shadcn init modified `layout.tsx` with unresolvable font | Replaced with clean `layout.tsx` using no custom font |
+| Prisma Studio stream error | Known Node.js v24 compatibility bug | Cosmetic — safely ignored |
+| `version` attribute warning | `version` key obsolete in Compose v2 | Removed `version: '3.8'` from `docker-compose.yml` |
+| Database migration drift | Remote changes missing locally | Manually created `20260329140513_add_section_eligible_grades_officer_key` |
+| `"prisma"` seed block outside JSON root | Appended after closing `}` in `package.json` | Moved inside root object as a proper key |
+| Prisma seed config ignored | Prisma 7 moved seed config to `prisma.config.ts` | Added `seed` to `migrations` block in `prisma.config.ts` |
+| `PrismaClient` not exported (ts-node) | ts-node type resolution issue | Switched seed to import `{ prisma }` from `lib/prisma.ts` |
+| `PrismaClientConstructorValidationError` | Prisma 7.6 defaults to "client" engine requiring an adapter | Added `@prisma/adapter-pg`; rewrote `lib/prisma.ts` to use `PrismaPg` |
+| `engineType = "library"` silently ignored | Prisma 7.6 bug — option exists but has no effect | Resolved by using the pg adapter instead |
+| Edge runtime `crypto` error in middleware | `middleware.ts` imported `auth.ts` which pulled in `pg` | Split NextAuth into `auth.config.ts` (edge-safe) and `auth.ts` (Node.js); middleware uses only `auth.config.ts` |
+| `pg-native` warning | `pg` looks for optional native binding | Harmless — `pg-native` is not installed and not needed |
 
 ---
 
-## Documentation Updates
+## What's Next — Phase 2 (Remaining)
 
-This section captures the context and outcomes from recent development work to align local progress with the website documentation.
-
-### A. Challenges Encountered
-
-1. **Schema Drift During Synchronization**
-   - Mismatches between `prisma/schema.prisma` and the remote database caused drift (e.g., missing `officerKey`, `eligibleGrades`, and `section` columns).
-   - Resolved by manually creating the migration file `20260329140513_add_section_eligible_grades_officer_key`.
-
-2. **Migration Reset Failure**
-   - Attempted `npx prisma migrate reset --open` failed due to an unsupported flag.
-   - Workaround: Manually edited the migration SQL to represent the correct schema changes.
-
-3. **Local vs. Remote Coordination**
-   - Ensured consistency between local changes (`CLAUDE.md`, `schema.prisma`, Docker config) and the remote repository to avoid conflicts during push/pull.
-
-4. **Documentation Maintenance**
-   - Realized the need to keep docs in sync with schema changes, thus this dedicated section.
+1. **Candidate encoder** (`/admin/elections/[id]/candidates`) — add/edit candidates per position, set grade eligibility for JHSSCT Governor positions
+2. **Voter management** (`/admin/elections/[id]/voters`) — CSV upload, auto-generate structured control numbers, export as CSV/PDF
+3. **Election control** — manual open/close buttons, status management
 
 ---
 
-### B. Key Fixes and Changes Made
+## Security Reminders
 
-1. **Manual Migration File Creation**
-   - Added `/prisma/migrations/20260329140513_add_section_eligible_grades_officer_key/migration.sql` with SQL statements to add:
-     - `officerKey` column to `AdminUser` (for 2FA authentication).
-     - `eligibleGrades` (INTEGER[]) in `Position` (controls division-specific ballot access).
-     - `section` column in `Voter` (enables structured control numbers like `2611A001`).
-
-2. **Database Schema Enhancements**
-   - Confirmed **ballot anonymity**: `Vote` records do not reference `Voter` directly.
-   - Added cascading deletes between `Position` → `Candidate` to maintain data integrity when elections are removed.
-
-3. **CLAUDE.md Update**
-   - Rewritten to include:
-     - Updated development commands (e.g., `npm run dev`, Prisma commands).
-     - Architecture diagrams and key design decisions.
-     - Docker setup, environment variables, and testing status.
-
-4. **Documentation.md Enhancements**
-   - Added this "Documentation Updates" section to capture conversation context.
-   - Included migration issues, fixes, and a clear roadmap for Phase 2.
-   - Documented security practices (e.g., `.env` not in version control).
+- `.env` is not committed to source control
+- `officerKey` and `passwordHash` are bcrypt-hashed at rest
+- All ballot data remains anonymized — `Vote` records contain no `voterId`
+- Two-factor admin login: shared credentials + unique per-officer key
+- Session cookies use JWT strategy with 2-hour rolling expiry
 
 ---
 
-### C. Current Technical State
-
-- **Database Schema**:
-  ✅ Anonymized `Vote` records (`isAbstain`, `candidateId`).
-  ✅ Role-based admin authentication (`officerKey` column).
-  ✅ `section` column in `Voter` for control number formatting.
-
-- **CLAUDE.md File**
-  ✅ Includes updated setup instructions, architecture overview, and deployment steps.
-
-- **Documentation.md**
-  ✅ Updated with challenges, fixes, and Phase 2 roadmap.
-
----
-
-### D. Next Steps (Beyond Phase 1)
-
-1. **Seed Admin User**
-   ```bash
-   npx prisma seed --seed-file prisma/seed.js
-   ```
-
-2. **Build Admin Dashboard**
-   - Add Card, Dialog, and Table components for candidate management.
-   - Seed sample admin user via Prisma seed script.
-
-3. **Design Phase 2 UI**
-   - Implement landing page placeholders for Grade School, Junior High, and Senior High views.
-   - Update `tailwind.config.ts` with COMELEC branding colors (navy, gold, maroon).
-
-4. **Documentation Review**
-   - Review and finalize Phase 2 documentation sections (adding API references, component maps).
-
----
-
-### E. Security Reminders
-
-- `.env` and `prisma.config.ts` are **not committed** to source control.
-- `officerKey` is securely hashed using bcrypt.
-- All ballot data remains anonymized to protect voter privacy.
-
----
-
-## What's Next — Phase 2
-
-Phase 2 builds the **Admin Panel** — COMELEC officers must be able to configure an election before any voter can interact with the system.
-
-Planned tasks:
-1. Admin login page (`/admin/login`) with email + password authentication via NextAuth.js
-2. Database seed script — create the first admin user with a hashed password
-3. Protected admin dashboard (`/admin`) showing election overview
-4. Election creation form — name, division, positions, schedule
-5. Candidate encoder — add/edit candidates per position
-6. Voter management — CSV upload, voter code generation and export
-
----
-
-*Document generated from Phase 1 development session — March 29, 2026. Updated with recent development session notes (migration fixes, documentation updates).*
+*Last updated: March 30, 2026 — Phase 2 in progress.*
