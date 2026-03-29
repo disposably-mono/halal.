@@ -1,5 +1,80 @@
 # halal.
 
+> [cite_start]**VOX POPULI VOX DEI** [cite: 17]
+
+[cite_start]**halal.** (styled in lowercase) is a web-based Election Management System purpose-built for the **Commission on Elections (COMELEC)** of **Our Lady of Peace School (OLPS)**. [cite: 16] [cite_start]It digitizes the manual, error-prone processes of voter registration and tallying across three divisions: Grade School, Junior High, and Senior High. [cite: 11, 13]
+
+[cite_start]The name is derived from the Filipino word "to elect," reflecting the core mission of capturing the people's voice with modern integrity. [cite: 17]
+
+---
+
+## 🛠 Technology Stack
+
+[cite_start]The project utilizes a unified **TypeScript** codebase to ensure type safety and reduce context-switching across the stack. [cite: 30, 32]
+
+| Layer | Technology | Version | Rationale |
+| :--- | :--- | :--- | :--- |
+| **Frontend** | [cite_start]Next.js (App Router) [cite: 30] | [cite_start]14.2.35 [cite: 193] | [cite_start]Full-stack React framework with server components. [cite: 30] |
+| **Styling** | [cite_start]Tailwind CSS + shadcn/ui [cite: 30] | [cite_start]Latest [cite: 30] | [cite_start]Utility-first CSS with accessible component primitives. [cite: 30] |
+| **Database** | [cite_start]PostgreSQL [cite: 30] | [cite_start]16 (Alpine) [cite: 30] | [cite_start]Relational database ideal for election integrity. [cite: 30] |
+| **ORM** | [cite_start]Prisma [cite: 30] | [cite_start]7.6.0 [cite: 193] | Type-safe client. [cite_start]Uses `prisma.config.ts` for URLs. [cite: 30, 47] |
+| **Auth** | [cite_start]NextAuth.js [cite: 30] | [cite_start]Beta [cite: 30] | [cite_start]Admin session management with 2FA officer keys. [cite: 30, 167] |
+| **Real-time** | [cite_start]SSE [cite: 30] | [cite_start]N/A [cite: 30] | [cite_start]Lightweight push for live tallies (Admin only during polls). [cite: 30] |
+
+---
+
+## ✨ Key Features (v3.1 Updates)
+
+[cite_start]The latest version (v3.1) finalizes critical voting logic and security requirements requested by COMELEC. [cite: 6, 7]
+
+* [cite_start]**Structured Control Numbers:** Replaces random alphanumeric codes with a human-readable `YYGGSNNN` format (e.g., `2611A001`). [cite: 8, 77, 78]
+* [cite_start]**Grade-Level Ballot Filtering:** JHS Governor positions are restricted; voters only see candidates eligible for their specific grade. [cite: 8, 67, 68]
+* [cite_start]**Implicit Abstentions:** No explicit "Abstain" button is provided. [cite: 8, 43] [cite_start]If a voter skips a position, they are prompted with a neutral confirmation modal before the system records an implicit abstention. [cite: 116, 121]
+* [cite_start]**Results Embargo:** Public tallies are hidden until the election status is **CLOSED** to prevent mid-election influence. [cite: 8, 128]
+* [cite_start]**Officer Key 2FA:** Admin login requires shared credentials plus a unique, personal **officerKey** hashed at rest. [cite: 8, 134, 171]
+* [cite_start]**Ballot Anonymity:** Vote records contain no voter references, ensuring ballots cannot be traced back to individuals at the database level. [cite: 40, 41]
+
+---
+
+## 🚀 Development
+
+### Initial Environment
+[cite_start]Development is primarily conducted on **Fedora Linux** using **Docker Compose v2**. [cite: 29, 193]
+
+```bash
+# 1. Start the PostgreSQL container
+[cite_start]docker compose up -d [cite: 204]
+
+# 2. Sync database schema
+[cite_start]npx prisma migrate dev [cite: 208]
+
+# 3. Launch the development server
+[cite_start]npm run dev [cite: 205]
+```
+
+### Essential Commands
+* [cite_start]**Database Browser:** `npx prisma studio` (available at localhost:5555) [cite: 206]
+* [cite_start]**Generate Client:** `npx prisma generate` (run after schema changes) [cite: 209]
+* [cite_start]**Reset DB:** `npx prisma migrate reset` (Caution: drops all data) [cite: 210]
+
+---
+
+## 📅 Status & Roadmap
+
+| Phase | Focus | Status |
+| :--- | :--- | :--- |
+| **Phase 1** | [cite_start]**Foundation:** Next.js scaffold, Prisma schema, Docker setup. [cite: 56] | [cite_start]**Complete** [cite: 4, 183] |
+| **Phase 2** | [cite_start]**Admin Panel:** 2FA Auth, Candidate Encoder, Voter Management. [cite: 56] | [cite_start]**Up Next** [cite: 4, 184] |
+| **Phase 3** | [cite_start]**Voter Experience:** Branded Landing, Ballot UI, Voter Login. [cite: 56] | [cite_start]Planned [cite: 56] |
+| **Phase 4** | [cite_start]**Real-time Engine:** SSE tallies, results embargo, status controls. [cite: 56] | [cite_start]Planned [cite: 56] |
+| **Phase 5** | [cite_start]**Handoff:** Nginx config, School IT deployment, UAT. [cite: 56] | [cite_start]Planned [cite: 56] |
+
+---
+
+> [cite_start]**Note:** Prisma Studio may show a cosmetic stream error on Node v24; this can be safely ignored as functionality is unaffected. [cite: 193, 201]
+
+**OLPS COMELEC** | **v3.1** | [cite_start]**Private Repository** [cite: 196, 229]# halal.
+
 > [cite_start]**VOX POPULI VOX DEI** [cite: 17, 26]
 
 [cite_start]**halal.** (styled in lowercase) is a web-based Election Management System built specifically for the **Commission on Elections (COMELEC)** of **Our Lady of Peace School (OLPS)**[cite: 16, 17]. [cite_start]It digitizes the manual voting process across the Grade School (GS), Junior High School (JHS), and Senior High School (SHS) divisions to ensure integrity, transparency, and efficiency[cite: 11, 21].
