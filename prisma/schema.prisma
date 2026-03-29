@@ -1,13 +1,108 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
-
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
+}
+
+// ─── Enums ───────────────────────────────────────────
+
+enum Division {
+  GS   // Grade School  (Grades 3–5)
+  JHS  // Junior High   (Grades 6–9)
+  SHS  // Senior High   (Grades 10–11)
+}
+
+enum ElectionStatus {
+  DRAFT
+  SCHEDULED
+  OPEN
+  CLOSED
+}
+
+enum AdminRole {
+  COMMISSIONER
+  OFFICER
+}
+
+// ─── Models ──────────────────────────────────────────
+
+model Election {
+  id             String         @id @default(cuid())
+  name           String
+  division       Division
+  status         ElectionStatus @default(DRAFT)
+  scheduledOpen  DateTime?
+  scheduledClose DateTime?
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+
+  positions Position[]
+  voters    Voter[]
+  votes     Vote[]
+}
+
+model Position {
+  id         String @id @default(cuid())
+  electionId String
+  title      String
+  order      Int
+
+  election   Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  candidates Candidate[]
+  votes      Vote[]
+}
+
+model Candidate {
+  id         String @id @default(cuid())
+  positionId String
+  fullName   String
+  gradeLevel String
+  section    String
+
+  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  votes    Vote[]
+}
+
+model Voter {
+  id         String    @id @default(cuid())
+  electionId String
+  studentId  String
+  name       String
+  gradeLevel Int
+  division   Division
+  voterCode  String    @unique
+  hasVoted   Boolean   @default(false)
+  votedAt    DateTime?
+  createdAt  DateTime  @default(now())
+
+  election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+
+  @@unique([electionId, studentId])
+}
+
+// NOTE: Vote has NO reference to Voter — this is intentional.
+// Ballot anonymity is guaranteed at the database level.
+model Vote {
+  id         String   @id @default(cuid())
+  electionId String
+  positionId String
+  isAbstain  Boolean  @default(false)
+  candidateId String?
+  castAt     DateTime @default(now())
+
+  election  Election   @relation(fields: [electionId], references: [id])
+  position  Position   @relation(fields: [positionId], references: [id])
+  candidate Candidate? @relation(fields: [candidateId], references: [id])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         AdminRole @default(OFFICER)
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
 }

@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: halal_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: halal
+      POSTGRES_PASSWORD: ***REMOVED***
+      POSTGRES_DB: halal_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - halal_pgdata:/var/lib/postgresql/data
+
+volumes:
+  halal_pgdata:
