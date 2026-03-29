@@ -44,10 +44,15 @@ model Election {
 }
 
 model Position {
-  id         String @id @default(cuid())
-  electionId String
-  title      String
-  order      Int
+  id             String   @id @default(cuid())
+  electionId     String
+  title          String
+  order          Int
+  // Empty array = all voters in the division are eligible.
+  // Populated array = only voters whose gradeLevel is in this
+  // list may see and vote for this position.
+  // Used for the four JHSSCT Governor positions.
+  eligibleGrades Int[]    @default([])
 
   election   Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
   candidates Candidate[]
@@ -61,7 +66,7 @@ model Candidate {
   gradeLevel String
   section    String
 
-  position Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  position Position  @relation(fields: [positionId], references: [id], onDelete: Cascade)
   votes    Vote[]
 }
 
@@ -71,7 +76,10 @@ model Voter {
   studentId  String
   name       String
   gradeLevel Int
+  section    String    // Section letter — A through H
   division   Division
+  // Structured control number format: YYGGSNNN
+  // e.g. 2611A001 = year 26, grade 11, section A, student 001
   voterCode  String    @unique
   hasVoted   Boolean   @default(false)
   votedAt    DateTime?
@@ -84,23 +92,30 @@ model Voter {
 
 // NOTE: Vote has NO reference to Voter — this is intentional.
 // Ballot anonymity is guaranteed at the database level.
+// Abstentions are implicit — when a voter submits without
+// selecting a candidate for a position, isAbstain=true and
+// candidateId=null. No abstain button exists on the ballot UI.
 model Vote {
-  id         String   @id @default(cuid())
-  electionId String
-  positionId String
-  isAbstain  Boolean  @default(false)
+  id          String    @id @default(cuid())
+  electionId  String
+  positionId  String
+  isAbstain   Boolean   @default(false)
   candidateId String?
-  castAt     DateTime @default(now())
+  castAt      DateTime  @default(now())
 
   election  Election   @relation(fields: [electionId], references: [id])
   position  Position   @relation(fields: [positionId], references: [id])
   candidate Candidate? @relation(fields: [candidateId], references: [id])
 }
 
+// Officers log in with email + password (step 1)
+// then their unique officerKey (step 2).
+// Both passwordHash and officerKey are bcrypt hashed at rest.
 model AdminUser {
   id           String    @id @default(cuid())
   email        String    @unique
   passwordHash String
+  officerKey   String    // Hashed unique personal key per officer
   name         String
   role         AdminRole @default(OFFICER)
   lastLogin    DateTime?
