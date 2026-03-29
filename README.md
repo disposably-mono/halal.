@@ -1,3 +1,287 @@
+Here’s a **clean, GitHub-ready `README.md` (plaintext)** aligned with your PRD v3.1, including consistent branding, tone, and structure:
+
+---
+
+# halal.
+
+**School Election Management System**
+**VOX POPULI VOX DEI**
+
+---
+
+## Overview
+
+**halal.** is a web-based Election Management System built for the Commission on Elections (COMELEC) of Our Lady of Peace School (OLPS).
+
+It replaces manual election processes with a secure, automated, and fully digital platform — enabling efficient voter management, real-time tallying, and transparent results publication.
+
+The system delivers two distinct experiences:
+
+* **Voter Interface** — fully branded, emotionally resonant, aligned with COMELEC identity
+* **Admin Panel** — clean, utilitarian, and optimized for operational control
+
+---
+
+## Product Vision
+
+> *The voice of the people is the voice of God.*
+
+halal. modernizes student elections while preserving institutional identity and integrity.
+
+It is designed to:
+
+* Eliminate manual vote counting
+* Enforce one-vote-per-student integrity
+* Provide real-time operational visibility to COMELEC
+* Deliver a seamless and accessible voting experience
+* Publish official results transparently after election closure
+
+---
+
+## Core Features
+
+### Voter Experience
+
+* Control number-based authentication (no accounts required)
+* Division-specific ballots (GS, JHS, SHS)
+* Grade-aware ballot filtering (e.g., governor positions)
+* Simple, fast voting flow (≤ 3 steps)
+* Implicit abstention system (no explicit abstain button)
+* Confirmation modal for incomplete ballots
+* Public results page (available after election closes)
+
+---
+
+### Admin Panel
+
+* Two-factor authentication (password + officer key)
+* Election lifecycle management (Draft → Scheduled → Open → Closed)
+* Candidate encoding with position ordering and eligibility rules
+* CSV-based voter upload with auto-generated control numbers
+* Real-time tally monitor (including abstentions)
+* Manual election override controls
+* Exportable results (PDF-ready)
+
+---
+
+### System Integrity
+
+* Anonymous voting (no voter-to-vote linkage)
+* Atomic vote submission (all-or-nothing)
+* Server-side validation for all actions
+* Rate-limited authentication endpoints
+* Results embargo until polls close
+
+---
+
+## Tech Stack
+
+| Layer      | Technology                          |
+| ---------- | ----------------------------------- |
+| Frontend   | Next.js 14 (React)                  |
+| Language   | TypeScript                          |
+| Styling    | Tailwind CSS + shadcn/ui            |
+| Backend    | Next.js API Routes + Server Actions |
+| Database   | PostgreSQL 16                       |
+| ORM        | Prisma 7                            |
+| Auth       | NextAuth.js (Auth.js)               |
+| Realtime   | Server-Sent Events (SSE)            |
+| Deployment | Docker + Nginx                      |
+| Runtime    | Node.js 24                          |
+
+---
+
+## Architecture Highlights
+
+### Unified Full-Stack
+
+* Single Next.js application (frontend + backend)
+* Type-safe logic across the entire system
+* Simplified deployment (single container stack)
+
+---
+
+### Database Design
+
+Key principles:
+
+* **Strict anonymity** — Vote table has no voter reference
+* **Structured voter identity** — control number system
+* **Grade-aware ballot logic** — enforced at query level
+
+Core entities:
+
+* Election
+* Position
+* Candidate
+* Voter
+* Vote
+* AdminUser
+
+---
+
+### Control Number Format
+
+```
+YY GG S NNN
+```
+
+Example:
+
+```
+2611A001
+```
+
+Meaning:
+
+* Year: 2026
+* Grade: 11
+* Section: A
+* Student #: 001
+
+---
+
+## Voting Flow
+
+1. Student enters control number
+2. System validates eligibility and status
+3. Ballot is dynamically generated based on:
+
+   * Division
+   * Grade level
+4. Student selects candidates (optional per position)
+5. Submission triggers:
+
+   * Review modal (if incomplete)
+   * Final confirmation
+6. Vote is recorded atomically
+
+---
+
+## Results System
+
+* **During Voting**
+
+  * Public page: placeholder (embargo active)
+  * Admin panel: live tally (SSE)
+
+* **After Closing**
+
+  * Public results unlocked
+  * Labeled: **FINAL OFFICIAL RESULTS**
+  * Abstentions excluded from public view
+
+---
+
+## Design System
+
+### Color Palette
+
+| Token  | Hex     | Role       |
+| ------ | ------- | ---------- |
+| Navy   | #1B1F5E | Primary    |
+| Gold   | #F5C000 | Accent     |
+| Maroon | #6B1A1A | Secondary  |
+| White  | #FFFFFF | Surface    |
+| Light  | #F4F4F8 | Background |
+| Dark   | #2A2A2A | Text       |
+| Mid    | #5A5A7A | Muted      |
+
+---
+
+### Typography
+
+* **Display** — Bebas Neue
+* **Headings** — Barlow Condensed
+* **Body** — DM Sans
+* **Codes** — JetBrains Mono
+* **Tagline** — Playfair Display (Italic)
+
+---
+
+### Visual Identity
+
+* Ribbon / wave motifs
+* Sun-ray halo accents
+* Strong compressed typography
+* Minimal rounding, no heavy shadows
+* Institutional, formal aesthetic
+
+---
+
+## Project Status
+
+**Version:** 3.1
+**Status:** Active Development
+
+### Progress
+
+* Phase 1 — Setup & Architecture ✅ Complete
+* Phase 2 — Admin Panel 🔄 In Progress
+* Phase 3 — Voter Interface ⏳ Planned
+* Phase 4 — Real-time & Results ⏳ Planned
+* Phase 5 — Deployment & UAT ⏳ Planned
+
+---
+
+## Local Development
+
+### Start Services
+
+```bash
+docker compose up -d
+npm run dev
+```
+
+### Prisma Tools
+
+```bash
+npx prisma studio
+npx prisma migrate dev --name <migration>
+npx prisma generate
+```
+
+---
+
+## Key Design Decisions
+
+* No abstain button → abstentions are implicit
+* Results embargo → prevents voter influence
+* Structured voter codes → human-readable + self-validating
+* Admin 2FA → shared credentials + individual accountability
+* SSE over WebSockets → simpler, lightweight real-time updates
+
+---
+
+## Future Scope
+
+* Election archive system
+* About COMELEC page
+* Officer directory page
+
+---
+
+## Repository
+
+```
+github.com/disposably-mono/halal
+```
+
+---
+
+## License
+
+Private — Internal use for OLPS COMELEC
+
+---
+
+## Closing
+
+**halal.** is not just a system — it is an institutional tool designed to uphold trust, efficiency, and transparency in student governance.
+
+---
+
+**VOX POPULI VOX DEI**
 # halal.
 
 > [cite_start]**VOX POPULI VOX DEI** [cite: 17]
