@@ -53,6 +53,7 @@ model Position {
   // list may see and vote for this position.
   // Used for the four JHSSCT Governor positions.
   eligibleGrades Int[]    @default([])
+  candidateGrade String @default("")
 
   election   Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
   candidates Candidate[]
@@ -74,7 +75,6 @@ model Voter {
   id         String    @id @default(cuid())
   electionId String
   studentId  String
-  name       String
   gradeLevel Int
   section    String    // Section letter — A through H
   division   Division
