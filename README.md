@@ -1,207 +1,113 @@
-# README.md
+# halal. — School Election Management System
 
-````markdown
-# 🗳️ halal.
+**halal.** (Filipino for *to elect*) is a high-integrity, web-based election management platform built specifically for the **Our Lady of Peace School (OLPS) Commission on Elections (COMELEC)**.
 
-<p align="center">
-  <b>School Election Management System</b><br>
-  <i>VOX POPULI VOX DEI</i>
-</p>
-
-<p align="center">
-  <img src="https://img.shields.io/badge/Status-Phase%202%20Complete-success" alt="Status">
-  <img src="https://img.shields.io/badge/Stack-Next.js%2014-blue" alt="Stack">
-  <img src="https://img.shields.io/badge/DB-PostgreSQL-336791" alt="Database">
-</p>
-
-<p align="center">
-  🟦 Built for OLPS COMELEC &nbsp;•&nbsp; 🟨 Secure Voting &nbsp;•&nbsp; 🟥 Real-Time Results
-</p>
+Aligned with the theme *VOX POPULI VOX DEI* (The voice of the people is the voice of God), this system digitizes the entire election lifecycle—from candidate encoding and voter registration to real-time automated tallying.
 
 ---
 
-## 🟦 Overview
+## 🚀 Project Vision
 
-**halal.** is a web-based Election Management System designed for the **Commission on Elections (COMELEC)** of Our Lady of Peace School.
-
-It replaces manual election workflows with a **secure, automated, and transparent digital platform** — built for reliability, simplicity, and institutional trust.
-
----
-
-## 🟨 Highlights
-
-* 🗳️ **Seamless Voting** — Fast, intuitive, ≤3-step flow.
-* 🔐 **Secure by Design** — Anonymous ballots, strict Prisma-level validation.
-* 📊 **Real-Time Monitoring** — Live admin tally via Server-Sent Events (SSE).
-* ⛔ **Results Embargo** — Prevents mid-election influence by hiding tallies until closure.
-* 🎯 **Smart Ballots** — Grade-aware position filtering for JHS/SHS/House Council.
-* 🧾 **Zero Manual Work** — Automated tallying, candidate encoding, and CSV exports.
+* **Eliminate Manual Errors:** Replace paper-based tallying with real-time automated results.
+* **Division-Aware Logic:** Handles complex eligibility rules for Grade School, Junior High, Senior High, and House Council.
+* **Uncompromising Integrity:** Ensures one-vote-per-student through database-level constraints while maintaining absolute ballot anonymity.
+* **User-Centric Design:** Features a high-fidelity, branded voter interface and a utilitarian, 2FA-protected admin panel.
 
 ---
 
-## 🟥 System Architecture
+## 🛠 Technology Stack
 
-```text
-Next.js 14 (Full Stack)
-├── App Router (Frontend UI)
-├── Server Actions (Logic & Auth.js)
-├── NextAuth.js (Secure Admin Access)
-├── Prisma ORM (@prisma/adapter-pg)
-└── PostgreSQL 16 (Dockerized Alpine)
-````
+| Layer | Technology |
+| :--- | :--- |
+| **Framework** | Next.js 14 (App Router) |
+| **Language** | TypeScript |
+| **Database** | PostgreSQL 16 |
+| **ORM** | Prisma 7.6 (with `@prisma/adapter-pg`) |
+| **Styling** | Tailwind CSS + shadcn/ui |
+| **Auth** | Auth.js (NextAuth Beta) with 2FA Officer Keys |
+| **Real-time** | Server-Sent Events (SSE) |
+| **Runtime** | Node.js 24 + Docker |
 
-* 🟦 Unified TypeScript codebase
-* 🐳 Containerized deployment via Docker
-* ⚡ Optimized for \~2000 concurrent voters
+---
 
------
+## ✨ Key Features
 
-## 🟦 Core Features
+### 🗳 Voter Experience
 
-### 🗳️ Voter Experience (Phase 3)
+* **Smart Ballots:** Automatically filters positions based on the voter's grade level (e.g., Grade 6 students only see the Freshman Governor position).
+* **Secure Authentication:** Unique `YYGGSNNN` format control numbers generated per student.
+* **Implicit Abstentions:** A neutral review process that records unselected positions as abstentions without requiring an "Abstain" button.
+* **Branded Interface:** Deep navy and gold aesthetic reflecting OLPS COMELEC identity.
 
-* 🔑 **Control Number Login**: Single-use, structured validation.
-* 🧭 **Automatic Detection**: Logic-based division routing.
-* 🎯 **Grade-Filtered Ballots**: Automatic filtering (e.g., Grade 7 only sees JHS Governor).
-* ⚠️ **Review Modal**: Prevents accidental submissions.
-* 📊 **Public Results**: Professional results page accessible post-election.
+### 🛡 Admin Management
 
-### 🛠️ Admin Panel (Phase 2 ✅)
+* **Two-Step Login:** Requires both shared credentials and a unique personal Officer Key.
+* **Candidate Encoder:** "Seed All" functionality to instantly load division-specific positions from PRD constants.
+* **Voter Management:** Bulk CSV upload with automated grade-range validation and global deduplication.
+* **Snap Elections:** Native support for mid-term vacancy elections via position soft-deletion and re-activation.
+* **Live Monitor:** Real-time turnout and tally tracking (including abstentions) for COMELEC officers.
 
-* 🔐 **2FA Login**: Password + specific Officer Key for shared accountability.
-* 🗂️ **Election Lifecycle**: Create, Draft, Open, and Close election states.
-* 👥 **Candidate Management**: Dynamic encoding with position-based soft deletes.
-* 📡 **Live Tally Monitor**: Real-time progress tracking for authorized officers.
-* 📄 **Database Integrity**: Automatic voter code global uniqueness checks.
+---
 
------
+## 🏗 Project Structure
 
-## 🟨 Control Number System
+* `/app/admin` — Protected admin dashboard and election management routes.
+* `/app/vote` — Protected voter-facing ballot and authentication logic.
+* `/app/api` — Backend endpoints for CSV exports and real-time result streams.
+* `/prisma` — Type-safe schema definitions and migration history.
+* `/components/ui` — Accessible UI components powered by Radix UI.
 
-Structured, human-readable voter codes designed for the OLPS system:
+---
 
-```text
-YY GG S NNN
-```
+## 🚦 Development Status
 
-**Example:** `2611A001`
+* **Phase 1: Foundation** ✅ Complete
+* **Phase 2: Admin Control & Logic** ✅ Complete
+* **Phase 3: Voter Interface & Branding** ⏳ In Progress
+* **Phase 4: Real-time Tallies & Controls** 📅 Planned
+* **Phase 5: Deployment & UAT** 📅 Planned
 
-* 🗓️ **Year**: 2026 (Graduation/Current Year)
-* 🎓 **Grade**: 11
-* 🔤 **Section**: A
-* 🔢 **Student \#**: 001
+---
 
------
+## 💻 Quick Start
 
-## 🟥 Voting Flow
+### Prerequisites
 
-```text
-Enter Code → Validate → Generate Ballot → Select → Review → Submit
-```
+* Node.js v24.x
+* Docker & Docker Compose
+* npm v11.x
 
-* 🧱 **Atomic Submission**: No partial votes; the entire ballot is recorded at once.
-* 🤍 **Implicit Abstention**: Skipped positions are handled as abstentions without extra clicks.
-* 🔒 **One Vote Per Student**: Database constraints prevent re-entry once a code is used.
+### Setup
 
------
+1. **Clone the repo:**
 
-## 🟦 Results System
+    ```bash
+    git clone github.com/disposably-mono/halal.git
+    cd halal
+    ```
 
-| Phase              | Public View      | Admin View      |
-| ------------------ | ---------------- | -------------- |
-| 🟨 **Voting Open** | ⛔ Locked         | 📡 Live Tally   |
-| 🟦 **Election Closed**| ✅ Final Results  | 📊 Full Report  |
+2. **Start the database:**
 
-* 🏁 Results are labeled **FINAL OFFICIAL RESULTS**.
-* 🤍 Abstention data is recorded for audit but hidden from public tallies to maintain focus.
+    ```bash
+    docker compose up -d
+    ```
 
------
+3. **Install dependencies & Sync DB:**
 
-## 🎨 Design System
+    ```bash
+    npm install
+    npx prisma migrate dev
+    npx prisma db seed
+    ```
 
-### 🟦 Visual Language
+4. **Run the development server:**
 
-* **Colors**: Navy (`#1B1F5E`), Gold (`#F5C000`), and Maroon (`#6B1A1A`).
-* **Themes**: Dark-mode focused UI using `shadcn/ui` for an institutional, modern feel.
-* **Typography**: *Bebas Neue* (Display), *Barlow Condensed* (Headings), and *JetBrains Mono* (Voter Codes).
+    ```bash
+    npm run dev
+    ```
 
------
+    Access the app at `http://localhost:3000` and the database browser at `http://localhost:5555`.
 
-## 🛠️ Tech Stack
+---
 
-| Layer      | Tech                 | Version |
-| ---------- | -------------------- | ------- |
-| Framework  | Next.js              | 14.2.35 |
-| UI/Styles  | Tailwind + shadcn/ui | Latest  |
-| Database   | PostgreSQL           | 16      |
-| ORM        | Prisma               | 7.6.0   |
-| Auth       | Auth.js (NextAuth)   | 5.0-beta|
-| Runtime    | Node.js + Docker     | Latest  |
-
------
-
-## 🚧 Development Status
-
-```text
-Phase 1: Scaffold & Schema      ██████████ 100%
-Phase 2: Admin & Management     ██████████ 100%
-Phase 3: Voter Interface        ░░░░░░░░░░ Planned
-Phase 4: Real-time & Results    ░░░░░░░░░░ Planned
-Phase 5: School Deployment      ░░░░░░░░░░ Planned
-```
-
------
-
-## ▶️ Local Setup
-
-### 1\. Environment & Containers
-
-```bash
-# Start the PostgreSQL container
-docker compose up -d
-
-# Install dependencies
-npm install
-```
-
-### 2\. Database Initialization
-
-```bash
-# Generate Prisma Client
-npx prisma generate
-
-# Apply migrations
-npx prisma migrate dev
-
-# Seed Admin Account (comelec@olps.edu.ph)
-npx prisma db seed
-```
-
-### 3\. Run Development Server
-
-```bash
-npm run dev
-```
-
------
-
-## 🧠 Key Decisions
-
-* **Dockerized Hosting**: Ensures the school IT can deploy the entire stack on internal hardware easily.
-* **No Abstain Button**: Skipping a position is logically treated as an abstention, reducing UI clutter.
-* **Prisma Adapter**: Used `@prisma/adapter-pg` to resolve driver compatibility within the Next.js edge runtime.
-
------
-
-## 🏁 Closing
-
-\<p align="center"\>
-🟦 Integrity \&nbsp;\&nbsp; 🟨 Transparency \&nbsp;\&nbsp; 🟥 Trust
-\</p\>
-
-\<p align="center"\>
-\<b\>VOX POPULI VOX DEI\</b\>
-\</p\>
-
-```
-```
+**OLPS COMELEC** — *VOX POPULI VOX DEI*
