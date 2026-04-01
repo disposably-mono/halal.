@@ -1,8 +1,17 @@
+# README.md
+
+````markdown
 # 🗳️ halal.
 
 <p align="center">
   <b>School Election Management System</b><br>
   <i>VOX POPULI VOX DEI</i>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/Status-Phase%202%20Complete-success" alt="Status">
+  <img src="https://img.shields.io/badge/Stack-Next.js%2014-blue" alt="Stack">
+  <img src="https://img.shields.io/badge/DB-PostgreSQL-336791" alt="Database">
 </p>
 
 <p align="center">
@@ -21,76 +30,68 @@ It replaces manual election workflows with a **secure, automated, and transparen
 
 ## 🟨 Highlights
 
-* 🗳️ **Seamless Voting** — fast, intuitive, ≤3-step flow
-* 🔐 **Secure by Design** — anonymous ballots, strict validation
-* 📊 **Real-Time Monitoring** — live admin tally via SSE
-* ⛔ **Results Embargo** — prevents mid-election influence
-* 🎯 **Smart Ballots** — grade-aware position filtering
-* 🧾 **Zero Manual Work** — automated tallying & exports
+* 🗳️ **Seamless Voting** — Fast, intuitive, ≤3-step flow.
+* 🔐 **Secure by Design** — Anonymous ballots, strict Prisma-level validation.
+* 📊 **Real-Time Monitoring** — Live admin tally via Server-Sent Events (SSE).
+* ⛔ **Results Embargo** — Prevents mid-election influence by hiding tallies until closure.
+* 🎯 **Smart Ballots** — Grade-aware position filtering for JHS/SHS/House Council.
+* 🧾 **Zero Manual Work** — Automated tallying, candidate encoding, and CSV exports.
 
 ---
 
 ## 🟥 System Architecture
 
 ```text
-Next.js (Full Stack)
+Next.js 14 (Full Stack)
 ├── App Router (Frontend UI)
-├── Server Actions / API Routes
-├── Authentication (NextAuth)
-├── Prisma ORM
-└── PostgreSQL (Docker)
-```
+├── Server Actions (Logic & Auth.js)
+├── NextAuth.js (Secure Admin Access)
+├── Prisma ORM (@prisma/adapter-pg)
+└── PostgreSQL 16 (Dockerized Alpine)
+````
 
 * 🟦 Unified TypeScript codebase
-* 🐳 Containerized deployment
-* ⚡ Optimized for ~2000 concurrent voters
+* 🐳 Containerized deployment via Docker
+* ⚡ Optimized for \~2000 concurrent voters
 
----
+-----
 
 ## 🟦 Core Features
 
-### 🗳️ Voter Experience
+### 🗳️ Voter Experience (Phase 3)
 
-* 🔑 Control number login (single-use)
-* 🧭 Automatic division detection
-* 🎯 Grade-filtered ballots (JHS governors)
-* ⚠️ Review modal for incomplete ballots
-* ✅ Instant confirmation after voting
-* 📊 Public results (post-election only)
+* 🔑 **Control Number Login**: Single-use, structured validation.
+* 🧭 **Automatic Detection**: Logic-based division routing.
+* 🎯 **Grade-Filtered Ballots**: Automatic filtering (e.g., Grade 7 only sees JHS Governor).
+* ⚠️ **Review Modal**: Prevents accidental submissions.
+* 📊 **Public Results**: Professional results page accessible post-election.
 
----
+### 🛠️ Admin Panel (Phase 2 ✅)
 
-### 🛠️ Admin Panel
+* 🔐 **2FA Login**: Password + specific Officer Key for shared accountability.
+* 🗂️ **Election Lifecycle**: Create, Draft, Open, and Close election states.
+* 👥 **Candidate Management**: Dynamic encoding with position-based soft deletes.
+* 📡 **Live Tally Monitor**: Real-time progress tracking for authorized officers.
+* 📄 **Database Integrity**: Automatic voter code global uniqueness checks.
 
-* 🔐 2FA login (password + officer key)
-* 🗂️ Election lifecycle management
-* 👥 Candidate encoding system
-* 📥 CSV voter import + control number generation
-* 📡 Live tally monitor (with abstentions)
-* 📄 Exportable official results
-
----
+-----
 
 ## 🟨 Control Number System
 
-Structured, human-readable voter codes:
+Structured, human-readable voter codes designed for the OLPS system:
 
-```
+```text
 YY GG S NNN
 ```
 
 **Example:** `2611A001`
 
-* 🗓️ Year: 2026
-* 🎓 Grade: 11
-* 🔤 Section: A
-* 🔢 Student #: 001
+* 🗓️ **Year**: 2026 (Graduation/Current Year)
+* 🎓 **Grade**: 11
+* 🔤 **Section**: A
+* 🔢 **Student \#**: 001
 
-✔ Self-validating
-✔ Easy to distribute
-✔ Impossible to reuse
-
----
+-----
 
 ## 🟥 Voting Flow
 
@@ -98,128 +99,109 @@ YY GG S NNN
 Enter Code → Validate → Generate Ballot → Select → Review → Submit
 ```
 
-* 🧱 Atomic submission (no partial votes)
-* 🤍 Skipped positions = implicit abstentions
-* 🔒 One vote per student (DB enforced)
+* 🧱 **Atomic Submission**: No partial votes; the entire ballot is recorded at once.
+* 🤍 **Implicit Abstention**: Skipped positions are handled as abstentions without extra clicks.
+* 🔒 **One Vote Per Student**: Database constraints prevent re-entry once a code is used.
 
----
+-----
 
 ## 🟦 Results System
 
-| Phase              | Public View     | Admin View     |
-| ------------------ | --------------- | -------------- |
-| 🟨 Voting Open     | ⛔ Locked        | 📡 Live        |
-| 🟦 Election Closed | ✅ Final Results | 📊 Full Access |
+| Phase              | Public View      | Admin View      |
+| ------------------ | ---------------- | -------------- |
+| 🟨 **Voting Open** | ⛔ Locked         | 📡 Live Tally   |
+| 🟦 **Election Closed**| ✅ Final Results  | 📊 Full Report  |
 
-* 🏁 Labeled **FINAL OFFICIAL RESULTS**
-* 🤍 Abstentions hidden from public
+* 🏁 Results are labeled **FINAL OFFICIAL RESULTS**.
+* 🤍 Abstention data is recorded for audit but hidden from public tallies to maintain focus.
 
----
+-----
 
 ## 🎨 Design System
 
-### 🟦 Colors
+### 🟦 Visual Language
 
-* Navy `#1B1F5E` — Primary
-* Gold `#F5C000` — Accent
-* Maroon `#6B1A1A` — Secondary
+* **Colors**: Navy (`#1B1F5E`), Gold (`#F5C000`), and Maroon (`#6B1A1A`).
+* **Themes**: Dark-mode focused UI using `shadcn/ui` for an institutional, modern feel.
+* **Typography**: *Bebas Neue* (Display), *Barlow Condensed* (Headings), and *JetBrains Mono* (Voter Codes).
 
-### ✍️ Typography
-
-* Bebas Neue — Display
-* Barlow Condensed — Headings
-* DM Sans — Body
-* JetBrains Mono — Codes
-
-### 🎭 Visual Language
-
-* 🌊 Ribbon motifs
-* ☀️ Subtle sun-ray accents
-* 🧱 Minimal, institutional UI
-* 🟥🟦🟨 Philippine-inspired palette
-
----
+-----
 
 ## 🛠️ Tech Stack
 
-| Layer      | Tech                 |
-| ---------- | -------------------- |
-| Frontend   | Next.js 14           |
-| Language   | TypeScript           |
-| Styling    | Tailwind + shadcn/ui |
-| Backend    | Next.js API Routes   |
-| Database   | PostgreSQL           |
-| ORM        | Prisma               |
-| Auth       | NextAuth.js          |
-| Realtime   | SSE                  |
-| Deployment | Docker               |
+| Layer      | Tech                 | Version |
+| ---------- | -------------------- | ------- |
+| Framework  | Next.js              | 14.2.35 |
+| UI/Styles  | Tailwind + shadcn/ui | Latest  |
+| Database   | PostgreSQL           | 16      |
+| ORM        | Prisma               | 7.6.0   |
+| Auth       | Auth.js (NextAuth)   | 5.0-beta|
+| Runtime    | Node.js + Docker     | Latest  |
 
----
+-----
 
 ## 🚧 Development Status
 
-```
-Phase 1  ██████████  Complete
-Phase 2  █████░░░░░  In Progress
-Phase 3  ░░░░░░░░░░  Planned
-Phase 4  ░░░░░░░░░░  Planned
-Phase 5  ░░░░░░░░░░  Planned
+```text
+Phase 1: Scaffold & Schema      ██████████ 100%
+Phase 2: Admin & Management     ██████████ 100%
+Phase 3: Voter Interface        ░░░░░░░░░░ Planned
+Phase 4: Real-time & Results    ░░░░░░░░░░ Planned
+Phase 5: School Deployment      ░░░░░░░░░░ Planned
 ```
 
----
+-----
 
 ## ▶️ Local Setup
 
+### 1\. Environment & Containers
+
 ```bash
+# Start the PostgreSQL container
 docker compose up -d
+
+# Install dependencies
+npm install
+```
+
+### 2\. Database Initialization
+
+```bash
+# Generate Prisma Client
+npx prisma generate
+
+# Apply migrations
+npx prisma migrate dev
+
+# Seed Admin Account (comelec@olps.edu.ph)
+npx prisma db seed
+```
+
+### 3\. Run Development Server
+
+```bash
 npm run dev
 ```
 
-### Prisma
-
-```bash
-npx prisma studio
-npx prisma migrate dev --name init
-npx prisma generate
-```
-
----
+-----
 
 ## 🧠 Key Decisions
 
-* ❌ No abstain button → cleaner UX
-* ⛔ Results embargo → protects voter independence
-* 🔢 Structured codes → human + system readable
-* 🔐 2FA admin auth → shared + personal accountability
-* 📡 SSE → lightweight real-time updates
+* **Dockerized Hosting**: Ensures the school IT can deploy the entire stack on internal hardware easily.
+* **No Abstain Button**: Skipping a position is logically treated as an abstention, reducing UI clutter.
+* **Prisma Adapter**: Used `@prisma/adapter-pg` to resolve driver compatibility within the Next.js edge runtime.
 
----
-
-## 🔮 Future Scope
-
-* 🗂️ Election archive
-* 📘 About COMELEC page
-* 🧑‍💼 Officers directory
-
----
-
-## 🔗 Repository
-
-```
-github.com/disposably-mono/halal
-```
-
----
+-----
 
 ## 🏁 Closing
 
-<p align="center">
-  🟦 Integrity &nbsp;&nbsp; 🟨 Transparency &nbsp;&nbsp; 🟥 Trust
-</p>
+\<p align="center"\>
+🟦 Integrity \&nbsp;\&nbsp; 🟨 Transparency \&nbsp;\&nbsp; 🟥 Trust
+\</p\>
 
-<p align="center">
-  <b>VOX POPULI VOX DEI</b>
-</p>
+\<p align="center"\>
+\<b\>VOX POPULI VOX DEI\</b\>
+\</p\>
 
----
-
+```
+```
