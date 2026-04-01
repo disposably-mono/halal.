@@ -8,11 +8,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   providers: [
     Credentials({
-      credentials: {
-        email: { label: "Email", type: "email" },
-        password: { label: "Password", type: "password" },
-        officerKey: { label: "Officer Key", type: "password" },
-      },
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password || !credentials?.officerKey) {
           return null;
@@ -35,11 +30,6 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           admin.officerKey
         );
         if (!keyValid) return null;
-
-        await prisma.adminUser.update({
-          where: { id: admin.id },
-          data: { lastLogin: new Date() },
-        });
 
         return {
           id: admin.id,

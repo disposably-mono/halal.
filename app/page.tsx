@@ -1,101 +1,88 @@
-import Image from "next/image";
+import { prisma } from "@/lib/prisma";
+import LandingClient from "./LandingClient";
 
-export default function Home() {
+export const dynamic = "force-dynamic";
+
+const DIVISION_LABELS: Record<string, string> = {
+  GS: "Grade School",
+  JHS: "Junior High School",
+  SHS: "Senior High School",
+  HC: "House Council",
+};
+
+const DIVISION_SUBLABELS: Record<string, string> = {
+  GS: "Student Council",
+  JHS: "Student Council",
+  SHS: "Student Supreme Council",
+  HC: "House Council",
+};
+
+const DIVISION_ORDER = ["GS", "JHS", "SHS", "HC"];
+
+export default async function HomePage() {
+  // Get all elections, then pick most relevant per division
+  const elections = await prisma.election.findMany({
+    select: {
+      id: true,
+      name: true,
+      division: true,
+      status: true,
+      scheduledOpen: true,
+      scheduledClose: true,
+      _count: { select: { voters: true } },
+    },
+    orderBy: { scheduledOpen: "desc" },
+  });
+
+  // Per division: prefer OPEN > SCHEDULED > DRAFT > CLOSED, then most recent
+  const statusPriority: Record<string, number> = {
+    OPEN: 0,
+    SCHEDULED: 1,
+    DRAFT: 2,
+    CLOSED: 3,
+  };
+
+  const divisionMap = new Map<string, typeof elections[0]>();
+  for (const election of elections) {
+    const existing = divisionMap.get(election.division);
+    if (!existing) {
+      divisionMap.set(election.division, election);
+    } else {
+      const existingPriority = statusPriority[existing.status] ?? 99;
+      const newPriority = statusPriority[election.status] ?? 99;
+      if (newPriority < existingPriority) {
+        divisionMap.set(election.division, election);
+      }
+    }
+  }
+
+  // Countdown target: earliest SCHEDULED or OPEN election
+  const countdownElection = elections
+    .filter((e) => e.status === "SCHEDULED" || e.status === "OPEN")
+    .sort(
+      (a, b) =>
+        new Date(a.scheduledOpen).getTime() - new Date(b.scheduledOpen).getTime()
+    )[0] ?? null;
+
+  const divisionCards = DIVISION_ORDER.map((div) => ({
+    division: div,
+    label: DIVISION_LABELS[div],
+    sublabel: DIVISION_SUBLABELS[div],
+    election: divisionMap.get(div) ?? null,
+  }));
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="https://nextjs.org/icons/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="https://nextjs.org/icons/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="https://nextjs.org/icons/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+    <LandingClient
+      divisionCards={divisionCards}
+      countdownTarget={
+        countdownElection
+          ? {
+            date: countdownElection.scheduledOpen.toISOString(),
+            electionName: countdownElection.name,
+            status: countdownElection.status,
+          }
+          : null
+      }
+    />
   );
 }
