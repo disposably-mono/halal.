@@ -14,7 +14,7 @@ export async function createElection(formData: FormData) {
   const election = await prisma.election.create({
     data: {
       name,
-      division: division as "GS" | "JHS" | "SHS",
+      division: division as "GS" | "JHS" | "SHS" | "HC",
       status: "DRAFT",
       scheduledOpen: scheduledOpen ? new Date(scheduledOpen) : null,
       scheduledClose: scheduledClose ? new Date(scheduledClose) : null,

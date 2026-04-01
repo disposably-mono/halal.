@@ -12,6 +12,7 @@ enum Division {
   GS   // Grade School  (Grades 3–5)
   JHS  // Junior High   (Grades 6–9)
   SHS  // Senior High   (Grades 10–11)
+  HC // House Council (Grades 10-11)
 }
 
 enum ElectionStatus {
@@ -54,6 +55,7 @@ model Position {
   // Used for the four JHSSCT Governor positions.
   eligibleGrades Int[]    @default([])
   candidateGrade String @default("")
+  isActive       Boolean @default(true)
 
   election   Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
   candidates Candidate[]
@@ -65,7 +67,6 @@ model Candidate {
   positionId String
   fullName   String
   gradeLevel String
-  section    String
 
   position Position  @relation(fields: [positionId], references: [id], onDelete: Cascade)
   votes    Vote[]

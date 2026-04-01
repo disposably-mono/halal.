@@ -6,18 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import Link from "next/link";
-import { seedPositions, addCandidate, removeCandidate } from "./actions";
+import {
+  seedAllPositions,
+  addSinglePosition,
+  removePosition,
+  addCandidate,
+  removeCandidate,
+} from "./actions";
+import { DIVISION_POSITIONS } from "../../lib/constants";
 
 const divisionLabels: Record<string, string> = {
   GS: "Grade School",
   JHS: "Junior High School",
   SHS: "Senior High School",
-};
-
-const POSITION_COUNTS: Record<string, number> = {
-  GS: 10,
-  JHS: 19,
-  SHS: 9,
+  HC: "House Council",
 };
 
 export default async function CandidatesPage({
@@ -32,6 +34,8 @@ export default async function CandidatesPage({
     where: { id: params.id },
     include: {
       positions: {
+        // Only render active positions
+        where: { isActive: true },
         orderBy: { order: "asc" },
         include: {
           candidates: { orderBy: { fullName: "asc" } },
@@ -44,15 +48,25 @@ export default async function CandidatesPage({
 
   const isLocked = election.status === "OPEN" || election.status === "CLOSED";
 
-  async function handleSeedPositions() {
-    "use server";
-    await seedPositions(election!.id, election!.division);
-  }
+  // All positions defined in PRD constants for this division
+  const allDivisionPositions = DIVISION_POSITIONS[election.division] ?? [];
+  const totalPositionCount = allDivisionPositions.length;
+
+  // Titles that are currently active — used to filter the dropdown
+  const activeTitles = new Set(election.positions.map((p) => p.title));
+
+  // Positions available to add (not currently active)
+  const availableToAdd = allDivisionPositions.filter(
+    (p) => !activeTitles.has(p.title)
+  );
+
+  const activeCount = election.positions.length;
+  const remainingCount = availableToAdd.length;
 
   return (
-    <div className="min-h-screen bg-[#0f1235]">
+    <div className="min-h-screen bg-navy-deep">
       {/* Navbar */}
-      <nav className="border-b border-white/10 bg-[#1B1F5E]">
+      <nav className="border-b border-white/10 bg-navy">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center gap-3">
           <Link
             href="/admin"
@@ -93,9 +107,9 @@ export default async function CandidatesPage({
           </div>
         </div>
 
-        {/* Seed positions banner */}
-        {election.positions.length === 0 && !isLocked && (
-          <Card className="border-[#F5C000]/30 bg-[#F5C000]/5">
+        {/* 1. SEED ALL BANNER — shown only when no active positions exist */}
+        {activeCount === 0 && !isLocked && (
+          <Card className="border-gold/30 bg-gold/5">
             <CardContent className="py-6 flex items-center justify-between gap-4">
               <div>
                 <p className="text-white text-sm font-medium">No positions yet.</p>
@@ -104,20 +118,22 @@ export default async function CandidatesPage({
                   positions from the PRD.
                 </p>
               </div>
-              <form action={handleSeedPositions}>
+              <form action={seedAllPositions}>
+                <input type="hidden" name="electionId" value={election.id} />
+                <input type="hidden" name="division" value={election.division} />
                 <Button
                   type="submit"
-                  className="bg-[#F5C000] text-[#1B1F5E] hover:bg-[#F5C000]/90 font-semibold shrink-0"
+                  className="bg-gold text-navy hover:bg-gold/90 font-semibold shrink-0"
                 >
-                  Load {POSITION_COUNTS[election.division]} Positions
+                  Load {totalPositionCount} Positions
                 </Button>
               </form>
             </CardContent>
           </Card>
         )}
 
-        {/* Position list */}
-        {election.positions.length > 0 && (
+        {/* 2. POSITION LIST */}
+        {activeCount > 0 && (
           <div className="space-y-4">
             {election.positions.map((position) => (
               <Card key={position.id} className="border-white/10 bg-white/5">
@@ -126,7 +142,6 @@ export default async function CandidatesPage({
                     <CardTitle className="text-white text-base">
                       {position.title}
                     </CardTitle>
-                    {/* Candidate grade badge — locked, from PRD */}
                     <Badge className="bg-white/10 text-white/50 text-xs font-mono">
                       Grade {position.candidateGrade}
                     </Badge>
@@ -135,10 +150,27 @@ export default async function CandidatesPage({
                         Grade {position.eligibleGrades.join(", ")} voters only
                       </Badge>
                     )}
-                    <Badge className="bg-white/10 text-white/40 text-xs ml-auto">
-                      {position.candidates.length} candidate
-                      {position.candidates.length !== 1 ? "s" : ""}
-                    </Badge>
+
+                    {!isLocked && (
+                      <form action={removePosition} className="ml-auto">
+                        <input
+                          type="hidden"
+                          name="positionId"
+                          value={position.id}
+                        />
+                        <input
+                          type="hidden"
+                          name="electionId"
+                          value={election.id}
+                        />
+                        <button
+                          type="submit"
+                          className="text-white/20 hover:text-red-400 text-xs transition-colors"
+                        >
+                          Delete Position
+                        </button>
+                      </form>
+                    )}
                   </div>
                 </CardHeader>
 
@@ -156,8 +188,7 @@ export default async function CandidatesPage({
                               {candidate.fullName}
                             </p>
                             <p className="text-white/40 text-xs">
-                              Grade {candidate.gradeLevel} — Section{" "}
-                              {candidate.section}
+                              Grade {candidate.gradeLevel}
                             </p>
                           </div>
                           {!isLocked && (
@@ -185,11 +216,19 @@ export default async function CandidatesPage({
                     </div>
                   )}
 
-                  {/* Add candidate form — name + section only, grade auto-filled */}
+                  {/* Add candidate form */}
                   {!isLocked && (
                     <form action={addCandidate} className="flex gap-2 pt-1">
-                      <input type="hidden" name="positionId" value={position.id} />
-                      <input type="hidden" name="electionId" value={election.id} />
+                      <input
+                        type="hidden"
+                        name="positionId"
+                        value={position.id}
+                      />
+                      <input
+                        type="hidden"
+                        name="electionId"
+                        value={election.id}
+                      />
                       <input
                         type="hidden"
                         name="gradeLevel"
@@ -198,19 +237,13 @@ export default async function CandidatesPage({
                       <Input
                         name="fullName"
                         placeholder="Full name"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/30 text-sm h-9 flex-[3]"
-                        required
-                      />
-                      <Input
-                        name="section"
-                        placeholder="Section"
-                        className="bg-white/10 border-white/20 text-white placeholder:text-white/30 text-sm h-9 w-28"
+                        className="bg-white/10 border-white/20 text-white placeholder:text-white/30 text-sm h-9 flex-1"
                         required
                       />
                       <Button
                         type="submit"
                         size="sm"
-                        className="bg-[#F5C000] text-[#1B1F5E] hover:bg-[#F5C000]/90 font-semibold h-9 shrink-0"
+                        className="bg-gold text-navy hover:bg-gold/90 font-semibold h-9 shrink-0"
                       >
                         + Add
                       </Button>
@@ -219,14 +252,68 @@ export default async function CandidatesPage({
                 </CardContent>
               </Card>
             ))}
+
+            {/* 3. ADD SINGLE POSITION DROPDOWN
+                Only shown when there are still positions available to add.
+                Active titles are excluded from the options. */}
+            {!isLocked && availableToAdd.length > 0 && (
+              <Card className="border-white/10 bg-transparent border-dashed">
+                <CardContent className="py-4">
+                  <form
+                    action={addSinglePosition}
+                    className="flex items-center gap-3"
+                  >
+                    <input
+                      type="hidden"
+                      name="electionId"
+                      value={election.id}
+                    />
+                    <input
+                      type="hidden"
+                      name="division"
+                      value={election.division}
+                    />
+                    <select
+                      name="title"
+                      defaultValue=""
+                      className="bg-navy border border-white/20 text-white text-sm rounded-md h-9 px-3 flex-1"
+                      required
+                    >
+                      <option value="" disabled>
+                        Add position ({remainingCount} remaining)...
+                      </option>
+                      {availableToAdd.map((p) => (
+                        <option key={p.title} value={p.title}>
+                          {p.title}
+                        </option>
+                      ))}
+                    </select>
+                    <Button
+                      type="submit"
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10 shrink-0 h-9"
+                    >
+                      + Add Position
+                    </Button>
+                  </form>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* All positions are active — no more to add */}
+            {!isLocked && availableToAdd.length === 0 && (
+              <p className="text-white/20 text-xs text-center py-2">
+                All {totalPositionCount} positions are active.
+              </p>
+            )}
           </div>
         )}
 
         {/* Bottom nav */}
-        {election.positions.length > 0 && (
+        {activeCount > 0 && (
           <div className="flex justify-end pt-4">
             <Link href={`/admin/elections/${election.id}/voters`}>
-              <Button className="bg-[#F5C000] text-[#1B1F5E] hover:bg-[#F5C000]/90 font-semibold">
+              <Button className="bg-gold text-navy hover:bg-gold/90 font-semibold">
                 Continue to Voters →
               </Button>
             </Link>

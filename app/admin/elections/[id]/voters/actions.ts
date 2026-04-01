@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { DIVISION_GRADE_RANGE } from "../../lib/constants";
 
 function generateControlNumber(
   year: number,
@@ -16,18 +17,42 @@ function generateControlNumber(
   return `${yy}${gg}${s}${nnn}`;
 }
 
-function gradeToDiv(grade: number): "GS" | "JHS" | "SHS" {
-  if (grade >= 3 && grade <= 5) return "GS";
-  if (grade >= 6 && grade <= 9) return "JHS";
-  return "SHS";
-}
+export type CSVImportResult = {
+  added: number;
+  rejected: number;
+  reasons: string[];
+};
 
-export async function addVotersFromCSV(formData: FormData) {
+export type ManualAddResult = {
+  success: boolean;
+  error?: string;
+};
+
+export async function addVotersFromCSV(
+  _prevState: CSVImportResult | null,
+  formData: FormData
+): Promise<CSVImportResult | null> {
   const electionId = formData.get("electionId") as string;
   const csvText = formData.get("csvText") as string;
   const schoolYear = parseInt(formData.get("schoolYear") as string);
 
-  if (!electionId || !csvText || !schoolYear) return;
+  if (!electionId || !csvText || !schoolYear) {
+    return { added: 0, rejected: 0, reasons: ["Missing required fields."] };
+  }
+
+  const election = await prisma.election.findUnique({
+    where: { id: electionId },
+    select: { division: true },
+  });
+
+  if (!election) {
+    return { added: 0, rejected: 0, reasons: ["Election not found."] };
+  }
+
+  const range = DIVISION_GRADE_RANGE[election.division];
+  if (!range) {
+    return { added: 0, rejected: 0, reasons: [`Configuration error: No grade range defined for ${election.division}.`] };
+  }
 
   const lines = csvText.trim().split("\n").slice(1); // skip header
 
@@ -39,7 +64,6 @@ export async function addVotersFromCSV(formData: FormData) {
   const existingStudentIds = new Set(existing.map((v) => v.studentId));
   const existingVoterCodes = new Set(existing.map((v) => v.voterCode));
 
-  // Seed sequence map from existing voters
   const seqMap: Record<string, number> = {};
   for (const v of existing) {
     const key = `${v.gradeLevel}-${v.section}`;
@@ -47,17 +71,41 @@ export async function addVotersFromCSV(formData: FormData) {
   }
 
   const toCreate = [];
+  let rejected = 0;
+  const reasons: Set<string> = new Set(); // Using a Set to avoid duplicate reason messages
+  const rejectedGrades = new Set<number>();
 
   for (const line of lines) {
+    // Anti-crash: Skip entirely empty lines
+    if (!line.trim()) continue;
+
     const cols = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
     const [studentId, gradeLevelRaw, section] = cols;
 
-    if (!studentId || !gradeLevelRaw || !section) continue;
+    // Anti-crash: Catch missing columns
+    if (!studentId || !gradeLevelRaw || !section) {
+      rejected++;
+      reasons.add("One or more rows had missing columns.");
+      continue;
+    }
 
     const gradeLevel = parseInt(gradeLevelRaw);
-    if (isNaN(gradeLevel)) continue;
 
-    // Skip if studentId or generated voterCode already exists
+    // Anti-crash: Catch non-numeric grades
+    if (isNaN(gradeLevel)) {
+      rejected++;
+      reasons.add(`Invalid grade format found (e.g., "${gradeLevelRaw}").`);
+      continue;
+    }
+
+    // Grade validation using min/max object
+    if (gradeLevel < range.min || gradeLevel > range.max) {
+      rejected++;
+      rejectedGrades.add(gradeLevel);
+      continue;
+    }
+
+    // Skip duplicates quietly
     if (existingStudentIds.has(studentId)) continue;
 
     const key = `${gradeLevel}-${section.toUpperCase()}`;
@@ -70,6 +118,7 @@ export async function addVotersFromCSV(formData: FormData) {
       seqMap[key]
     );
 
+    // Skip control number collisions quietly
     if (existingVoterCodes.has(voterCode)) continue;
 
     toCreate.push({
@@ -77,7 +126,7 @@ export async function addVotersFromCSV(formData: FormData) {
       studentId,
       gradeLevel,
       section: section.toUpperCase(),
-      division: gradeToDiv(gradeLevel),
+      division: election.division,
       voterCode,
     });
 
@@ -85,29 +134,69 @@ export async function addVotersFromCSV(formData: FormData) {
     existingVoterCodes.add(voterCode);
   }
 
-  if (toCreate.length === 0) return;
+  if (rejectedGrades.size > 0) {
+    const gradeList = Array.from(rejectedGrades).sort((a, b) => a - b).join(", ");
+    reasons.add(
+      `Rows rejected: Grade(s) ${gradeList} are outside the ${election.division} range (${range.min}–${range.max}).`
+    );
+  }
 
-  await prisma.voter.createMany({ data: toCreate });
-  revalidatePath(`/admin/elections/${electionId}/voters`);
+  if (toCreate.length > 0) {
+    await prisma.voter.createMany({ data: toCreate });
+    revalidatePath(`/admin/elections/${electionId}/voters`);
+  }
+
+  return { added: toCreate.length, rejected, reasons: Array.from(reasons) };
 }
 
-export async function addVoterManual(formData: FormData) {
+export async function addVoterManual(
+  _prevState: ManualAddResult | null,
+  formData: FormData
+): Promise<ManualAddResult | null> {
   const electionId = formData.get("electionId") as string;
   const studentId = formData.get("studentId") as string;
   const gradeLevelRaw = formData.get("gradeLevel") as string;
   const section = formData.get("section") as string;
   const schoolYear = parseInt(formData.get("schoolYear") as string);
 
-  if (!electionId || !studentId || !gradeLevelRaw || !section || !schoolYear) return;
+  if (!electionId || !studentId || !gradeLevelRaw || !section || !schoolYear) {
+    return { success: false, error: "All fields are required." };
+  }
 
   const gradeLevel = parseInt(gradeLevelRaw);
-  if (isNaN(gradeLevel)) return;
+  if (isNaN(gradeLevel)) {
+    return { success: false, error: "Grade must be a number." };
+  }
 
-  // Check for duplicate studentId
+  const election = await prisma.election.findUnique({
+    where: { id: electionId },
+    select: { division: true },
+  });
+
+  if (!election) {
+    return { success: false, error: "Election not found." };
+  }
+
+  const range = DIVISION_GRADE_RANGE[election.division];
+  if (!range) {
+    return { success: false, error: `Configuration error: No grade range for ${election.division}.` };
+  }
+
+  // Grade validation using min/max object
+  if (gradeLevel < range.min || gradeLevel > range.max) {
+    return {
+      success: false,
+      error: `Grade ${gradeLevel} is outside the ${election.division} range (${range.min}–${range.max}).`,
+    };
+  }
+
   const existingStudent = await prisma.voter.findFirst({
     where: { electionId, studentId },
   });
-  if (existingStudent) return;
+
+  if (existingStudent) {
+    return { success: false, error: `Student ID ${studentId} is already registered.` };
+  }
 
   const count = await prisma.voter.count({
     where: { electionId, gradeLevel, section: section.toUpperCase() },
@@ -115,11 +204,10 @@ export async function addVoterManual(formData: FormData) {
 
   const voterCode = generateControlNumber(schoolYear, gradeLevel, section, count + 1);
 
-  // Check for duplicate voterCode
-  const existingCode = await prisma.voter.findFirst({
-    where: { voterCode },
-  });
-  if (existingCode) return;
+  const existingCode = await prisma.voter.findFirst({ where: { voterCode } });
+  if (existingCode) {
+    return { success: false, error: "Control number collision — please try again." };
+  }
 
   await prisma.voter.create({
     data: {
@@ -127,12 +215,13 @@ export async function addVoterManual(formData: FormData) {
       studentId,
       gradeLevel,
       section: section.toUpperCase(),
-      division: gradeToDiv(gradeLevel),
+      division: election.division,
       voterCode,
     },
   });
 
   revalidatePath(`/admin/elections/${electionId}/voters`);
+  return { success: true };
 }
 
 export async function removeVoter(formData: FormData) {

@@ -11,9 +11,9 @@ export default async function NewElectionPage() {
   if (!session) redirect("/admin/login");
 
   return (
-    <div className="min-h-screen bg-[#0f1235]">
+    <div className="min-h-screen bg-navy-deep">
       {/* Navbar */}
-      <nav className="border-b border-white/10 bg-[#1B1F5E]">
+      <nav className="border-b border-white/10 bg-navy">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center gap-3">
           <Link
             href="/admin"
@@ -46,7 +46,7 @@ export default async function NewElectionPage() {
               {/* Name */}
               <div className="space-y-2">
                 <label className="text-white/70 text-sm">
-                  Election Name <span className="text-[#F5C000]">*</span>
+                  Election Name <span className="text-gold">*</span>
                 </label>
                 <Input
                   name="name"
@@ -59,27 +59,29 @@ export default async function NewElectionPage() {
               {/* Division */}
               <div className="space-y-2">
                 <label className="text-white/70 text-sm">
-                  Division <span className="text-[#F5C000]">*</span>
+                  Division <span className="text-gold">*</span>
                 </label>
                 <select
                   name="division"
                   required
-                  className="w-full h-10 rounded-md border border-white/20 bg-white/10 px-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-[#F5C000]/50"
+                  className="w-full h-10 rounded-md border border-white/20 bg-white/10 px-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-gold/50"
                 >
-                  <option value="" className="bg-[#1B1F5E]">
+                  <option value="" className="bg-navy">
                     Select a division
                   </option>
-                  <option value="GS" className="bg-[#1B1F5E]">
+                  <option value="GS" className="bg-navy">
                     Grade School (Grades 3–5)
                   </option>
-                  <option value="JHS" className="bg-[#1B1F5E]">
+                  <option value="JHS" className="bg-navy">
                     Junior High School (Grades 6–9)
                   </option>
-                  <option value="SHS" className="bg-[#1B1F5E]">
+                  <option value="SHS" className="bg-navy">
                     Senior High School (Grades 10–11)
                   </option>
-                </select>
-              </div>
+                  <option value="HC" className="bg-navy">
+                    House Council (Grades 10–11)
+                  </option>
+                </select>              </div>
 
               {/* Schedule */}
               <div className="space-y-2">
@@ -122,7 +124,7 @@ export default async function NewElectionPage() {
                 </Link>
                 <Button
                   type="submit"
-                  className="flex-1 bg-[#F5C000] text-[#1B1F5E] hover:bg-[#F5C000]/90 font-semibold"
+                  className="flex-1 bg-gold text-navy hover:bg-gold/90 font-semibold"
                 >
                   Create & Add Candidates →
                 </Button>

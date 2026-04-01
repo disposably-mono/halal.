@@ -3,7 +3,7 @@
 > **Project:** halal. — School Election Management System
 > **Organization:** OLPS COMELEC
 > **Current Phase:** 2 — Admin Panel (In Progress)
-> **Last Updated:** March 30, 2026
+> **Last Updated:** April 15, 2026
 
 ---
 

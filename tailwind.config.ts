@@ -10,6 +10,7 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // shadcn/ui tokens — do not remove
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         card: {
@@ -43,11 +44,26 @@ const config: Config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+        // COMELEC brand tokens
+        navy: "#1B1F5E",
+        "navy-deep": "#0f1235",
+        gold: "#F5C000",
+        maroon: "#6B1A1A",
+        light: "#F4F4F8",
+        dark: "#2A2A2A",
+        mid: "#5A5A7A",
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+      },
+      fontFamily: {
+        display: ["var(--font-bebas)", "sans-serif"],
+        heading: ["var(--font-barlow)", "sans-serif"],
+        body: ["var(--font-dm-sans)", "sans-serif"],
+        mono: ["var(--font-jetbrains)", "monospace"],
+        tagline: ["var(--font-playfair)", "serif"],
       },
     },
   },

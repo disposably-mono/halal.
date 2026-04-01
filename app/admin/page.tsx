@@ -41,9 +41,9 @@ export default async function AdminDashboard() {
   });
 
   return (
-    <div className="min-h-screen bg-[#0f1235]">
+    <div className="min-h-screen bg-navy-deep">
       {/* Navbar */}
-      <nav className="border-b border-white/10 bg-[#1B1F5E]">
+      <nav className="border-b border-white/10 bg-navy">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <span className="text-white font-bold text-lg">halal.</span>
@@ -76,7 +76,7 @@ export default async function AdminDashboard() {
             </p>
           </div>
           <Link href="/admin/elections/new">
-            <Button className="bg-[#F5C000] text-[#1B1F5E] hover:bg-[#F5C000]/90 font-semibold">
+            <Button className="bg-gold text-navy hover:bg-gold/90 font-semibold">
               + New Election
             </Button>
           </Link>
@@ -88,7 +88,7 @@ export default async function AdminDashboard() {
             <CardContent className="py-16 text-center">
               <p className="text-white/30 text-sm">No elections have been created yet.</p>
               <Link href="/admin/elections/new">
-                <Button className="mt-4 bg-[#F5C000] text-[#1B1F5E] hover:bg-[#F5C000]/90 font-semibold">
+                <Button className="mt-4 bg-gold text-navy hover:bg-gold/90 font-semibold">
                   Create your first election
                 </Button>
               </Link>

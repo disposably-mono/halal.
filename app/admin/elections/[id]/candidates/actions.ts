@@ -2,72 +2,129 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
+import { DIVISION_POSITIONS } from "../../lib/constants";
 
-export async function seedPositions(electionId: string, division: string) {
-  const DIVISION_POSITIONS: Record<string, { title: string; eligibleGrades: number[]; candidateGrade: string }[]> = {
-    SHS: [
-      { title: "President", eligibleGrades: [], candidateGrade: "11" },
-      { title: "Internal Vice-President", eligibleGrades: [], candidateGrade: "11" },
-      { title: "External Vice-President", eligibleGrades: [], candidateGrade: "11" },
-      { title: "General Secretary", eligibleGrades: [], candidateGrade: "10" },
-      { title: "Treasurer", eligibleGrades: [], candidateGrade: "10" },
-      { title: "Overall Staff", eligibleGrades: [], candidateGrade: "11" },
-      { title: "Public Relations Officer", eligibleGrades: [], candidateGrade: "11" },
-      { title: "Art Director", eligibleGrades: [], candidateGrade: "10 or 11" },
-      { title: "Social Media Associate", eligibleGrades: [], candidateGrade: "10 or 11" },
-    ],
-    JHS: [
-      { title: "President", eligibleGrades: [], candidateGrade: "9" },
-      { title: "Internal Vice-President", eligibleGrades: [], candidateGrade: "9" },
-      { title: "External Vice-President", eligibleGrades: [], candidateGrade: "9" },
-      { title: "General Secretary", eligibleGrades: [], candidateGrade: "9" },
-      { title: "Treasurer", eligibleGrades: [], candidateGrade: "9" },
-      { title: "Coordinating Staff", eligibleGrades: [], candidateGrade: "9" },
-      { title: "Public Relations Head", eligibleGrades: [], candidateGrade: "9" },
-      { title: "Assistant Internal Vice-President", eligibleGrades: [], candidateGrade: "8" },
-      { title: "Assistant External Vice-President", eligibleGrades: [], candidateGrade: "8" },
-      { title: "Assistant Secretary", eligibleGrades: [], candidateGrade: "8" },
-      { title: "Auditor", eligibleGrades: [], candidateGrade: "8" },
-      { title: "Coordinating Assistant", eligibleGrades: [], candidateGrade: "8" },
-      { title: "CES Officer", eligibleGrades: [], candidateGrade: "7" },
-      { title: "Freshman Governor", eligibleGrades: [6], candidateGrade: "6" },
-      { title: "Sophomore Governor", eligibleGrades: [7], candidateGrade: "7" },
-      { title: "Junior Governor", eligibleGrades: [8], candidateGrade: "8" },
-      { title: "Senior Governor", eligibleGrades: [9], candidateGrade: "9" },
-      { title: "Art Director", eligibleGrades: [], candidateGrade: "6 to 9" },
-      { title: "Social Media Associate", eligibleGrades: [], candidateGrade: "6 to 9" },
-    ],
-    GS: [
-      { title: "President", eligibleGrades: [], candidateGrade: "5" },
-      { title: "Vice-President", eligibleGrades: [], candidateGrade: "5" },
-      { title: "Secretary", eligibleGrades: [], candidateGrade: "5" },
-      { title: "Treasurer", eligibleGrades: [], candidateGrade: "5" },
-      { title: "Public Relations Officer 1", eligibleGrades: [], candidateGrade: "5" },
-      { title: "Assistant Secretary", eligibleGrades: [], candidateGrade: "4" },
-      { title: "Public Relations Officer 2", eligibleGrades: [], candidateGrade: "4" },
-      { title: "Public Relations Officer 3", eligibleGrades: [], candidateGrade: "4" },
-      { title: "Public Relations Officer 4", eligibleGrades: [], candidateGrade: "3" },
-      { title: "Public Relations Officer 5", eligibleGrades: [], candidateGrade: "3" },
-    ],
-  };
+// 1. BULK LOAD: Seeds all positions for the division at once.
+//    - If a position title already exists with isActive: true → skip (already active).
+//    - If a position title exists with isActive: false → re-activate it (update).
+//    - If a position title doesn't exist at all → create it.
+export async function seedAllPositions(formData: FormData) {
+  const electionId = formData.get("electionId") as string;
+  const division = formData.get("division") as string;
 
-  const positions = DIVISION_POSITIONS[division] ?? [];
+  if (!electionId || !division) return;
+
+  const allPositions = DIVISION_POSITIONS[division] ?? [];
+
   const existing = await prisma.position.findMany({
     where: { electionId },
-    select: { title: true },
+    select: { id: true, title: true, isActive: true },
   });
-  const existingTitles = new Set(existing.map((p) => p.title));
-  const toCreate = positions.filter((p) => !existingTitles.has(p.title));
-  if (toCreate.length === 0) return;
 
-  await prisma.position.createMany({
-    data: toCreate.map((p, i) => ({
-      electionId,
-      title: p.title,
-      order: existing.length + i,
-      eligibleGrades: p.eligibleGrades,
-      candidateGrade: p.candidateGrade,
-    })),
+  const activeByTitle = new Map(
+    existing.filter((p) => p.isActive).map((p) => [p.title, p])
+  );
+  const inactiveByTitle = new Map(
+    existing.filter((p) => !p.isActive).map((p) => [p.title, p])
+  );
+
+  const activeCount = activeByTitle.size;
+  let orderCounter = existing.length;
+
+  for (const p of allPositions) {
+    if (activeByTitle.has(p.title)) {
+      // Already active — skip entirely
+      continue;
+    }
+
+    if (inactiveByTitle.has(p.title)) {
+      // Was soft-deleted — re-activate
+      const record = inactiveByTitle.get(p.title)!;
+      await prisma.position.update({
+        where: { id: record.id },
+        data: { isActive: true },
+      });
+    } else {
+      // Doesn't exist at all — create
+      await prisma.position.create({
+        data: {
+          electionId,
+          title: p.title,
+          order: orderCounter,
+          eligibleGrades: p.eligibleGrades,
+          candidateGrade: p.candidateGrade,
+          isActive: true,
+        },
+      });
+      orderCounter++;
+    }
+  }
+
+  revalidatePath(`/admin/elections/${electionId}/candidates`);
+}
+
+// 2. ADD SINGLE: Adds one specific position from the dropdown.
+//    - If already active → no-op (dropdown should have prevented this, but guard here too).
+//    - If inactive (was deleted) → re-activate.
+//    - If doesn't exist → create.
+export async function addSinglePosition(formData: FormData) {
+  const electionId = formData.get("electionId") as string;
+  const division = formData.get("division") as string;
+  const title = formData.get("title") as string;
+
+  if (!electionId || !division || !title) return;
+
+  const positionTemplate = DIVISION_POSITIONS[division]?.find(
+    (p) => p.title === title
+  );
+  if (!positionTemplate) return;
+
+  const existing = await prisma.position.findFirst({
+    where: { electionId, title },
+  });
+
+  if (existing) {
+    if (existing.isActive) {
+      // Already active — do nothing
+      return;
+    }
+    // Was soft-deleted — re-activate
+    await prisma.position.update({
+      where: { id: existing.id },
+      data: { isActive: true },
+    });
+  } else {
+    // Doesn't exist — create
+    const activeCount = await prisma.position.count({
+      where: { electionId, isActive: true },
+    });
+    await prisma.position.create({
+      data: {
+        electionId,
+        title: positionTemplate.title,
+        order: activeCount,
+        eligibleGrades: positionTemplate.eligibleGrades,
+        candidateGrade: positionTemplate.candidateGrade,
+        isActive: true,
+      },
+    });
+  }
+
+  revalidatePath(`/admin/elections/${electionId}/candidates`);
+}
+
+// 3. REMOVE POSITION: Soft-deletes a position (sets isActive: false).
+//    The position record and its data are preserved — it can be re-added later.
+export async function removePosition(formData: FormData) {
+  const positionId = formData.get("positionId") as string;
+  const electionId = formData.get("electionId") as string;
+
+  if (!positionId || !electionId) return;
+
+  await prisma.position.update({
+    where: { id: positionId },
+    data: { isActive: false },
   });
 
   revalidatePath(`/admin/elections/${electionId}/candidates`);
@@ -78,15 +135,15 @@ export async function addCandidate(formData: FormData) {
   const electionId = formData.get("electionId") as string;
   const fullName = formData.get("fullName") as string;
   const gradeLevel = formData.get("gradeLevel") as string;
-  const section = formData.get("section") as string;
 
-  if (!positionId || !fullName || !gradeLevel || !section) return;
+  if (!positionId || !electionId || !fullName || !gradeLevel) return;
 
   await prisma.candidate.create({
-    data: { positionId, fullName, gradeLevel, section },
+    data: { positionId, fullName, gradeLevel },
   });
 
   revalidatePath(`/admin/elections/${electionId}/candidates`);
+  redirect(`/admin/elections/${electionId}/candidates`);
 }
 
 export async function removeCandidate(formData: FormData) {
