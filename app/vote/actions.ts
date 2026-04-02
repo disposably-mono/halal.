@@ -6,7 +6,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
 export type VoterLoginError =
-  | "INVALID_CODE"
+  | "INVALID_CREDENTIALS"
   | "ALREADY_VOTED"
   | "ELECTION_NOT_OPEN"
   | "UNKNOWN";
@@ -21,18 +21,26 @@ export async function validateVoterCode(
   formData: FormData
 ): Promise<VoterLoginResult> {
   const rawCode = formData.get("voterCode");
+  const rawId = formData.get("studentId");
 
-  if (!rawCode || typeof rawCode !== "string") {
-    return { error: "INVALID_CODE", message: "Please enter your control number." };
+  if (
+    !rawCode || typeof rawCode !== "string" ||
+    !rawId || typeof rawId !== "string"
+  ) {
+    return {
+      error: "INVALID_CREDENTIALS",
+      message: "Please enter both your Student ID and Control Number.",
+    };
   }
 
   const voterCode = rawCode.trim().toUpperCase();
+  const studentId = rawId.trim();
 
-  // Basic format check: YYGGSNNN (8 chars, digits + 1 letter)
-  if (!/^\d{4}[A-H]\d{3}$/.test(voterCode)) {
+  // Format validation — fail fast before hitting DB
+  if (!/^\d{4}[A-H]\d{3}$/.test(voterCode) || !/^\d{4}-\d{4}$/.test(studentId)) {
     return {
-      error: "INVALID_CODE",
-      message: "Invalid control number format. Check your slip and try again.",
+      error: "INVALID_CREDENTIALS",
+      message: "Invalid credentials. Check your Student ID and Control Number.",
     };
   }
 
@@ -50,10 +58,11 @@ export async function validateVoterCode(
     return { error: "UNKNOWN", message: "Something went wrong. Please try again." };
   }
 
-  if (!voter) {
+  // Generic response for not found OR studentId mismatch — no info leak
+  if (!voter || voter.studentId !== studentId) {
     return {
-      error: "INVALID_CODE",
-      message: "Control number not found. Double-check your slip.",
+      error: "INVALID_CREDENTIALS",
+      message: "Invalid credentials. Check your Student ID and Control Number.",
     };
   }
 
@@ -78,7 +87,7 @@ export async function validateVoterCode(
     };
   }
 
-  // Sign session JWT and set cookie
+  // Both factors valid — sign session JWT and set cookie
   const token = await signVoterSession({
     voterId: voter.id,
     electionId: voter.electionId,
@@ -91,7 +100,7 @@ export async function validateVoterCode(
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "strict",
-    maxAge: 60 * 30, // 30 minutes
+    maxAge: 60 * 30,
     path: "/",
   });
 
