@@ -48,18 +48,20 @@ const DIVISION_LABELS: Record<string, string> = {
   HC: "House Council",
 };
 
-const POLL_INTERVAL = 5000;
+const POLL_INTERVAL = 30000;
 
 // ── Bar component with animation ─────────────────────────────────────
 function VoteBar({
   candidate,
   totalVotes,
   isLeader,
+  isDraw,
   rank,
 }: {
   candidate: CandidateResult;
   totalVotes: number;
   isLeader: boolean;
+  isDraw: boolean;
   rank: number;
 }) {
   const pct = totalVotes > 0 ? (candidate.votes / totalVotes) * 100 : 0;
@@ -71,30 +73,46 @@ function VoteBar({
   }, [pct]);
 
   return (
-    <div className={`relative rounded-sm border transition-all duration-200 overflow-hidden
-      ${isLeader
-        ? "border-gold/40 bg-navy/60"
-        : "border-white/8 bg-navy/20"
-      }`}
+    <div
+      className={`relative rounded-sm border transition-all duration-200 overflow-hidden
+        ${isLeader && !isDraw
+          ? "border-gold/40 bg-navy/60"
+          : isDraw
+            ? "border-sky-400/30 bg-navy/40"
+            : "border-white/8 bg-navy/20"}`}
     >
       {/* Animated fill */}
       <div
         className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out
-          ${isLeader ? "bg-gold/15" : "bg-white/[0.04]"}`}
+          ${isLeader && !isDraw
+            ? "bg-gold/15"
+            : isDraw
+              ? "bg-sky-400/[0.07]"
+              : "bg-white/[0.04]"}`}
         style={{ width: `${displayPct}%` }}
       />
 
       <div className="relative flex items-center gap-3 px-4 py-3">
         {/* Rank */}
-        <span className={`font-mono text-[11px] w-5 text-center shrink-0
-          ${isLeader ? "text-gold/70" : "text-white/20"}`}
+        <span
+          className={`font-mono text-[11px] w-5 text-center shrink-0
+            ${isLeader && !isDraw
+              ? "text-gold/70"
+              : isDraw
+                ? "text-sky-400/70"
+                : "text-white/20"}`}
         >
           {rank}
         </span>
 
         {/* Name */}
-        <span className={`flex-1 font-heading font-bold text-sm tracking-wide uppercase min-w-0 truncate
-          ${isLeader ? "text-white" : "text-white/60"}`}
+        <span
+          className={`flex-1 font-heading font-bold text-sm tracking-wide uppercase min-w-0 truncate
+            ${isLeader && !isDraw
+              ? "text-white"
+              : isDraw
+                ? "text-white/90"
+                : "text-white/60"}`}
         >
           {candidate.fullName}
         </span>
@@ -106,20 +124,34 @@ function VoteBar({
 
         {/* Vote count */}
         <div className="text-right shrink-0 min-w-[52px]">
-          <span className={`font-mono text-sm font-bold tabular-nums
-            ${isLeader ? "text-gold" : "text-white/40"}`}
+          <span
+            className={`font-mono text-sm font-bold tabular-nums
+              ${isLeader && !isDraw
+                ? "text-gold"
+                : isDraw
+                  ? "text-sky-400"
+                  : "text-white/40"}`}
           >
             {candidate.votes.toLocaleString()}
           </span>
-          <span className={`font-mono text-[10px] ml-1.5
-            ${isLeader ? "text-gold/50" : "text-white/20"}`}
+          <span
+            className={`font-mono text-[10px] ml-1.5
+              ${isLeader && !isDraw
+                ? "text-gold/50"
+                : isDraw
+                  ? "text-sky-400/50"
+                  : "text-white/20"}`}
           >
             {pct.toFixed(1)}%
           </span>
         </div>
 
+        {/* Draw indicator */}
+        {isDraw && candidate.votes > 0 && (
+          <span className="text-sky-400 text-xs ml-1 shrink-0 font-mono font-bold">=</span>
+        )}
         {/* Leader crown */}
-        {isLeader && candidate.votes > 0 && (
+        {isLeader && !isDraw && candidate.votes > 0 && (
           <span className="text-gold text-xs ml-1 shrink-0">★</span>
         )}
       </div>
@@ -129,7 +161,10 @@ function VoteBar({
 
 // ── Position card ─────────────────────────────────────────────────────
 function PositionCard({ position }: { position: PositionResult }) {
-  const leader = position.candidates[0]; // already sorted by votes desc from API
+  const topVotes = position.candidates[0]?.votes ?? 0;
+  const isDraw =
+    topVotes > 0 &&
+    position.candidates.filter((c) => c.votes === topVotes).length > 1;
 
   return (
     <div className="border border-white/8 rounded-sm overflow-hidden">
@@ -138,9 +173,16 @@ function PositionCard({ position }: { position: PositionResult }) {
         <h3 className="font-heading font-bold text-white text-sm tracking-wide uppercase">
           {position.title}
         </h3>
-        <span className="font-mono text-[10px] text-white/30 shrink-0 ml-3">
-          {position.totalVotes} vote{position.totalVotes !== 1 ? "s" : ""}
-        </span>
+        <div className="flex items-center gap-2 shrink-0 ml-3">
+          {isDraw && (
+            <span className="text-[10px] text-sky-400 border border-sky-400/20 bg-sky-400/[0.06] px-1.5 py-0.5 rounded-full">
+              Draw
+            </span>
+          )}
+          <span className="font-mono text-[10px] text-white/30">
+            {position.totalVotes} vote{position.totalVotes !== 1 ? "s" : ""}
+          </span>
+        </div>
       </div>
 
       {/* Candidates */}
@@ -155,7 +197,8 @@ function PositionCard({ position }: { position: PositionResult }) {
               key={c.id}
               candidate={c}
               totalVotes={position.totalVotes}
-              isLeader={idx === 0 && c.votes > 0}
+              isLeader={c.votes === topVotes && !isDraw}
+              isDraw={isDraw && c.votes === topVotes}
               rank={idx + 1}
             />
           ))
@@ -227,6 +270,59 @@ function TurnoutBadge({ turnout }: { turnout: TurnoutData }) {
       <p className="font-mono text-gold/60 text-xs mt-1.5 text-right">
         {turnout.pct}% turnout
       </p>
+    </div>
+  );
+}
+
+// ── Election summary pills (quick stats) ─────────────────────────────
+function ElectionSummary({
+  data,
+  lastUpdated,
+}: {
+  data: ResultsPayload;
+  lastUpdated: Date | null;
+}) {
+  const totalVotes = data.positions.reduce((s, p) => s + p.totalVotes, 0);
+  const leaderCount = data.positions.filter(
+    (p) => p.candidates.length > 0 && p.candidates[0].votes > 0
+  ).length;
+
+  return (
+    <div className="flex flex-wrap items-center gap-2">
+      <span
+        className={`inline-flex items-center gap-1.5 text-[10px] font-body tracking-[0.15em] uppercase border px-2 py-1 rounded-sm
+          ${data.status === "CLOSED"
+            ? "border-white/20 text-white/40"
+            : "border-emerald-400/30 text-emerald-400 bg-emerald-400/8"
+          }`}
+      >
+        {data.status === "CLOSED" ? (
+          "Final · Official Results"
+        ) : (
+          <>
+            <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+            Live · Updates every 30 seconds
+          </>
+        )}
+      </span>
+
+      <span className="font-mono text-[10px] text-white/20 border border-white/[0.06] px-2 py-1 rounded-sm">
+        {totalVotes.toLocaleString()} total votes
+      </span>
+
+      <span className="font-mono text-[10px] text-white/20 border border-white/[0.06] px-2 py-1 rounded-sm">
+        {data.positions.length} position{data.positions.length !== 1 ? "s" : ""}
+      </span>
+
+      {lastUpdated && (
+        <span className="font-mono text-white/20 text-[10px] ml-auto">
+          {lastUpdated.toLocaleTimeString("en-PH", {
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+          })}
+        </span>
+      )}
     </div>
   );
 }
@@ -344,10 +440,7 @@ export default function ResultsClient({
             </div>
           </div>
         ) : data?.embargoed ? (
-          <HoldingState
-            electionName={data.name}
-            status={data.status}
-          />
+          <HoldingState electionName={data.name} status={data.status} />
         ) : data ? (
           <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6">
 
@@ -356,31 +449,10 @@ export default function ResultsClient({
               <p className="font-tagline text-white/25 text-sm italic mb-1">
                 VOX POPULI VOX DEI
               </p>
-              <h1 className="font-display text-4xl sm:text-5xl text-white uppercase tracking-wide">
+              <h1 className="font-display text-4xl sm:text-5xl text-white uppercase tracking-wide mb-3">
                 {data.status === "CLOSED" ? "Final Results" : "Live Results"}
               </h1>
-              <div className="flex items-center gap-3 mt-2">
-                <span className={`inline-flex items-center gap-1.5 text-[10px] font-body tracking-[0.15em] uppercase border px-2 py-1 rounded-sm
-                  ${data.status === "CLOSED"
-                    ? "border-white/20 text-white/40"
-                    : "border-emerald-400/30 text-emerald-400 bg-emerald-400/8"
-                  }`}
-                >
-                  {data.status === "CLOSED" ? (
-                    "Final · Official Results"
-                  ) : (
-                    <>
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                      Live · Updates every 5 seconds
-                    </>
-                  )}
-                </span>
-                {lastUpdated && (
-                  <span className="font-mono text-white/20 text-[10px]">
-                    Updated {lastUpdated.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
-                  </span>
-                )}
-              </div>
+              <ElectionSummary data={data} lastUpdated={lastUpdated} />
             </div>
 
             {/* Turnout */}
