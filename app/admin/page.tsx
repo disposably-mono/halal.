@@ -20,14 +20,15 @@ type Election = {
   division: string;
   status: string;
   scheduledOpen: Date | null;
-  _count: { voters: number; votes: number; positions: number };
+  _count: { voters: number; positions: number };
+  votedCount: number; // voters where hasVoted = true
 };
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 function turnoutPct(e: Election) {
   return e._count.voters > 0
-    ? Math.round((e._count.votes / e._count.voters) * 100)
+    ? Math.round((e.votedCount / e._count.voters) * 100)
     : 0;
 }
 
@@ -76,14 +77,14 @@ function OpenCard({ election }: { election: Election }) {
       <div>
         <div className="flex items-baseline gap-1.5">
           <span className="font-mono text-[26px] font-semibold leading-none tracking-tight text-white/90">
-            {election._count.votes}
+            {election.votedCount}
           </span>
           <span className="text-[14px] text-white/25">/</span>
           <span className="font-mono text-[14px] text-white/40">
             {election._count.voters}
           </span>
         </div>
-        <p className="mt-1 text-[11px] text-white/30">votes cast</p>
+        <p className="mt-1 text-[11px] text-white/30">voters who have voted</p>
       </div>
       <div className="h-[3px] overflow-hidden rounded-full bg-white/[0.06]">
         <div className="h-full rounded-full bg-emerald-500" style={{ width: `${pct}%` }} />
@@ -91,7 +92,7 @@ function OpenCard({ election }: { election: Election }) {
       <div className="flex items-center justify-between">
         <span className="text-[12px] font-medium text-emerald-400">{pct}% turnout</span>
         <span className="text-[11px] text-white/30">
-          {election._count.voters - election._count.votes} remaining
+          {election._count.voters - election.votedCount} remaining
         </span>
       </div>
       <div className="flex gap-1.5 border-t border-white/[0.06] pt-2">
@@ -131,7 +132,7 @@ function DraftCard({ election }: { election: Election }) {
       </div>
       <span className="inline-flex w-fit items-center gap-1.5 rounded-md bg-yellow-400/[0.13] px-2 py-1 text-[10px] font-medium text-yellow-300">
         <svg className="size-2.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0-3.42 0z" />
+          <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0-3.42 0z" />
           <line x1="12" y1="9" x2="12" y2="13" />
           <line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
@@ -239,14 +240,13 @@ function ClosedCard({ election }: { election: Election }) {
           {pct}%
         </p>
         <p className="mt-1 text-[11px] text-white/30">
-          final turnout — {election._count.votes} of {election._count.voters} voted
+          final turnout — {election.votedCount} of {election._count.voters} voted
         </p>
       </div>
       <div className="h-[3px] overflow-hidden rounded-full bg-white/[0.06]">
         <div className="h-full rounded-full bg-white/20" style={{ width: `${pct}%` }} />
       </div>
       <div className="flex gap-1.5 border-t border-white/[0.06] pt-2">
-        {/* Phase 4: swap href to /admin/elections/${election.id}/results once built */}
         <Link
           href={`/admin/elections/${election.id}/monitor`}
           className="flex-1 rounded-lg border border-white/[0.08] py-1.5 text-center text-[11px] text-white/40 transition-colors hover:border-white/[0.16] hover:text-white/70"
@@ -266,7 +266,6 @@ function AttentionCard({ election }: { election: Election }) {
 }
 
 // ── Collapsible all-elections list ──
-// Uses a native <details>/<summary> element — no client component needed.
 function AllElectionsSection({ elections }: { elections: Election[] }) {
   return (
     <details className="group overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
@@ -310,7 +309,6 @@ function AllElectionsSection({ elections }: { elections: Election[] }) {
               key={election.id}
               className="flex items-center justify-between gap-3 border-b border-white/[0.04] px-5 py-3 last:border-b-0 hover:bg-white/[0.025]"
             >
-              {/* Left: pill + name */}
               <div className="flex min-w-0 flex-1 items-center gap-2.5">
                 <span className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[10px] font-medium ${m.pill}`}>
                   <span className={`size-[4px] rounded-full ${m.dot}`} />
@@ -326,7 +324,6 @@ function AllElectionsSection({ elections }: { elections: Election[] }) {
                 </div>
               </div>
 
-              {/* Meta */}
               <div className="flex shrink-0 items-center gap-3">
                 <span className="text-[12px] text-white/30">
                   {election._count.voters > 0
@@ -348,7 +345,6 @@ function AllElectionsSection({ elections }: { elections: Election[] }) {
                 )}
               </div>
 
-              {/* Actions */}
               <div className="flex shrink-0 gap-1.5">
                 <Link href={`/admin/elections/${election.id}/candidates`}>
                   <button className="rounded-md border border-white/[0.08] px-2.5 py-1 text-[11px] text-white/35 transition-colors hover:border-white/[0.16] hover:text-white/65">
@@ -382,12 +378,28 @@ export default async function AdminDashboard() {
   const session = await auth();
   if (!session) redirect("/admin/login");
 
-  const elections = await prisma.election.findMany({
+  // Fetch elections with position/voter counts
+  const rawElections = await prisma.election.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      _count: { select: { voters: true, votes: true, positions: true } },
+      _count: { select: { voters: true, positions: true } },
     },
   });
+
+  // For each election, count voters where hasVoted = true
+  // This is the correct turnout numerator — not Vote row count
+  const votedCounts = await Promise.all(
+    rawElections.map((e) =>
+      prisma.voter.count({
+        where: { electionId: e.id, hasVoted: true },
+      })
+    )
+  );
+
+  const elections: Election[] = rawElections.map((e, i) => ({
+    ...e,
+    votedCount: votedCounts[i],
+  }));
 
   return (
     <div className="min-h-screen bg-[#0b1220] font-sans">
@@ -449,7 +461,6 @@ export default async function AdminDashboard() {
         </div>
 
         {elections.length === 0 ? (
-          /* ── Empty state ── */
           <div className="flex flex-col items-center gap-3 rounded-xl border border-white/[0.08] bg-[#1a2540] px-6 py-16 text-center">
             <div className="flex size-10 items-center justify-center rounded-xl border border-white/[0.08] bg-white/[0.04]">
               <svg

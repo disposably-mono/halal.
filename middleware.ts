@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { VOTER_COOKIE } from "@/lib/voter-session";
 import { jwtVerify } from "jose";
 
-// Initialize a lightweight version of auth for the Edge
 const { auth } = NextAuth(authConfig);
 
 export default auth(async function middleware(
@@ -12,14 +11,18 @@ export default auth(async function middleware(
 ) {
   const { pathname } = req.nextUrl;
 
-  // ── Voter protection ──
-  if (pathname.startsWith("/vote/ballot") || pathname === "/vote/confirmed") {
+  // ── Voter ballot protection (JWT cookie) ─────────────────────────
+  if (pathname.startsWith("/vote/ballot")) {
     const token = req.cookies.get(VOTER_COOKIE)?.value;
-    if (!token) return NextResponse.redirect(new URL("/vote", req.url));
+
+    if (!token) {
+      return NextResponse.redirect(new URL("/vote", req.url));
+    }
 
     try {
       const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET!);
       await jwtVerify(token, secret);
+      return NextResponse.next();
     } catch {
       const response = NextResponse.redirect(new URL("/vote", req.url));
       response.cookies.delete(VOTER_COOKIE);
@@ -27,7 +30,18 @@ export default auth(async function middleware(
     }
   }
 
-  // ── Admin protection ──
+  // ── /vote/confirmed — clear voter cookie if present ──────────────
+  // Middleware is the only safe place to delete cookies outside a Server Action.
+  // The confirmed page itself does not touch cookies at all.
+  if (pathname === "/vote/confirmed") {
+    const response = NextResponse.next();
+    if (req.cookies.has(VOTER_COOKIE)) {
+      response.cookies.delete(VOTER_COOKIE);
+    }
+    return response;
+  }
+
+  // ── Admin route protection (NextAuth session) ────────────────────
   if (pathname.startsWith("/admin")) {
     const isLoggedIn = !!req.auth;
     const isLoginPage = pathname === "/admin/login";
@@ -44,5 +58,10 @@ export default auth(async function middleware(
 });
 
 export const config = {
-  matcher: ["/admin/:path*", "/vote/ballot", "/vote/confirmed"],
+  matcher: [
+    "/admin/:path*",
+    "/vote/ballot",
+    "/vote/ballot/:path*",
+    "/vote/confirmed",
+  ],
 };
