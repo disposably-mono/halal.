@@ -5,6 +5,8 @@ import {
   DM_Sans,
   JetBrains_Mono,
   Playfair_Display,
+  Playfair_Display_SC, // Added
+  Courier_Prime,       // Added
 } from "next/font/google";
 import "./globals.css";
 
@@ -39,6 +41,20 @@ const playfairDisplay = Playfair_Display({
   variable: "--font-playfair",
 });
 
+// New Fonts Implementation
+const playfairSC = Playfair_Display_SC({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  variable: "--font-playfair-sc",
+});
+
+const courierPrime = Courier_Prime({
+  subsets: ["latin"],
+  weight: ["400", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-courier-prime",
+});
+
 export const metadata: Metadata = {
   title: "halal. — OLPS COMELEC",
   description: "VOX POPULI VOX DEI",
@@ -58,6 +74,8 @@ export default function RootLayout({
           ${dmSans.variable}
           ${jetbrainsMono.variable}
           ${playfairDisplay.variable}
+          ${playfairSC.variable} 
+          ${courierPrime.variable}
           font-body antialiased
         `}
       >
