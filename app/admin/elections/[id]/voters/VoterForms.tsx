@@ -1,94 +1,146 @@
 "use client";
 
 import { useFormState, useFormStatus } from "react-dom";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { addVotersFromCSV, addVoterManual } from "./actions";
 import type { CSVImportResult, ManualAddResult } from "./actions";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface VoterFormsProps {
   electionId: string;
   schoolYear: number;
+  isFinalized: boolean; // Added to control form locking
 }
 
-function SubmitButton({ label, loadingLabel }: { label: string; loadingLabel: string }) {
+// ─── Shared submit button ─────────────────────────────────────────────────────
+
+function SubmitButton({
+  label,
+  loadingLabel,
+  disabled,
+}: {
+  label: string;
+  loadingLabel: string;
+  disabled?: boolean;
+}) {
   const { pending } = useFormStatus();
   return (
-    <Button
+    <button
       type="submit"
-      disabled={pending}
-      className="bg-gold text-navy hover:bg-gold/90 font-semibold disabled:opacity-50"
+      disabled={pending || disabled}
+      className="h-9 shrink-0 rounded-lg bg-amber-400 px-4 text-[12px] font-semibold text-[#0b1220] transition-opacity hover:opacity-90 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30"
     >
       {pending ? loadingLabel : label}
-    </Button>
+    </button>
   );
 }
 
-export function CSVUploadForm({ electionId, schoolYear }: VoterFormsProps) {
+// ─── CSV Upload Form ──────────────────────────────────────────────────────────
+
+export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterFormsProps) {
   const [result, action] = useFormState<CSVImportResult | null, FormData>(
     addVotersFromCSV,
     null
   );
 
   return (
-    <Card className="border-white/10 bg-white/5">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-white text-base">Upload Voter List (CSV)</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <p className="text-white/40 text-xs">
-          Format: <span className="font-mono text-white/60">studentId, gradeLevel, section</span>
+    <div className="space-y-3">
+      <div className="flex items-center justify-between">
+        <p className="text-[11px] text-white/30">
+          Format: <span className="font-mono text-white/50">studentId, gradeLevel, section</span>
         </p>
-        <form action={action} className="space-y-3">
-          <input type="hidden" name="electionId" value={electionId} />
-          <input type="hidden" name="schoolYear" value={schoolYear} />
-          <textarea
-            name="csvText"
-            rows={6}
-            placeholder={`studentId,gradeLevel,section\n2025-001,11,A\n2025-002,11,B`}
-            className="w-full rounded-md border border-white/20 bg-white/10 px-3 py-2 text-white text-xs font-mono placeholder:text-white/20 focus:outline-none focus:ring-2 focus:ring-gold/50 resize-none"
-            required
-          />
-          <SubmitButton label="Import Voters" loadingLabel="Importing..." />
-        </form>
-
-        {result && (
-          <div className={`rounded-md px-4 py-3 text-sm mt-3 ${result.rejected > 0 ? "bg-yellow-500/10 border border-yellow-500/20" : "bg-green-500/10 border border-green-500/20"}`}>
-            {result.added > 0 && <p className="text-green-300">✓ {result.added} voters added.</p>}
-            {result.reasons.map((reason, i) => (
-              <p key={i} className="text-yellow-300 text-xs">⚠ {reason}</p>
-            ))}
-          </div>
+        {isFinalized && (
+          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/80">
+            Locked
+          </span>
         )}
-      </CardContent>
-    </Card>
+      </div>
+
+      <form action={action} className="space-y-3">
+        <input type="hidden" name="electionId" value={electionId} />
+        <input type="hidden" name="schoolYear" value={schoolYear} />
+        <textarea
+          name="csvText"
+          rows={5}
+          placeholder={`studentId,gradeLevel,section\n2025-001,11,A\n2025-002,11,B`}
+          required
+          disabled={isFinalized}
+          className="w-full resize-none rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 py-2.5 font-mono text-[12px] text-white/80 placeholder:text-white/20 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.03] disabled:cursor-not-allowed disabled:opacity-50"
+        />
+        <SubmitButton
+          label="Import Voters"
+          loadingLabel="Importing…"
+          disabled={isFinalized}
+        />
+      </form>
+
+      {result && (
+        <div
+          className={`mt-3 rounded-lg border px-4 py-3 text-[12px] ${result.rejected > 0
+              ? "border-yellow-500/20 bg-yellow-500/[0.08]"
+              : "border-emerald-500/20 bg-emerald-500/[0.08]"
+            }`}
+        >
+          {result.added > 0 && (
+            <p className="text-emerald-300">✓ {result.added} voters added.</p>
+          )}
+          {result.reasons.map((reason, i) => (
+            <p key={i} className="mt-0.5 text-[11px] text-yellow-300">
+              ⚠ {reason}
+            </p>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
-export function ManualAddForm({ electionId, schoolYear }: VoterFormsProps) {
+// ─── Manual Add Form ──────────────────────────────────────────────────────────
+
+export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterFormsProps) {
   const [result, action] = useFormState<ManualAddResult | null, FormData>(
     addVoterManual,
     null
   );
 
   return (
-    <Card className="border-white/10 bg-white/5">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-white text-base">Add Single Voter</CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-3">
-        <form action={action} className="flex gap-2 flex-wrap">
-          <input type="hidden" name="electionId" value={electionId} />
-          <input type="hidden" name="schoolYear" value={schoolYear} />
-          <Input name="studentId" placeholder="Student ID" className="bg-white/10 border-white/20 text-white text-sm h-9 flex-1 min-w-32" required />
-          <Input name="gradeLevel" placeholder="Grade" className="bg-white/10 border-white/20 text-white text-sm h-9 w-20" required />
-          <Input name="section" placeholder="Section" className="bg-white/10 border-white/20 text-white text-sm h-9 w-24" required />
-          <SubmitButton label="+ Add" loadingLabel="Adding..." />
-        </form>
-        {result && !result.success && <p className="text-red-400 text-xs mt-1">✗ {result.error}</p>}
-        {result && result.success && <p className="text-green-400 text-xs mt-1">✓ Voter added successfully.</p>}
-      </CardContent>
-    </Card>
+    <div className="space-y-3">
+      <form action={action} className="flex flex-wrap gap-2">
+        <input type="hidden" name="electionId" value={electionId} />
+        <input type="hidden" name="schoolYear" value={schoolYear} />
+        <input
+          name="studentId"
+          placeholder="Student ID"
+          required
+          disabled={isFinalized}
+          className="h-9 min-w-[120px] flex-1 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] disabled:cursor-not-allowed disabled:opacity-50"
+        />
+        <input
+          name="gradeLevel"
+          placeholder="Grade"
+          required
+          disabled={isFinalized}
+          className="h-9 w-20 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] disabled:cursor-not-allowed disabled:opacity-50"
+        />
+        <input
+          name="section"
+          placeholder="Section"
+          required
+          disabled={isFinalized}
+          className="h-9 w-24 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] disabled:cursor-not-allowed disabled:opacity-50"
+        />
+        <SubmitButton
+          label="+ Add"
+          loadingLabel="Adding…"
+          disabled={isFinalized}
+        />
+      </form>
+      {result && !result.success && (
+        <p className="mt-1 text-[11px] text-red-400">✗ {result.error}</p>
+      )}
+      {result && result.success && (
+        <p className="mt-1 text-[11px] text-emerald-400">✓ Voter added successfully.</p>
+      )}
+    </div>
   );
 }

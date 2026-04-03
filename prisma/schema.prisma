@@ -1,18 +1,108 @@
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "postgresql"
 }
 
-// ─── Enums ───────────────────────────────────────────
+model AuditLog {
+  id         String          @id @default(cuid())
+  electionId String
+  action     String
+  toStatus   ElectionStatus?
+  adminEmail String
+  createdAt  DateTime        @default(now())
+  election   Election        @relation(fields: [electionId], references: [id], onDelete: Cascade)
+}
+
+model Election {
+  id                  String         @id @default(cuid())
+  name                String
+  division            Division
+  status              ElectionStatus @default(DRAFT)
+  scheduledOpen       DateTime?
+  scheduledClose      DateTime?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
+  candidatesFinalized Boolean        @default(false)
+  votersFinalized     Boolean        @default(false)
+  auditLogs           AuditLog[]
+  positions           Position[]
+  votes               Vote[]
+  voters              Voter[]
+  candidates  Candidate[]
+}
+
+model Position {
+  id             String      @id @default(cuid())
+  electionId     String
+  title          String
+  order          Int
+  eligibleGrades Int[]       @default([])
+  candidateGrade String      @default("")
+  isActive       Boolean     @default(true)
+  candidates     Candidate[]
+  election       Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  votes          Vote[]
+}
+
+model Candidate {
+  id         String   @id @default(cuid())
+  positionId String
+  fullName   String
+  gradeLevel String
+  position   Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  votes      Vote[]
+  electionId  String
+  election    Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+
+}
+
+model Voter {
+  id         String    @id @default(cuid())
+  electionId String
+  studentId  String
+  gradeLevel Int
+  division   Division
+  voterCode  String    @unique
+  hasVoted   Boolean   @default(false)
+  votedAt    DateTime?
+  createdAt  DateTime  @default(now())
+  section    String
+  election   Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
+
+  @@unique([electionId, studentId])
+}
+
+model Vote {
+  id          String     @id @default(cuid())
+  electionId  String
+  positionId  String
+  isAbstain   Boolean    @default(false)
+  candidateId String?
+  castAt      DateTime   @default(now())
+  candidate   Candidate? @relation(fields: [candidateId], references: [id])
+  election    Election   @relation(fields: [electionId], references: [id])
+  position    Position   @relation(fields: [positionId], references: [id])
+}
+
+model AdminUser {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         AdminRole @default(OFFICER)
+  lastLogin    DateTime?
+  createdAt    DateTime  @default(now())
+  officerKey   String
+}
 
 enum Division {
-  GS   // Grade School  (Grades 3–5)
-  JHS  // Junior High   (Grades 6–9)
-  SHS  // Senior High   (Grades 10–11)
-  HC // House Council (Grades 10-11)
+  GS
+  JHS
+  SHS
+  HC
 }
 
 enum ElectionStatus {
@@ -25,100 +115,4 @@ enum ElectionStatus {
 enum AdminRole {
   COMMISSIONER
   OFFICER
-}
-
-// ─── Models ──────────────────────────────────────────
-
-model Election {
-  id             String         @id @default(cuid())
-  name           String
-  division       Division
-  status         ElectionStatus @default(DRAFT)
-  scheduledOpen  DateTime?
-  scheduledClose DateTime?
-  createdAt      DateTime       @default(now())
-  updatedAt      DateTime       @updatedAt
-
-  positions Position[]
-  voters    Voter[]
-  votes     Vote[]
-}
-
-model Position {
-  id             String   @id @default(cuid())
-  electionId     String
-  title          String
-  order          Int
-  // Empty array = all voters in the division are eligible.
-  // Populated array = only voters whose gradeLevel is in this
-  // list may see and vote for this position.
-  // Used for the four JHSSCT Governor positions.
-  eligibleGrades Int[]    @default([])
-  candidateGrade String @default("")
-  isActive       Boolean @default(true)
-
-  election   Election    @relation(fields: [electionId], references: [id], onDelete: Cascade)
-  candidates Candidate[]
-  votes      Vote[]
-}
-
-model Candidate {
-  id         String @id @default(cuid())
-  positionId String
-  fullName   String
-  gradeLevel String
-
-  position Position  @relation(fields: [positionId], references: [id], onDelete: Cascade)
-  votes    Vote[]
-}
-
-model Voter {
-  id         String    @id @default(cuid())
-  electionId String
-  studentId  String
-  gradeLevel Int
-  section    String    // Section letter — A through H
-  division   Division
-  // Structured control number format: YYGGSNNN
-  // e.g. 2611A001 = year 26, grade 11, section A, student 001
-  voterCode  String    @unique
-  hasVoted   Boolean   @default(false)
-  votedAt    DateTime?
-  createdAt  DateTime  @default(now())
-
-  election Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
-
-  @@unique([electionId, studentId])
-}
-
-// NOTE: Vote has NO reference to Voter — this is intentional.
-// Ballot anonymity is guaranteed at the database level.
-// Abstentions are implicit — when a voter submits without
-// selecting a candidate for a position, isAbstain=true and
-// candidateId=null. No abstain button exists on the ballot UI.
-model Vote {
-  id          String    @id @default(cuid())
-  electionId  String
-  positionId  String
-  isAbstain   Boolean   @default(false)
-  candidateId String?
-  castAt      DateTime  @default(now())
-
-  election  Election   @relation(fields: [electionId], references: [id])
-  position  Position   @relation(fields: [positionId], references: [id])
-  candidate Candidate? @relation(fields: [candidateId], references: [id])
-}
-
-// Officers log in with email + password (step 1)
-// then their unique officerKey (step 2).
-// Both passwordHash and officerKey are bcrypt hashed at rest.
-model AdminUser {
-  id           String    @id @default(cuid())
-  email        String    @unique
-  passwordHash String
-  officerKey   String    // Hashed unique personal key per officer
-  name         String
-  role         AdminRole @default(OFFICER)
-  lastLogin    DateTime?
-  createdAt    DateTime  @default(now())
 }

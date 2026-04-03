@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface CandidateResult {
   id: string;
   fullName: string;
@@ -37,7 +39,7 @@ interface Snapshot {
   payload: ResultsPayload;
 }
 
-const POLL_INTERVAL = 30000;
+const POLL_INTERVAL = 30_000;
 const MAX_SNAPSHOTS = 60;
 
 const DIVISION_LABELS: Record<string, string> = {
@@ -47,7 +49,8 @@ const DIVISION_LABELS: Record<string, string> = {
   HC: "House Council",
 };
 
-// ── Animated vote bar ─────────────────────────────────────────────────
+// ─── Animated vote bar ────────────────────────────────────────────────────────
+
 function VoteBar({
   candidate,
   totalVotes,
@@ -74,7 +77,8 @@ function VoteBar({
           ? "border-amber-400/30 bg-[#1a2540]"
           : isDraw
             ? "border-sky-400/30 bg-[#131e30]"
-            : "border-white/[0.06] bg-[#131c2e]"}`}
+            : "border-white/[0.06] bg-[#131c2e]"
+        }`}
     >
       <div
         className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out
@@ -82,41 +86,44 @@ function VoteBar({
             ? "bg-amber-400/10"
             : isDraw
               ? "bg-sky-400/[0.07]"
-              : "bg-white/[0.03]"}`}
+              : "bg-white/[0.03]"
+          }`}
         style={{ width: `${displayPct}%` }}
       />
       <div className="relative flex items-center gap-3 px-3 py-2.5">
-        <span className="font-mono text-[11px] text-white/90 flex-1 truncate font-medium">
+        <span className="flex-1 truncate font-mono text-[11px] font-medium text-white/90">
           {candidate.fullName}
         </span>
-        <span className="font-mono text-[10px] text-white/30 shrink-0">
+        <span className="shrink-0 font-mono text-[10px] text-white/30">
           Gr.{candidate.gradeLevel}
         </span>
         <span
-          className={`font-mono text-[12px] font-bold tabular-nums shrink-0 min-w-[32px] text-right
+          className={`min-w-[32px] shrink-0 text-right font-mono text-[12px] font-bold tabular-nums
             ${isLeader && !isDraw
               ? "text-amber-400"
               : isDraw
                 ? "text-sky-400"
-                : "text-white/50"}`}
+                : "text-white/50"
+            }`}
         >
           {candidate.votes}
         </span>
-        <span className="font-mono text-[10px] text-white/25 shrink-0 w-[36px] text-right">
+        <span className="w-[36px] shrink-0 text-right font-mono text-[10px] text-white/25">
           {pct.toFixed(1)}%
         </span>
         {isDraw && candidate.votes > 0 && (
-          <span className="text-sky-400 text-xs shrink-0 font-mono font-bold">=</span>
+          <span className="shrink-0 font-mono text-xs font-bold text-sky-400">=</span>
         )}
         {isLeader && !isDraw && candidate.votes > 0 && (
-          <span className="text-amber-400 text-xs shrink-0">★</span>
+          <span className="shrink-0 text-xs text-amber-400">★</span>
         )}
       </div>
     </div>
   );
 }
 
-// ── Position card ─────────────────────────────────────────────────────
+// ─── Position card ────────────────────────────────────────────────────────────
+
 function PositionCard({ position }: { position: PositionResult }) {
   const topVotes = position.candidates[0]?.votes ?? 0;
   const isDraw =
@@ -124,14 +131,14 @@ function PositionCard({ position }: { position: PositionResult }) {
     position.candidates.filter((c) => c.votes === topVotes).length > 1;
 
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-[#1a2540] overflow-hidden">
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
-        <h3 className="text-[12px] font-semibold text-white/90 uppercase tracking-wide">
+    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
+        <h3 className="text-[12px] font-semibold uppercase tracking-wide text-white/90">
           {position.title}
         </h3>
-        <div className="flex items-center gap-3 shrink-0 ml-3">
+        <div className="ml-3 flex shrink-0 items-center gap-3">
           {isDraw && (
-            <span className="text-[10px] text-sky-400 border border-sky-400/20 bg-sky-400/[0.06] px-1.5 py-0.5 rounded-full">
+            <span className="rounded-full border border-sky-400/20 bg-sky-400/[0.06] px-1.5 py-0.5 text-[10px] text-sky-400">
               Draw
             </span>
           )}
@@ -139,15 +146,17 @@ function PositionCard({ position }: { position: PositionResult }) {
             {position.totalVotes} vote{position.totalVotes !== 1 ? "s" : ""}
           </span>
           {position.abstentions > 0 && (
-            <span className="text-[10px] text-white/20 border border-white/[0.08] px-1.5 py-0.5 rounded-full">
+            <span className="rounded-full border border-white/[0.08] px-1.5 py-0.5 text-[10px] text-white/20">
               {position.abstentions} abstain{position.abstentions !== 1 ? "s" : ""}
             </span>
           )}
         </div>
       </div>
-      <div className="p-3 space-y-1.5">
+      <div className="space-y-1.5 p-3">
         {position.candidates.length === 0 ? (
-          <p className="text-[11px] text-white/25 italic text-center py-3">No candidates</p>
+          <p className="py-3 text-center text-[11px] italic text-white/25">
+            No candidates
+          </p>
         ) : (
           position.candidates.map((c) => (
             <VoteBar
@@ -164,7 +173,8 @@ function PositionCard({ position }: { position: PositionResult }) {
   );
 }
 
-// ── Turnout sparkline (SVG) ───────────────────────────────────────────
+// ─── Turnout sparkline ────────────────────────────────────────────────────────
+
 function TurnoutSparkline({ snapshots }: { snapshots: Snapshot[] }) {
   if (snapshots.length < 2) return null;
   const values = snapshots.map((s) => s.payload.turnout?.pct ?? 0);
@@ -184,7 +194,7 @@ function TurnoutSparkline({ snapshots }: { snapshots: Snapshot[] }) {
 
   return (
     <div className="mt-3">
-      <p className="text-[9px] text-white/25 uppercase tracking-[0.12em] mb-1.5">
+      <p className="mb-1.5 text-[9px] uppercase tracking-[0.12em] text-white/25">
         Turnout over session
       </p>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: H }}>
@@ -202,7 +212,8 @@ function TurnoutSparkline({ snapshots }: { snapshots: Snapshot[] }) {
   );
 }
 
-// ── Vote momentum chart (last N snapshots, total votes delta) ─────────
+// ─── Momentum chart ───────────────────────────────────────────────────────────
+
 function MomentumChart({ snapshots }: { snapshots: Snapshot[] }) {
   if (snapshots.length < 2) return null;
   const deltas = snapshots.slice(1).map((s, i) => {
@@ -221,7 +232,7 @@ function MomentumChart({ snapshots }: { snapshots: Snapshot[] }) {
 
   return (
     <div className="mt-4">
-      <p className="text-[9px] text-white/25 uppercase tracking-[0.12em] mb-1.5">
+      <p className="mb-1.5 text-[9px] uppercase tracking-[0.12em] text-white/25">
         Vote momentum
       </p>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: H }}>
@@ -237,7 +248,11 @@ function MomentumChart({ snapshots }: { snapshots: Snapshot[] }) {
               width={barW}
               height={barH}
               rx="2"
-              fill={i === visible.length - 1 ? "rgba(251,191,36,0.6)" : "rgba(255,255,255,0.12)"}
+              fill={
+                i === visible.length - 1
+                  ? "rgba(251,191,36,0.6)"
+                  : "rgba(255,255,255,0.12)"
+              }
             />
           );
         })}
@@ -246,7 +261,8 @@ function MomentumChart({ snapshots }: { snapshots: Snapshot[] }) {
   );
 }
 
-// ── Replay controls ───────────────────────────────────────────────────
+// ─── Replay panel ─────────────────────────────────────────────────────────────
+
 function ReplayPanel({
   snapshots,
   replayIndex,
@@ -284,31 +300,31 @@ function ReplayPanel({
   }, [replayIndex]);
 
   return (
-    <div className="rounded-xl border border-white/[0.08] bg-[#1a2540] overflow-hidden">
+    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/[0.06]">
+      <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold text-white/70 uppercase tracking-wide">
+          <span className="text-[11px] font-semibold uppercase tracking-wide text-white/70">
             Vote Replay
           </span>
           {isLive && (
-            <span className="flex items-center gap-1 text-[10px] text-emerald-400 border border-emerald-400/20 px-1.5 py-0.5 rounded-full">
-              <span className="w-1 h-1 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="flex items-center gap-1 rounded-full border border-emerald-400/20 px-1.5 py-0.5 text-[10px] text-emerald-400">
+              <span className="size-1 rounded-full bg-emerald-400 animate-pulse" />
               Live
             </span>
           )}
         </div>
-        <span className="text-[10px] text-white/25 font-mono">
+        <span className="font-mono text-[10px] text-white/25">
           {snapshots.length} snapshot{snapshots.length !== 1 ? "s" : ""}
         </span>
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-2 px-3 py-2.5 border-b border-white/[0.06]">
+      <div className="flex items-center gap-2 border-b border-white/[0.06] px-3 py-2.5">
         <button
           onClick={onPrev}
           disabled={frameIdx <= 0}
-          className="w-7 h-7 flex items-center justify-center rounded-md border border-white/10 text-white/50 hover:text-white hover:border-white/25 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+          className="flex size-7 items-center justify-center rounded-md border border-white/10 text-white/50 transition-all hover:border-white/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-20"
           aria-label="Previous snapshot"
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -318,10 +334,10 @@ function ReplayPanel({
 
         <button
           onClick={isReplaying ? onPause : onPlay}
-          className={`w-7 h-7 flex items-center justify-center rounded-md border transition-all
+          className={`flex size-7 items-center justify-center rounded-md border transition-all
             ${isReplaying
               ? "border-amber-400/40 bg-amber-400/10 text-amber-400"
-              : "border-white/10 text-white/50 hover:text-white hover:border-white/25"
+              : "border-white/10 text-white/50 hover:border-white/25 hover:text-white"
             }`}
           aria-label={isReplaying ? "Pause" : "Play"}
         >
@@ -340,7 +356,7 @@ function ReplayPanel({
         <button
           onClick={onNext}
           disabled={isLive && !isReplaying}
-          className="w-7 h-7 flex items-center justify-center rounded-md border border-white/10 text-white/50 hover:text-white hover:border-white/25 disabled:opacity-20 disabled:cursor-not-allowed transition-all"
+          className="flex size-7 items-center justify-center rounded-md border border-white/10 text-white/50 transition-all hover:border-white/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-20"
           aria-label="Next snapshot"
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -348,11 +364,11 @@ function ReplayPanel({
           </svg>
         </button>
 
-        {/* Progress scrubber */}
-        <div className="flex-1 relative">
-          <div className="h-1 bg-white/[0.08] rounded-full overflow-hidden">
+        {/* Scrubber */}
+        <div className="relative flex-1">
+          <div className="h-1 overflow-hidden rounded-full bg-white/[0.08]">
             <div
-              className="h-full bg-amber-400/60 rounded-full transition-all duration-300"
+              className="h-full rounded-full bg-amber-400/60 transition-all duration-300"
               style={{ width: `${progPct}%` }}
             />
           </div>
@@ -362,21 +378,19 @@ function ReplayPanel({
             max={Math.max(0, snapshots.length - 1)}
             value={frameIdx}
             onChange={(e) => onJump(parseInt(e.target.value))}
-            className="absolute inset-0 w-full opacity-0 cursor-pointer h-full"
+            className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
             aria-label="Replay scrubber"
           />
         </div>
 
-        {/* Frame label */}
-        <span className="font-mono text-[9px] text-white/30 shrink-0 w-9 text-right">
-          {isLive ? "LIVE" : snapshots[frameIdx]?.label ?? "—"}
+        <span className="w-9 shrink-0 text-right font-mono text-[9px] text-white/30">
+          {isLive ? "LIVE" : (snapshots[frameIdx]?.label ?? "—")}
         </span>
 
-        {/* Speed */}
         <select
           value={speed}
           onChange={(e) => onSpeedChange(parseInt(e.target.value))}
-          className="bg-transparent border border-white/10 text-white/40 text-[9px] rounded px-1 py-0.5 outline-none cursor-pointer"
+          className="cursor-pointer rounded border border-white/10 bg-transparent px-1 py-0.5 text-[9px] text-white/40 outline-none"
         >
           <option value={800}>0.5×</option>
           <option value={400}>1×</option>
@@ -386,10 +400,7 @@ function ReplayPanel({
       </div>
 
       {/* Timeline */}
-      <div
-        ref={timelineRef}
-        className="max-h-[140px] overflow-y-auto p-2 space-y-0.5"
-      >
+      <div ref={timelineRef} className="max-h-[140px] space-y-0.5 overflow-y-auto p-2">
         {snapshots.map((snap, i) => {
           const isActive = frameIdx === i;
           const totalV = snap.payload.positions.reduce(
@@ -401,23 +412,23 @@ function ReplayPanel({
               key={i}
               data-active={isActive ? "true" : "false"}
               onClick={() => onJump(i)}
-              className={`flex items-center gap-2 px-2.5 py-1.5 rounded-lg cursor-pointer transition-colors
+              className={`flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-colors
                 ${isActive
-                  ? "bg-amber-400/10 border border-amber-400/15"
-                  : "hover:bg-white/[0.04] border border-transparent"
+                  ? "border-amber-400/15 bg-amber-400/10"
+                  : "border-transparent hover:bg-white/[0.04]"
                 }`}
             >
               <span
-                className={`w-1.5 h-1.5 rounded-full shrink-0 ${isActive ? "bg-amber-400" : "bg-emerald-500/60"}`}
+                className={`size-1.5 shrink-0 rounded-full ${isActive ? "bg-amber-400" : "bg-emerald-500/60"}`}
               />
-              <span className="font-mono text-[9px] text-white/30 shrink-0 w-10">
+              <span className="w-10 shrink-0 font-mono text-[9px] text-white/30">
                 {snap.label}
               </span>
-              <span className="text-[10px] text-white/40 flex-1 truncate">
+              <span className="flex-1 truncate text-[10px] text-white/40">
                 {totalV.toLocaleString()} votes · {snap.payload.turnout?.pct ?? 0}% turnout
               </span>
               {i === snapshots.length - 1 && (
-                <span className="text-[8px] text-emerald-400/70 shrink-0">latest</span>
+                <span className="shrink-0 text-[8px] text-emerald-400/70">latest</span>
               )}
             </div>
           );
@@ -427,7 +438,8 @@ function ReplayPanel({
   );
 }
 
-// ── Turnout card ──────────────────────────────────────────────────────
+// ─── Turnout card ─────────────────────────────────────────────────────────────
+
 function TurnoutCard({
   turnout,
   snapshots,
@@ -444,20 +456,20 @@ function TurnoutCard({
 
   return (
     <div className="rounded-xl border border-white/[0.08] bg-[#1a2540] p-4">
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] text-white/40 uppercase tracking-[0.12em]">
+      <div className="mb-3 flex items-center justify-between">
+        <span className="text-[11px] uppercase tracking-[0.12em] text-white/40">
           Voter Turnout
         </span>
         <div className="flex items-baseline gap-1.5">
-          <span className="font-mono text-[22px] font-semibold text-white/90 leading-none tabular-nums">
+          <span className="font-mono text-[22px] font-semibold leading-none tabular-nums text-white/90">
             {turnout.voted}
           </span>
           <span className="text-[13px] text-white/25">/ {turnout.total}</span>
         </div>
       </div>
-      <div className="h-[3px] bg-white/[0.06] rounded-full overflow-hidden mb-2">
+      <div className="mb-2 h-[3px] overflow-hidden rounded-full bg-white/[0.06]">
         <div
-          className="h-full bg-emerald-500 rounded-full transition-all duration-700"
+          className="h-full rounded-full bg-emerald-500 transition-all duration-700"
           style={{ width: `${displayPct}%` }}
         />
       </div>
@@ -475,7 +487,8 @@ function TurnoutCard({
   );
 }
 
-// ── Metrics strip ─────────────────────────────────────────────────────
+// ─── Metrics strip ────────────────────────────────────────────────────────────
+
 function MetricsStrip({
   data,
   snapshotCount,
@@ -489,7 +502,7 @@ function MetricsStrip({
   const totalAbstentions = data.positions.reduce((s, p) => s + p.abstentions, 0);
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-white/[0.06] rounded-xl overflow-hidden border border-white/[0.08]">
+    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.06] sm:grid-cols-4">
       {[
         { label: "Total Votes", value: totalVotes.toLocaleString(), sub: "across all positions" },
         { label: "Positions", value: data.positions.length.toString(), sub: `${totalAbstentions} abstentions` },
@@ -497,25 +510,33 @@ function MetricsStrip({
         {
           label: "Last Sync",
           value: lastUpdated
-            ? lastUpdated.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+            ? lastUpdated.toLocaleTimeString("en-PH", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })
             : "—",
           sub: "auto-polls every 30s",
           mono: true,
         },
       ].map((m) => (
         <div key={m.label} className="bg-[#1a2540] px-4 py-3">
-          <p className="text-[9px] text-white/30 uppercase tracking-[0.12em] mb-1">{m.label}</p>
-          <p className={`text-[18px] font-bold text-white/90 leading-none tabular-nums ${m.mono ? "font-mono text-[13px]" : ""}`}>
+          <p className="mb-1 text-[9px] uppercase tracking-[0.12em] text-white/30">{m.label}</p>
+          <p
+            className={`text-[18px] font-bold leading-none text-white/90 ${(m as { mono?: boolean }).mono ? "font-mono text-[13px]" : ""
+              }`}
+          >
             {m.value}
           </p>
-          <p className="text-[9px] text-white/25 mt-1">{m.sub}</p>
+          <p className="mt-1 text-[9px] text-white/25">{m.sub}</p>
         </div>
       ))}
     </div>
   );
 }
 
-// ── Main component ────────────────────────────────────────────────────
+// ─── Main component ───────────────────────────────────────────────────────────
+
 export default function MonitorClient({
   electionId,
   electionName,
@@ -534,15 +555,13 @@ export default function MonitorClient({
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
-  // Replay state
-  const [replayIndex, setReplayIndex] = useState<number | null>(null); // null = live
+  const [replayIndex, setReplayIndex] = useState<number | null>(null);
   const [isReplaying, setIsReplaying] = useState(false);
   const [replaySpeed, setReplaySpeed] = useState(400);
-  const replayTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const replayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // The data currently shown (live or a snapshot)
   const displayData =
-    replayIndex !== null ? snapshots[replayIndex]?.payload ?? liveData : liveData;
+    replayIndex !== null ? (snapshots[replayIndex]?.payload ?? liveData) : liveData;
 
   const fetchData = useCallback(async () => {
     try {
@@ -567,11 +586,10 @@ export default function MonitorClient({
             ? next.slice(next.length - MAX_SNAPSHOTS)
             : next;
         });
-        // If we're in live mode, stay live
         setReplayIndex(null);
       }
     } catch {
-      // Keep last data on error
+      // Retain last data on network error
     } finally {
       setLoading(false);
     }
@@ -583,7 +601,6 @@ export default function MonitorClient({
     return () => clearInterval(interval);
   }, [fetchData]);
 
-  // Replay timer
   useEffect(() => {
     if (replayTimerRef.current) clearInterval(replayTimerRef.current);
     if (!isReplaying) return;
@@ -592,7 +609,7 @@ export default function MonitorClient({
         const current = prev ?? snapshots.length - 1;
         if (current >= snapshots.length - 1) {
           setIsReplaying(false);
-          return null; // back to live
+          return null;
         }
         return current + 1;
       });
@@ -604,13 +621,13 @@ export default function MonitorClient({
 
   const handlePlay = () => {
     if (snapshots.length < 2) return;
-    setReplayIndex((prev) => (prev === null || prev >= snapshots.length - 1 ? 0 : prev));
+    setReplayIndex((prev) =>
+      prev === null || prev >= snapshots.length - 1 ? 0 : prev
+    );
     setIsReplaying(true);
   };
 
-  const handlePause = () => {
-    setIsReplaying(false);
-  };
+  const handlePause = () => setIsReplaying(false);
 
   const handleJump = (i: number) => {
     setIsReplaying(false);
@@ -635,32 +652,33 @@ export default function MonitorClient({
   const isLive = replayIndex === null;
 
   return (
-    <main className="mx-auto max-w-7xl px-4 sm:px-6 py-6 space-y-5">
-      {/* ── Header ─────────────────────────────────────────────────── */}
+    <main className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6">
+
+      {/* ── Header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="text-[11px] text-white/30 uppercase tracking-[0.15em] mb-1">
+          <p className="mb-1 text-[11px] uppercase tracking-[0.15em] text-white/30">
             {DIVISION_LABELS[division] ?? division}
           </p>
           <h1 className="text-[22px] font-semibold tracking-tight text-white/90">
             {electionName}
           </h1>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           {!isLive && (
-            <span className="text-[10px] text-amber-400 border border-amber-400/25 bg-amber-400/[0.07] px-2 py-1 rounded-full font-mono">
+            <span className="rounded-full border border-amber-400/25 bg-amber-400/[0.07] px-2 py-1 font-mono text-[10px] text-amber-400">
               Replaying {snapshots[replayIndex!]?.label}
             </span>
           )}
           <div
-            className={`flex items-center gap-1.5 text-[10px] uppercase tracking-[0.1em] border px-2 py-1 rounded-full
+            className={`flex items-center gap-1.5 rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.1em]
               ${status === "OPEN" && isLive
                 ? "border-emerald-400/25 text-emerald-400"
                 : "border-white/15 text-white/35"
               }`}
           >
             {status === "OPEN" && isLive && (
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
             )}
             {status === "OPEN" ? (isLive ? "Live" : "Paused") : "Final Results"}
           </div>
@@ -676,7 +694,7 @@ export default function MonitorClient({
         </div>
       </div>
 
-      {/* ── Metrics strip ──────────────────────────────────────────── */}
+      {/* ── Metrics strip ── */}
       {displayData && (
         <MetricsStrip
           data={displayData}
@@ -685,20 +703,20 @@ export default function MonitorClient({
         />
       )}
 
-      {/* ── Loading ────────────────────────────────────────────────── */}
+      {/* ── Loading ── */}
       {loading && !displayData && (
         <div className="flex items-center justify-center py-20">
-          <svg className="animate-spin w-5 h-5 text-white/20" viewBox="0 0 24 24" fill="none">
+          <svg className="size-5 animate-spin text-white/20" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
             <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
           </svg>
         </div>
       )}
 
-      {/* ── Main 2-col layout ──────────────────────────────────────── */}
+      {/* ── Main layout ── */}
       {displayData && (
-        <div className="grid grid-cols-1 xl:grid-cols-[1fr_320px] gap-5 items-start">
-          {/* Left: positions grid */}
+        <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[1fr_320px]">
+          {/* Positions grid */}
           <div className="space-y-4">
             {displayData.positions.length === 0 ? (
               <div className="rounded-xl border border-white/[0.08] bg-[#1a2540] px-6 py-16 text-center">
@@ -707,7 +725,7 @@ export default function MonitorClient({
                 </p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
                 {displayData.positions.map((position) => (
                   <PositionCard key={position.id} position={position} />
                 ))}
@@ -715,14 +733,11 @@ export default function MonitorClient({
             )}
           </div>
 
-          {/* Right: sidebar */}
+          {/* Sidebar */}
           <div className="space-y-4">
-            {/* Turnout + charts */}
             {displayData.turnout && (
               <TurnoutCard turnout={displayData.turnout} snapshots={snapshots} />
             )}
-
-            {/* Replay */}
             <ReplayPanel
               snapshots={snapshots}
               replayIndex={replayIndex}
@@ -733,9 +748,7 @@ export default function MonitorClient({
               onPrev={handlePrev}
               onNext={handleNext}
               speed={replaySpeed}
-              onSpeedChange={(s) => {
-                setReplaySpeed(s);
-              }}
+              onSpeedChange={(s) => setReplaySpeed(s)}
             />
           </div>
         </div>
