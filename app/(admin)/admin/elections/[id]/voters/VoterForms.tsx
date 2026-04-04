@@ -3,33 +3,33 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { addVotersFromCSV, addVoterManual } from "./actions";
 import type { CSVImportResult, ManualAddResult } from "./actions";
+import { BTN_PRIMARY, BTN_GHOST, INPUT_BASE, BTN_SM } from "@/app/admin/ui";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface VoterFormsProps {
   electionId: string;
   schoolYear: number;
-  isFinalized: boolean; // Added to control form locking
+  isFinalized: boolean;
 }
 
-// ─── Shared submit button ─────────────────────────────────────────────────────
+// ─── Submit button ────────────────────────────────────────────────────────────
 
 function SubmitButton({
   label,
   loadingLabel,
   disabled,
+  variant = "primary",
 }: {
   label: string;
   loadingLabel: string;
   disabled?: boolean;
+  variant?: "primary" | "ghost";
 }) {
   const { pending } = useFormStatus();
+  const cls = variant === "primary" ? BTN_PRIMARY : BTN_GHOST;
   return (
-    <button
-      type="submit"
-      disabled={pending || disabled}
-      className="h-9 shrink-0 rounded-lg bg-amber-400 px-4 text-[12px] font-semibold text-[#0b1220] transition-opacity hover:opacity-90 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-30"
-    >
+    <button type="submit" disabled={pending || disabled} className={cls}>
       {pending ? loadingLabel : label}
     </button>
   );
@@ -44,54 +44,56 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
   );
 
   return (
-    <div className="space-y-3">
+    <form action={action} className="flex flex-col gap-3">
+      <input type="hidden" name="electionId" value={electionId} />
+      <input type="hidden" name="schoolYear" value={schoolYear} />
+
       <div className="flex items-center justify-between">
-        <p className="text-[11px] text-white/30">
-          Format: <span className="font-mono text-white/50">studentId, gradeLevel, section</span>
-        </p>
+        <label className="text-[10px] text-white/40">
+          Format:{" "}
+          <code className="font-mono text-white/55">
+            studentId, gradeLevel, section
+          </code>
+        </label>
         {isFinalized && (
-          <span className="text-[10px] font-bold uppercase tracking-wider text-amber-400/80">
+          <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-400/80">
             Locked
           </span>
         )}
       </div>
 
-      <form action={action} className="space-y-3">
-        <input type="hidden" name="electionId" value={electionId} />
-        <input type="hidden" name="schoolYear" value={schoolYear} />
-        <textarea
-          name="csvText"
-          rows={5}
-          placeholder={`studentId,gradeLevel,section\n2025-001,11,A\n2025-002,11,B`}
-          required
-          disabled={isFinalized}
-          className="w-full resize-none rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 py-2.5 font-mono text-[12px] text-white/80 placeholder:text-white/20 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.03] disabled:cursor-not-allowed disabled:opacity-50"
-        />
-        <SubmitButton
-          label="Import Voters"
-          loadingLabel="Importing…"
-          disabled={isFinalized}
-        />
-      </form>
+      <textarea
+        name="csvText"
+        rows={5}
+        placeholder={`studentId,gradeLevel,section\n2025-001,11,A\n2025-002,11,B`}
+        required
+        disabled={isFinalized}
+        className={`${INPUT_BASE} resize-none leading-relaxed`}
+      />
+
+      <SubmitButton label="Import Voters" loadingLabel="Importing…" disabled={isFinalized} />
 
       {result && (
         <div
-          className={`mt-3 rounded-lg border px-4 py-3 text-[12px] ${result.rejected > 0
-              ? "border-yellow-500/20 bg-yellow-500/[0.08]"
-              : "border-emerald-500/20 bg-emerald-500/[0.08]"
+          className={`rounded-[8px] border px-4 py-3 text-[11px] ${result.rejected > 0
+              ? "border-yellow-500/20 bg-yellow-500/[0.07]"
+              : "border-emerald-500/20 bg-emerald-500/[0.07]"
             }`}
         >
           {result.added > 0 && (
             <p className="text-emerald-300">✓ {result.added} voters added.</p>
           )}
           {result.reasons.map((reason, i) => (
-            <p key={i} className="mt-0.5 text-[11px] text-yellow-300">
+            <p key={i} className="mt-0.5 text-yellow-300">
               ⚠ {reason}
             </p>
           ))}
+          {result.added === 0 && result.rejected === 0 && (
+            <p className="text-white/40">No new voters to import.</p>
+          )}
         </div>
       )}
-    </div>
+    </form>
   );
 }
 
@@ -104,42 +106,52 @@ export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterForm
   );
 
   return (
-    <div className="space-y-3">
-      <form action={action} className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-2">
+      <form action={action} className="flex flex-wrap items-end gap-2">
         <input type="hidden" name="electionId" value={electionId} />
         <input type="hidden" name="schoolYear" value={schoolYear} />
-        <input
-          name="studentId"
-          placeholder="Student ID"
-          required
-          disabled={isFinalized}
-          className="h-9 min-w-[120px] flex-1 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] disabled:cursor-not-allowed disabled:opacity-50"
-        />
-        <input
-          name="gradeLevel"
-          placeholder="Grade"
-          required
-          disabled={isFinalized}
-          className="h-9 w-20 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] disabled:cursor-not-allowed disabled:opacity-50"
-        />
-        <input
-          name="section"
-          placeholder="Section"
-          required
-          disabled={isFinalized}
-          className="h-9 w-24 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] disabled:cursor-not-allowed disabled:opacity-50"
-        />
-        <SubmitButton
-          label="+ Add"
-          loadingLabel="Adding…"
-          disabled={isFinalized}
-        />
+
+        <div className="flex flex-1 flex-col gap-[5px]" style={{ minWidth: 120 }}>
+          <label className="text-[10px] text-white/40">Student ID</label>
+          <input
+            name="studentId"
+            placeholder="e.g. 2025-0001"
+            required
+            disabled={isFinalized}
+            className={INPUT_BASE}
+          />
+        </div>
+
+        <div className="flex flex-col gap-[5px]" style={{ width: 72 }}>
+          <label className="text-[10px] text-white/40">Grade</label>
+          <input
+            name="gradeLevel"
+            placeholder="11"
+            required
+            disabled={isFinalized}
+            className={INPUT_BASE}
+          />
+        </div>
+
+        <div className="flex flex-col gap-[5px]" style={{ width: 84 }}>
+          <label className="text-[10px] text-white/40">Section</label>
+          <input
+            name="section"
+            placeholder="A"
+            required
+            disabled={isFinalized}
+            className={INPUT_BASE}
+          />
+        </div>
+
+        <SubmitButton label="+ Add" loadingLabel="Adding…" disabled={isFinalized} />
       </form>
+
       {result && !result.success && (
-        <p className="mt-1 text-[11px] text-red-400">✗ {result.error}</p>
+        <p className="text-[11px] text-red-400">✗ {result.error}</p>
       )}
-      {result && result.success && (
-        <p className="mt-1 text-[11px] text-emerald-400">✓ Voter added successfully.</p>
+      {result?.success && (
+        <p className="text-[11px] text-emerald-400">✓ Voter added successfully.</p>
       )}
     </div>
   );

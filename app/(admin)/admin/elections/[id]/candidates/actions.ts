@@ -46,9 +46,10 @@ export async function seedAllPositions(formData: FormData) {
 
 export async function addSinglePosition(formData: FormData) {
   await requireSession();
-  const electionId = formData.get("electionId") as string;
+  const electionId = formData.get("electionId") as string; // ✓ was incorrectly `params.id`
   const division = formData.get("division") as string;
   const title = formData.get("title") as string;
+
   const positionDef = (DIVISION_POSITIONS[division] ?? []).find(
     (p) => p.title === title
   );
@@ -62,7 +63,7 @@ export async function addSinglePosition(formData: FormData) {
 
   await prisma.position.create({
     data: {
-      electionId: params.id,
+      electionId, // ✓ fixed
       title: positionDef.title,
       candidateGrade: positionDef.candidateGrade,
       eligibleGrades: positionDef.eligibleGrades,
@@ -96,26 +97,21 @@ export async function addCandidate(formData: FormData) {
   const fullName = (formData.get("fullName") as string).trim();
   if (!fullName) return;
 
-  // Fetch position to get candidateGrade
   const position = await prisma.position.findUnique({
     where: { id: positionId },
     select: { candidateGrade: true },
   });
   if (!position) return;
 
-  const rawGrade = position.candidateGrade; // String, e.g. "9" or "9,10,11"
-  const grades = rawGrade.split(",").map((g) => parseInt(g.trim(), 10)).filter((n) => !isNaN(n));
+  const grades = position.candidateGrade
+    .split(",")
+    .map((g) => parseInt(g.trim(), 10))
+    .filter((n) => !isNaN(n));
   const gradeLevel = grades.length === 1 ? grades[0] : 0;
 
   await prisma.candidate.create({
-    data: {
-      positionId,
-      electionId,
-      fullName,
-      gradeLevel,
-    },
+    data: { positionId, electionId, fullName, gradeLevel },
   });
-
   revalidate(electionId);
 }
 
@@ -131,12 +127,7 @@ export async function removeCandidate(formData: FormData) {
 }
 
 // ─── Finalize candidates ──────────────────────────────────────────────────────
-/**
- * Locks the candidate list.
- * Validates:
- *   - At least 1 active position exists.
- *   - Every active position has at least 1 candidate.
- */
+
 export async function finalizeCandidates(formData: FormData) {
   await requireSession();
   const electionId = formData.get("electionId") as string;
@@ -154,7 +145,7 @@ export async function finalizeCandidates(formData: FormData) {
   if (empty.length > 0) {
     const names = empty.map((p) => p.title).join(", ");
     throw new Error(
-      `The following positions have no candidates: ${names}. Add at least one candidate to each position before finalizing.`
+      `The following positions have no candidates: ${names}. Add at least one candidate to each before finalizing.`
     );
   }
 
@@ -171,7 +162,6 @@ export async function unfinalizeCandidates(formData: FormData) {
   await requireSession();
   const electionId = formData.get("electionId") as string;
 
-  // Cannot unlock if election is already open/closed
   const election = await prisma.election.findUnique({
     where: { id: electionId },
     select: { status: true },
@@ -184,3 +174,4 @@ export async function unfinalizeCandidates(formData: FormData) {
   });
   revalidate(electionId);
 }
+

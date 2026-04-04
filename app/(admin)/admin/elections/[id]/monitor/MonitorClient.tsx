@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Card, CARD_TITLE, StatusPill, StatCell } from "../ui";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -49,7 +50,7 @@ const DIVISION_LABELS: Record<string, string> = {
   HC: "House Council",
 };
 
-// ─── Animated vote bar ────────────────────────────────────────────────────────
+// ─── Vote bar ─────────────────────────────────────────────────────────────────
 
 function VoteBar({
   candidate,
@@ -70,24 +71,28 @@ function VoteBar({
     return () => clearTimeout(t);
   }, [pct]);
 
+  const wrapCls = isLeader && !isDraw
+    ? "border-amber-400/30 bg-[#1d2a3a]"
+    : isDraw
+      ? "border-sky-400/25 bg-[#131e30]"
+      : "border-white/[0.06] bg-[#131c2e]";
+
+  const fillCls = isLeader && !isDraw
+    ? "bg-amber-400/10"
+    : isDraw
+      ? "bg-sky-400/[0.07]"
+      : "bg-white/[0.03]";
+
+  const countColor = isLeader && !isDraw
+    ? "text-amber-400"
+    : isDraw
+      ? "text-sky-400"
+      : "text-white/50";
+
   return (
-    <div
-      className={`relative overflow-hidden rounded-md border transition-colors
-        ${isLeader && !isDraw
-          ? "border-amber-400/30 bg-[#1a2540]"
-          : isDraw
-            ? "border-sky-400/30 bg-[#131e30]"
-            : "border-white/[0.06] bg-[#131c2e]"
-        }`}
-    >
+    <div className={`relative overflow-hidden rounded-[7px] border transition-colors ${wrapCls}`}>
       <div
-        className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out
-          ${isLeader && !isDraw
-            ? "bg-amber-400/10"
-            : isDraw
-              ? "bg-sky-400/[0.07]"
-              : "bg-white/[0.03]"
-          }`}
+        className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out ${fillCls}`}
         style={{ width: `${displayPct}%` }}
       />
       <div className="relative flex items-center gap-3 px-3 py-2.5">
@@ -97,32 +102,24 @@ function VoteBar({
         <span className="shrink-0 font-mono text-[10px] text-white/30">
           Gr.{candidate.gradeLevel}
         </span>
-        <span
-          className={`min-w-[32px] shrink-0 text-right font-mono text-[12px] font-bold tabular-nums
-            ${isLeader && !isDraw
-              ? "text-amber-400"
-              : isDraw
-                ? "text-sky-400"
-                : "text-white/50"
-            }`}
-        >
+        <span className={`min-w-[32px] shrink-0 text-right font-mono text-[12px] font-bold tabular-nums ${countColor}`}>
           {candidate.votes}
         </span>
-        <span className="w-[36px] shrink-0 text-right font-mono text-[10px] text-white/25">
+        <span className="w-[38px] shrink-0 text-right font-mono text-[10px] text-white/25">
           {pct.toFixed(1)}%
         </span>
         {isDraw && candidate.votes > 0 && (
-          <span className="shrink-0 font-mono text-xs font-bold text-sky-400">=</span>
+          <span className="shrink-0 font-mono text-[11px] font-bold text-sky-400">=</span>
         )}
         {isLeader && !isDraw && candidate.votes > 0 && (
-          <span className="shrink-0 text-xs text-amber-400">★</span>
+          <span className="shrink-0 text-[11px] text-amber-400">★</span>
         )}
       </div>
     </div>
   );
 }
 
-// ─── Position card ────────────────────────────────────────────────────────────
+// ─── Position card ─────────────────────────────────────────────────────────────
 
 function PositionCard({ position }: { position: PositionResult }) {
   const topVotes = position.candidates[0]?.votes ?? 0;
@@ -132,21 +129,19 @@ function PositionCard({ position }: { position: PositionResult }) {
 
   return (
     <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
-      <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
-        <h3 className="text-[12px] font-semibold uppercase tracking-wide text-white/90">
-          {position.title}
-        </h3>
-        <div className="ml-3 flex shrink-0 items-center gap-3">
+      <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
+        <h3 className={CARD_TITLE}>{position.title}</h3>
+        <div className="flex shrink-0 items-center gap-2">
           {isDraw && (
-            <span className="rounded-full border border-sky-400/20 bg-sky-400/[0.06] px-1.5 py-0.5 text-[10px] text-sky-400">
+            <span className="rounded-full border border-sky-400/20 bg-sky-400/[0.06] px-[7px] py-[2px] text-[9px] font-semibold text-sky-400">
               Draw
             </span>
           )}
-          <span className="text-[11px] text-white/30">
+          <span className="text-[10px] text-white/30">
             {position.totalVotes} vote{position.totalVotes !== 1 ? "s" : ""}
           </span>
           {position.abstentions > 0 && (
-            <span className="rounded-full border border-white/[0.08] px-1.5 py-0.5 text-[10px] text-white/20">
+            <span className="rounded-full border border-white/[0.08] px-[7px] py-[2px] text-[9px] text-white/20">
               {position.abstentions} abstain{position.abstentions !== 1 ? "s" : ""}
             </span>
           )}
@@ -154,7 +149,7 @@ function PositionCard({ position }: { position: PositionResult }) {
       </div>
       <div className="space-y-1.5 p-3">
         {position.candidates.length === 0 ? (
-          <p className="py-3 text-center text-[11px] italic text-white/25">
+          <p className="py-4 text-center text-[11px] italic text-white/25">
             No candidates
           </p>
         ) : (
@@ -201,7 +196,7 @@ function TurnoutSparkline({ snapshots }: { snapshots: Snapshot[] }) {
         <polyline
           points={pts}
           fill="none"
-          stroke="rgba(52,211,153,0.5)"
+          stroke="rgba(52,211,153,0.45)"
           strokeWidth="1.5"
           strokeLinejoin="round"
           strokeLinecap="round"
@@ -217,10 +212,7 @@ function TurnoutSparkline({ snapshots }: { snapshots: Snapshot[] }) {
 function MomentumChart({ snapshots }: { snapshots: Snapshot[] }) {
   if (snapshots.length < 2) return null;
   const deltas = snapshots.slice(1).map((s, i) => {
-    const prev = snapshots[i].payload.positions.reduce(
-      (sum, p) => sum + p.totalVotes,
-      0
-    );
+    const prev = snapshots[i].payload.positions.reduce((sum, p) => sum + p.totalVotes, 0);
     const curr = s.payload.positions.reduce((sum, p) => sum + p.totalVotes, 0);
     return Math.max(0, curr - prev);
   });
@@ -261,6 +253,72 @@ function MomentumChart({ snapshots }: { snapshots: Snapshot[] }) {
   );
 }
 
+// ─── Turnout card ─────────────────────────────────────────────────────────────
+
+function TurnoutCard({ turnout, snapshots }: { turnout: TurnoutData; snapshots: Snapshot[] }) {
+  const [displayPct, setDisplayPct] = useState(0);
+  useEffect(() => {
+    const t = setTimeout(() => setDisplayPct(turnout.pct), 120);
+    return () => clearTimeout(t);
+  }, [turnout.pct]);
+
+  return (
+    <Card title="Voter Turnout" meta={<span className="text-[10px] text-white/30">{turnout.voted} / {turnout.total}</span>}>
+      <div className="mb-2 h-[3px] overflow-hidden rounded-full bg-white/[0.06]">
+        <div
+          className="h-full rounded-full bg-emerald-500 transition-all duration-700"
+          style={{ width: `${displayPct}%` }}
+        />
+      </div>
+      <div className="flex items-center justify-between">
+        <span className="text-[13px] font-semibold text-emerald-400">
+          {turnout.pct}% turnout
+        </span>
+        <span className="text-[11px] text-white/25">
+          {turnout.total - turnout.voted} remaining
+        </span>
+      </div>
+      <TurnoutSparkline snapshots={snapshots} />
+      <MomentumChart snapshots={snapshots} />
+    </Card>
+  );
+}
+
+// ─── Metrics strip ────────────────────────────────────────────────────────────
+
+function MetricsStrip({
+  data,
+  snapshotCount,
+  lastUpdated,
+}: {
+  data: ResultsPayload;
+  snapshotCount: number;
+  lastUpdated: Date | null;
+}) {
+  const totalVotes = data.positions.reduce((s, p) => s + p.totalVotes, 0);
+  const totalAbstentions = data.positions.reduce((s, p) => s + p.abstentions, 0);
+
+  return (
+    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.06] sm:grid-cols-4">
+      {[
+        { label: "Total Votes", value: totalVotes.toLocaleString(), sub: "across all positions" },
+        { label: "Positions", value: data.positions.length.toString(), sub: `${totalAbstentions} abstentions` },
+        { label: "Snapshots", value: snapshotCount.toString(), sub: "replay available" },
+        {
+          label: "Last Sync",
+          value: lastUpdated
+            ? lastUpdated.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
+            : "—",
+          sub: "auto-polls every 30s",
+          mono: true,
+        },
+      ].map((m) => (
+        <StatCell key={m.label} label={m.label} value={m.value} sub={m.sub} mono={m.mono} />
+      ))}
+    </div>
+  );
+}
+
 // ─── Replay panel ─────────────────────────────────────────────────────────────
 
 function ReplayPanel({
@@ -288,8 +346,7 @@ function ReplayPanel({
 }) {
   const isLive = replayIndex === null;
   const frameIdx = replayIndex ?? snapshots.length - 1;
-  const progPct =
-    snapshots.length <= 1 ? 100 : (frameIdx / (snapshots.length - 1)) * 100;
+  const progPct = snapshots.length <= 1 ? 100 : (frameIdx / (snapshots.length - 1)) * 100;
   const timelineRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -299,17 +356,18 @@ function ReplayPanel({
     active?.scrollIntoView({ block: "nearest", behavior: "smooth" });
   }, [replayIndex]);
 
+  const iconBtn =
+    "flex h-7 w-7 items-center justify-center rounded-[6px] border border-white/10 text-white/50 transition-all hover:border-white/25 hover:text-white/90 disabled:cursor-not-allowed disabled:opacity-20 cursor-pointer";
+
   return (
     <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-white/[0.06] px-4 py-3">
+      <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-semibold uppercase tracking-wide text-white/70">
-            Vote Replay
-          </span>
+          <span className={CARD_TITLE}>Timeline Replay</span>
           {isLive && (
-            <span className="flex items-center gap-1 rounded-full border border-emerald-400/20 px-1.5 py-0.5 text-[10px] text-emerald-400">
-              <span className="size-1 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="flex items-center gap-[5px] rounded-full border border-emerald-400/20 px-[7px] py-[2px] text-[9px] font-semibold text-emerald-400">
+              <span className="h-[5px] w-[5px] animate-pulse rounded-full bg-emerald-400" />
               Live
             </span>
           )}
@@ -320,11 +378,11 @@ function ReplayPanel({
       </div>
 
       {/* Controls */}
-      <div className="flex items-center gap-2 border-b border-white/[0.06] px-3 py-2.5">
+      <div className="flex items-center gap-2 border-b border-white/[0.07] px-3 py-2.5">
         <button
           onClick={onPrev}
           disabled={frameIdx <= 0}
-          className="flex size-7 items-center justify-center rounded-md border border-white/10 text-white/50 transition-all hover:border-white/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-20"
+          className={iconBtn}
           aria-label="Previous snapshot"
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -334,12 +392,11 @@ function ReplayPanel({
 
         <button
           onClick={isReplaying ? onPause : onPlay}
-          className={`flex size-7 items-center justify-center rounded-md border transition-all
-            ${isReplaying
+          className={`flex h-7 w-7 items-center justify-center rounded-[6px] border transition-all cursor-pointer ${isReplaying
               ? "border-amber-400/40 bg-amber-400/10 text-amber-400"
-              : "border-white/10 text-white/50 hover:border-white/25 hover:text-white"
+              : "border-white/10 text-white/50 hover:border-white/25 hover:text-white/90"
             }`}
-          aria-label={isReplaying ? "Pause" : "Play"}
+          aria-label={isReplaying ? "Pause replay" : "Play replay"}
         >
           {isReplaying ? (
             <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -356,7 +413,7 @@ function ReplayPanel({
         <button
           onClick={onNext}
           disabled={isLive && !isReplaying}
-          className="flex size-7 items-center justify-center rounded-md border border-white/10 text-white/50 transition-all hover:border-white/25 hover:text-white disabled:cursor-not-allowed disabled:opacity-20"
+          className={iconBtn}
           aria-label="Next snapshot"
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="none">
@@ -390,7 +447,8 @@ function ReplayPanel({
         <select
           value={speed}
           onChange={(e) => onSpeedChange(parseInt(e.target.value))}
-          className="cursor-pointer rounded border border-white/10 bg-transparent px-1 py-0.5 text-[9px] text-white/40 outline-none"
+          className="cursor-pointer rounded-[5px] border border-white/10 bg-transparent px-[5px] py-[3px] text-[9px] text-white/40 outline-none"
+          aria-label="Replay speed"
         >
           <option value={800}>0.5×</option>
           <option value={400}>1×</option>
@@ -403,24 +461,18 @@ function ReplayPanel({
       <div ref={timelineRef} className="max-h-[140px] space-y-0.5 overflow-y-auto p-2">
         {snapshots.map((snap, i) => {
           const isActive = frameIdx === i;
-          const totalV = snap.payload.positions.reduce(
-            (s, p) => s + p.totalVotes,
-            0
-          );
+          const totalV = snap.payload.positions.reduce((s, p) => s + p.totalVotes, 0);
           return (
             <div
               key={i}
               data-active={isActive ? "true" : "false"}
               onClick={() => onJump(i)}
-              className={`flex cursor-pointer items-center gap-2 rounded-lg border px-2.5 py-1.5 transition-colors
-                ${isActive
-                  ? "border-amber-400/15 bg-amber-400/10"
+              className={`flex cursor-pointer items-center gap-2 rounded-[7px] border px-2.5 py-1.5 transition-colors ${isActive
+                  ? "border-amber-400/15 bg-amber-400/[0.08]"
                   : "border-transparent hover:bg-white/[0.04]"
                 }`}
             >
-              <span
-                className={`size-1.5 shrink-0 rounded-full ${isActive ? "bg-amber-400" : "bg-emerald-500/60"}`}
-              />
+              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isActive ? "bg-amber-400" : "bg-emerald-500/60"}`} />
               <span className="w-10 shrink-0 font-mono text-[9px] text-white/30">
                 {snap.label}
               </span>
@@ -438,104 +490,7 @@ function ReplayPanel({
   );
 }
 
-// ─── Turnout card ─────────────────────────────────────────────────────────────
-
-function TurnoutCard({
-  turnout,
-  snapshots,
-}: {
-  turnout: TurnoutData;
-  snapshots: Snapshot[];
-}) {
-  const [displayPct, setDisplayPct] = useState(0);
-
-  useEffect(() => {
-    const t = setTimeout(() => setDisplayPct(turnout.pct), 120);
-    return () => clearTimeout(t);
-  }, [turnout.pct]);
-
-  return (
-    <div className="rounded-xl border border-white/[0.08] bg-[#1a2540] p-4">
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] uppercase tracking-[0.12em] text-white/40">
-          Voter Turnout
-        </span>
-        <div className="flex items-baseline gap-1.5">
-          <span className="font-mono text-[22px] font-semibold leading-none tabular-nums text-white/90">
-            {turnout.voted}
-          </span>
-          <span className="text-[13px] text-white/25">/ {turnout.total}</span>
-        </div>
-      </div>
-      <div className="mb-2 h-[3px] overflow-hidden rounded-full bg-white/[0.06]">
-        <div
-          className="h-full rounded-full bg-emerald-500 transition-all duration-700"
-          style={{ width: `${displayPct}%` }}
-        />
-      </div>
-      <div className="flex items-center justify-between">
-        <span className="text-[12px] font-medium text-emerald-400">
-          {turnout.pct}% turnout
-        </span>
-        <span className="text-[11px] text-white/25">
-          {turnout.total - turnout.voted} not yet voted
-        </span>
-      </div>
-      <TurnoutSparkline snapshots={snapshots} />
-      <MomentumChart snapshots={snapshots} />
-    </div>
-  );
-}
-
-// ─── Metrics strip ────────────────────────────────────────────────────────────
-
-function MetricsStrip({
-  data,
-  snapshotCount,
-  lastUpdated,
-}: {
-  data: ResultsPayload;
-  snapshotCount: number;
-  lastUpdated: Date | null;
-}) {
-  const totalVotes = data.positions.reduce((s, p) => s + p.totalVotes, 0);
-  const totalAbstentions = data.positions.reduce((s, p) => s + p.abstentions, 0);
-
-  return (
-    <div className="grid grid-cols-2 gap-px overflow-hidden rounded-xl border border-white/[0.08] bg-white/[0.06] sm:grid-cols-4">
-      {[
-        { label: "Total Votes", value: totalVotes.toLocaleString(), sub: "across all positions" },
-        { label: "Positions", value: data.positions.length.toString(), sub: `${totalAbstentions} abstentions` },
-        { label: "Snapshots", value: snapshotCount.toString(), sub: "replay available" },
-        {
-          label: "Last Sync",
-          value: lastUpdated
-            ? lastUpdated.toLocaleTimeString("en-PH", {
-              hour: "2-digit",
-              minute: "2-digit",
-              second: "2-digit",
-            })
-            : "—",
-          sub: "auto-polls every 30s",
-          mono: true,
-        },
-      ].map((m) => (
-        <div key={m.label} className="bg-[#1a2540] px-4 py-3">
-          <p className="mb-1 text-[9px] uppercase tracking-[0.12em] text-white/30">{m.label}</p>
-          <p
-            className={`text-[18px] font-bold leading-none text-white/90 ${(m as { mono?: boolean }).mono ? "font-mono text-[13px]" : ""
-              }`}
-          >
-            {m.value}
-          </p>
-          <p className="mt-1 text-[9px] text-white/25">{m.sub}</p>
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ─── Main component ───────────────────────────────────────────────────────────
+// ─── Main component ────────────────────────────────────────────────────────────
 
 export default function MonitorClient({
   electionId,
@@ -565,26 +520,16 @@ export default function MonitorClient({
 
   const fetchData = useCallback(async () => {
     try {
-      const res = await fetch(`/api/results/${electionId}?admin=1`, {
-        cache: "no-store",
-      });
+      const res = await fetch(`/api/results/${electionId}?admin=1`, { cache: "no-store" });
       if (res.ok) {
         const json: ResultsPayload = await res.json();
         setLiveData(json);
         const now = new Date();
         setLastUpdated(now);
         setSnapshots((prev) => {
-          const label = now.toLocaleTimeString("en-PH", {
-            hour: "2-digit",
-            minute: "2-digit",
-          });
-          const next: Snapshot[] = [
-            ...prev,
-            { timestamp: now, label, payload: json },
-          ];
-          return next.length > MAX_SNAPSHOTS
-            ? next.slice(next.length - MAX_SNAPSHOTS)
-            : next;
+          const label = now.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" });
+          const next: Snapshot[] = [...prev, { timestamp: now, label, payload: json }];
+          return next.length > MAX_SNAPSHOTS ? next.slice(next.length - MAX_SNAPSHOTS) : next;
         });
         setReplayIndex(null);
       }
@@ -626,22 +571,18 @@ export default function MonitorClient({
     );
     setIsReplaying(true);
   };
-
   const handlePause = () => setIsReplaying(false);
-
   const handleJump = (i: number) => {
     setIsReplaying(false);
     const clamped = Math.max(0, Math.min(snapshots.length - 1, i));
     setReplayIndex(clamped === snapshots.length - 1 ? null : clamped);
   };
-
   const handlePrev = () => {
     setIsReplaying(false);
     const current = replayIndex ?? snapshots.length - 1;
     const next = Math.max(0, current - 1);
     setReplayIndex(next === snapshots.length - 1 ? null : next);
   };
-
   const handleNext = () => {
     setIsReplaying(false);
     const current = replayIndex ?? snapshots.length - 1;
@@ -654,10 +595,10 @@ export default function MonitorClient({
   return (
     <main className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6">
 
-      {/* ── Header ── */}
+      {/* ── Page header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="mb-1 text-[11px] uppercase tracking-[0.15em] text-white/30">
+          <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/30">
             {DIVISION_LABELS[division] ?? division}
           </p>
           <h1 className="text-[22px] font-semibold tracking-tight text-white/90">
@@ -666,29 +607,14 @@ export default function MonitorClient({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {!isLive && (
-            <span className="rounded-full border border-amber-400/25 bg-amber-400/[0.07] px-2 py-1 font-mono text-[10px] text-amber-400">
+            <span className="rounded-full border border-amber-400/25 bg-amber-400/[0.07] px-2 py-[3px] font-mono text-[10px] text-amber-400">
               Replaying {snapshots[replayIndex!]?.label}
             </span>
           )}
-          <div
-            className={`flex items-center gap-1.5 rounded-full border px-2 py-1 text-[10px] uppercase tracking-[0.1em]
-              ${status === "OPEN" && isLive
-                ? "border-emerald-400/25 text-emerald-400"
-                : "border-white/15 text-white/35"
-              }`}
-          >
-            {status === "OPEN" && isLive && (
-              <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-            )}
-            {status === "OPEN" ? (isLive ? "Live" : "Paused") : "Final Results"}
-          </div>
+          <StatusPill status={status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} />
           {lastUpdated && isLive && (
             <p className="font-mono text-[10px] text-white/20">
-              {lastUpdated.toLocaleTimeString("en-PH", {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-              })}
+              {lastUpdated.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
             </p>
           )}
         </div>
@@ -696,17 +622,13 @@ export default function MonitorClient({
 
       {/* ── Metrics strip ── */}
       {displayData && (
-        <MetricsStrip
-          data={displayData}
-          snapshotCount={snapshots.length}
-          lastUpdated={lastUpdated}
-        />
+        <MetricsStrip data={displayData} snapshotCount={snapshots.length} lastUpdated={lastUpdated} />
       )}
 
       {/* ── Loading ── */}
       {loading && !displayData && (
         <div className="flex items-center justify-center py-20">
-          <svg className="size-5 animate-spin text-white/20" viewBox="0 0 24 24" fill="none">
+          <svg className="h-5 w-5 animate-spin text-white/20" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
             <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
           </svg>
@@ -717,12 +639,10 @@ export default function MonitorClient({
       {displayData && (
         <div className="grid grid-cols-1 items-start gap-5 xl:grid-cols-[1fr_320px]">
           {/* Positions grid */}
-          <div className="space-y-4">
+          <div>
             {displayData.positions.length === 0 ? (
               <div className="rounded-xl border border-white/[0.08] bg-[#1a2540] px-6 py-16 text-center">
-                <p className="text-[13px] text-white/30">
-                  No positions found for this election.
-                </p>
+                <p className="text-[13px] text-white/30">No positions found for this election.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
