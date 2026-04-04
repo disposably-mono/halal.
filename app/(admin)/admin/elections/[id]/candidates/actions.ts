@@ -94,13 +94,28 @@ export async function addCandidate(formData: FormData) {
   const positionId = formData.get("positionId") as string;
   const electionId = formData.get("electionId") as string;
   const fullName = (formData.get("fullName") as string).trim();
-  const gradeLevel = parseInt(formData.get("gradeLevel") as string, 10);
-
   if (!fullName) return;
 
-  await prisma.candidate.create({
-    data: { positionId, electionId, fullName, gradeLevel },
+  // Fetch position to get candidateGrade
+  const position = await prisma.position.findUnique({
+    where: { id: positionId },
+    select: { candidateGrade: true },
   });
+  if (!position) return;
+
+  const rawGrade = position.candidateGrade; // String, e.g. "9" or "9,10,11"
+  const grades = rawGrade.split(",").map((g) => parseInt(g.trim(), 10)).filter((n) => !isNaN(n));
+  const gradeLevel = grades.length === 1 ? grades[0] : 0;
+
+  await prisma.candidate.create({
+    data: {
+      positionId,
+      electionId,
+      fullName,
+      gradeLevel,
+    },
+  });
+
   revalidate(electionId);
 }
 

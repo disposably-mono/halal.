@@ -12,7 +12,6 @@ export default async function AdminResultsPage() {
   const session = await auth();
   if (!session) redirect("/admin/login");
 
-  // CLOSED first, then OPEN; within each group most recent first
   const elections = await prisma.election.findMany({
     where: { status: { in: ["OPEN", "CLOSED"] } },
     orderBy: [{ createdAt: "desc" }],
@@ -48,7 +47,6 @@ export default async function AdminResultsPage() {
     );
   }
 
-  // For each election: winner per position only
   const electionData = await Promise.all(
     closedFirst.map(async (el) => {
       const votedCount = await prisma.voter.count({
@@ -61,35 +59,44 @@ export default async function AdminResultsPage() {
         select: {
           id: true,
           title: true,
-          candidates: { select: { id: true, fullName: true, gradeLevel: true } },
+          candidates: {
+            select: { id: true, fullName: true, gradeLevel: true },
+          },
         },
       });
 
-      // For each position, find the candidate with the most votes
       const positionsWithWinner = await Promise.all(
         positions.map(async (pos) => {
-          if (pos.candidates.length === 0) return { ...pos, winner: null, winnerVotes: 0, totalVotes: 0, isContested: false };
+          if (pos.candidates.length === 0) {
+            return { ...pos, winner: null, draw: null, winnerVotes: 0, totalVotes: 0 };
+          }
 
           const voteCounts = await Promise.all(
             pos.candidates.map(async (c) => ({
               ...c,
-              votes: await prisma.vote.count({ where: { positionId: pos.id, candidateId: c.id } }),
+              votes: await prisma.vote.count({
+                where: { positionId: pos.id, candidateId: c.id },
+              }),
             }))
           );
 
           const totalVotes = voteCounts.reduce((a, c) => a + c.votes, 0);
           const sorted = [...voteCounts].sort((a, b) => b.votes - a.votes);
           const top = sorted[0];
-          const isDrawn = sorted.length > 1 && sorted[0].votes === sorted[1].votes && sorted[0].votes > 0;
+          const isDrawn =
+            sorted.length > 1 &&
+            sorted[0].votes === sorted[1].votes &&
+            sorted[0].votes > 0;
           const hasVotes = top.votes > 0;
 
           return {
             ...pos,
             winner: hasVotes && !isDrawn ? top : null,
-            draw: isDrawn ? sorted.slice(0, sorted.filter((c) => c.votes === sorted[0].votes).length) : null,
+            draw: isDrawn
+              ? sorted.filter((c) => c.votes === sorted[0].votes)
+              : null,
             winnerVotes: top.votes,
             totalVotes,
-            isContested: pos.candidates.length > 1,
           };
         })
       );
@@ -104,10 +111,11 @@ export default async function AdminResultsPage() {
 
       <div className="flex flex-col gap-4">
         {electionData.map((el) => {
-          const pct = el._count.voters > 0 ? Math.round((el.votedCount / el._count.voters) * 100) : 0;
+          const pct =
+            el._count.voters > 0
+              ? Math.round((el.votedCount / el._count.voters) * 100)
+              : 0;
           const isClosed = el.status === "CLOSED";
-          const winners = el.positions.filter((p) => p.winner || p.draw);
-          const pending = el.positions.filter((p) => !p.winner && !p.draw);
 
           return (
             <div key={el.id} className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] overflow-hidden">
@@ -115,7 +123,9 @@ export default async function AdminResultsPage() {
               <div className="px-4 py-3 border-b border-white/[0.07] flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <span className={`inline-flex items-center gap-1 rounded-full px-[7px] py-[2px] text-[10px] font-semibold flex-shrink-0
-                    ${isClosed ? "bg-white/[0.05] text-white/25" : "bg-emerald-400/[0.12] text-emerald-400"}`}>
+                    ${isClosed
+                      ? "bg-white/[0.05] text-white/25"
+                      : "bg-emerald-400/[0.12] text-emerald-400"}`}>
                     <span className={`w-1 h-1 rounded-full ${isClosed ? "bg-white/20" : "bg-emerald-400"}`} />
                     {isClosed ? "Final" : "Live"}
                   </span>
@@ -151,7 +161,10 @@ export default async function AdminResultsPage() {
                 {el.positions.length === 0 ? (
                   <div className="text-[11px] text-white/25 italic">No positions configured</div>
                 ) : (
-                  <div className="grid gap-[6px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}>
+                  <div
+                    className="grid gap-[6px]"
+                    style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}
+                  >
                     {el.positions.map((pos) => {
                       const hasResult = pos.winner || pos.draw;
                       return (
@@ -160,13 +173,14 @@ export default async function AdminResultsPage() {
                           className={`flex items-center gap-3 rounded-[8px] px-3 py-[8px] border
                             ${hasResult
                               ? "bg-white/[0.025] border-white/[0.06]"
-                              : "bg-transparent border-white/[0.04]"
-                            }`}
+                              : "bg-transparent border-white/[0.04]"}`}
                         >
                           {/* Icon */}
                           <div className={`w-[28px] h-[28px] rounded-[6px] flex-shrink-0 flex items-center justify-center text-[11px]
-                            ${pos.winner ? "bg-amber-400/[0.1] text-amber-400"
-                              : pos.draw ? "bg-sky-400/[0.1] text-sky-400"
+                            ${pos.winner
+                              ? "bg-amber-400/[0.1] text-amber-400"
+                              : pos.draw
+                                ? "bg-sky-400/[0.1] text-sky-400"
                                 : "bg-white/[0.04] text-white/20"}`}>
                             {pos.winner ? "★" : pos.draw ? "=" : "–"}
                           </div>
@@ -189,7 +203,7 @@ export default async function AdminResultsPage() {
                             )}
                           </div>
 
-                          {/* Vote count */}
+                          {/* Winner vote count */}
                           {(pos.winner || pos.draw) && pos.winnerVotes > 0 && (
                             <div className="text-[10px] text-white/30 flex-shrink-0 font-mono">
                               {pos.winnerVotes}v

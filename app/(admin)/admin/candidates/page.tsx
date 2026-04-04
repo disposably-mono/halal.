@@ -9,11 +9,23 @@ const DIVISION_LABELS: Record<string, string> = {
 };
 const DIVISION_ORDER = ["GS", "JHS", "SHS", "HC"];
 
+function formatGrade(gradeLevel: number): string {
+  return gradeLevel === 0 ? "All grades" : `Grade ${gradeLevel}`;
+}
+
+function formatCandidateGrade(candidateGrade: number | number[]): string {
+  if (Array.isArray(candidateGrade)) {
+    if (candidateGrade.length === 0) return "All grades";
+    if (candidateGrade.length === 1) return `Grade ${candidateGrade[0]}`;
+    return `Grades ${candidateGrade.join(" / ")}`;
+  }
+  return candidateGrade === 0 ? "All grades" : `Grade ${candidateGrade}`;
+}
+
 export default async function AdminCandidatesPage() {
   const session = await auth();
   if (!session) redirect("/admin/login");
 
-  // All active positions with candidates across all elections
   const positions = await prisma.position.findMany({
     where: { isActive: true },
     orderBy: { order: "asc" },
@@ -32,11 +44,6 @@ export default async function AdminCandidatesPage() {
   });
 
   const totalCandidates = positions.reduce((a, p) => a + p.candidates.length, 0);
-
-  // Build: division → Map<positionTitle, { positions[] }>
-  // We want: per division, show each position title once (across elections),
-  // with all candidates for that position listed.
-  // Since same position can exist in multiple elections (e.g. snap), group by division + title.
 
   type CandidateEntry = {
     id: string;
@@ -80,7 +87,6 @@ export default async function AdminCandidatesPage() {
     }
   }
 
-  // Election lookup for "Manage →" links — pick the first election per division
   const divisionElectionId = new Map<string, string>();
   for (const pos of positions) {
     const div = pos.election.division;
@@ -99,7 +105,6 @@ export default async function AdminCandidatesPage() {
             {totalCandidates.toLocaleString()} candidate{totalCandidates !== 1 ? "s" : ""} across all active elections
           </p>
         </div>
-        {/* Division quick-jump */}
         {presentDivisions.length > 1 && (
           <div className="flex gap-1 flex-wrap justify-end">
             {presentDivisions.map((d) => {
@@ -151,55 +156,49 @@ export default async function AdminCandidatesPage() {
             {/* Positions card */}
             <div className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] overflow-hidden">
               <div className="divide-y divide-white/[0.04]">
-                {[...posMap.values()].map((pos) => {
-                  const gradeStr = Array.isArray(pos.candidateGrade)
-                    ? pos.candidateGrade.length > 1
-                      ? `Grades ${(pos.candidateGrade as number[]).join(" / ")}`
-                      : `Grade ${pos.candidateGrade[0]}`
-                    : `Grade ${pos.candidateGrade}`;
-
-                  return (
-                    <div key={pos.title} className="px-4 py-3">
-                      {/* Position title row */}
-                      <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[11px] font-semibold text-white/65 uppercase tracking-[0.05em]">
-                            {pos.title}
+                {[...posMap.values()].map((pos) => (
+                  <div key={pos.title} className="px-4 py-3">
+                    {/* Position title row */}
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-semibold text-white/65 uppercase tracking-[0.05em]">
+                          {pos.title}
+                        </span>
+                        {pos.electionIds.size > 1 && (
+                          <span className="text-[9px] bg-blue-400/[0.1] text-blue-400 border border-blue-400/20 rounded-[3px] px-[5px] py-[1px] font-semibold">
+                            {pos.electionIds.size} elections
                           </span>
-                          {/* Multiple elections badge */}
-                          {pos.electionIds.size > 1 && (
-                            <span className="text-[9px] bg-blue-400/[0.1] text-blue-400 border border-blue-400/20 rounded-[3px] px-[5px] py-[1px] font-semibold">
-                              {pos.electionIds.size} elections
-                            </span>
-                          )}
-                        </div>
-                        <span className="text-[10px] text-white/25">{gradeStr}</span>
+                        )}
                       </div>
-
-                      {pos.candidates.length === 0 ? (
-                        <div className="text-[11px] text-white/20 italic pl-1">No candidates encoded</div>
-                      ) : (
-                        <div className="flex flex-col gap-[4px]">
-                          {pos.candidates.map((c, idx) => (
-                            <div key={c.id}
-                              className="flex items-center gap-3 bg-white/[0.025] hover:bg-white/[0.04] rounded-[6px] px-3 py-[6px] transition-colors group">
-                              <span className="text-[10px] text-white/20 w-4 text-right flex-shrink-0">{idx + 1}</span>
-                              <div className="flex-1 text-[12px] font-medium text-white/80 truncate">{c.fullName}</div>
-                              <span className="text-[10px] text-white/30 font-mono flex-shrink-0">Gr. {c.gradeLevel}</span>
-                              {/* Show election name if position spans multiple elections */}
-                              {pos.electionIds.size > 1 && (
-                                <span className="text-[10px] text-white/20 truncate max-w-[140px] hidden group-hover:block">
-                                  {c.electionName}
-                                </span>
-                              )}
-                              <StatusDot status={c.electionStatus as any} compact />
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                      <span className="text-[10px] text-white/25">
+                        {formatCandidateGrade(pos.candidateGrade)}
+                      </span>
                     </div>
-                  );
-                })}
+
+                    {pos.candidates.length === 0 ? (
+                      <div className="text-[11px] text-white/20 italic pl-1">No candidates encoded</div>
+                    ) : (
+                      <div className="flex flex-col gap-[4px]">
+                        {pos.candidates.map((c, idx) => (
+                          <div key={c.id}
+                            className="flex items-center gap-3 bg-white/[0.025] hover:bg-white/[0.04] rounded-[6px] px-3 py-[6px] transition-colors group">
+                            <span className="text-[10px] text-white/20 w-4 text-right flex-shrink-0">{idx + 1}</span>
+                            <div className="flex-1 text-[12px] font-medium text-white/80 truncate">{c.fullName}</div>
+                            <span className="text-[10px] text-white/30 font-mono flex-shrink-0">
+                              {formatGrade(c.gradeLevel)}
+                            </span>
+                            {pos.electionIds.size > 1 && (
+                              <span className="text-[10px] text-white/20 truncate max-w-[140px] hidden group-hover:block">
+                                {c.electionName}
+                              </span>
+                            )}
+                            <StatusDot status={c.electionStatus as any} compact />
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

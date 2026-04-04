@@ -4,14 +4,14 @@ import { prisma } from "../lib/prisma";
 import bcrypt from "bcryptjs";
 
 async function main() {
-  const passwordHash = await bcrypt.hash("comelec2026", 12);
+  const passwordHash = await bcrypt.hash("***REMOVED***", 12);
   const officerKeyHash = await bcrypt.hash("***REMOVED***", 12);
 
   const admin = await prisma.adminUser.upsert({
-    where: { email: "comelec@olps.edu.ph" },
+    where: { email: "comelec.club@olps.edu.ph" },
     update: {},
     create: {
-      email: "comelec@olps.edu.ph",
+      email: "comelec.club@olps.edu.ph",
       passwordHash,
       officerKey: officerKeyHash,
       name: "OLPS COMELEC",

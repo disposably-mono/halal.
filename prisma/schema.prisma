@@ -51,7 +51,7 @@ model Candidate {
   id         String   @id @default(cuid())
   positionId String
   fullName   String
-  gradeLevel String
+  gradeLevel Int
   position   Position @relation(fields: [positionId], references: [id], onDelete: Cascade)
   votes      Vote[]
   electionId  String

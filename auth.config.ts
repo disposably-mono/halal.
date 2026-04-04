@@ -1,10 +1,11 @@
-import type { NextAuthConfig } from "next-auth";
-
 export const authConfig = {
   pages: {
     signIn: "/admin/login",
   },
   callbacks: {
+    authorized() {
+      return true; // Let middleware.ts handle all route protection
+    },
     jwt({ token, user }) {
       if (user) {
         token.role = (user as any).role;
@@ -20,5 +21,5 @@ export const authConfig = {
       return session;
     },
   },
-  providers: [], // Providers are added in auth.ts, not here
+  providers: [],
 } satisfies NextAuthConfig;

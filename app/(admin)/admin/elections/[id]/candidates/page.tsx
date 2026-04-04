@@ -38,12 +38,12 @@ type Position = {
   candidates: Candidate[];
 };
 
-// ─── Validation ───────────────────────────────────────────────────────────────
+// ─── Helpers ─────────────────────────────────────────────────────────────────
 
-/**
- * Returns a list of position titles that have zero candidates.
- * Used to block the Finalize action.
- */
+function formatGrade(gradeLevel: number): string {
+  return gradeLevel === 0 ? "All grades" : `Grade ${gradeLevel}`;
+}
+
 function emptyPositions(positions: Position[]): string[] {
   return positions
     .filter((p) => p.candidates.length === 0)
@@ -90,7 +90,7 @@ function CandidateRow({
     <div className="flex items-center justify-between rounded-lg border border-white/[0.06] bg-white/[0.04] px-3 py-2.5 transition-colors hover:bg-white/[0.06]">
       <div>
         <p className="text-[13px] font-medium text-white/90">{candidate.fullName}</p>
-        <p className="mt-0.5 text-[11px] text-white/30">Grade {candidate.gradeLevel}</p>
+        <p className="mt-0.5 text-[11px] text-white/30">{formatGrade(candidate.gradeLevel)}</p>
       </div>
       {isEditable && (
         <form action={removeCandidate}>
@@ -121,9 +121,7 @@ function PositionCard({
 
   return (
     <div
-      className={`overflow-hidden rounded-xl border bg-[#1a2540] transition-colors hover:border-white/[0.14] ${isEditable && hasNoCandidates
-          ? "border-red-500/30"
-          : "border-white/[0.08]"
+      className={`overflow-hidden rounded-xl border bg-[#1a2540] transition-colors hover:border-white/[0.14] ${isEditable && hasNoCandidates ? "border-red-500/30" : "border-white/[0.08]"
         }`}
     >
       {/* Card header */}
@@ -131,7 +129,7 @@ function PositionCard({
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="text-[14px] font-semibold text-white/90">{position.title}</h3>
           <span className="inline-flex items-center rounded-full bg-white/[0.07] px-2 py-0.5 font-mono text-[11px] text-white/30">
-            Grade {position.candidateGrade}
+            {formatGrade(position.candidateGrade)}
           </span>
           {position.eligibleGrades.length > 0 && (
             <span className="inline-flex items-center rounded-full bg-blue-500/[0.12] px-2 py-0.5 text-[11px] font-medium text-blue-400">
@@ -185,7 +183,6 @@ function PositionCard({
           <form action={addCandidate} className="flex gap-2 pt-1">
             <input type="hidden" name="positionId" value={position.id} />
             <input type="hidden" name="electionId" value={electionId} />
-            <input type="hidden" name="gradeLevel" value={position.candidateGrade} />
             <input
               name="fullName"
               placeholder="Full name"
@@ -320,14 +317,9 @@ export default async function CandidatesPage({
 
   if (!election) notFound();
 
-  // isHardLocked = election itself is open/closed — no edits at all
   const isHardLocked =
     election.status === "OPEN" || election.status === "CLOSED";
-
-  // isFinalized = admin explicitly locked the candidates list (also auto-locked if hard-locked)
   const isFinalized = isHardLocked || (election.candidatesFinalized ?? false);
-
-  // Only allow add/remove when neither hard-locked nor finalized
   const isEditable = !isHardLocked && !isFinalized;
 
   const allDivisionPositions = DIVISION_POSITIONS[election.division] ?? [];
@@ -342,26 +334,25 @@ export default async function CandidatesPage({
 
   const empty = emptyPositions(election.positions as Position[]);
 
-  // Progress: positions that have ≥1 candidate
   const filledCount = election.positions.filter(
     (p) => p.candidates.length > 0
   ).length;
-  const progressPct = activeCount > 0
-    ? Math.round((filledCount / activeCount) * 100)
-    : 0;
+  const progressPct =
+    activeCount > 0 ? Math.round((filledCount / activeCount) * 100) : 0;
 
   return (
-    <div className="min-h-screen bg-[#0b1220] font-sans">
+    // No min-h-screen / bg here — layout.tsx owns the shell
+    <div className="p-6">
+      <div className="mx-auto max-w-4xl space-y-7">
 
-      {/* ── Topbar ── */}
-      <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-[#131c2e]">
-        <div className="mx-auto flex h-[52px] max-w-4xl items-center justify-between gap-4 px-6">
+        {/* ── Breadcrumb ── */}
+        <div className="flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 text-[13px]">
             <Link
               href="/admin"
               className="text-white/30 transition-colors hover:text-white/60"
             >
-              ← Elections
+              ← Dashboard
             </Link>
             <span className="text-white/20">/</span>
             <span className="max-w-[200px] truncate text-white/50">{election.name}</span>
@@ -379,9 +370,6 @@ export default async function CandidatesPage({
             </svg>
           </Link>
         </div>
-      </nav>
-
-      <main className="mx-auto max-w-4xl space-y-7 px-6 py-10">
 
         {/* ── Page header ── */}
         <div className="flex items-start justify-between gap-4">
@@ -516,7 +504,7 @@ export default async function CandidatesPage({
             )}
           </div>
         )}
-      </main>
+      </div>
     </div>
   );
 }
