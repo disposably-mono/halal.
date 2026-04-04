@@ -56,20 +56,34 @@ export default async function HomePage() {
     }
   }
 
-  // Countdown target: earliest SCHEDULED or OPEN election
-  const countdownElection = elections
-    .filter((e) => e.status === "SCHEDULED" || e.status === "OPEN")
-    .sort(
-      (a, b) =>
-        new Date(a.scheduledOpen).getTime() - new Date(b.scheduledOpen).getTime()
-    )[0] ?? null;
+  // Countdown target: earliest SCHEDULED or OPEN election (with non-null scheduledOpen)
+  const countdownElection =
+    elections
+      .filter(
+        (e): e is typeof e & { scheduledOpen: Date } =>
+          (e.status === "SCHEDULED" || e.status === "OPEN") &&
+          e.scheduledOpen !== null
+      )
+      .sort((a, b) => a.scheduledOpen.getTime() - b.scheduledOpen.getTime())[0] ?? null;
 
-  const divisionCards = DIVISION_ORDER.map((div) => ({
-    division: div,
-    label: DIVISION_LABELS[div],
-    sublabel: DIVISION_SUBLABELS[div],
-    election: divisionMap.get(div) ?? null,
-  }));
+  const divisionCards = DIVISION_ORDER.map((div) => {
+    const election = divisionMap.get(div) ?? null;
+    return {
+      division: div,
+      label: DIVISION_LABELS[div],
+      sublabel: DIVISION_SUBLABELS[div],
+      election: election
+        ? {
+          id: election.id,
+          name: election.name,
+          status: election.status as string,
+          scheduledOpen: election.scheduledOpen?.toISOString() ?? "",
+          scheduledClose: election.scheduledClose?.toISOString() ?? "",
+          _count: election._count,
+        }
+        : null,
+    };
+  });
 
   return (
     <LandingClient

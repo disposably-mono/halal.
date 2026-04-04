@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { DIVISION_GRADE_RANGE } from "../../lib/constants";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 export type CSVImportResult = {
   added: number;
@@ -15,6 +15,11 @@ export type CSVImportResult = {
 };
 
 export type ManualAddResult = {
+  success: boolean;
+  error?: string;
+};
+
+export type FinalizeResult = {
   success: boolean;
   error?: string;
 };
@@ -63,8 +68,14 @@ export async function addVotersFromCSV(
     select: { division: true, votersFinalized: true },
   });
 
-  if (!election) return { added: 0, rejected: 0, reasons: ["Election not found."] };
-  if (election.votersFinalized) return { added: 0, rejected: 0, reasons: ["Voter list is finalized and cannot be modified."] };
+  if (!election)
+    return { added: 0, rejected: 0, reasons: ["Election not found."] };
+  if (election.votersFinalized)
+    return {
+      added: 0,
+      rejected: 0,
+      reasons: ["Voter list is finalized and cannot be modified."],
+    };
 
   const range = DIVISION_GRADE_RANGE[election.division];
   const lines = csvText.trim().split("\n").slice(1); // skip header
@@ -75,10 +86,14 @@ export async function addVotersFromCSV(
   });
   const existingStudentIds = new Set(existing.map((v) => v.studentId));
 
-  const allCodes = await prisma.voter.findMany({ select: { voterCode: true } });
+  const allCodes = await prisma.voter.findMany({
+    select: { voterCode: true },
+  });
   const existingVoterCodes = new Set(allCodes.map((v) => v.voterCode));
 
-  const allVoters = await prisma.voter.findMany({ select: { gradeLevel: true, section: true } });
+  const allVoters = await prisma.voter.findMany({
+    select: { gradeLevel: true, section: true },
+  });
   const seqMap: Record<string, number> = {};
   for (const v of allVoters) {
     const key = `${v.gradeLevel}-${v.section}`;
@@ -91,7 +106,9 @@ export async function addVotersFromCSV(
 
   for (const line of lines) {
     if (!line.trim()) continue;
-    const [studentId, gradeLevelRaw, section] = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+    const [studentId, gradeLevelRaw, section] = line
+      .split(",")
+      .map((c) => c.trim().replace(/^"|"$/g, ""));
 
     if (!studentId || !gradeLevelRaw || !section) {
       rejected++;
@@ -110,7 +127,12 @@ export async function addVotersFromCSV(
 
     const key = `${gradeLevel}-${section.toUpperCase()}`;
     seqMap[key] = (seqMap[key] ?? 0) + 1;
-    const voterCode = generateControlNumber(schoolYear, gradeLevel, section, seqMap[key]);
+    const voterCode = generateControlNumber(
+      schoolYear,
+      gradeLevel,
+      section,
+      seqMap[key]
+    );
 
     if (existingVoterCodes.has(voterCode)) continue;
 
@@ -148,26 +170,60 @@ export async function addVoterManual(
   const section = (formData.get("section") as string).trim();
   const schoolYear = parseInt(formData.get("schoolYear") as string);
 
+  // Validate schoolYear
+  if (isNaN(schoolYear)) {
+    return { success: false, error: "Invalid school year." };
+  }
+
   const election = await prisma.election.findUnique({
     where: { id: electionId },
     select: { division: true, votersFinalized: true },
   });
 
   if (!election) return { success: false, error: "Election not found." };
-  if (election.votersFinalized) return { success: false, error: "Voter list is locked." };
+  if (election.votersFinalized)
+    return { success: false, error: "Voter list is locked." };
 
+  // Parse and validate gradeLevel
   const gradeLevel = parseInt(gradeLevelRaw);
+  if (isNaN(gradeLevel)) {
+    return { success: false, error: "Valid grade level is required." };
+  }
+
   const range = DIVISION_GRADE_RANGE[election.division];
 
   if (gradeLevel < range.min || gradeLevel > range.max) {
-    return { success: false, error: `Grade outside ${election.division} range.` };
+    return {
+      success: false,
+      error: `Grade outside ${election.division} range.`,
+    };
   }
 
-  const existingStudent = await prisma.voter.findFirst({ where: { electionId, studentId } });
-  if (existingStudent) return { success: false, error: "Student ID already registered." };
+  // Validate section
+  if (!section) {
+    return { success: false, error: "Section is required." };
+  }
 
-  const count = await prisma.voter.count({ where: { gradeLevel, section: section.toUpperCase() } });
-  const voterCode = generateControlNumber(schoolYear, gradeLevel, section, count + 1);
+  const existingStudent = await prisma.voter.findFirst({
+    where: { electionId, studentId },
+  });
+  if (existingStudent)
+    return { success: false, error: "Student ID already registered." };
+
+  // FIXED: Added gradeLevel validation to ensure it's not undefined
+  const count = await prisma.voter.count({
+    where: {
+      gradeLevel: gradeLevel,
+      section: section.toUpperCase()
+    },
+  });
+
+  const voterCode = generateControlNumber(
+    schoolYear,
+    gradeLevel,
+    section,
+    count + 1
+  );
 
   await prisma.voter.create({
     data: {
@@ -193,7 +249,7 @@ export async function removeVoter(formData: FormData) {
 
   const election = await prisma.election.findUnique({
     where: { id: electionId },
-    select: { votersFinalized: true }
+    select: { votersFinalized: true },
   });
 
   if (election?.votersFinalized) return;
@@ -202,25 +258,39 @@ export async function removeVoter(formData: FormData) {
   revalidate(electionId);
 }
 
-// ─── Finalize / Unfinalize ────────────────────────────────────────────────────
+// ─── Finalize voters ──────────────────────────────────────────────────────────
+// Returns a result object instead of throwing — prevents crash pages.
 
-export async function finalizeVoters(formData: FormData) {
+export async function finalizeVoters(
+  _prevState: FinalizeResult | null,
+  formData: FormData
+): Promise<FinalizeResult> {
   await requireSession();
   const electionId = formData.get("electionId") as string;
 
   const count = await prisma.voter.count({ where: { electionId } });
   if (count < 1) {
-    throw new Error("At least 1 voter must be registered before finalizing.");
+    return {
+      success: false,
+      error: "At least 1 voter must be registered before finalizing.",
+    };
   }
 
   await prisma.election.update({
     where: { id: electionId },
     data: { votersFinalized: true },
   });
+
   revalidate(electionId);
+  return { success: true };
 }
 
-export async function unfinalizeVoters(formData: FormData) {
+// ─── Unfinalize voters ────────────────────────────────────────────────────────
+
+export async function unfinalizeVoters(
+  _prevState: FinalizeResult | null,
+  formData: FormData
+): Promise<FinalizeResult> {
   await requireSession();
   const electionId = formData.get("electionId") as string;
 
@@ -228,11 +298,19 @@ export async function unfinalizeVoters(formData: FormData) {
     where: { id: electionId },
     select: { status: true },
   });
-  if (election?.status === "OPEN" || election?.status === "CLOSED") return;
+
+  if (election?.status === "OPEN" || election?.status === "CLOSED") {
+    return {
+      success: false,
+      error: "Cannot unlock voters while the election is Open or Closed.",
+    };
+  }
 
   await prisma.election.update({
     where: { id: electionId },
     data: { votersFinalized: false },
   });
+
   revalidate(electionId);
+  return { success: true };
 }

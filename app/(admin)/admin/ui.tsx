@@ -28,6 +28,8 @@ export const BTN_SM = "px-[10px] py-[5px] text-[11px]";
 
 // ─── Shared components ────────────────────────────────────────────────────────
 
+import { useFormState } from "react-dom";
+import { useTransition } from "react";
 import type { ReactNode } from "react";
 
 /** Section card with consistent header + optional badge/meta slot */
@@ -322,6 +324,79 @@ export function Toast({
     <div className="fixed bottom-5 right-5 z-[9998] flex animate-in slide-in-from-bottom-4 items-center gap-2 rounded-[10px] border border-white/[0.12] bg-[#1e2a47] px-[14px] py-[10px] text-[12px] text-white/90 shadow-xl duration-200">
       <span className={`h-[6px] w-[6px] shrink-0 rounded-full ${dotColors[color]}`} />
       {msg}
+    </div>
+  );
+}
+
+// ─── FinalizeButton ───────────────────────────────────────────────────────────
+
+type FinalizeResult = {
+  success: boolean;
+  error?: string;
+};
+
+/**
+ * Wraps a finalize/unfinalize server action with useActionState so validation
+ * failures show as an inline red alert instead of crashing the page.
+ *
+ * Used by voters/page.tsx and candidates/page.tsx.
+ */
+export function FinalizeButton({
+  action,
+  electionId,
+  label,
+  hint,
+}: {
+  action: (
+    prevState: FinalizeResult | null,
+    formData: FormData
+  ) => Promise<FinalizeResult>;
+  electionId: string;
+  label: string;
+  hint?: string;
+}) {
+  // 1. Manage pending state manually via transition
+  const [isPending, startTransition] = useTransition();
+
+  // 2. Use useFormState from react-dom
+  const [state, formAction] = useFormState<FinalizeResult | null, FormData>(
+    action,
+    null
+  );
+
+  // 3. Create a wrapper to trigger the transition
+  const dispatch = (formData: FormData) => {
+    startTransition(() => {
+      formAction(formData);
+    });
+  };
+
+  return (
+    <div className="flex flex-col items-end gap-2">
+      {state && !state.success && state.error && (
+        <div
+          role="alert"
+          className="flex w-full items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3"
+        >
+          <span className="mt-[1px] shrink-0 text-[13px] text-red-400">⚠</span>
+          <p className="text-[11px] leading-relaxed text-red-300">{state.error}</p>
+        </div>
+      )}
+
+      {/* Use the wrapped dispatch here */}
+      <form action={dispatch} className="flex items-center gap-3">
+        <input type="hidden" name="electionId" value={electionId} />
+        {hint && (
+          <p className="text-[11px] text-white/30">{hint}</p>
+        )}
+        <button
+          type="submit"
+          disabled={isPending}
+          className={`${BTN_PRIMARY} disabled:opacity-50 disabled:cursor-not-allowed`}
+        >
+          {isPending ? "Saving…" : label}
+        </button>
+      </form>
     </div>
   );
 }

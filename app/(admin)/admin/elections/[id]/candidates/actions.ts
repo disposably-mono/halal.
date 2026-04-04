@@ -6,6 +6,13 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { DIVISION_POSITIONS } from "../../lib/constants";
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type FinalizeResult = {
+  success: boolean;
+  error?: string;
+};
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 async function requireSession() {
@@ -46,7 +53,7 @@ export async function seedAllPositions(formData: FormData) {
 
 export async function addSinglePosition(formData: FormData) {
   await requireSession();
-  const electionId = formData.get("electionId") as string; // ✓ was incorrectly `params.id`
+  const electionId = formData.get("electionId") as string;
   const division = formData.get("division") as string;
   const title = formData.get("title") as string;
 
@@ -63,7 +70,7 @@ export async function addSinglePosition(formData: FormData) {
 
   await prisma.position.create({
     data: {
-      electionId, // ✓ fixed
+      electionId,
       title: positionDef.title,
       candidateGrade: positionDef.candidateGrade,
       eligibleGrades: positionDef.eligibleGrades,
@@ -127,8 +134,12 @@ export async function removeCandidate(formData: FormData) {
 }
 
 // ─── Finalize candidates ──────────────────────────────────────────────────────
+// Returns a result object instead of throwing — prevents crash pages.
 
-export async function finalizeCandidates(formData: FormData) {
+export async function finalizeCandidates(
+  _prevState: FinalizeResult | null,
+  formData: FormData
+): Promise<FinalizeResult> {
   await requireSession();
   const electionId = formData.get("electionId") as string;
 
@@ -138,27 +149,36 @@ export async function finalizeCandidates(formData: FormData) {
   });
 
   if (positions.length === 0) {
-    throw new Error("Add at least one position before finalizing.");
+    return {
+      success: false,
+      error: "Add at least one position before finalizing.",
+    };
   }
 
   const empty = positions.filter((p) => p._count.candidates === 0);
   if (empty.length > 0) {
     const names = empty.map((p) => p.title).join(", ");
-    throw new Error(
-      `The following positions have no candidates: ${names}. Add at least one candidate to each before finalizing.`
-    );
+    return {
+      success: false,
+      error: `These positions have no candidates yet: ${names}. Add at least one candidate to each before finalizing.`,
+    };
   }
 
   await prisma.election.update({
     where: { id: electionId },
     data: { candidatesFinalized: true },
   });
+
   revalidate(electionId);
+  return { success: true };
 }
 
 // ─── Unfinalize candidates ────────────────────────────────────────────────────
 
-export async function unfinalizeCandidates(formData: FormData) {
+export async function unfinalizeCandidates(
+  _prevState: FinalizeResult | null,
+  formData: FormData
+): Promise<FinalizeResult> {
   await requireSession();
   const electionId = formData.get("electionId") as string;
 
@@ -166,12 +186,19 @@ export async function unfinalizeCandidates(formData: FormData) {
     where: { id: electionId },
     select: { status: true },
   });
-  if (election?.status === "OPEN" || election?.status === "CLOSED") return;
+
+  if (election?.status === "OPEN" || election?.status === "CLOSED") {
+    return {
+      success: false,
+      error: "Cannot unlock candidates while the election is Open or Closed.",
+    };
+  }
 
   await prisma.election.update({
     where: { id: electionId },
     data: { candidatesFinalized: false },
   });
-  revalidate(electionId);
-}
 
+  revalidate(electionId);
+  return { success: true };
+}

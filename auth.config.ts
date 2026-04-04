@@ -1,3 +1,6 @@
+import type { NextAuthConfig } from "next-auth";
+import type { JWT } from "next-auth/jwt";
+
 export const authConfig = {
   pages: {
     signIn: "/admin/login",
@@ -6,17 +9,17 @@ export const authConfig = {
     authorized() {
       return true; // Let middleware.ts handle all route protection
     },
-    jwt({ token, user }) {
+    jwt({ token, user }: { token: JWT; user?: any }) {
       if (user) {
-        token.role = (user as any).role;
-        token.id = (user as any).id;
+        token.role = user.role;
+        token.id = user.id;
       }
       return token;
     },
-    session({ session, token }) {
+    session({ session, token }: { session: any; token: JWT }) {
       if (session.user) {
-        session.user.role = token.role as string;
-        session.user.id = token.id as string;
+        session.user.role = token.role;
+        session.user.id = token.id;
       }
       return session;
     },

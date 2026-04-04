@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Card, CARD_TITLE, StatusPill, StatCell } from "../ui";
+import { Card, CARD_TITLE, StatusPill, StatCell } from "@/app/admin/ui";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -393,8 +393,8 @@ function ReplayPanel({
         <button
           onClick={isReplaying ? onPause : onPlay}
           className={`flex h-7 w-7 items-center justify-center rounded-[6px] border transition-all cursor-pointer ${isReplaying
-              ? "border-amber-400/40 bg-amber-400/10 text-amber-400"
-              : "border-white/10 text-white/50 hover:border-white/25 hover:text-white/90"
+            ? "border-amber-400/40 bg-amber-400/10 text-amber-400"
+            : "border-white/10 text-white/50 hover:border-white/25 hover:text-white/90"
             }`}
           aria-label={isReplaying ? "Pause replay" : "Play replay"}
         >
@@ -468,8 +468,8 @@ function ReplayPanel({
               data-active={isActive ? "true" : "false"}
               onClick={() => onJump(i)}
               className={`flex cursor-pointer items-center gap-2 rounded-[7px] border px-2.5 py-1.5 transition-colors ${isActive
-                  ? "border-amber-400/15 bg-amber-400/[0.08]"
-                  : "border-transparent hover:bg-white/[0.04]"
+                ? "border-amber-400/15 bg-amber-400/[0.08]"
+                : "border-transparent hover:bg-white/[0.04]"
                 }`}
             >
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isActive ? "bg-amber-400" : "bg-emerald-500/60"}`} />

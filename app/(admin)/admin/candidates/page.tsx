@@ -13,13 +13,15 @@ function formatGrade(gradeLevel: number): string {
   return gradeLevel === 0 ? "All grades" : `Grade ${gradeLevel}`;
 }
 
-function formatCandidateGrade(candidateGrade: number | number[]): string {
-  if (Array.isArray(candidateGrade)) {
-    if (candidateGrade.length === 0) return "All grades";
-    if (candidateGrade.length === 1) return `Grade ${candidateGrade[0]}`;
-    return `Grades ${candidateGrade.join(" / ")}`;
-  }
-  return candidateGrade === 0 ? "All grades" : `Grade ${candidateGrade}`;
+/** Parse Position.candidateGrade string (e.g. "9" or "9,10,11") for display. */
+function formatCandidateGrade(raw: string): string {
+  const parts = raw
+    .split(",")
+    .map((s) => parseInt(s.trim(), 10))
+    .filter((n) => !isNaN(n));
+  if (parts.length === 0) return "All grades";
+  if (parts.length === 1) return parts[0] === 0 ? "All grades" : `Grade ${parts[0]}`;
+  return `Grades ${parts.join(" / ")}`;
 }
 
 export default async function AdminCandidatesPage() {
@@ -55,7 +57,7 @@ export default async function AdminCandidatesPage() {
   };
   type PositionGroup = {
     title: string;
-    candidateGrade: number | number[];
+    candidateGrade: string;
     candidates: CandidateEntry[];
     electionIds: Set<string>;
   };
@@ -63,14 +65,14 @@ export default async function AdminCandidatesPage() {
   const byDivision = new Map<string, Map<string, PositionGroup>>();
 
   for (const pos of positions) {
-    const div = pos.election.division;
+    const div = pos.election.division as string;
     if (!byDivision.has(div)) byDivision.set(div, new Map());
     const posMap = byDivision.get(div)!;
 
     if (!posMap.has(pos.title)) {
       posMap.set(pos.title, {
         title: pos.title,
-        candidateGrade: pos.candidateGrade as number | number[],
+        candidateGrade: pos.candidateGrade,
         candidates: [],
         electionIds: new Set(),
       });
@@ -82,14 +84,14 @@ export default async function AdminCandidatesPage() {
         ...c,
         electionId: pos.election.id,
         electionName: pos.election.name,
-        electionStatus: pos.election.status,
+        electionStatus: pos.election.status as string,
       });
     }
   }
 
   const divisionElectionId = new Map<string, string>();
   for (const pos of positions) {
-    const div = pos.election.division;
+    const div = pos.election.division as string;
     if (!divisionElectionId.has(div)) divisionElectionId.set(div, pos.election.id);
   }
 
@@ -108,7 +110,10 @@ export default async function AdminCandidatesPage() {
         {presentDivisions.length > 1 && (
           <div className="flex gap-1 flex-wrap justify-end">
             {presentDivisions.map((d) => {
-              const count = [...(byDivision.get(d)?.values() ?? [])].reduce((a, p) => a + p.candidates.length, 0);
+              const count = Array.from(byDivision.get(d)?.values() ?? []).reduce(
+                (a: number, p: PositionGroup) => a + p.candidates.length,
+                0
+              );
               return (
                 <a key={d} href={`#div-cand-${d}`}
                   className="text-[10px] text-white/40 border border-white/[0.07] rounded-[5px] px-[8px] py-[3px] hover:text-white/70 hover:border-white/[0.12] transition-all no-underline">
@@ -129,7 +134,10 @@ export default async function AdminCandidatesPage() {
 
       {presentDivisions.map((div) => {
         const posMap = byDivision.get(div)!;
-        const divCandidates = [...posMap.values()].reduce((a, p) => a + p.candidates.length, 0);
+        const divCandidates = Array.from(posMap.values()).reduce(
+          (a: number, p: PositionGroup) => a + p.candidates.length,
+          0
+        );
         const eid = divisionElectionId.get(div);
 
         return (
@@ -156,7 +164,7 @@ export default async function AdminCandidatesPage() {
             {/* Positions card */}
             <div className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] overflow-hidden">
               <div className="divide-y divide-white/[0.04]">
-                {[...posMap.values()].map((pos) => (
+                {Array.from(posMap.values()).map((pos: PositionGroup) => (
                   <div key={pos.title} className="px-4 py-3">
                     {/* Position title row */}
                     <div className="flex items-center justify-between mb-2">
@@ -179,7 +187,7 @@ export default async function AdminCandidatesPage() {
                       <div className="text-[11px] text-white/20 italic pl-1">No candidates encoded</div>
                     ) : (
                       <div className="flex flex-col gap-[4px]">
-                        {pos.candidates.map((c, idx) => (
+                        {pos.candidates.map((c: CandidateEntry, idx: number) => (
                           <div key={c.id}
                             className="flex items-center gap-3 bg-white/[0.025] hover:bg-white/[0.04] rounded-[6px] px-3 py-[6px] transition-colors group">
                             <span className="text-[10px] text-white/20 w-4 text-right flex-shrink-0">{idx + 1}</span>
@@ -192,7 +200,7 @@ export default async function AdminCandidatesPage() {
                                 {c.electionName}
                               </span>
                             )}
-                            <StatusDot status={c.electionStatus as any} compact />
+                            <StatusDot status={c.electionStatus as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} compact />
                           </div>
                         ))}
                       </div>

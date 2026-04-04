@@ -2,7 +2,8 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { StatusPill, FinalizeBanner, Card, BTN_GHOST, BTN_SM, BTN_PRIMARY } from "@/app/admin/ui";
+import { StatusPill, FinalizeBanner, Card, BTN_PRIMARY } from "@/app/(admin)/admin/ui";
+import { FinalizeButton } from "@/app/(admin)/admin/ui";
 import { CSVUploadForm, ManualAddForm } from "./VoterForms";
 import { finalizeVoters, unfinalizeVoters, removeVoter } from "./actions";
 
@@ -90,7 +91,7 @@ export default async function VotersPage({ params }: { params: { id: string } })
                 "use server";
                 const fd = new FormData();
                 fd.set("electionId", params.id);
-                await unfinalizeVoters(fd);
+                await unfinalizeVoters(null, fd);
               }
               : undefined
           }
@@ -202,24 +203,14 @@ export default async function VotersPage({ params }: { params: { id: string } })
           )}
         </div>
 
-        {/* ── Finalize action ── */}
+        {/* ── Finalize action — graceful errors via FinalizeButton ── */}
         {!election.votersFinalized && (
-          <form
-            action={async () => {
-              "use server";
-              const fd = new FormData();
-              fd.set("electionId", params.id);
-              await finalizeVoters(fd);
-            }}
-            className="flex items-center justify-end gap-3"
-          >
-            <p className="text-[11px] text-white/30">
-              {election._count.voters} voters registered — lock the list when ready
-            </p>
-            <button type="submit" className={BTN_PRIMARY}>
-              Lock Voter List
-            </button>
-          </form>
+          <FinalizeButton
+            action={finalizeVoters}
+            electionId={election.id}
+            label="Lock Voter List"
+            hint={`${election._count.voters} voter${election._count.voters !== 1 ? "s" : ""} registered — lock the list when ready`}
+          />
         )}
       </main>
     </div>

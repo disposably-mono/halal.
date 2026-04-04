@@ -1,0 +1,8 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/transition-elections",
+      "schedule": "0 * * * *"
+    }
+  ]
+}

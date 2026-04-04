@@ -110,8 +110,8 @@ export default async function AdminVotersPage() {
             </div>
 
             {/* One card per election in this division */}
-            {[...byElection.entries()].map(([eid, el]) => {
-              const elVoted = el.voters.filter((v) => v.hasVoted).length;
+            {Array.from(byElection.entries()).map(([eid, el]) => {
+              const elVoted = el.voters.filter((v: typeof voters[0]) => v.hasVoted).length;
               const elPct = el.voters.length > 0 ? Math.round((elVoted / el.voters.length) * 100) : 0;
 
               return (
@@ -144,7 +144,7 @@ export default async function AdminVotersPage() {
                         </tr>
                       </thead>
                       <tbody>
-                        {el.voters.map((v) => (
+                        {el.voters.map((v: typeof voters[0]) => (
                           <tr key={v.id} className="border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02] transition-colors">
                             <td className="px-4 py-[7px] font-mono text-[11px] text-white/70 font-medium">{v.voterCode}</td>
                             <td className="px-4 py-[7px] font-mono text-[11px] text-white/45">{v.studentId}</td>

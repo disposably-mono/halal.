@@ -5,6 +5,17 @@ import BallotClient from "./BallotClient";
 
 export const dynamic = "force-dynamic";
 
+/** Parse Position.candidateGrade (stored as string e.g. "9" or "9,10,11") */
+function parseCandidateGrade(raw: string): number | number[] {
+  const parts = raw
+    .split(",")
+    .map((s) => parseInt(s.trim(), 10))
+    .filter((n) => !isNaN(n));
+  if (parts.length === 0) return 0;
+  if (parts.length === 1) return parts[0];
+  return parts;
+}
+
 export default async function BallotPage() {
   const session = await getVoterSession();
 
@@ -49,7 +60,7 @@ export default async function BallotPage() {
       positions={positions.map((p) => ({
         id: p.id,
         title: p.title,
-        candidateGrade: p.candidateGrade,
+        candidateGrade: parseCandidateGrade(p.candidateGrade),
         candidates: p.candidates,
       }))}
     />
