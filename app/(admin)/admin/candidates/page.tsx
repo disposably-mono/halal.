@@ -47,52 +47,21 @@ export default async function AdminCandidatesPage() {
 
   const totalCandidates = positions.reduce((a, p) => a + p.candidates.length, 0);
 
-  type CandidateEntry = {
-    id: string;
-    fullName: string;
-    gradeLevel: number;
-    electionId: string;
-    electionName: string;
-    electionStatus: string;
-  };
-  type PositionGroup = {
-    title: string;
-    candidateGrade: string;
-    candidates: CandidateEntry[];
-    electionIds: Set<string>;
-  };
-
-  const byDivision = new Map<string, Map<string, PositionGroup>>();
+  // Group: division → election → positions[]
+  type PositionRow = typeof positions[number];
+  const byDivision = new Map<string, Map<string, { name: string; status: string; positions: PositionRow[] }>>();
 
   for (const pos of positions) {
     const div = pos.election.division as string;
+    const eid = pos.election.id;
+
     if (!byDivision.has(div)) byDivision.set(div, new Map());
-    const posMap = byDivision.get(div)!;
+    const elMap = byDivision.get(div)!;
 
-    if (!posMap.has(pos.title)) {
-      posMap.set(pos.title, {
-        title: pos.title,
-        candidateGrade: pos.candidateGrade,
-        candidates: [],
-        electionIds: new Set(),
-      });
+    if (!elMap.has(eid)) {
+      elMap.set(eid, { name: pos.election.name, status: pos.election.status, positions: [] });
     }
-    const group = posMap.get(pos.title)!;
-    group.electionIds.add(pos.election.id);
-    for (const c of pos.candidates) {
-      group.candidates.push({
-        ...c,
-        electionId: pos.election.id,
-        electionName: pos.election.name,
-        electionStatus: pos.election.status as string,
-      });
-    }
-  }
-
-  const divisionElectionId = new Map<string, string>();
-  for (const pos of positions) {
-    const div = pos.election.division as string;
-    if (!divisionElectionId.has(div)) divisionElectionId.set(div, pos.election.id);
+    elMap.get(eid)!.positions.push(pos);
   }
 
   const presentDivisions = DIVISION_ORDER.filter((d) => byDivision.has(d));
@@ -107,11 +76,14 @@ export default async function AdminCandidatesPage() {
             {totalCandidates.toLocaleString()} candidate{totalCandidates !== 1 ? "s" : ""} across all active elections
           </p>
         </div>
+
+        {/* Division quick-jump */}
         {presentDivisions.length > 1 && (
           <div className="flex gap-1 flex-wrap justify-end">
             {presentDivisions.map((d) => {
-              const count = Array.from(byDivision.get(d)?.values() ?? []).reduce(
-                (a: number, p: PositionGroup) => a + p.candidates.length,
+              const elMap = byDivision.get(d)!;
+              const count = Array.from(elMap.values()).reduce(
+                (a, el) => a + el.positions.reduce((b, p) => b + p.candidates.length, 0),
                 0
               );
               return (
@@ -133,12 +105,12 @@ export default async function AdminCandidatesPage() {
       )}
 
       {presentDivisions.map((div) => {
-        const posMap = byDivision.get(div)!;
-        const divCandidates = Array.from(posMap.values()).reduce(
-          (a: number, p: PositionGroup) => a + p.candidates.length,
+        const elMap = byDivision.get(div)!;
+        const divCandidates = Array.from(elMap.values()).reduce(
+          (a, el) => a + el.positions.reduce((b, p) => b + p.candidates.length, 0),
           0
         );
-        const eid = divisionElectionId.get(div);
+        const positionCount = Array.from(elMap.values()).reduce((a, el) => a + el.positions.length, 0);
 
         return (
           <div key={div} id={`div-cand-${div}`} className="flex flex-col gap-2">
@@ -148,67 +120,68 @@ export default async function AdminCandidatesPage() {
                 {DIVISION_LABELS[div]}
               </div>
               <div className="flex-1 h-px bg-white/[0.05]" />
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] text-white/25">
-                  {divCandidates} candidate{divCandidates !== 1 ? "s" : ""} · {posMap.size} positions
-                </span>
-                {eid && (
-                  <Link href={`/admin/elections/${eid}/candidates`}
-                    className="text-[10px] text-amber-400/60 hover:text-amber-400 transition-colors no-underline">
-                    Manage →
-                  </Link>
-                )}
+              <div className="text-[10px] text-white/25">
+                {divCandidates} candidate{divCandidates !== 1 ? "s" : ""} · {positionCount} positions
               </div>
             </div>
 
-            {/* Positions card */}
-            <div className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] overflow-hidden">
-              <div className="divide-y divide-white/[0.04]">
-                {Array.from(posMap.values()).map((pos: PositionGroup) => (
-                  <div key={pos.title} className="px-4 py-3">
-                    {/* Position title row */}
-                    <div className="flex items-center justify-between mb-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] font-semibold text-white/65 uppercase tracking-[0.05em]">
-                          {pos.title}
-                        </span>
-                        {pos.electionIds.size > 1 && (
-                          <span className="text-[9px] bg-blue-400/[0.1] text-blue-400 border border-blue-400/20 rounded-[3px] px-[5px] py-[1px] font-semibold">
-                            {pos.electionIds.size} elections
+            {/* One card per election in this division */}
+            {Array.from(elMap.entries()).map(([eid, el]) => {
+              const elCandidates = el.positions.reduce((a, p) => a + p.candidates.length, 0);
+
+              return (
+                <div key={eid} className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] overflow-hidden">
+                  {/* Election header */}
+                  <div className="px-4 py-3 border-b border-white/[0.07] flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <StatusDot status={el.status as any} />
+                      <div className="text-[12px] font-semibold text-white/80 truncate">{el.name}</div>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0 text-[10px] text-white/40">
+                      <span>{elCandidates} candidate{elCandidates !== 1 ? "s" : ""} · {el.positions.length} positions</span>
+                      <Link href={`/admin/elections/${eid}/candidates`}
+                        className="text-amber-400 border border-amber-400/20 bg-amber-400/[0.07] rounded-[5px] px-[7px] py-[3px] hover:bg-amber-400/[0.14] transition-all no-underline">
+                        Manage →
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Positions + candidates */}
+                  <div className="divide-y divide-white/[0.04]">
+                    {el.positions.map((pos) => (
+                      <div key={pos.id} className="px-4 py-3">
+                        {/* Position title row */}
+                        <div className="flex items-center justify-between mb-2">
+                          <span className="text-[11px] font-semibold text-white/65 uppercase tracking-[0.05em]">
+                            {pos.title}
                           </span>
+                          <span className="text-[10px] text-white/25">
+                            {formatCandidateGrade(pos.candidateGrade)}
+                          </span>
+                        </div>
+
+                        {pos.candidates.length === 0 ? (
+                          <div className="text-[11px] text-white/20 italic pl-1">No candidates encoded</div>
+                        ) : (
+                          <div className="flex flex-col gap-[4px]">
+                            {pos.candidates.map((c, idx) => (
+                              <div key={c.id}
+                                className="flex items-center gap-3 bg-white/[0.025] hover:bg-white/[0.04] rounded-[6px] px-3 py-[6px] transition-colors">
+                                <span className="text-[10px] text-white/20 w-4 text-right flex-shrink-0">{idx + 1}</span>
+                                <div className="flex-1 text-[12px] font-medium text-white/80 truncate">{c.fullName}</div>
+                                <span className="text-[10px] text-white/30 font-mono flex-shrink-0">
+                                  {formatGrade(c.gradeLevel)}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
                         )}
                       </div>
-                      <span className="text-[10px] text-white/25">
-                        {formatCandidateGrade(pos.candidateGrade)}
-                      </span>
-                    </div>
-
-                    {pos.candidates.length === 0 ? (
-                      <div className="text-[11px] text-white/20 italic pl-1">No candidates encoded</div>
-                    ) : (
-                      <div className="flex flex-col gap-[4px]">
-                        {pos.candidates.map((c: CandidateEntry, idx: number) => (
-                          <div key={c.id}
-                            className="flex items-center gap-3 bg-white/[0.025] hover:bg-white/[0.04] rounded-[6px] px-3 py-[6px] transition-colors group">
-                            <span className="text-[10px] text-white/20 w-4 text-right flex-shrink-0">{idx + 1}</span>
-                            <div className="flex-1 text-[12px] font-medium text-white/80 truncate">{c.fullName}</div>
-                            <span className="text-[10px] text-white/30 font-mono flex-shrink-0">
-                              {formatGrade(c.gradeLevel)}
-                            </span>
-                            {pos.electionIds.size > 1 && (
-                              <span className="text-[10px] text-white/20 truncate max-w-[140px] hidden group-hover:block">
-                                {c.electionName}
-                              </span>
-                            )}
-                            <StatusDot status={c.electionStatus as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} compact />
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
+                </div>
+              );
+            })}
           </div>
         );
       })}
@@ -216,23 +189,14 @@ export default async function AdminCandidatesPage() {
   );
 }
 
-function StatusDot({
-  status,
-  compact = false,
-}: {
-  status: "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED";
-  compact?: boolean;
-}) {
+function StatusDot({ status }: { status: "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED" }) {
   const colors: Record<string, string> = {
     OPEN: "bg-emerald-400", SCHEDULED: "bg-blue-400",
     DRAFT: "bg-white/20", CLOSED: "bg-white/10",
   };
   const labels: Record<string, string> = {
-    OPEN: "Open", SCHEDULED: "Scheduled", DRAFT: "Draft", CLOSED: "Closed",
+    OPEN: "Open", SCHEDULED: "Scheduled", DRAFT: "Draft", Closed: "Closed",
   };
-  if (compact) {
-    return <span className={`w-[5px] h-[5px] rounded-full flex-shrink-0 ${colors[status]}`} title={labels[status]} />;
-  }
   return (
     <span className="inline-flex items-center gap-1 text-[10px] text-white/40 flex-shrink-0">
       <span className={`w-[6px] h-[6px] rounded-full ${colors[status]}`} />

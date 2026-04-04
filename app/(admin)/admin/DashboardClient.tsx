@@ -53,18 +53,16 @@ function StatusPill({ status }: { status: ElectionStatus }) {
 }
 
 // ── Attention card action button ──────────────────────────────────────────────
-function AttnBtn({ href, label, primary = false }: { href: string; label: string; primary?: boolean }) {
+function AttnBtn({ href, label, primary = false, danger = false }: { href: string; label: string; primary?: boolean; danger?: boolean }) {
   const base = "flex-1 py-[5px] text-center text-[10px] rounded-[6px] transition-all no-underline";
+  if (primary) return (
+    <Link href={href} onClick={(e) => e.stopPropagation()} className={`${base} text-amber-400 bg-amber-400/10 border border-amber-400/20 hover:bg-amber-400/20`}>{label}</Link>
+  );
+  if (danger) return (
+    <Link href={href} onClick={(e) => e.stopPropagation()} className={`${base} text-emerald-400 bg-emerald-400/[0.08] border border-emerald-400/20 hover:bg-emerald-400/[0.15]`}>{label}</Link>
+  );
   return (
-    <Link
-      href={href}
-      onClick={(e) => e.stopPropagation()}
-      className={primary
-        ? `${base} text-amber-400 bg-amber-400/10 border border-amber-400/20 hover:bg-amber-400/20`
-        : `${base} text-white/40 border border-white/[0.07] hover:text-white/70 hover:border-white/[0.12]`}
-    >
-      {label}
-    </Link>
+    <Link href={href} onClick={(e) => e.stopPropagation()} className={`${base} text-white/40 border border-white/[0.07] hover:text-white/70 hover:border-white/[0.12]`}>{label}</Link>
   );
 }
 
@@ -126,8 +124,10 @@ function AttnCard({ e }: { e: Election }) {
             <span className="text-[11px] text-emerald-400 font-semibold">{p}% turnout</span>
             <span className="text-[10px] text-white/40">{e._count.voters - e.votedCount} remaining</span>
           </div>
-          <div className="flex gap-[5px] border-t border-white/[0.07] pt-2">
+          <div className="grid grid-cols-2 gap-[5px] border-t border-white/[0.07] pt-2">
             <AttnBtn href="/admin/results" label="Results" />
+            <AttnBtn href={`/admin/elections/${e.id}/monitor`} label="📊 Monitor" danger />
+            <AttnBtn href={`/admin/elections/${e.id}/voters`} label="Voters" />
             <AttnBtn href={`/admin/elections/${e.id}/control`} label="⚡ Control" primary />
           </div>
         </>
@@ -141,7 +141,7 @@ function AttnCard({ e }: { e: Election }) {
             <div className="text-[10px] text-white/40 mt-[2px]">scheduled open</div>
           </div>
           <div className="text-[10px] text-white/40">{e._count.voters} voters registered</div>
-          <div className="flex gap-[5px] border-t border-white/[0.07] pt-2">
+          <div className="grid grid-cols-2 gap-[5px] border-t border-white/[0.07] pt-2">
             <AttnBtn href={`/admin/elections/${e.id}/voters`} label="Voters" />
             <AttnBtn href={`/admin/elections/${e.id}/candidates`} label="Candidates" />
             <AttnBtn href={`/admin/elections/${e.id}/control`} label="⚡ Control" primary />
@@ -163,7 +163,7 @@ function AttnCard({ e }: { e: Election }) {
             <CheckRow done={e._count.voters > 0} yes={`${e._count.voters} voters added`} no="Add voters" />
             <CheckRow done={e._count.positions > 0} yes="Candidates set" no="Add candidates" />
           </div>
-          <div className="flex gap-[5px] border-t border-white/[0.07] pt-2">
+          <div className="grid grid-cols-2 gap-[5px] border-t border-white/[0.07] pt-2">
             <AttnBtn href={`/admin/elections/${e.id}/voters`} label="Voters" />
             <AttnBtn href={`/admin/elections/${e.id}/candidates`} label="Candidates" />
             <AttnBtn href={`/admin/elections/${e.id}/control`} label="⚡ Control" primary />
@@ -181,8 +181,9 @@ function AttnCard({ e }: { e: Election }) {
           <div className="h-[3px] bg-white/[0.06] rounded-full overflow-hidden">
             <div className="h-full bg-white/20 rounded-full" style={{ width: `${p}%` }} />
           </div>
-          <div className="flex gap-[5px] border-t border-white/[0.07] pt-2">
+          <div className="grid grid-cols-2 gap-[5px] border-t border-white/[0.07] pt-2">
             <AttnBtn href="/admin/results" label="Results" />
+            <AttnBtn href={`/admin/elections/${e.id}/monitor`} label="Monitor" />
             <AttnBtn href={`/admin/elections/${e.id}/control`} label="⚡ Control" primary />
           </div>
         </>
@@ -195,6 +196,11 @@ function AttnCard({ e }: { e: Election }) {
 function ElectionRow({ e }: { e: Election }) {
   const p = pct(e.votedCount, e._count.voters);
   const showProg = e.status === "OPEN" || e.status === "CLOSED";
+
+  // ── Shared action button style helpers ──
+  const ghostBtn = "text-[10px] text-white/40 border border-white/[0.07] rounded-[5px] px-[7px] py-[3px] hover:text-white/70 hover:border-white/[0.12] transition-all no-underline";
+  const amberBtn = "text-[10px] text-amber-400 bg-amber-400/[0.08] border border-amber-400/20 rounded-[5px] px-[7px] py-[3px] hover:bg-amber-400/[0.15] transition-all no-underline";
+  const emeraldBtn = "text-[10px] text-emerald-400 bg-emerald-400/[0.06] border border-emerald-400/20 rounded-[5px] px-[7px] py-[3px] hover:bg-emerald-400/[0.12] transition-all no-underline";
 
   return (
     <div className="flex items-center gap-3 px-[14px] py-[10px] border-b border-white/[0.04] last:border-0 hover:bg-white/[0.025] transition-colors group">
@@ -240,30 +246,20 @@ function ElectionRow({ e }: { e: Election }) {
         )}
       </div>
 
-      {/* Actions */}
+      {/* Actions — all 4 always visible */}
       <div className="flex gap-1 flex-shrink-0">
+        <Link href={`/admin/elections/${e.id}/voters`} className={ghostBtn}>Voters</Link>
+        <Link href={`/admin/elections/${e.id}/candidates`} className={ghostBtn}>Candidates</Link>
+        {(e.status === "OPEN" || e.status === "CLOSED") && (
+          <Link href={`/admin/elections/${e.id}/monitor`} className={emeraldBtn}>Monitor</Link>
+        )}
         {(e.status === "DRAFT" || e.status === "SCHEDULED") && (
-          <>
-            <Link href={`/admin/elections/${e.id}/voters`}
-              className="text-[10px] text-white/40 border border-white/[0.07] rounded-[5px] px-[7px] py-[3px] hover:text-white/70 hover:border-white/[0.12] transition-all no-underline">
-              Voters
-            </Link>
-            <Link href={`/admin/elections/${e.id}/candidates`}
-              className="text-[10px] text-white/40 border border-white/[0.07] rounded-[5px] px-[7px] py-[3px] hover:text-white/70 hover:border-white/[0.12] transition-all no-underline">
-              Candidates
-            </Link>
-          </>
+          <Link href="/admin/results" className={ghostBtn}>Results</Link>
         )}
         {(e.status === "OPEN" || e.status === "CLOSED") && (
-          <Link href="/admin/results"
-            className="text-[10px] text-white/40 border border-white/[0.07] rounded-[5px] px-[7px] py-[3px] hover:text-white/70 hover:border-white/[0.12] transition-all no-underline">
-            Results
-          </Link>
+          <Link href="/admin/results" className={ghostBtn}>Results</Link>
         )}
-        <Link href={`/admin/elections/${e.id}/control`}
-          className="text-[10px] text-amber-400 bg-amber-400/[0.08] border border-amber-400/20 rounded-[5px] px-[7px] py-[3px] hover:bg-amber-400/[0.15] transition-all no-underline">
-          ⚡ Control
-        </Link>
+        <Link href={`/admin/elections/${e.id}/control`} className={amberBtn}>⚡ Control</Link>
       </div>
     </div>
   );
@@ -326,7 +322,6 @@ export default function DashboardClient({
 
       {/* Stats grid */}
       <div className="grid grid-cols-4 gap-[10px]">
-        {/* 1 — Total Elections */}
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-amber-400" />
           <div className="text-[10px] text-white/40 uppercase tracking-[0.06em] font-medium">Total Elections</div>
@@ -335,24 +330,18 @@ export default function DashboardClient({
             {statusBreakdown || "No elections yet"}
           </div>
         </div>
-
-        {/* 2 — Active Now */}
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-emerald-400" />
           <div className="text-[10px] text-white/40 uppercase tracking-[0.06em] font-medium">Active Now</div>
           <div className={`text-[26px] font-bold tracking-[-1px] leading-none mt-2 ${openC > 0 ? "text-emerald-400" : "text-white/90"}`}>{openC}</div>
           <div className="text-[10px] text-white/30 mt-1 truncate" title={activeNames}>{activeNames}</div>
         </div>
-
-        {/* 3 — Total Voters */}
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-blue-400" />
           <div className="text-[10px] text-white/40 uppercase tracking-[0.06em] font-medium">Total Voters</div>
           <div className="text-[26px] font-bold tracking-[-1px] leading-none mt-2 text-white/90">{globalVoterCount.toLocaleString()}</div>
           <div className="text-[10px] text-white/30 mt-1">unique control numbers</div>
         </div>
-
-        {/* 4 — Avg Final Turnout */}
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-amber-400/50" />
           <div className="text-[10px] text-white/40 uppercase tracking-[0.06em] font-medium">Avg. Final Turnout</div>

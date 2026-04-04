@@ -195,7 +195,6 @@ const s = StyleSheet.create({
     borderWidth: 1,
     borderColor: BORDER,
     borderTopWidth: 0,
-    borderRadius: 0,
     overflow: "hidden",
   },
   tableColHeader: {

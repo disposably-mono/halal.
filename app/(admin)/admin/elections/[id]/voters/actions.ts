@@ -314,3 +314,19 @@ export async function unfinalizeVoters(
   revalidate(electionId);
   return { success: true };
 }
+
+// ─── Remove voter by ID (for use with .bind in server components) ─────────────
+
+export async function removeVoterById(voterId: string, electionId: string) {
+  await requireSession();
+
+  const election = await prisma.election.findUnique({
+    where: { id: electionId },
+    select: { votersFinalized: true },
+  });
+
+  if (election?.votersFinalized) return;
+
+  await prisma.voter.delete({ where: { id: voterId } });
+  revalidate(electionId);
+}
