@@ -58,42 +58,17 @@
   }
 }
 
-/*
-  ─────────────────────────────────────────────────────────────────────
-  BALLOT FONTS
-  Two new fonts are needed for the ballot page:
-    - Playfair Display SC  (small-caps display, for "Official Ballot" heading)
-    - Courier Prime        (typewriter mono, for labels, stamps, and metadata)
+/* Disable autofill globally */
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-box-shadow: 0 0 0 1000px transparent inset !important;
+  box-shadow: 0 0 0 1000px transparent inset !important;
+  -webkit-text-fill-color: inherit !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
 
-  Your existing --font-playfair already covers ballot-serif.
-  Add the two variables below to your layout.tsx next/font setup.
-  ─────────────────────────────────────────────────────────────────────
 
-  In app/layout.tsx, add alongside your existing font imports:
-
-    import { Playfair_Display_SC, Courier_Prime } from "next/font/google";
-
-    const playfairSC = Playfair_Display_SC({
-      subsets: ["latin"],
-      weight: ["400", "700"],
-      variable: "--font-playfair-sc",
-    });
-
-    const courierPrime = Courier_Prime({
-      subsets: ["latin"],
-      weight: ["400", "700"],
-      style: ["normal", "italic"],
-      variable: "--font-courier-prime",
-    });
-
-  Then spread both variables onto your <html> or <body> className:
-
-    <html className={`
-      ... your existing font variables ...
-      ${playfairSC.variable}
-      ${courierPrime.variable}
-    `}>
-
-  That's it — no additional CSS needed here.
-  ─────────────────────────────────────────────────────────────────────
-*/
