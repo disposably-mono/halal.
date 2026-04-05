@@ -38,3 +38,10 @@ next-env.d.ts
 /app/generated/prisma
 .env
 everything-claude-code/
+
+# Production env files
+.env.production
+.env.staging
+
+# Docker override files
+docker-compose.override.yml
