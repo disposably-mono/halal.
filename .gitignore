@@ -45,3 +45,6 @@ everything-claude-code/
 
 # Docker override files
 docker-compose.override.yml
+
+# officer pubmats
+/public/officers
