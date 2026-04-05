@@ -282,19 +282,6 @@ If either factor fails, the full error is shown and the form resets to step 1. T
 - Expiry: 2 hours (`maxAge: 7200`)
 - Custom fields: `session.user.role`, `session.user.id` (extended via `types/next-auth.d.ts`)
 
-### Default Seed Credentials
-
-Created by `npx prisma db seed`:
-
-| Field | Value |
-|-------|-------|
-| Email | `comelec@olps.edu.ph` |
-| Password | `comelec2026` |
-| Officer Key | `***REMOVED***` |
-| Role | `COMMISSIONER` |
-
-> ⚠️ Change these before any production or UAT deployment.
-
 ---
 
 ## Admin Panel — Pages Built (Phase 2 Progress)
