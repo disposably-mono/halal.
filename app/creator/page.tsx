@@ -67,6 +67,47 @@ const SOCIALS = [
       </svg>
     ),
   },
+  {
+    id: "github",
+    platform: "GitHub",
+    handle: "disposably-mono",
+    href: "https://github.com/disposably-mono",
+    color: "rgba(255,255,255,0.1)",
+    border: "rgba(255,255,255,0.25)",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="#ffffff" className="w-[18px] h-[18px]" aria-hidden="true">
+        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.341-3.369-1.341-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.742 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
+      </svg>
+    ),
+  },
+  {
+    id: "portfolio",
+    platform: "Portfolio",
+    handle: "disposably-mono.github.io",
+    href: "https://disposably-mono.github.io/",
+    color: "rgba(107,26,26,0.25)",
+    border: "rgba(107,26,26,0.5)",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="#c0392b" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]" aria-hidden="true">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M2 12h20" />
+        <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+      </svg>
+    ),
+  },
+  {
+    id: "phone",
+    platform: "Phone",
+    handle: "+63 961 443 6758",
+    href: "tel:+639614436758",
+    color: "rgba(39,174,96,0.15)",
+    border: "rgba(39,174,96,0.35)",
+    icon: (
+      <svg viewBox="0 0 24 24" fill="none" stroke="#27ae60" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]" aria-hidden="true">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.61 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.59a16 16 0 0 0 6 6l.96-.96a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z" />
+      </svg>
+    ),
+  },
 ];
 
 const HIGHLIGHTS = [
@@ -122,7 +163,6 @@ function HeroRibbons() {
       <path d="M200 700 L800 100 L830 100 L230 700 Z" fill="#6B1A1A" fillOpacity="0.1" />
       <path d="M-100 520 L480 -50" stroke="#F5C000" strokeWidth="0.5" strokeOpacity="0.25" />
       <path d="M220 700 L820 80" stroke="#F5C000" strokeWidth="0.5" strokeOpacity="0.15" />
-      {/* Right-side navy accent */}
       <path d="M1100 0 L1440 300 L1440 0 Z" fill="#1b1f5e" fillOpacity="0.25" />
     </svg>
   );
@@ -196,10 +236,10 @@ export default function AboutCreatorClient() {
 
         <div className="hidden sm:flex gap-6">
           {[
-            { label: "Home", href: "/" },
-            { label: "Creator", href: "/creator", active: true },
+            { label: "Home",          href: "/" },
+            { label: "Creator",       href: "/creator", active: true },
             { label: "About COMELEC", href: "/about" },
-            { label: "Officers", href: "/officers" },
+            { label: "Officers",      href: "/officers" },
           ].map((link) => (
             <Link
               key={link.label}
@@ -214,9 +254,7 @@ export default function AboutCreatorClient() {
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────── */}
-      <section
-        className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-28 pb-16 overflow-hidden"
-      >
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-28 pb-16 overflow-hidden">
         {/* Grid texture */}
         <div
           className="absolute inset-0 opacity-[0.04] pointer-events-none"
@@ -227,36 +265,30 @@ export default function AboutCreatorClient() {
           }}
         />
         {/* Radial glow */}
-        <div
-          className="absolute inset-0 flex items-center justify-center pointer-events-none"
-        >
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
             className="w-[700px] h-[700px] rounded-full"
-            style={{
-              background: "radial-gradient(ellipse, rgba(27,31,94,0.75) 0%, transparent 70%)",
-            }}
+            style={{ background: "radial-gradient(ellipse, rgba(27,31,94,0.75) 0%, transparent 70%)" }}
           />
         </div>
         <HeroRibbons />
 
         {/* Fade-in content */}
         <div
-          className={`relative z-10 flex flex-col items-center text-center max-w-2xl w-full transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-            }`}
+          className={`relative z-10 flex flex-col items-center text-center max-w-2xl w-full transition-all duration-700 ${
+            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
+          }`}
         >
           {/* Photo placeholder */}
           <div className="relative mb-8">
-            {/* Outer ring */}
             <div
               className="absolute rounded-full pointer-events-none"
               style={{ inset: "-14px", border: "1px solid rgba(245,192,0,0.15)" }}
             />
-            {/* Inner ring */}
             <div
               className="absolute rounded-full pointer-events-none"
               style={{ inset: "-6px", border: "2px solid rgba(245,192,0,0.45)" }}
             />
-            {/* Photo circle */}
             <div
               className="w-40 h-40 rounded-full flex items-center justify-center overflow-hidden"
               style={{
@@ -278,7 +310,6 @@ export default function AboutCreatorClient() {
             </div>
           </div>
 
-          {/* Meta */}
           <p
             className="font-body text-[0.6rem] tracking-[0.3em] uppercase mb-2"
             style={{ color: "rgba(245,192,0,0.7)" }}
@@ -288,10 +319,7 @@ export default function AboutCreatorClient() {
 
           <h1
             className="font-tagline font-bold leading-none tracking-[0.05em] uppercase mb-1"
-            style={{
-              fontSize: "clamp(2.5rem, 6vw, 4rem)",
-              color: "#ffffff",
-            }}
+            style={{ fontSize: "clamp(2.5rem, 6vw, 4rem)", color: "#ffffff" }}
           >
             Mikel Taopa
           </h1>
@@ -326,10 +354,7 @@ export default function AboutCreatorClient() {
         <Eyebrow label="Connect" />
         <h2
           className="font-tagline font-bold text-center mb-10"
-          style={{
-            fontSize: "clamp(1.5rem, 4vw, 2.25rem)",
-            color: "#ffffff",
-          }}
+          style={{ fontSize: "clamp(1.5rem, 4vw, 2.25rem)", color: "#ffffff" }}
         >
           Get in Touch
         </h2>
@@ -339,12 +364,12 @@ export default function AboutCreatorClient() {
             <a
               key={s.id}
               href={s.href}
-              target={s.id !== "email" ? "_blank" : undefined}
-              rel={s.id !== "email" ? "noopener noreferrer" : undefined}
+              target={s.id !== "email" && s.id !== "phone" ? "_blank" : undefined}
+              rel={s.id !== "email" && s.id !== "phone" ? "noopener noreferrer" : undefined}
               className="flex items-center gap-3 no-underline transition-all duration-200 hover:-translate-y-0.5"
               style={{
                 padding: "0.875rem 1.5rem",
-                border: `1px solid rgba(245,192,0,0.2)`,
+                border: "1px solid rgba(245,192,0,0.2)",
                 background: "rgba(27,31,94,0.3)",
                 borderRadius: "2px",
                 minWidth: "200px",
@@ -387,10 +412,7 @@ export default function AboutCreatorClient() {
         <Eyebrow label="About This Project" />
         <h2
           className="font-tagline font-bold text-center mb-3"
-          style={{
-            fontSize: "clamp(1.5rem, 4vw, 2.25rem)",
-            color: "#ffffff",
-          }}
+          style={{ fontSize: "clamp(1.5rem, 4vw, 2.25rem)", color: "#ffffff" }}
         >
           What I Built
         </h2>
@@ -425,24 +447,17 @@ export default function AboutCreatorClient() {
                 if (accent) accent.style.opacity = "0";
               }}
             >
-              {/* Left gold accent bar */}
               <div
                 className="card-accent absolute left-0 top-3 bottom-3 w-0.5 rounded-full transition-opacity duration-250"
                 style={{ background: "#F5C000", opacity: 0 }}
               />
-              <p
-                className="font-mono text-[0.65rem] mb-2"
-                style={{ color: "rgba(245,192,0,0.45)" }}
-              >
+              <p className="font-mono text-[0.65rem] mb-2" style={{ color: "rgba(245,192,0,0.45)" }}>
                 {h.num}
               </p>
-              <p className="font-heading text-[0.875rem] font-bold mb-1.5" style={{ color: "#ffffff" }}>
+              <p className="font-tagline text-[0.875rem] font-bold mb-1.5" style={{ color: "#ffffff" }}>
                 {h.title}
               </p>
-              <p
-                className="font-body text-[0.75rem] leading-[1.6]"
-                style={{ color: "#8a8fbb" }}
-              >
+              <p className="font-body text-[0.75rem] leading-[1.6]" style={{ color: "#8a8fbb" }}>
                 {h.desc}
               </p>
             </div>
@@ -453,15 +468,9 @@ export default function AboutCreatorClient() {
       {/* ── FOOTER ───────────────────────────────────────── */}
       <footer className="py-12 px-6 border-t border-white/5">
         <div className="max-w-5xl mx-auto flex flex-col items-center gap-4 text-center">
-          <p className="font-tagline text-white/30 text-sm italic">
-            VOX POPULI VOX DEI
-          </p>
-          <p className="font-body text-mid/50 text-xs tracking-wide">
-            OLPS COMELEC — Commission on Elections
-          </p>
-          <p className="font-body text-mid/30 text-[11px]">
-            Our Lady of Peace School
-          </p>
+          <p className="font-tagline text-white/30 text-sm italic">VOX POPULI VOX DEI</p>
+          <p className="font-body text-mid/50 text-xs tracking-wide">OLPS COMELEC — Commission on Elections</p>
+          <p className="font-body text-mid/30 text-[11px]">Our Lady of Peace School</p>
         </div>
       </footer>
     </div>
