@@ -10,7 +10,7 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { renderToBuffer } from "@react-pdf/renderer";
+import { renderToBuffer, type DocumentProps } from "@react-pdf/renderer";
 import React from "react";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
@@ -155,7 +155,7 @@ export async function GET(
       dateClosed: formatDate(election.updatedAt),
       generatedAt: formatDateTime(now),
       positions: resultPositions,
-    }) as unknown as React.ReactElement<any>;
+    }) as unknown as React.ReactElement<DocumentProps>;
 
     const buffer = await renderToBuffer(element);
 

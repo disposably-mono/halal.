@@ -283,9 +283,6 @@ function ElectionSummary({
   lastUpdated: Date | null;
 }) {
   const totalVotes = data.positions.reduce((s, p) => s + p.totalVotes, 0);
-  const leaderCount = data.positions.filter(
-    (p) => p.candidates.length > 0 && p.candidates[0].votes > 0
-  ).length;
 
   return (
     <div className="flex flex-wrap items-center gap-2">

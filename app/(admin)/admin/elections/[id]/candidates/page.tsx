@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { DIVISION_POSITIONS } from "../../lib/constants";
+import { DIVISION_POSITIONS } from "@/lib/elections/constants";
 import {
   StatusPill,
   FinalizeBanner,

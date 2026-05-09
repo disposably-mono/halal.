@@ -1,36 +1,38 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
-
-// ─── Update election status (kanban drag-drop) ────────────────────────────────
+import { requireAdminSession } from "@/lib/server/auth";
+import { revalidateAdminDashboard } from "@/lib/server/revalidate";
+import { ElectionStatusSchema } from "@/lib/validation/schemas";
 
 export async function updateElectionStatus(
   electionId: string,
-  status: string
+  status: string,
 ): Promise<void> {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
+  await requireAdminSession();
 
-  // Guard: only allow moving to SCHEDULED/OPEN if both lists are finalized
-  if (status === "SCHEDULED" || status === "OPEN") {
+  const parsed = ElectionStatusSchema.safeParse(status);
+  if (!parsed.success) {
+    throw new Error(`Invalid election status: ${status}`);
+  }
+  const nextStatus = parsed.data;
+
+  if (nextStatus === "SCHEDULED" || nextStatus === "OPEN") {
     const election = await prisma.election.findUnique({
       where: { id: electionId },
       select: { candidatesFinalized: true, votersFinalized: true },
     });
     if (!election?.candidatesFinalized || !election?.votersFinalized) {
       throw new Error(
-        "Both candidates and voters must be finalized before changing to this status."
+        "Both candidates and voters must be finalized before changing to this status.",
       );
     }
   }
 
   await prisma.election.update({
     where: { id: electionId },
-    data: { status: status as any },
+    data: { status: nextStatus },
   });
 
-  revalidatePath("/admin");
+  revalidateAdminDashboard();
 }

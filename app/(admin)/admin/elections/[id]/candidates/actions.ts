@@ -1,35 +1,31 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
-import { DIVISION_POSITIONS } from "../../lib/constants";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
+import { DIVISION_POSITIONS } from "@/lib/elections/constants";
+import { pickCandidateDefaultGrade } from "@/lib/domain/ballot";
+import { canFinalizeUnlock } from "@/lib/domain/election-state";
+import { requireAdminSession } from "@/lib/server/auth";
+import { revalidateElectionCandidates } from "@/lib/server/revalidate";
+import {
+  AddCandidateSchema,
+  AddSinglePositionSchema,
+  ElectionIdSchema,
+  RemoveCandidateSchema,
+  RemovePositionSchema,
+  SeedPositionsSchema,
+  safeParseFormData,
+} from "@/lib/validation/schemas";
 
 export type FinalizeResult = {
   success: boolean;
   error?: string;
 };
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-async function requireSession() {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
-}
-
-function revalidate(electionId: string) {
-  revalidatePath(`/admin/elections/${electionId}/candidates`);
-}
-
-// ─── Seed all positions ───────────────────────────────────────────────────────
-
 export async function seedAllPositions(formData: FormData) {
-  await requireSession();
-  const electionId = formData.get("electionId") as string;
-  const division = formData.get("division") as string;
+  await requireAdminSession();
+  const parsed = safeParseFormData(SeedPositionsSchema, formData);
+  if (!parsed.success) return;
+  const { electionId, division } = parsed.data;
   const positions = DIVISION_POSITIONS[division] ?? [];
 
   await prisma.$transaction(
@@ -43,23 +39,19 @@ export async function seedAllPositions(formData: FormData) {
           order: i,
           isActive: true,
         },
-      })
-    )
+      }),
+    ),
   );
-  revalidate(electionId);
+  revalidateElectionCandidates(electionId);
 }
 
-// ─── Add single position ──────────────────────────────────────────────────────
-
 export async function addSinglePosition(formData: FormData) {
-  await requireSession();
-  const electionId = formData.get("electionId") as string;
-  const division = formData.get("division") as string;
-  const title = formData.get("title") as string;
+  await requireAdminSession();
+  const parsed = safeParseFormData(AddSinglePositionSchema, formData);
+  if (!parsed.success) return;
+  const { electionId, division, title } = parsed.data;
 
-  const positionDef = (DIVISION_POSITIONS[division] ?? []).find(
-    (p) => p.title === title
-  );
+  const positionDef = (DIVISION_POSITIONS[division] ?? []).find((p) => p.title === title);
   if (!positionDef) return;
 
   const last = await prisma.position.findFirst({
@@ -78,31 +70,27 @@ export async function addSinglePosition(formData: FormData) {
       isActive: true,
     },
   });
-  revalidate(electionId);
+  revalidateElectionCandidates(electionId);
 }
 
-// ─── Remove position ──────────────────────────────────────────────────────────
-
 export async function removePosition(formData: FormData) {
-  await requireSession();
-  const positionId = formData.get("positionId") as string;
-  const electionId = formData.get("electionId") as string;
+  await requireAdminSession();
+  const parsed = safeParseFormData(RemovePositionSchema, formData);
+  if (!parsed.success) return;
+  const { positionId, electionId } = parsed.data;
 
   await prisma.position.update({
     where: { id: positionId },
     data: { isActive: false },
   });
-  revalidate(electionId);
+  revalidateElectionCandidates(electionId);
 }
 
-// ─── Add candidate ────────────────────────────────────────────────────────────
-
 export async function addCandidate(formData: FormData) {
-  await requireSession();
-  const positionId = formData.get("positionId") as string;
-  const electionId = formData.get("electionId") as string;
-  const fullName = (formData.get("fullName") as string).trim();
-  if (!fullName) return;
+  await requireAdminSession();
+  const parsed = safeParseFormData(AddCandidateSchema, formData);
+  if (!parsed.success) return;
+  const { positionId, electionId, fullName } = parsed.data;
 
   const position = await prisma.position.findUnique({
     where: { id: positionId },
@@ -110,38 +98,37 @@ export async function addCandidate(formData: FormData) {
   });
   if (!position) return;
 
-  const grades = position.candidateGrade
-    .split(",")
-    .map((g) => parseInt(g.trim(), 10))
-    .filter((n) => !isNaN(n));
-  const gradeLevel = grades.length === 1 ? grades[0] : 0;
-
   await prisma.candidate.create({
-    data: { positionId, electionId, fullName, gradeLevel },
+    data: {
+      positionId,
+      electionId,
+      fullName,
+      gradeLevel: pickCandidateDefaultGrade(position.candidateGrade),
+    },
   });
-  revalidate(electionId);
+  revalidateElectionCandidates(electionId);
 }
-
-// ─── Remove candidate ─────────────────────────────────────────────────────────
 
 export async function removeCandidate(formData: FormData) {
-  await requireSession();
-  const candidateId = formData.get("candidateId") as string;
-  const electionId = formData.get("electionId") as string;
+  await requireAdminSession();
+  const parsed = safeParseFormData(RemoveCandidateSchema, formData);
+  if (!parsed.success) return;
+  const { candidateId, electionId } = parsed.data;
 
   await prisma.candidate.delete({ where: { id: candidateId } });
-  revalidate(electionId);
+  revalidateElectionCandidates(electionId);
 }
-
-// ─── Finalize candidates ──────────────────────────────────────────────────────
-// Returns a result object instead of throwing — prevents crash pages.
 
 export async function finalizeCandidates(
   _prevState: FinalizeResult | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<FinalizeResult> {
-  await requireSession();
-  const electionId = formData.get("electionId") as string;
+  await requireAdminSession();
+  const parsed = safeParseFormData(ElectionIdSchema, formData);
+  if (!parsed.success) {
+    return { success: false, error: "Missing election." };
+  }
+  const { electionId } = parsed.data;
 
   const positions = await prisma.position.findMany({
     where: { electionId, isActive: true },
@@ -149,10 +136,7 @@ export async function finalizeCandidates(
   });
 
   if (positions.length === 0) {
-    return {
-      success: false,
-      error: "Add at least one position before finalizing.",
-    };
+    return { success: false, error: "Add at least one position before finalizing." };
   }
 
   const empty = positions.filter((p) => p._count.candidates === 0);
@@ -169,28 +153,32 @@ export async function finalizeCandidates(
     data: { candidatesFinalized: true },
   });
 
-  revalidate(electionId);
+  revalidateElectionCandidates(electionId);
   return { success: true };
 }
 
-// ─── Unfinalize candidates ────────────────────────────────────────────────────
-
 export async function unfinalizeCandidates(
   _prevState: FinalizeResult | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<FinalizeResult> {
-  await requireSession();
-  const electionId = formData.get("electionId") as string;
+  await requireAdminSession();
+  const parsed = safeParseFormData(ElectionIdSchema, formData);
+  if (!parsed.success) {
+    return { success: false, error: "Missing election." };
+  }
+  const { electionId } = parsed.data;
 
   const election = await prisma.election.findUnique({
     where: { id: electionId },
     select: { status: true },
   });
+  if (!election) return { success: false, error: "Election not found." };
 
-  if (election?.status === "OPEN" || election?.status === "CLOSED") {
+  const guard = canFinalizeUnlock(election.status);
+  if (!guard.ok) {
     return {
       success: false,
-      error: "Cannot unlock candidates while the election is Open or Closed.",
+      error: guard.reason.replace("Cannot unlock", "Cannot unlock candidates"),
     };
   }
 
@@ -199,6 +187,6 @@ export async function unfinalizeCandidates(
     data: { candidatesFinalized: false },
   });
 
-  revalidate(electionId);
+  revalidateElectionCandidates(electionId);
   return { success: true };
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -215,9 +215,6 @@ function WaveRibbon() {
 export default function LandingClient({ divisionCards, countdownTarget }: Props) {
   const countdown = useCountdown(
     countdownTarget?.status === "SCHEDULED" ? countdownTarget.date : null
-  );
-  const hasActiveElections = divisionCards.some(
-    (c) => c.election?.status === "OPEN" || c.election?.status === "SCHEDULED"
   );
   const anyOpen = divisionCards.some((c) => c.election?.status === "OPEN");
 

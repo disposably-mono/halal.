@@ -497,13 +497,11 @@ export default function MonitorClient({
   electionName,
   division,
   status,
-  totalVoters,
 }: {
   electionId: string;
   electionName: string;
   division: string;
   status: string;
-  totalVoters: number;
 }) {
   const [liveData, setLiveData] = useState<ResultsPayload | null>(null);
   const [snapshots, setSnapshots] = useState<Snapshot[]>([]);

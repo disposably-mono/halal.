@@ -1,4 +1,5 @@
 import NextAuth from "next-auth";
+import type { Session } from "next-auth";
 import { authConfig } from "@/auth.config";
 import { NextRequest, NextResponse } from "next/server";
 import { VOTER_COOKIE } from "@/lib/voter-session";
@@ -6,7 +7,7 @@ import { jwtVerify } from "jose";
 
 const { auth } = NextAuth(authConfig);
 
-export default auth(async function middleware(req: NextRequest & { auth: any }) {
+export default auth(async function middleware(req: NextRequest & { auth: Session | null }) {
   const { pathname } = req.nextUrl;
   const isLoggedIn = !!req.auth;
 

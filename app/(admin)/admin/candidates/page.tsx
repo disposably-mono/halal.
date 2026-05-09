@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import type { ElectionStatus } from "@prisma/client";
 
 const DIVISION_LABELS: Record<string, string> = {
   GS: "Grade School", JHS: "Junior High School",
@@ -49,7 +50,7 @@ export default async function AdminCandidatesPage() {
 
   // Group: division → election → positions[]
   type PositionRow = typeof positions[number];
-  const byDivision = new Map<string, Map<string, { name: string; status: string; positions: PositionRow[] }>>();
+  const byDivision = new Map<string, Map<string, { name: string; status: ElectionStatus; positions: PositionRow[] }>>();
 
   for (const pos of positions) {
     const div = pos.election.division as string;
@@ -134,7 +135,7 @@ export default async function AdminCandidatesPage() {
                   {/* Election header */}
                   <div className="px-4 py-3 border-b border-white/[0.07] flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <StatusDot status={el.status as any} />
+                      <StatusDot status={el.status} />
                       <div className="text-[12px] font-semibold text-white/80 truncate">{el.name}</div>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0 text-[10px] text-white/40">
@@ -189,13 +190,18 @@ export default async function AdminCandidatesPage() {
   );
 }
 
-function StatusDot({ status }: { status: "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED" }) {
-  const colors: Record<string, string> = {
-    OPEN: "bg-emerald-400", SCHEDULED: "bg-blue-400",
-    DRAFT: "bg-white/20", CLOSED: "bg-white/10",
+function StatusDot({ status }: { status: ElectionStatus }) {
+  const colors: Record<ElectionStatus, string> = {
+    OPEN: "bg-emerald-400",
+    SCHEDULED: "bg-blue-400",
+    DRAFT: "bg-white/20",
+    CLOSED: "bg-white/10",
   };
-  const labels: Record<string, string> = {
-    OPEN: "Open", SCHEDULED: "Scheduled", DRAFT: "Draft", Closed: "Closed",
+  const labels: Record<ElectionStatus, string> = {
+    OPEN: "Open",
+    SCHEDULED: "Scheduled",
+    DRAFT: "Draft",
+    CLOSED: "Closed",
   };
   return (
     <span className="inline-flex items-center gap-1 text-[10px] text-white/40 flex-shrink-0">

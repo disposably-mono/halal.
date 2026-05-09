@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import type { ElectionStatus } from "@prisma/client";
 
 const DIVISION_LABELS: Record<string, string> = {
   GS: "Grade School", JHS: "Junior High School",
@@ -89,7 +90,7 @@ export default async function AdminVotersPage() {
         const divPct = voters.length > 0 ? Math.round((divVoted / voters.length) * 100) : 0;
 
         // Sub-group by election within division
-        const byElection = new Map<string, { name: string; status: string; voters: typeof voters }>();
+        const byElection = new Map<string, { name: string; status: ElectionStatus; voters: typeof voters }>();
         for (const v of voters) {
           const eid = v.election.id;
           if (!byElection.has(eid)) byElection.set(eid, { name: v.election.name, status: v.election.status, voters: [] });
@@ -119,7 +120,7 @@ export default async function AdminVotersPage() {
                   {/* Election header */}
                   <div className="px-4 py-3 border-b border-white/[0.07] flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
-                      <StatusDot status={el.status as any} />
+                      <StatusDot status={el.status} />
                       <div className="text-[12px] font-semibold text-white/80 truncate">{el.name}</div>
                     </div>
                     <div className="flex items-center gap-3 flex-shrink-0 text-[10px] text-white/40">
@@ -178,13 +179,18 @@ export default async function AdminVotersPage() {
   );
 }
 
-function StatusDot({ status }: { status: "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED" }) {
-  const colors: Record<string, string> = {
-    OPEN: "bg-emerald-400", SCHEDULED: "bg-blue-400",
-    DRAFT: "bg-white/20", CLOSED: "bg-white/10",
+function StatusDot({ status }: { status: ElectionStatus }) {
+  const colors: Record<ElectionStatus, string> = {
+    OPEN: "bg-emerald-400",
+    SCHEDULED: "bg-blue-400",
+    DRAFT: "bg-white/20",
+    CLOSED: "bg-white/10",
   };
-  const labels: Record<string, string> = {
-    OPEN: "Open", SCHEDULED: "Scheduled", DRAFT: "Draft", CLOSED: "Closed",
+  const labels: Record<ElectionStatus, string> = {
+    OPEN: "Open",
+    SCHEDULED: "Scheduled",
+    DRAFT: "Draft",
+    CLOSED: "Closed",
   };
   return (
     <span className="inline-flex items-center gap-1 text-[10px] text-white/40 flex-shrink-0">

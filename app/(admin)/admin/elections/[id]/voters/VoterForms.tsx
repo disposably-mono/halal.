@@ -3,7 +3,7 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { addVotersFromCSV, addVoterManual } from "./actions";
 import type { CSVImportResult, ManualAddResult } from "./actions";
-import { BTN_PRIMARY, BTN_GHOST, INPUT_BASE, BTN_SM } from "@/app/admin/ui";
+import { BTN_PRIMARY, BTN_GHOST, INPUT_BASE } from "@/app/admin/ui";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

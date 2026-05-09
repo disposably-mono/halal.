@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { signVoterSession, VOTER_COOKIE } from "@/lib/voter-session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { safeParseFormData, VoterLoginSchema } from "@/lib/validation/schemas";
 
 export type VoterLoginError =
   | "INVALID_CREDENTIALS"
@@ -16,54 +17,41 @@ export interface VoterLoginResult {
   message: string;
 }
 
+const STATUS_MESSAGES: Record<string, string> = {
+  DRAFT: "This election has not been opened yet.",
+  SCHEDULED: "Voting has not started yet. Check the schedule.",
+  CLOSED: "This election has already closed.",
+};
+
+const INVALID_CREDS: VoterLoginResult = {
+  error: "INVALID_CREDENTIALS",
+  message: "Invalid credentials. Check your Student ID and Control Number.",
+};
+
 export async function validateVoterCode(
   _prev: VoterLoginResult | null,
-  formData: FormData
+  formData: FormData,
 ): Promise<VoterLoginResult> {
-  const rawCode = formData.get("voterCode");
-  const rawId = formData.get("studentId");
-
-  if (
-    !rawCode || typeof rawCode !== "string" ||
-    !rawId || typeof rawId !== "string"
-  ) {
-    return {
-      error: "INVALID_CREDENTIALS",
-      message: "Please enter both your Student ID and Control Number.",
-    };
+  const parsed = safeParseFormData(VoterLoginSchema, formData);
+  if (!parsed.success) {
+    return INVALID_CREDS;
   }
-
-  const voterCode = rawCode.trim().toUpperCase();
-  const studentId = rawId.trim();
-
-  // Format validation — fail fast before hitting DB
-  if (!/^\d{4}[A-H]\d{3}$/.test(voterCode) || !/^\d{4}-\d{4}$/.test(studentId)) {
-    return {
-      error: "INVALID_CREDENTIALS",
-      message: "Invalid credentials. Check your Student ID and Control Number.",
-    };
-  }
+  const { voterCode, studentId } = parsed.data;
 
   let voter;
   try {
     voter = await prisma.voter.findUnique({
       where: { voterCode },
       include: {
-        election: {
-          select: { id: true, status: true, division: true },
-        },
+        election: { select: { id: true, status: true, division: true } },
       },
     });
   } catch {
     return { error: "UNKNOWN", message: "Something went wrong. Please try again." };
   }
 
-  // Generic response for not found OR studentId mismatch — no info leak
   if (!voter || voter.studentId !== studentId) {
-    return {
-      error: "INVALID_CREDENTIALS",
-      message: "Invalid credentials. Check your Student ID and Control Number.",
-    };
+    return INVALID_CREDS;
   }
 
   if (voter.hasVoted) {
@@ -74,20 +62,14 @@ export async function validateVoterCode(
   }
 
   if (voter.election.status !== "OPEN") {
-    const statusMessages: Record<string, string> = {
-      DRAFT: "This election has not been opened yet.",
-      SCHEDULED: "Voting has not started yet. Check the schedule.",
-      CLOSED: "This election has already closed.",
-    };
     return {
       error: "ELECTION_NOT_OPEN",
       message:
-        statusMessages[voter.election.status] ??
+        STATUS_MESSAGES[voter.election.status] ??
         "This election is not currently open.",
     };
   }
 
-  // Both factors valid — sign session JWT and set cookie
   const token = await signVoterSession({
     voterId: voter.id,
     electionId: voter.electionId,

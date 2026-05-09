@@ -194,7 +194,7 @@ export default async function AdminResultsPage() {
                               </div>
                             ) : pos.draw ? (
                               <div className="text-[11px] text-sky-400 font-medium mt-[1px]">
-                                Draw — {pos.draw.map((c: any) => c.fullName).join(" / ")}
+                                Draw — {pos.draw.map((c) => c.fullName).join(" / ")}
                               </div>
                             ) : (
                               <div className="text-[11px] text-white/20 italic mt-[1px]">

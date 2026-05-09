@@ -258,7 +258,6 @@ export function SetupStepper({
       {steps.map((step, i) => {
         const isDone = step.done;
         const isCurrent = !isDone && i === firstIncomplete;
-        const isFuture = !isDone && i !== firstIncomplete;
 
         return (
           <div key={step.label} className="flex items-center">
@@ -339,7 +338,12 @@ export function FinalizeBanner({
   lockedSub: string;
   unlockedText: string;
   unlockedSub: string;
-  /** Server action that accepts FormData with an `electionId` field */
+  /**
+   * Server action that accepts FormData with an `electionId` field.
+   * Genuinely polymorphic dispatch prop — different callers pass actions with
+   * different prevState/return types. Phase 2 will replace this with a typed pattern.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unlockAction?: (prevState: any, formData: FormData) => Promise<any>;
   electionId?: string;
   canUnlock?: boolean;

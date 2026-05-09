@@ -1,91 +1,108 @@
 "use server";
 
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
-import { revalidatePath } from "next/cache";
 import { ElectionStatus } from "@prisma/client";
+import {
+  canAdvanceToScheduled,
+  canManuallyClose,
+  canManuallyOpen,
+  canReschedule,
+  nextStatusForReschedule,
+} from "@/lib/domain/election-state";
+import { requireAdminSessionOrError, adminEmailFromSession } from "@/lib/server/auth";
+import {
+  revalidateAdminDashboard,
+  revalidateElectionControl,
+} from "@/lib/server/revalidate";
 
-type ActionResult = { success: boolean; error?: string };
+type ActionResult = { success: true } | { success: false; error: string };
 
-export async function openElectionNow(electionId: string): Promise<ActionResult> {
-  const session = await auth();
-  if (!session) return { success: false, error: "Unauthorized" };
+const fmtDate = (d: Date | null) =>
+  d?.toLocaleString("en-PH", {
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }) ?? "—";
 
-  const election = await prisma.election.findUnique({ where: { id: electionId } });
-  if (!election) return { success: false, error: "Election not found" };
-  if (election.status === "OPEN") return { success: false, error: "Already open" };
-  if (election.status === "CLOSED") return { success: false, error: "Cannot reopen a closed election" };
-  if (election.status === "DRAFT") return { success: false, error: "Cannot open a draft election directly — advance to Scheduled first" };
+function revalidateAfterTransition(electionId: string) {
+  revalidateAdminDashboard();
+  revalidateElectionControl(electionId);
+}
 
+async function transitionStatus(
+  electionId: string,
+  toStatus: ElectionStatus,
+  action: string,
+  adminEmail: string,
+) {
   await prisma.$transaction([
     prisma.election.update({
       where: { id: electionId },
-      data: { status: ElectionStatus.OPEN },
+      data: { status: toStatus },
     }),
     prisma.auditLog.create({
-      data: {
-        electionId,
-        action: "Manually opened election (override)",
-        toStatus: ElectionStatus.OPEN,
-        adminEmail: session.user?.email ?? "unknown",
-      },
+      data: { electionId, action, toStatus, adminEmail },
     }),
   ]);
+}
 
-  revalidatePath(`/admin`);
-  revalidatePath(`/admin/elections/${electionId}/control`);
+export async function openElectionNow(electionId: string): Promise<ActionResult> {
+  const guard = await requireAdminSessionOrError();
+  if (!guard.ok) return { success: false, error: guard.error };
+
+  const election = await prisma.election.findUnique({ where: { id: electionId } });
+  if (!election) return { success: false, error: "Election not found" };
+
+  const check = canManuallyOpen(election.status);
+  if (!check.ok) return { success: false, error: check.reason };
+
+  await transitionStatus(
+    electionId,
+    ElectionStatus.OPEN,
+    "Manually opened election (override)",
+    adminEmailFromSession(guard.session),
+  );
+  revalidateAfterTransition(electionId);
   return { success: true };
 }
 
 export async function closeElectionNow(electionId: string): Promise<ActionResult> {
-  const session = await auth();
-  if (!session) return { success: false, error: "Unauthorized" };
+  const guard = await requireAdminSessionOrError();
+  if (!guard.ok) return { success: false, error: guard.error };
 
   const election = await prisma.election.findUnique({ where: { id: electionId } });
   if (!election) return { success: false, error: "Election not found" };
-  if (election.status !== "OPEN") return { success: false, error: "Election must be Open to close it" };
 
-  await prisma.$transaction([
-    prisma.election.update({
-      where: { id: electionId },
-      data: { status: ElectionStatus.CLOSED },
-    }),
-    prisma.auditLog.create({
-      data: {
-        electionId,
-        action: "Manually closed election (override)",
-        toStatus: ElectionStatus.CLOSED,
-        adminEmail: session.user?.email ?? "unknown",
-      },
-    }),
-  ]);
+  const check = canManuallyClose(election.status);
+  if (!check.ok) return { success: false, error: check.reason };
 
-  revalidatePath(`/admin`);
-  revalidatePath(`/admin/elections/${electionId}/control`);
+  await transitionStatus(
+    electionId,
+    ElectionStatus.CLOSED,
+    "Manually closed election (override)",
+    adminEmailFromSession(guard.session),
+  );
+  revalidateAfterTransition(electionId);
   return { success: true };
 }
 
 export async function rescheduleElection(
   electionId: string,
   scheduledOpen: string | null,
-  scheduledClose: string | null
+  scheduledClose: string | null,
 ): Promise<ActionResult> {
-  const session = await auth();
-  if (!session) return { success: false, error: "Unauthorized" };
+  const guard = await requireAdminSessionOrError();
+  if (!guard.ok) return { success: false, error: guard.error };
 
   const election = await prisma.election.findUnique({ where: { id: electionId } });
   if (!election) return { success: false, error: "Election not found" };
-  if (election.status === "CLOSED") return { success: false, error: "Cannot reschedule a closed election" };
 
   const openDate = scheduledOpen ? new Date(scheduledOpen) : null;
   const closeDate = scheduledClose ? new Date(scheduledClose) : null;
 
-  if (openDate && closeDate && openDate >= closeDate) {
-    return { success: false, error: "Open time must be before close time" };
-  }
-
-  const fmtOpen = openDate?.toLocaleString("en-PH", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) ?? "—";
-  const fmtClose = closeDate?.toLocaleString("en-PH", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" }) ?? "—";
+  const check = canReschedule(election.status, openDate, closeDate);
+  if (!check.ok) return { success: false, error: check.reason };
 
   await prisma.$transaction([
     prisma.election.update({
@@ -93,49 +110,38 @@ export async function rescheduleElection(
       data: {
         scheduledOpen: openDate,
         scheduledClose: closeDate,
-        status: openDate ? ElectionStatus.SCHEDULED : ElectionStatus.DRAFT,
+        status: nextStatusForReschedule(openDate),
       },
     }),
     prisma.auditLog.create({
       data: {
         electionId,
-        action: `Schedule overridden: ${fmtOpen} – ${fmtClose}`,
+        action: `Schedule overridden: ${fmtDate(openDate)} – ${fmtDate(closeDate)}`,
         toStatus: null,
-        adminEmail: session.user?.email ?? "unknown",
+        adminEmail: adminEmailFromSession(guard.session),
       },
     }),
   ]);
-
-  revalidatePath(`/admin`);
-  revalidatePath(`/admin/elections/${electionId}/control`);
+  revalidateAfterTransition(electionId);
   return { success: true };
 }
 
 export async function advanceToScheduled(electionId: string): Promise<ActionResult> {
-  const session = await auth();
-  if (!session) return { success: false, error: "Unauthorized" };
+  const guard = await requireAdminSessionOrError();
+  if (!guard.ok) return { success: false, error: guard.error };
 
   const election = await prisma.election.findUnique({ where: { id: electionId } });
   if (!election) return { success: false, error: "Election not found" };
-  if (election.status !== "DRAFT") return { success: false, error: "Only DRAFT elections can be advanced to Scheduled" };
-  if (!election.scheduledOpen) return { success: false, error: "Set a scheduled open time first" };
 
-  await prisma.$transaction([
-    prisma.election.update({
-      where: { id: electionId },
-      data: { status: ElectionStatus.SCHEDULED },
-    }),
-    prisma.auditLog.create({
-      data: {
-        electionId,
-        action: "Advanced to Scheduled",
-        toStatus: ElectionStatus.SCHEDULED,
-        adminEmail: session.user?.email ?? "unknown",
-      },
-    }),
-  ]);
+  const check = canAdvanceToScheduled(election.status, election.scheduledOpen);
+  if (!check.ok) return { success: false, error: check.reason };
 
-  revalidatePath(`/admin`);
-  revalidatePath(`/admin/elections/${electionId}/control`);
+  await transitionStatus(
+    electionId,
+    ElectionStatus.SCHEDULED,
+    "Advanced to Scheduled",
+    adminEmailFromSession(guard.session),
+  );
+  revalidateAfterTransition(electionId);
   return { success: true };
 }

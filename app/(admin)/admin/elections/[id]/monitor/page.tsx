@@ -15,7 +15,6 @@ export default async function MonitorPage({ params }: { params: { id: string } }
     where: { id: params.id },
     select: {
       id: true, name: true, division: true, status: true,
-      _count: { select: { voters: true } },
     },
   });
 
@@ -49,7 +48,6 @@ export default async function MonitorPage({ params }: { params: { id: string } }
         electionName={election.name}
         division={election.division}
         status={election.status}
-        totalVoters={election._count.voters}
       />
     </div>
   );

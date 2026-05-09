@@ -24,12 +24,24 @@ export async function signVoterSession(payload: VoterSession): Promise<string> {
     .sign(getSecret());
 }
 
+function isVoterSession(value: unknown): value is VoterSession {
+  if (!value || typeof value !== "object") return false;
+  const v = value as Record<string, unknown>;
+  return (
+    typeof v.voterId === "string" &&
+    typeof v.electionId === "string" &&
+    typeof v.gradeLevel === "number" &&
+    typeof v.division === "string"
+  );
+}
+
 export async function verifyVoterSession(
   token: string
 ): Promise<VoterSession | null> {
   try {
     const { payload } = await jwtVerify(token, getSecret());
-    return payload as unknown as VoterSession;
+    if (!isVoterSession(payload)) return null;
+    return payload;
   } catch {
     return null;
   }

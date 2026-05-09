@@ -1,11 +1,13 @@
 "use server";
 
+import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getVoterSession } from "@/lib/voter-session";
 
-export interface BallotSelection {
-  [positionId: string]: string | null;
-}
+const BallotSelectionSchema = z.record(z.string().min(1), z.string().min(1).nullable());
+const PositionIdsSchema = z.array(z.string().min(1));
+
+export type BallotSelection = z.infer<typeof BallotSelectionSchema>;
 
 export type SubmitBallotResult =
   | { success: true }
@@ -13,14 +15,19 @@ export type SubmitBallotResult =
 
 export async function submitBallot(
   selections: BallotSelection,
-  allPositionIds: string[]
+  allPositionIds: string[],
 ): Promise<SubmitBallotResult> {
-  const session = await getVoterSession();
+  const parsedSelections = BallotSelectionSchema.safeParse(selections);
+  const parsedIds = PositionIdsSchema.safeParse(allPositionIds);
+  if (!parsedSelections.success || !parsedIds.success) {
+    return { success: false, error: "Invalid ballot data." };
+  }
 
+  const session = await getVoterSession();
   if (!session) {
     return {
       success: false,
-      error: "Session expired. Please re-enter your control number."
+      error: "Session expired. Please re-enter your control number.",
     };
   }
 
@@ -33,7 +40,6 @@ export async function submitBallot(
     return { success: false, error: "Voter record not found." };
   }
 
-  // Already voted — treat as success so client redirects to confirmed
   if (voter.hasVoted) {
     return { success: true };
   }
@@ -47,14 +53,15 @@ export async function submitBallot(
     return { success: false, error: "This election is no longer open." };
   }
 
-  const voteData = allPositionIds.map((positionId) => {
-    const candidateId = selections[positionId] ?? null;
+  const now = new Date();
+  const voteData = parsedIds.data.map((positionId) => {
+    const candidateId = parsedSelections.data[positionId] ?? null;
     return {
       electionId: session.electionId,
       positionId,
-      candidateId: candidateId ?? null,
+      candidateId,
       isAbstain: candidateId === null,
-      castAt: new Date(),
+      castAt: now,
     };
   });
 
@@ -63,21 +70,17 @@ export async function submitBallot(
       prisma.vote.createMany({ data: voteData }),
       prisma.voter.update({
         where: { id: session.voterId },
-        data: { hasVoted: true, votedAt: new Date() },
+        data: { hasVoted: true, votedAt: now },
       }),
     ]);
-
-    // WE REMOVED clearVoterSession() FROM HERE.
-    // The session is now cleared in /vote/confirmed/page.tsx instead.
-    // This prevents the middleware from redirecting the user back to 
-    // the login page before they see the success message.
-
+    // Voter session is intentionally cleared in /vote/confirmed/page.tsx, not here —
+    // clearing here would let middleware redirect before the success message renders.
     return { success: true };
   } catch (error) {
     console.error("Ballot submission error:", error);
     return {
       success: false,
-      error: "Failed to submit ballot. Please try again."
+      error: "Failed to submit ballot. Please try again.",
     };
   }
 }

@@ -1,7 +1,12 @@
-export const DIVISION_POSITIONS: Record<
-  string,
-  { title: string; eligibleGrades: number[]; candidateGrade: string }[]
-> = {
+import type { Division } from "@prisma/client";
+
+export interface PositionDefinition {
+  title: string;
+  eligibleGrades: number[];
+  candidateGrade: string;
+}
+
+export const DIVISION_POSITIONS: Record<Division, PositionDefinition[]> = {
   SHS: [
     { title: "President", eligibleGrades: [10, 11], candidateGrade: "11" },
     { title: "Internal Vice-President", eligibleGrades: [10, 11], candidateGrade: "11" },
@@ -53,9 +58,16 @@ export const DIVISION_POSITIONS: Record<
   ],
 };
 
-export const DIVISION_GRADE_RANGE: Record<string, { min: number; max: number }> = {
+export const DIVISION_GRADE_RANGE: Record<Division, { min: number; max: number }> = {
   GS: { min: 3, max: 5 },
   JHS: { min: 6, max: 9 },
   SHS: { min: 10, max: 11 },
   HC: { min: 10, max: 11 },
 };
+
+export function divisionForGrade(grade: number): Division | null {
+  for (const [div, range] of Object.entries(DIVISION_GRADE_RANGE) as [Division, { min: number; max: number }][]) {
+    if (grade >= range.min && grade <= range.max) return div;
+  }
+  return null;
+}

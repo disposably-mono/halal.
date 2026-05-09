@@ -10,7 +10,6 @@ import {
 } from "./actions";
 import {
   Card,
-  CARD_TITLE,
   INPUT_BASE,
   BTN_PRIMARY,
   BTN_GHOST,
