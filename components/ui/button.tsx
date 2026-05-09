@@ -19,6 +19,17 @@ const buttonVariants = cva(
         destructive:
           "bg-destructive/10 text-destructive hover:bg-destructive/20 focus-visible:border-destructive/40 focus-visible:ring-destructive/20 dark:bg-destructive/20 dark:hover:bg-destructive/30 dark:focus-visible:ring-destructive/40",
         link: "text-primary underline-offset-4 hover:underline",
+        // Admin theme — dark navy + amber accents. Always pair with size="adminMd" or "adminSm".
+        adminPrimary:
+          "font-semibold bg-amber-400 text-[#0b1220] hover:opacity-90 active:scale-[0.97] disabled:opacity-40",
+        adminGhost:
+          "font-semibold text-white/50 border border-white/[0.10] bg-transparent hover:text-white/80 hover:border-white/[0.20] active:scale-[0.97] disabled:opacity-30",
+        adminEmerald:
+          "font-semibold bg-emerald-400 text-[#0b1220] hover:opacity-90 active:scale-[0.97] disabled:opacity-30",
+        adminBlue:
+          "font-semibold bg-blue-400/[0.10] text-blue-400 border border-blue-400/25 hover:bg-blue-400/20 active:scale-[0.97] disabled:opacity-30",
+        adminDestructive:
+          "font-semibold bg-red-400/[0.10] text-red-400 border border-red-400/25 hover:bg-red-400/20 active:scale-[0.97] disabled:opacity-30",
       },
       size: {
         default:
@@ -32,6 +43,9 @@ const buttonVariants = cva(
         "icon-sm":
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
+        // Admin sizes — preserve original BTN_PRIMARY/BTN_SM dimensions.
+        adminMd: "h-auto rounded-[7px] gap-[5px] px-[13px] py-[7px] text-[12px]",
+        adminSm: "h-auto rounded-[7px] gap-[5px] px-[10px] py-[5px] text-[11px]",
       },
     },
     defaultVariants: {

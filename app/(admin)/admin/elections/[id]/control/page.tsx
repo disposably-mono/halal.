@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import ControlClient from "./ControlClient";
 import Link from "next/link";
-import { StatusPill, ElectionSubNav, SetupStepper } from "@/app/admin/ui";
+import { StatusPill, ElectionSubNav, SetupStepper } from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
 

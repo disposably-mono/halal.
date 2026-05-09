@@ -10,12 +10,7 @@ import {
 } from "./actions";
 import {
   Card,
-  INPUT_BASE,
-  BTN_PRIMARY,
-  BTN_GHOST,
-  BTN_EMERALD,
-  BTN_BLUE,
-  BTN_RED,
+  AdminInput,
   StatusPill,
   FlowTrack,
   AdminBadge,
@@ -25,7 +20,11 @@ import {
   StatCell,
   ConfirmDialog,
   Toast,
-} from "@/app/admin/ui";
+} from "@/components/admin/ui";
+import { Button, type buttonVariants } from "@/components/ui/button";
+import type { VariantProps } from "class-variance-authority";
+
+type AdminButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -85,7 +84,7 @@ interface DlgConfig {
   title: string;
   body: string;
   confirmLabel: string;
-  confirmClass: string;
+  confirmVariant: AdminButtonVariant;
   iconBg: string;
   icon: React.ReactNode;
 }
@@ -121,7 +120,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         title: "Open election now?",
         body: "This will immediately open the election for voting, overriding the scheduled open time. This action is irreversible and will be logged.",
         confirmLabel: "Open Election",
-        confirmClass: BTN_EMERALD,
+        confirmVariant: "adminEmerald",
         iconBg: "bg-emerald-400/[0.12] text-emerald-400",
         icon: icons.open,
       };
@@ -130,7 +129,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         title: "Close election now?",
         body: `This will immediately stop all voting. ${voted} of ${total} voters (${pct}%) have voted so far. This cannot be undone.`,
         confirmLabel: "Close Election",
-        confirmClass: BTN_RED,
+        confirmVariant: "adminDestructive",
         iconBg: "bg-red-400/[0.12] text-red-400",
         icon: icons.close,
       };
@@ -139,7 +138,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         title: "Save schedule override?",
         body: "The open/close times will be updated and the scheduler will use the new values. This will be logged with your credentials.",
         confirmLabel: "Save Override",
-        confirmClass: BTN_PRIMARY,
+        confirmVariant: "adminPrimary",
         iconBg: "bg-amber-400/[0.12] text-amber-400",
         icon: icons.calendar,
       };
@@ -148,12 +147,12 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         title: "Advance to Scheduled?",
         body: "This will mark the election as Scheduled, enabling the auto-open scheduler. You can still override times or open manually.",
         confirmLabel: "Advance to Scheduled",
-        confirmClass: BTN_BLUE,
+        confirmVariant: "adminBlue",
         iconBg: "bg-blue-400/[0.12] text-blue-400",
         icon: icons.calendar,
       };
     default:
-      return { title: "", body: "", confirmLabel: "", confirmClass: "", iconBg: "", icon: null };
+      return { title: "", body: "", confirmLabel: "", confirmVariant: "adminGhost", iconBg: "", icon: null };
   }
 }
 
@@ -236,16 +235,17 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
         </div>
         <div className="flex shrink-0 items-center gap-2 pt-1">
           <StatusPill status={status} />
-          <button
+          <Button
             onClick={() => router.push("/admin")}
-            className={BTN_GHOST}
+            variant="adminGhost"
+            size="adminMd"
           >
             <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="19" y1="12" x2="5" y2="12" />
               <polyline points="12 19 5 12 12 5" />
             </svg>
             Back
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -280,46 +280,49 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
         {/* Action row */}
         <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.07] pt-4">
           {/* Open Now */}
-          <button
+          <Button
             onClick={() => {
               if (status !== "SCHEDULED") return;
               setDlg("open");
             }}
             disabled={status !== "SCHEDULED" || isPending}
-            className={BTN_EMERALD}
+            variant="adminEmerald"
+            size="adminMd"
           >
             <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <circle cx="12" cy="12" r="10" />
               <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
             </svg>
             Open Now
-          </button>
+          </Button>
 
           {/* Advance to Scheduled (DRAFT only) */}
           {status === "DRAFT" && (
-            <button
+            <Button
               onClick={() => setDlg("advance")}
               disabled={isPending}
-              className={BTN_BLUE}
+              variant="adminBlue"
+              size="adminMd"
             >
               Advance to Scheduled
-            </button>
+            </Button>
           )}
 
           {/* Close Election */}
-          <button
+          <Button
             onClick={() => {
               if (status !== "OPEN") return;
               setDlg("close");
             }}
             disabled={status !== "OPEN" || isPending}
-            className={BTN_GHOST}
+            variant="adminGhost"
+            size="adminMd"
           >
             <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <rect x="6" y="6" width="12" height="12" rx="2" />
             </svg>
             Close Election
-          </button>
+          </Button>
 
           <span className="ml-1 text-[10px] text-white/[0.18]">{contextHint[status]}</span>
         </div>
@@ -337,31 +340,30 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
                 <label className="mb-[5px] block text-[10px] text-white/40">
                   Open date &amp; time
                 </label>
-                <input
+                <AdminInput
                   type="datetime-local"
                   value={dtOpen}
                   onChange={(e) => setDtOpen(e.target.value)}
-                  className={INPUT_BASE}
                 />
               </div>
               <div>
                 <label className="mb-[5px] block text-[10px] text-white/40">
                   Close date &amp; time
                 </label>
-                <input
+                <AdminInput
                   type="datetime-local"
                   value={dtClose}
                   onChange={(e) => setDtClose(e.target.value)}
-                  className={INPUT_BASE}
                 />
               </div>
-              <button
+              <Button
                 onClick={() => setDlg("reschedule")}
                 disabled={isPending}
-                className={BTN_PRIMARY}
+                variant="adminPrimary"
+                size="adminMd"
               >
                 Save Override
-              </button>
+              </Button>
             </div>
           </div>
         </Card>
@@ -407,7 +409,7 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
         title={dlgConfig.title}
         body={dlgConfig.body}
         confirmLabel={dlgConfig.confirmLabel}
-        confirmClass={dlgConfig.confirmClass}
+        confirmVariant={dlgConfig.confirmVariant}
         isPending={isPending}
         onCancel={() => setDlg(null)}
         onConfirm={confirmDlg}

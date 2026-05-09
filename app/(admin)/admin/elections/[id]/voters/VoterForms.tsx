@@ -3,7 +3,8 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { addVotersFromCSV, addVoterManual } from "./actions";
 import type { CSVImportResult, ManualAddResult } from "./actions";
-import { BTN_PRIMARY, BTN_GHOST, INPUT_BASE } from "@/app/admin/ui";
+import { AdminInput, AdminTextarea } from "@/components/admin/ui";
+import { Button } from "@/components/ui/button";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,11 +28,15 @@ function SubmitButton({
   variant?: "primary" | "ghost";
 }) {
   const { pending } = useFormStatus();
-  const cls = variant === "primary" ? BTN_PRIMARY : BTN_GHOST;
   return (
-    <button type="submit" disabled={pending || disabled} className={cls}>
+    <Button
+      type="submit"
+      disabled={pending || disabled}
+      variant={variant === "primary" ? "adminPrimary" : "adminGhost"}
+      size="adminMd"
+    >
       {pending ? loadingLabel : label}
-    </button>
+    </Button>
   );
 }
 
@@ -62,13 +67,13 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
         )}
       </div>
 
-      <textarea
+      <AdminTextarea
         name="csvText"
         rows={5}
         placeholder={`studentId,gradeLevel,section\n2025-001,11,A\n2025-002,11,B`}
         required
         disabled={isFinalized}
-        className={`${INPUT_BASE} resize-none leading-relaxed`}
+        className="resize-none leading-relaxed"
       />
 
       <SubmitButton label="Import Voters" loadingLabel="Importing…" disabled={isFinalized} />
@@ -113,34 +118,31 @@ export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterForm
 
         <div className="flex flex-1 flex-col gap-[5px]" style={{ minWidth: 120 }}>
           <label className="text-[10px] text-white/40">Student ID</label>
-          <input
+          <AdminInput
             name="studentId"
             placeholder="e.g. 2025-0001"
             required
             disabled={isFinalized}
-            className={INPUT_BASE}
           />
         </div>
 
         <div className="flex flex-col gap-[5px]" style={{ width: 72 }}>
           <label className="text-[10px] text-white/40">Grade</label>
-          <input
+          <AdminInput
             name="gradeLevel"
             placeholder="11"
             required
             disabled={isFinalized}
-            className={INPUT_BASE}
           />
         </div>
 
         <div className="flex flex-col gap-[5px]" style={{ width: 84 }}>
           <label className="text-[10px] text-white/40">Section</label>
-          <input
+          <AdminInput
             name="section"
             placeholder="A"
             required
             disabled={isFinalized}
-            className={INPUT_BASE}
           />
         </div>
 

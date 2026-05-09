@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import MonitorClient from "./MonitorClient";
 import Link from "next/link";
-import { StatusPill, ElectionSubNav } from "@/app/admin/ui";
+import { StatusPill, ElectionSubNav } from "@/components/admin/ui";
 
 export const dynamic = "force-dynamic";
 

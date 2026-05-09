@@ -7,15 +7,14 @@ import {
   StatusPill,
   FinalizeBanner,
   Card,
-  CARD_TITLE,
-  BTN_PRIMARY,
-  BTN_GHOST,
-  BTN_SM,
-  INPUT_BASE,
+  AdminCardTitle,
+  AdminInput,
+  AdminSelect,
   FinalizeButton,
   ElectionSubNav,
   SetupStepper,
-} from "@/app/admin/ui";
+} from "@/components/admin/ui";
+import { Button } from "@/components/ui/button";
 import {
   seedAllPositions,
   addSinglePosition,
@@ -122,19 +121,19 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                 <form action={seedAllPositions}>
                   <input type="hidden" name="electionId" value={election.id} />
                   <input type="hidden" name="division" value={election.division} />
-                  <button type="submit" className={BTN_PRIMARY}>Seed All Positions</button>
+                  <Button type="submit" variant="adminPrimary" size="adminMd">Seed All Positions</Button>
                 </form>
               )}
               {availablePositions.length > 0 && (
                 <form action={addSinglePosition} className="flex items-center gap-2">
                   <input type="hidden" name="electionId" value={election.id} />
                   <input type="hidden" name="division" value={election.division} />
-                  <select name="title" className={`${INPUT_BASE} w-auto`} style={{ width: "auto", paddingTop: 6, paddingBottom: 6 }}>
+                  <AdminSelect name="title" className="w-auto" style={{ width: "auto", paddingTop: 6, paddingBottom: 6 }}>
                     {availablePositions.map((p) => (
                       <option key={p.title} value={p.title}>{p.title}</option>
                     ))}
-                  </select>
-                  <button type="submit" className={`${BTN_GHOST} ${BTN_SM}`}>+ Add Position</button>
+                  </AdminSelect>
+                  <Button type="submit" variant="adminGhost" size="adminSm">+ Add Position</Button>
                 </form>
               )}
               {positions.map((pos) => (
@@ -187,7 +186,7 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                         </svg>
                       </span>
                       <div className="flex flex-1 items-center gap-2 min-w-0">
-                        <span className={CARD_TITLE}>{pos.title}</span>
+                        <AdminCardTitle>{pos.title}</AdminCardTitle>
                         <span className="text-[9px] text-white/20">Gr. {pos.candidateGrade}</span>
                       </div>
                       {isEmpty && !isLocked ? (
@@ -231,9 +230,9 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                           <input type="hidden" name="electionId" value={election.id} />
                           <div className="flex flex-1 flex-col gap-[5px]">
                             <label className="text-[10px] text-white/35">Full name</label>
-                            <input name="fullName" placeholder="e.g. Maria Santos" required className={INPUT_BASE} />
+                            <AdminInput name="fullName" placeholder="e.g. Maria Santos" required />
                           </div>
-                          <button type="submit" className={`${BTN_GHOST} ${BTN_SM} shrink-0`}>+ Add</button>
+                          <Button type="submit" variant="adminGhost" size="adminSm" className="shrink-0">+ Add</Button>
                         </form>
                       )}
                     </div>

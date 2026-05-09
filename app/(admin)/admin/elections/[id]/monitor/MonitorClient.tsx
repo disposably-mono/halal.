@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { Card, CARD_TITLE, StatusPill, StatCell } from "@/app/admin/ui";
+import { Card, AdminCardTitle, StatusPill, StatCell } from "@/components/admin/ui";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -130,7 +130,7 @@ function PositionCard({ position }: { position: PositionResult }) {
   return (
     <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
       <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
-        <h3 className={CARD_TITLE}>{position.title}</h3>
+        <AdminCardTitle as="h3">{position.title}</AdminCardTitle>
         <div className="flex shrink-0 items-center gap-2">
           {isDraw && (
             <span className="rounded-full border border-sky-400/20 bg-sky-400/[0.06] px-[7px] py-[2px] text-[9px] font-semibold text-sky-400">
@@ -364,7 +364,7 @@ function ReplayPanel({
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className={CARD_TITLE}>Timeline Replay</span>
+          <AdminCardTitle>Timeline Replay</AdminCardTitle>
           {isLive && (
             <span className="flex items-center gap-[5px] rounded-full border border-emerald-400/20 px-[7px] py-[2px] text-[9px] font-semibold text-emerald-400">
               <span className="h-[5px] w-[5px] animate-pulse rounded-full bg-emerald-400" />

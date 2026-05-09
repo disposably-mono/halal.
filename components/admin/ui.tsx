@@ -1,34 +1,43 @@
 "use client";
 
-// ─── Design tokens ────────────────────────────────────────────────────────────
-
-export const CARD = "overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]";
-export const CARD_HEADER = "flex items-center justify-between border-b border-white/[0.07] px-4 py-3";
-export const CARD_TITLE = "text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40";
-export const CARD_BODY = "p-4";
-
-export const INPUT_BASE =
-  "bg-white/[0.04] border border-white/[0.10] rounded-[7px] px-[10px] py-[7px] text-[12px] text-white/80 font-mono outline-none transition-colors focus:border-blue-400/50 w-full [color-scheme:dark] disabled:opacity-40 disabled:cursor-not-allowed";
-
-export const BTN_PRIMARY =
-  "inline-flex items-center gap-[5px] rounded-[7px] px-[13px] py-[7px] text-[12px] font-semibold bg-amber-400 text-[#0b1220] hover:opacity-90 active:scale-[0.97] transition-all cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed";
-export const BTN_GHOST =
-  "inline-flex items-center gap-[5px] rounded-[7px] px-[13px] py-[7px] text-[12px] font-semibold text-white/50 border border-white/[0.10] bg-transparent hover:text-white/80 hover:border-white/[0.20] active:scale-[0.97] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed";
-export const BTN_EMERALD =
-  "inline-flex items-center gap-[5px] rounded-[7px] px-[13px] py-[7px] text-[12px] font-semibold bg-emerald-400 text-[#0b1220] hover:opacity-90 active:scale-[0.97] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed";
-export const BTN_BLUE =
-  "inline-flex items-center gap-[5px] rounded-[7px] px-[13px] py-[7px] text-[12px] font-semibold bg-blue-400/[0.10] text-blue-400 border border-blue-400/25 hover:bg-blue-400/20 active:scale-[0.97] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed";
-export const BTN_RED =
-  "inline-flex items-center gap-[5px] rounded-[7px] px-[13px] py-[7px] text-[12px] font-semibold bg-red-400/[0.10] text-red-400 border border-red-400/25 hover:bg-red-400/20 active:scale-[0.97] transition-all cursor-pointer disabled:opacity-30 disabled:cursor-not-allowed";
-export const BTN_SM = "px-[10px] py-[5px] text-[11px]";
-
-// ─── Imports ──────────────────────────────────────────────────────────────────
-
 import { useFormState } from "react-dom";
 import { useTransition } from "react";
-import type { ReactNode } from "react";
+import type { ComponentProps, ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Button, type buttonVariants } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import type { VariantProps } from "class-variance-authority";
+
+// ─── Internal class strings ───────────────────────────────────────────────────
+// Kept module-private — external consumers should use the wrapper components
+// (AdminInput / AdminSelect / AdminTextarea) or shadcn's <Button> with admin variants.
+
+const CARD = "overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]";
+const CARD_HEADER = "flex items-center justify-between border-b border-white/[0.07] px-4 py-3";
+const CARD_TITLE_CLASS = "text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40";
+const CARD_BODY = "p-4";
+
+const adminInputClass =
+  "bg-white/[0.04] border border-white/[0.10] rounded-[7px] px-[10px] py-[7px] text-[12px] text-white/80 font-mono outline-none transition-colors focus:border-blue-400/50 w-full [color-scheme:dark] disabled:opacity-40 disabled:cursor-not-allowed";
+
+// ─── Admin form primitives ────────────────────────────────────────────────────
+
+export function AdminInput({ className, ...props }: ComponentProps<"input">) {
+  return <input className={cn(adminInputClass, className)} {...props} />;
+}
+
+export function AdminTextarea({ className, ...props }: ComponentProps<"textarea">) {
+  return <textarea className={cn(adminInputClass, className)} {...props} />;
+}
+
+export function AdminSelect({ className, ...props }: ComponentProps<"select">) {
+  return <select className={cn(adminInputClass, className)} {...props} />;
+}
+
+export function AdminCardTitle({ className, children, as: As = "span" }: { className?: string; children: ReactNode; as?: "span" | "h2" | "h3" | "h4" }) {
+  return <As className={cn(CARD_TITLE_CLASS, className)}>{children}</As>;
+}
 
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
@@ -47,7 +56,7 @@ export function Card({
     <div className={CARD}>
       {title && (
         <div className={CARD_HEADER}>
-          <span className={CARD_TITLE}>{title}</span>
+          <span className={CARD_TITLE_CLASS}>{title}</span>
           {meta && <div className="flex items-center gap-2">{meta}</div>}
         </div>
       )}
@@ -136,7 +145,6 @@ export function FlowTrack({ status }: { status: Status }) {
 }
 
 // ─── ElectionSubNav ───────────────────────────────────────────────────────────
-// Persistent tab strip rendered below the topbar on all election sub-pages.
 
 export function ElectionSubNav({
   electionId,
@@ -232,7 +240,6 @@ export function ElectionSubNav({
 }
 
 // ─── SetupStepper ─────────────────────────────────────────────────────────────
-// 3-step progress indicator shown on voters / candidates / control pages.
 
 export function SetupStepper({
   votersFinalized,
@@ -261,12 +268,10 @@ export function SetupStepper({
 
         return (
           <div key={step.label} className="flex items-center">
-            {/* Connector line */}
             {i > 0 && (
               <div className={`h-px w-8 ${steps[i - 1].done ? "bg-emerald-400/40" : "bg-white/[0.08]"}`} />
             )}
             <div className="flex items-center gap-[6px]">
-              {/* Circle */}
               <div className={`w-[18px] h-[18px] rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-bold transition-all ${isDone
                 ? "bg-emerald-400/20 border border-emerald-400/40 text-emerald-400"
                 : isCurrent
@@ -281,7 +286,6 @@ export function SetupStepper({
                   <span>{i + 1}</span>
                 )}
               </div>
-              {/* Label */}
               <span className={`text-[11px] font-medium ${isDone ? "text-emerald-400/70" : isCurrent ? "text-amber-400/80" : "text-white/20"
                 }`}>
                 {step.label}
@@ -319,9 +323,10 @@ export function ErrorBanner({ message }: { message: string }) {
 }
 
 // ─── FinalizeBanner ───────────────────────────────────────────────────────────
-// FIXED: uses formAction + electionId instead of onUnlock callback.
-// Server Actions can only be passed as form action props, not as onClick/onUnlock
-// callbacks from a Server Component into a Client Component.
+// Server actions can only be passed as form action props, not as onClick callbacks
+// from a Server Component into a Client Component — hence the FormData dispatch.
+
+type AdminButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
 
 export function FinalizeBanner({
   locked,
@@ -338,11 +343,7 @@ export function FinalizeBanner({
   lockedSub: string;
   unlockedText: string;
   unlockedSub: string;
-  /**
-   * Server action that accepts FormData with an `electionId` field.
-   * Genuinely polymorphic dispatch prop — different callers pass actions with
-   * different prevState/return types. Phase 2 will replace this with a typed pattern.
-   */
+  // Polymorphic dispatch — different callers pass actions with different prevState/return types.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   unlockAction?: (prevState: any, formData: FormData) => Promise<any>;
   electionId?: string;
@@ -360,15 +361,13 @@ export function FinalizeBanner({
             await unlockAction(null, formData);
           }}>
             <input type="hidden" name="electionId" value={electionId} />
-            <button type="submit" className={`${BTN_GHOST} ${BTN_SM}`}>
-              Unlock
-            </button>
+            <Button type="submit" variant="adminGhost" size="adminSm">Unlock</Button>
           </form>
         )}
         {unlockAction && electionId && !canUnlock && (
-          <button disabled className={`${BTN_GHOST} ${BTN_SM} opacity-30`}>
+          <Button disabled variant="adminGhost" size="adminSm" className="opacity-30">
             Unlock
-          </button>
+          </Button>
         )}
       </div>
     );
@@ -422,7 +421,7 @@ export function ConfirmDialog({
   title,
   body,
   confirmLabel,
-  confirmClass,
+  confirmVariant,
   isPending,
   onCancel,
   onConfirm,
@@ -432,7 +431,7 @@ export function ConfirmDialog({
   title: string;
   body: string;
   confirmLabel: string;
-  confirmClass: string;
+  confirmVariant: AdminButtonVariant;
   isPending: boolean;
   onCancel: () => void;
   onConfirm: () => void;
@@ -449,14 +448,10 @@ export function ConfirmDialog({
         <p className="mb-[7px] text-[15px] font-bold text-white/90">{title}</p>
         <p className="mb-[18px] text-[12px] leading-relaxed text-white/50">{body}</p>
         <div className="flex justify-end gap-[7px]">
-          <button onClick={onCancel} className={BTN_GHOST}>Cancel</button>
-          <button
-            onClick={onConfirm}
-            disabled={isPending}
-            className={`inline-flex items-center gap-[5px] rounded-[7px] px-[13px] py-[7px] text-[12px] font-semibold transition-all cursor-pointer disabled:opacity-50 ${confirmClass}`}
-          >
+          <Button onClick={onCancel} variant="adminGhost" size="adminMd">Cancel</Button>
+          <Button onClick={onConfirm} disabled={isPending} variant={confirmVariant} size="adminMd">
             {isPending ? "Working…" : confirmLabel}
-          </button>
+          </Button>
         </div>
       </div>
     </div>
@@ -508,9 +503,15 @@ export function FinalizeButton({
       <form action={dispatch} className="flex items-center gap-3">
         <input type="hidden" name="electionId" value={electionId} />
         {hint && <p className="text-[11px] text-white/30">{hint}</p>}
-        <button type="submit" disabled={isPending} className={`${BTN_PRIMARY} disabled:opacity-50 disabled:cursor-not-allowed`}>
+        <Button
+          type="submit"
+          disabled={isPending}
+          variant="adminPrimary"
+          size="adminMd"
+          className="disabled:opacity-50 disabled:cursor-not-allowed"
+        >
           {isPending ? "Saving…" : label}
-        </button>
+        </Button>
       </form>
     </div>
   );

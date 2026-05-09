@@ -9,7 +9,7 @@ import {
   FinalizeButton,
   ElectionSubNav,
   SetupStepper,
-} from "@/app/admin/ui";
+} from "@/components/admin/ui";
 import { CSVUploadForm, ManualAddForm } from "./VoterForms";
 import { finalizeVoters, unfinalizeVoters, removeVoterById } from "./actions";
 
