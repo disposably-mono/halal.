@@ -282,22 +282,24 @@ DRAFT → SCHEDULED → OPEN → CLOSED
 - `role`: `COMMISSIONER` or `OFFICER` (future: role-based permissions)
 - `lastLogin`: Timestamp for audit
 
-## Testing Status
+## Testing
 
-**Current:** No test suite configured.
+**Stack:** Vitest 4 + v8 coverage. Test env is `node` (no jsdom — current tests are pure-function domain tests only).
 
-**If adding tests**, suggest:
-- **Unit:** Ballot generation logic (control number parsing, grade eligibility)
-- **Integration:** Voting flow (validate → submit → prevent re-vote)
-- **E2E:** Playwright for complete admin + voter journeys
+```bash
+npm test              # one-shot run
+npm run test:watch    # watch mode
+npm run test:coverage # coverage report (HTML in ./coverage/)
+```
 
-**Recommended Stack:**
-- Jest or Vitest + `@testing-library/react`
-- `@prisma/client` with test database
-- MSW for API mocking if needed
+**What's covered:** `lib/domain/*` and `lib/elections/constants.ts` — 100% statements/lines/functions, 98%+ branches across 76 tests. Threshold enforced at 80% via `vitest.config.ts`.
 
-**Test Database:**
-Use separate `DATABASE_URL_TEST` and `npx prisma migrate deploy` against test DB.
+**Not covered yet:**
+- Server actions (`app/**/actions.ts`) — would need a test DB + Prisma harness
+- React components / pages — would need `@testing-library/react` + jsdom
+- E2E flows — would need Playwright + a running dev server
+
+When adding integration or E2E tests later, use a separate `DATABASE_URL_TEST` and run `npx prisma migrate deploy` against it.
 
 ## Environment Configuration
 

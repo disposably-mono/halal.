@@ -1,0 +1,148 @@
+import { describe, expect, it } from "vitest";
+import {
+  formatControlNumber,
+  generateControlNumber,
+  isValidControlNumber,
+  isValidStudentId,
+  normalizeControlNumber,
+  parseControlNumber,
+} from "@/lib/domain/control-number";
+
+describe("isValidControlNumber", () => {
+  it("accepts the canonical YYGGSNNN format", () => {
+    expect(isValidControlNumber("2611A001")).toBe(true);
+    expect(isValidControlNumber("2603H999")).toBe(true);
+  });
+
+  it("rejects lowercase section letter without normalization", () => {
+    expect(isValidControlNumber("2611a001")).toBe(false);
+  });
+
+  it("rejects section letters outside A–H", () => {
+    expect(isValidControlNumber("2611I001")).toBe(false);
+    expect(isValidControlNumber("2611Z001")).toBe(false);
+  });
+
+  it("rejects wrong-length codes", () => {
+    expect(isValidControlNumber("2611A1")).toBe(false);
+    expect(isValidControlNumber("2611A0001")).toBe(false);
+    expect(isValidControlNumber("")).toBe(false);
+  });
+
+  it("rejects whitespace and surrounding chars", () => {
+    expect(isValidControlNumber(" 2611A001")).toBe(false);
+    expect(isValidControlNumber("2611A001\n")).toBe(false);
+  });
+});
+
+describe("isValidStudentId", () => {
+  it("accepts XXXX-XXXX", () => {
+    expect(isValidStudentId("2025-0001")).toBe(true);
+    expect(isValidStudentId("0000-9999")).toBe(true);
+  });
+
+  it("rejects missing or wrong separator", () => {
+    expect(isValidStudentId("20250001")).toBe(false);
+    expect(isValidStudentId("2025_0001")).toBe(false);
+  });
+
+  it("rejects wrong-length segments", () => {
+    expect(isValidStudentId("202-0001")).toBe(false);
+    expect(isValidStudentId("2025-001")).toBe(false);
+  });
+});
+
+describe("normalizeControlNumber", () => {
+  it("trims whitespace and uppercases", () => {
+    expect(normalizeControlNumber("  2611a001  ")).toBe("2611A001");
+  });
+});
+
+describe("parseControlNumber", () => {
+  it("parses a SHS grade-11 code", () => {
+    expect(parseControlNumber("2611A001")).toEqual({
+      year: 26,
+      grade: 11,
+      section: "A",
+      seq: 1,
+      division: "SHS",
+    });
+  });
+
+  it("parses a JHS grade-7 code", () => {
+    expect(parseControlNumber("2607C042")).toEqual({
+      year: 26,
+      grade: 7,
+      section: "C",
+      seq: 42,
+      division: "JHS",
+    });
+  });
+
+  it("parses a GS grade-5 code", () => {
+    expect(parseControlNumber("2605B007")).toEqual({
+      year: 26,
+      grade: 5,
+      section: "B",
+      seq: 7,
+      division: "GS",
+    });
+  });
+
+  it("normalizes input before parsing", () => {
+    expect(parseControlNumber("  2611a001  ")?.section).toBe("A");
+  });
+
+  it("returns null for invalid format", () => {
+    expect(parseControlNumber("garbage")).toBeNull();
+    expect(parseControlNumber("2611Z001")).toBeNull();
+  });
+
+  it("returns null for grade outside any division range", () => {
+    // Grade 02 is below GS (3-5) and not in any range
+    expect(parseControlNumber("2602A001")).toBeNull();
+    // Grade 12 is above all ranges
+    expect(parseControlNumber("2612A001")).toBeNull();
+  });
+
+  it("derives SHS (not HC) for grade 11 — both share grade range, SHS wins by iteration order", () => {
+    // Documents existing behavior; HC voters are still tracked correctly via
+    // election.division on the Voter row, not via this parse.
+    expect(parseControlNumber("2611A001")?.division).toBe("SHS");
+    expect(parseControlNumber("2610B001")?.division).toBe("SHS");
+  });
+});
+
+describe("formatControlNumber", () => {
+  it("zero-pads grade and seq, uppercases section", () => {
+    expect(formatControlNumber({ year: 2026, grade: 7, section: "c", seq: 3 })).toBe(
+      "2607C003",
+    );
+  });
+
+  it("uses last 2 digits of year", () => {
+    expect(formatControlNumber({ year: 2099, grade: 11, section: "A", seq: 1 })).toBe(
+      "9911A001",
+    );
+  });
+
+  it("handles single-digit year padding", () => {
+    expect(formatControlNumber({ year: 5, grade: 11, section: "A", seq: 1 })).toBe(
+      "0511A001",
+    );
+  });
+
+  it("round-trips with parseControlNumber for valid inputs", () => {
+    const code = formatControlNumber({ year: 2026, grade: 9, section: "B", seq: 17 });
+    const parsed = parseControlNumber(code);
+    expect(parsed).toMatchObject({ year: 26, grade: 9, section: "B", seq: 17 });
+  });
+});
+
+describe("generateControlNumber", () => {
+  it("matches formatControlNumber", () => {
+    expect(generateControlNumber(2026, 11, "A", 1)).toBe(
+      formatControlNumber({ year: 2026, grade: 11, section: "A", seq: 1 }),
+    );
+  });
+});
