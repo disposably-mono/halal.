@@ -115,6 +115,15 @@ export async function removeCandidate(formData: FormData) {
   if (!parsed.success) return;
   const { candidateId, electionId } = parsed.data;
 
+  // Schema-level Restrict would reject this delete with an opaque FK error once
+  // any vote references the candidate. Pre-checking lets the form action no-op
+  // gracefully — the candidate stays visible, signalling that the delete didn't take.
+  const voteCount = await prisma.vote.count({ where: { candidateId } });
+  if (voteCount > 0) {
+    revalidateElectionCandidates(electionId);
+    return;
+  }
+
   await prisma.candidate.delete({ where: { id: candidateId } });
   revalidateElectionCandidates(electionId);
 }

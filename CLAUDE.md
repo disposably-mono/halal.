@@ -118,7 +118,11 @@ app/
 ### Database Patterns
 - **Global Prisma Client:** `lib/prisma.ts` uses singleton pattern with `globalThis` to prevent dev HMR issues
 - **PostgreSQL Adapter:** Uses `@prisma/adapter-pg` to connect via `DATABASE_URL`
-- **Cascade Delete:** All `Election` relations have `onDelete: Cascade`
+- **Cascade Delete:** All `Election` relations have `onDelete: Cascade`. `Vote` FKs are explicit:
+  - `Vote.electionId` → `Cascade` — election delete clears its votes
+  - `Vote.positionId` → `Cascade` — position removal takes its votes with it
+  - `Vote.candidateId` → `Restrict` — never silently lose cast votes; the `removeCandidate`
+    server action pre-checks vote count and short-circuits before the DB rejects.
 - **Anonymous Voting:** `Vote` intentionally lacks `voterId` to guarantee anonymity; linked only via `electionId` + implicit `voterCode` consumption
 - **Control Number Format:** `YYGGSNNN` (e.g., `2611A001`) - year, grade, section, student number
 

@@ -82,9 +82,13 @@ model Vote {
   isAbstain   Boolean    @default(false)
   candidateId String?
   castAt      DateTime   @default(now())
-  candidate   Candidate? @relation(fields: [candidateId], references: [id])
-  election    Election   @relation(fields: [electionId], references: [id])
-  position    Position   @relation(fields: [positionId], references: [id])
+  // Cascade — deleting an election clears its votes (mirrors Position/Voter/Candidate cascade)
+  election    Election   @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  // Cascade — positions are election-scoped; if a position is removed, its votes go with it
+  position    Position   @relation(fields: [positionId], references: [id], onDelete: Cascade)
+  // Restrict — never silently nullify or destroy cast votes; the candidates/actions.ts
+  // removeCandidate guard checks vote count and short-circuits before this fires.
+  candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Restrict)
 }
 
 model AdminUser {
