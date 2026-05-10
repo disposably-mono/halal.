@@ -1,0 +1,52 @@
+"use client";
+
+import { AdminCardTitle } from "@/components/admin/ui";
+import { VoteBar } from "./VoteBar";
+import type { PositionResult } from "./monitor-shared";
+
+export function PositionCard({ position }: { position: PositionResult }) {
+  const topVotes = position.candidates[0]?.votes ?? 0;
+  const isDraw =
+    topVotes > 0 &&
+    position.candidates.filter((c) => c.votes === topVotes).length > 1;
+
+  return (
+    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
+      <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
+        <AdminCardTitle as="h3">{position.title}</AdminCardTitle>
+        <div className="flex shrink-0 items-center gap-2">
+          {isDraw && (
+            <span className="rounded-full border border-sky-400/20 bg-sky-400/[0.06] px-[7px] py-[2px] text-[9px] font-semibold text-sky-400">
+              Draw
+            </span>
+          )}
+          <span className="text-[10px] text-white/30">
+            {position.totalVotes} vote{position.totalVotes !== 1 ? "s" : ""}
+          </span>
+          {position.abstentions > 0 && (
+            <span className="rounded-full border border-white/[0.08] px-[7px] py-[2px] text-[9px] text-white/20">
+              {position.abstentions} abstain{position.abstentions !== 1 ? "s" : ""}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="space-y-1.5 p-3">
+        {position.candidates.length === 0 ? (
+          <p className="py-4 text-center text-[11px] italic text-white/25">
+            No candidates
+          </p>
+        ) : (
+          position.candidates.map((c) => (
+            <VoteBar
+              key={c.id}
+              candidate={c}
+              totalVotes={position.totalVotes}
+              isLeader={c.votes === topVotes && !isDraw}
+              isDraw={isDraw && c.votes === topVotes}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
