@@ -1,0 +1,52 @@
+"use client";
+
+import Link from "next/link";
+
+export function LandingNav() {
+  return (
+    <nav
+      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4"
+      style={{
+        background: "rgba(13,15,43,0.88)",
+        backdropFilter: "blur(12px)",
+        borderBottom: "1px solid rgba(245,192,0,0.1)",
+      }}
+    >
+      {/* Logo */}
+      <Link href="/" className="flex items-center gap-2.5" aria-label="OLPS COMELEC home">
+        <div
+          className="w-8 h-8 rounded-full flex items-center justify-center"
+          style={{ background: "#1b1f5e", border: "1px solid rgba(245,192,0,0.4)" }}
+        >
+          <svg viewBox="0 0 24 24" fill="none" className="w-[18px] h-[18px]" aria-hidden="true">
+            <circle cx="12" cy="12" r="10" stroke="#F5C000" strokeWidth="1.5" />
+            <path d="M8 14c1-2 3-4 4-4s3 2 4 4" stroke="#F5C000" strokeWidth="1.5" strokeLinecap="round" />
+            <circle cx="12" cy="9" r="1.5" fill="#F5C000" />
+          </svg>
+        </div>
+        <span className="font-tagline font-bold text-sm tracking-[0.15em] text-gold">
+          OLPS COMELEC
+        </span>
+      </Link>
+
+      {/* Links */}
+      <div className="hidden sm:flex gap-6">
+        {[
+          { label: "Home", href: "/", active: true },
+          { label: "Creator", href: "/creator" },
+          { label: "About COMELEC", href: "/about" },
+          { label: "Officers", href: "/officers" },
+        ].map((link) => (
+          <Link
+            key={link.label}
+            href={link.href}
+            className="font-body text-[0.65rem] tracking-[0.2em] uppercase transition-colors duration-200"
+            style={{ color: link.active ? "#F5C000" : "rgba(255,255,255,0.45)" }}
+          >
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    </nav>
+  );
+}
