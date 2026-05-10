@@ -1,18 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { StatusPill } from "@/components/admin/ui";
 import { MetricsStrip } from "./_components/MetricsStrip";
 import { PositionCard } from "./_components/PositionCard";
 import { ReplayPanel } from "./_components/ReplayPanel";
 import { TurnoutCard } from "./_components/TurnoutCard";
-import {
-  DIVISION_LABELS,
-  MAX_SNAPSHOTS,
-  POLL_INTERVAL,
-  type ResultsPayload,
-  type Snapshot,
-} from "./_components/monitor-shared";
+import { DIVISION_LABELS } from "./_components/monitor-shared";
+import { useMonitorPolling } from "./_components/useMonitorPolling";
+import { useMonitorReplay } from "./_components/useMonitorReplay";
 
 export default function MonitorClient({
   electionId,
@@ -25,92 +20,13 @@ export default function MonitorClient({
   division: string;
   status: string;
 }) {
-  const [liveData, setLiveData] = useState<ResultsPayload | null>(null);
-  const [snapshots, setSnapshots] = useState<Snapshot[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-
-  const [replayIndex, setReplayIndex] = useState<number | null>(null);
-  const [isReplaying, setIsReplaying] = useState(false);
-  const [replaySpeed, setReplaySpeed] = useState(400);
-  const replayTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const { liveData, snapshots, loading, lastUpdated } = useMonitorPolling(electionId);
+  const replay = useMonitorReplay(snapshots, lastUpdated);
 
   const displayData =
-    replayIndex !== null ? (snapshots[replayIndex]?.payload ?? liveData) : liveData;
-
-  const fetchData = useCallback(async () => {
-    try {
-      const res = await fetch(`/api/results/${electionId}?admin=1`, { cache: "no-store" });
-      if (res.ok) {
-        const json: ResultsPayload = await res.json();
-        setLiveData(json);
-        const now = new Date();
-        setLastUpdated(now);
-        setSnapshots((prev) => {
-          const label = now.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit" });
-          const next: Snapshot[] = [...prev, { timestamp: now, label, payload: json }];
-          return next.length > MAX_SNAPSHOTS ? next.slice(next.length - MAX_SNAPSHOTS) : next;
-        });
-        setReplayIndex(null);
-      }
-    } catch {
-      // Retain last data on network error
-    } finally {
-      setLoading(false);
-    }
-  }, [electionId]);
-
-  useEffect(() => {
-    fetchData();
-    const interval = setInterval(fetchData, POLL_INTERVAL);
-    return () => clearInterval(interval);
-  }, [fetchData]);
-
-  useEffect(() => {
-    if (replayTimerRef.current) clearInterval(replayTimerRef.current);
-    if (!isReplaying) return;
-    replayTimerRef.current = setInterval(() => {
-      setReplayIndex((prev) => {
-        const current = prev ?? snapshots.length - 1;
-        if (current >= snapshots.length - 1) {
-          setIsReplaying(false);
-          return null;
-        }
-        return current + 1;
-      });
-    }, replaySpeed);
-    return () => {
-      if (replayTimerRef.current) clearInterval(replayTimerRef.current);
-    };
-  }, [isReplaying, replaySpeed, snapshots.length]);
-
-  const handlePlay = () => {
-    if (snapshots.length < 2) return;
-    setReplayIndex((prev) =>
-      prev === null || prev >= snapshots.length - 1 ? 0 : prev
-    );
-    setIsReplaying(true);
-  };
-  const handlePause = () => setIsReplaying(false);
-  const handleJump = (i: number) => {
-    setIsReplaying(false);
-    const clamped = Math.max(0, Math.min(snapshots.length - 1, i));
-    setReplayIndex(clamped === snapshots.length - 1 ? null : clamped);
-  };
-  const handlePrev = () => {
-    setIsReplaying(false);
-    const current = replayIndex ?? snapshots.length - 1;
-    const next = Math.max(0, current - 1);
-    setReplayIndex(next === snapshots.length - 1 ? null : next);
-  };
-  const handleNext = () => {
-    setIsReplaying(false);
-    const current = replayIndex ?? snapshots.length - 1;
-    const next = Math.min(snapshots.length - 1, current + 1);
-    setReplayIndex(next === snapshots.length - 1 ? null : next);
-  };
-
-  const isLive = replayIndex === null;
+    replay.replayIndex !== null
+      ? (snapshots[replay.replayIndex]?.payload ?? liveData)
+      : liveData;
 
   return (
     <main className="mx-auto max-w-7xl space-y-5 px-4 py-6 sm:px-6">
@@ -126,9 +42,9 @@ export default function MonitorClient({
           </h1>
         </div>
         <div className="flex shrink-0 items-center gap-2">
-          {!isLive && (
+          {!replay.isLive && (
             <span className="rounded-full border border-amber-400/25 bg-amber-400/[0.07] px-2 py-[3px] font-mono text-[10px] text-amber-400">
-              Replaying {snapshots[replayIndex!]?.label}
+              Replaying {snapshots[replay.replayIndex!]?.label}
             </span>
           )}
           {status === "CLOSED" && (
@@ -145,7 +61,7 @@ export default function MonitorClient({
             </a>
           )}
           <StatusPill status={status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} />
-          {lastUpdated && isLive && (
+          {lastUpdated && replay.isLive && (
             <p className="font-mono text-[10px] text-white/20">
               {lastUpdated.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
             </p>
@@ -193,15 +109,15 @@ export default function MonitorClient({
             )}
             <ReplayPanel
               snapshots={snapshots}
-              replayIndex={replayIndex}
-              isReplaying={isReplaying}
-              onPlay={handlePlay}
-              onPause={handlePause}
-              onJump={handleJump}
-              onPrev={handlePrev}
-              onNext={handleNext}
-              speed={replaySpeed}
-              onSpeedChange={(s) => setReplaySpeed(s)}
+              replayIndex={replay.replayIndex}
+              isReplaying={replay.isReplaying}
+              onPlay={replay.play}
+              onPause={replay.pause}
+              onJump={replay.jump}
+              onPrev={replay.prev}
+              onNext={replay.next}
+              speed={replay.speed}
+              onSpeedChange={replay.setSpeed}
             />
           </div>
         </div>
