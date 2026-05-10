@@ -53,8 +53,9 @@ npm start
 ```
 
 ### Admin Credentials (from seed)
-- Email: `comelec@olps.edu.ph`
-- Password: `comelec2026`
+Sourced from `.env` (`SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_ADMIN_OFFICER_KEY`):
+- Email: `comelec.club@olps.edu.ph`
+- Password: `***REDACTED***`
 - Officer Key: `***REDACTED***`
 
 ## Architecture Overview
