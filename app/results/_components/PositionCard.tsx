@@ -1,0 +1,52 @@
+"use client";
+
+import { VoteBar } from "./VoteBar";
+import type { PositionResult } from "./results-shared";
+
+export function PositionCard({ position }: { position: PositionResult }) {
+  const topVotes = position.candidates[0]?.votes ?? 0;
+  const isDraw =
+    topVotes > 0 &&
+    position.candidates.filter((c) => c.votes === topVotes).length > 1;
+
+  return (
+    <div className="border border-white/8 rounded-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-4 py-3 bg-navy/40 border-b border-white/8">
+        <h3 className="font-heading font-bold text-white text-sm tracking-wide uppercase">
+          {position.title}
+        </h3>
+        <div className="flex items-center gap-2 shrink-0 ml-3">
+          {isDraw && (
+            <span className="text-[10px] text-sky-400 border border-sky-400/20 bg-sky-400/[0.06] px-1.5 py-0.5 rounded-full">
+              Draw
+            </span>
+          )}
+          <span className="font-mono text-[10px] text-white/30">
+            {position.totalVotes} vote{position.totalVotes !== 1 ? "s" : ""}
+          </span>
+        </div>
+      </div>
+
+      {/* Candidates */}
+      <div className="p-3 space-y-2 bg-navy-deep/40">
+        {position.candidates.length === 0 ? (
+          <p className="font-body text-white/25 text-xs italic text-center py-4">
+            No candidates
+          </p>
+        ) : (
+          position.candidates.map((c, idx) => (
+            <VoteBar
+              key={c.id}
+              candidate={c}
+              totalVotes={position.totalVotes}
+              isLeader={c.votes === topVotes && !isDraw}
+              isDraw={isDraw && c.votes === topVotes}
+              rank={idx + 1}
+            />
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
