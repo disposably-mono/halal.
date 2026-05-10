@@ -5,12 +5,9 @@ export interface ElectionMeta {
   status: string;
 }
 
-export interface CandidateResult {
-  id: string;
-  fullName: string;
-  gradeLevel: number;
-  votes: number;
-}
+import type { CandidateResult, TurnoutData } from "@/lib/api/results-types";
+
+export type { CandidateResult, TurnoutData };
 
 export interface PositionResult {
   id: string;
@@ -18,12 +15,6 @@ export interface PositionResult {
   order: number;
   candidates: CandidateResult[];
   totalVotes: number;
-}
-
-export interface TurnoutData {
-  voted: number;
-  total: number;
-  pct: number;
 }
 
 export interface ResultsPayload {

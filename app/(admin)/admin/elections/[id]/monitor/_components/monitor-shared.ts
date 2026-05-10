@@ -1,9 +1,6 @@
-export interface CandidateResult {
-  id: string;
-  fullName: string;
-  gradeLevel: number;
-  votes: number;
-}
+import type { CandidateResult, TurnoutData } from "@/lib/api/results-types";
+
+export type { CandidateResult, TurnoutData };
 
 export interface PositionResult {
   id: string;
@@ -12,12 +9,6 @@ export interface PositionResult {
   candidates: CandidateResult[];
   abstentions: number;
   totalVotes: number;
-}
-
-export interface TurnoutData {
-  voted: number;
-  total: number;
-  pct: number;
 }
 
 export interface ResultsPayload {
