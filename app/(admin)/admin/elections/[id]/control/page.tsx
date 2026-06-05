@@ -23,6 +23,7 @@ export default async function ControlPage({ params }: PageProps) {
         id: true, name: true, division: true, status: true,
         scheduledOpen: true, scheduledClose: true,
         candidatesFinalized: true, votersFinalized: true,
+        archivedAt: true, archivedBy: true,
         _count: { select: { voters: true, votes: true } },
       },
     }),
