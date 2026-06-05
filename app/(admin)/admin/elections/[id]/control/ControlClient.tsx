@@ -22,6 +22,7 @@ import {
   Toast,
 } from "@/components/admin/ui";
 import { Button, type buttonVariants } from "@/components/ui/button";
+import { DIVISION_LABELS } from "@/lib/ui/division-labels";
 import type { VariantProps } from "class-variance-authority";
 
 type AdminButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
@@ -55,13 +56,6 @@ interface ControlClientProps {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const DIVISION_LABELS: Record<string, string> = {
-  GS: "Grade School",
-  JHS: "Junior High School",
-  SHS: "Senior High School",
-  HC: "House Council",
-};
 
 function fmt(d: Date | null) {
   if (!d) return "—";

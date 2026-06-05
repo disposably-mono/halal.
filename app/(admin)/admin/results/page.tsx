@@ -2,11 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-
-const DIVISION_LABELS: Record<string, string> = {
-  GS: "Grade School", JHS: "Junior High School",
-  SHS: "Senior High School", HC: "House Council",
-};
+import { DIVISION_LABELS } from "@/lib/ui/division-labels";
 
 export default async function AdminResultsPage() {
   const session = await auth();

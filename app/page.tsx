@@ -1,14 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import LandingClient from "./LandingClient";
+import { DIVISION_LABELS, DIVISION_ORDER } from "@/lib/ui/division-labels";
 
 export const dynamic = "force-dynamic";
-
-const DIVISION_LABELS: Record<string, string> = {
-  GS: "Grade School",
-  JHS: "Junior High School",
-  SHS: "Senior High School",
-  HC: "House Council",
-};
 
 const DIVISION_SUBLABELS: Record<string, string> = {
   GS: "Student Council",
@@ -16,8 +10,6 @@ const DIVISION_SUBLABELS: Record<string, string> = {
   SHS: "Student Supreme Council",
   HC: "House Council",
 };
-
-const DIVISION_ORDER = ["GS", "JHS", "SHS", "HC"];
 
 export default async function HomePage() {
   // Get all elections, then pick most relevant per division

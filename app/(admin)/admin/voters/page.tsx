@@ -3,12 +3,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { ElectionStatus } from "@prisma/client";
-
-const DIVISION_LABELS: Record<string, string> = {
-  GS: "Grade School", JHS: "Junior High School",
-  SHS: "Senior High School", HC: "House Council",
-};
-const DIVISION_ORDER = ["GS", "JHS", "SHS", "HC"];
+import { DIVISION_LABELS, DIVISION_ORDER } from "@/lib/ui/division-labels";
 
 export default async function AdminVotersPage() {
   const session = await auth();
