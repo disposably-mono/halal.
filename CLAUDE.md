@@ -53,10 +53,11 @@ npm start
 ```
 
 ### Admin Credentials (from seed)
-Sourced from `.env` (`SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD`, `SEED_ADMIN_OFFICER_KEY`):
-- Email: `comelec.club@olps.edu.ph`
-- Password: `***REDACTED***`
-- Officer Key: `***REDACTED***`
+The seed admin is created from `.env` — never hardcode the values here.
+See your local `.env` (or `.env.example` for the variable names):
+- Email: `$SEED_ADMIN_EMAIL`
+- Password: `$SEED_ADMIN_PASSWORD`
+- Officer Key: `$SEED_ADMIN_OFFICER_KEY`
 
 ## Architecture Overview
 

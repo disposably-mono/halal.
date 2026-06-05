@@ -134,7 +134,7 @@ export default function AdminLoginPage() {
                   </label>
                   <input
                     type="password"
-                    placeholder="e.g. ***REDACTED***"
+                    placeholder="Enter your officer key"
                     value={officerKey}
                     onChange={(e) => setOfficerKey(e.target.value)}
                     required
