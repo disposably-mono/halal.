@@ -27,6 +27,8 @@ model Election {
   updatedAt           DateTime       @updatedAt
   candidatesFinalized Boolean        @default(false)
   votersFinalized     Boolean        @default(false)
+  archivedAt          DateTime?
+  archivedBy          String?
   auditLogs           AuditLog[]
   positions           Position[]
   votes               Vote[]
