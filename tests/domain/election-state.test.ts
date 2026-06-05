@@ -1,10 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
   canAdvanceToScheduled,
+  canArchive,
   canFinalizeUnlock,
   canManuallyClose,
   canManuallyOpen,
   canReschedule,
+  canRestore,
   nextStatusForReschedule,
 } from "@/lib/domain/election-state";
 
@@ -114,5 +116,44 @@ describe("canFinalizeUnlock", () => {
   it("blocks unlock once OPEN or CLOSED", () => {
     expect(canFinalizeUnlock("OPEN").ok).toBe(false);
     expect(canFinalizeUnlock("CLOSED").ok).toBe(false);
+  });
+});
+
+describe("canArchive", () => {
+  it("allows archiving a DRAFT election", () => {
+    expect(canArchive("DRAFT", null)).toEqual({ ok: true });
+  });
+  it("allows archiving a CLOSED election", () => {
+    expect(canArchive("CLOSED", null)).toEqual({ ok: true });
+  });
+  it("rejects archiving an OPEN election", () => {
+    expect(canArchive("OPEN", null)).toEqual({
+      ok: false,
+      reason: "Close the election before archiving",
+    });
+  });
+  it("rejects archiving a SCHEDULED election", () => {
+    expect(canArchive("SCHEDULED", null)).toEqual({
+      ok: false,
+      reason: "Unschedule the election before archiving",
+    });
+  });
+  it("rejects archiving an already-archived election", () => {
+    expect(canArchive("CLOSED", new Date())).toEqual({
+      ok: false,
+      reason: "Already archived",
+    });
+  });
+});
+
+describe("canRestore", () => {
+  it("allows restoring an archived election", () => {
+    expect(canRestore(new Date())).toEqual({ ok: true });
+  });
+  it("rejects restoring a non-archived election", () => {
+    expect(canRestore(null)).toEqual({
+      ok: false,
+      reason: "Election is not archived",
+    });
   });
 });

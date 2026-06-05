@@ -48,3 +48,18 @@ export function canFinalizeUnlock(status: ElectionStatus): ValidationResult {
   }
   return ok();
 }
+
+export function canArchive(
+  status: ElectionStatus,
+  archivedAt: Date | null,
+): ValidationResult {
+  if (archivedAt) return fail("Already archived");
+  if (status === "OPEN") return fail("Close the election before archiving");
+  if (status === "SCHEDULED") return fail("Unschedule the election before archiving");
+  return ok();
+}
+
+export function canRestore(archivedAt: Date | null): ValidationResult {
+  if (!archivedAt) return fail("Election is not archived");
+  return ok();
+}
