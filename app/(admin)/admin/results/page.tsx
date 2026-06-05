@@ -9,7 +9,7 @@ export default async function AdminResultsPage() {
   if (!session) redirect("/admin/login");
 
   const elections = await prisma.election.findMany({
-    where: { status: { in: ["OPEN", "CLOSED"] } },
+    where: { status: { in: ["OPEN", "CLOSED"] }, archivedAt: null },
     orderBy: [{ createdAt: "desc" }],
     select: {
       id: true,

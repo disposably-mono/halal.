@@ -12,6 +12,7 @@ const STATUS_PRIORITY: Record<string, number> = {
 
 export default async function ResultsPage() {
   const elections = await prisma.election.findMany({
+    where: { archivedAt: null },
     select: {
       id: true,
       name: true,
