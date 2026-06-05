@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState, useTransition } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState, useTransition } from "react";
+import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { archiveElection } from "../actions";
 import { canArchive } from "@/lib/domain/election-state";
 import type { Election } from "./shared";
+
+const MENU_WIDTH = 150;
 
 export function RowActions({
   e,
@@ -15,23 +18,49 @@ export function RowActions({
   onToast: (msg: string, ok: boolean) => void;
 }) {
   const [open, setOpen] = useState(false);
+  const [coords, setCoords] = useState<{ top: number; left: number } | null>(null);
   const [isPending, startTransition] = useTransition();
-  const ref = useRef<HTMLDivElement>(null);
+  const btnRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
   const router = useRouter();
+
+  // Position the portalled menu beneath the trigger, right-aligned, in viewport space.
+  const place = useCallback(() => {
+    const rect = btnRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    setCoords({
+      top: rect.bottom + 4,
+      left: Math.max(8, rect.right - MENU_WIDTH),
+    });
+  }, []);
+
+  useLayoutEffect(() => {
+    if (open) place();
+  }, [open, place]);
 
   useEffect(() => {
     if (!open) return;
-    function onClick(ev: MouseEvent) {
-      if (ref.current && !ref.current.contains(ev.target as Node)) setOpen(false);
+    function onPointer(ev: MouseEvent) {
+      const target = ev.target as Node;
+      if (btnRef.current?.contains(target) || menuRef.current?.contains(target)) return;
+      setOpen(false);
     }
     function onKey(ev: KeyboardEvent) {
       if (ev.key === "Escape") setOpen(false);
     }
-    document.addEventListener("mousedown", onClick);
+    function onReflow() {
+      setOpen(false);
+    }
+    document.addEventListener("mousedown", onPointer);
     document.addEventListener("keydown", onKey);
+    // A portalled menu uses fixed coords; close it rather than let it drift on scroll/resize.
+    window.addEventListener("scroll", onReflow, true);
+    window.addEventListener("resize", onReflow);
     return () => {
-      document.removeEventListener("mousedown", onClick);
+      document.removeEventListener("mousedown", onPointer);
       document.removeEventListener("keydown", onKey);
+      window.removeEventListener("scroll", onReflow, true);
+      window.removeEventListener("resize", onReflow);
     };
   }, [open]);
 
@@ -49,8 +78,9 @@ export function RowActions({
   }
 
   return (
-    <div className="relative" ref={ref}>
+    <>
       <button
+        ref={btnRef}
         type="button"
         aria-label="Election actions"
         aria-haspopup="menu"
@@ -65,38 +95,43 @@ export function RowActions({
           <circle cx="19" cy="12" r="1.6" />
         </svg>
       </button>
-      {open && (
-        <div
-          role="menu"
-          className="absolute right-0 z-20 mt-1 w-[150px] overflow-hidden rounded-[8px] border border-white/[0.10] bg-[#1a2540] py-1 shadow-lg"
-        >
-          <Link role="menuitem" href={`/admin/elections/${e.id}/voters`} className={itemCls}>
-            Voters
-          </Link>
-          <Link role="menuitem" href={`/admin/elections/${e.id}/candidates`} className={itemCls}>
-            Candidates
-          </Link>
-          {(e.status === "OPEN" || e.status === "CLOSED") && (
-            <Link role="menuitem" href={`/admin/elections/${e.id}/monitor`} className={itemCls}>
-              Monitor
-            </Link>
-          )}
-          <Link role="menuitem" href="/admin/results" className={itemCls}>
-            Results
-          </Link>
-          <div className="my-1 border-t border-white/[0.06]" />
-          <button
-            type="button"
-            role="menuitem"
-            onClick={handleArchive}
-            disabled={!archiveCheck.ok || isPending}
-            title={archiveCheck.ok ? undefined : archiveCheck.reason}
-            className={`${itemCls} disabled:opacity-30 disabled:cursor-not-allowed`}
+      {open &&
+        coords &&
+        createPortal(
+          <div
+            ref={menuRef}
+            role="menu"
+            style={{ position: "fixed", top: coords.top, left: coords.left, width: MENU_WIDTH }}
+            className="z-50 overflow-hidden rounded-[8px] border border-white/[0.10] bg-[#1a2540] py-1 shadow-xl"
           >
-            Archive
-          </button>
-        </div>
-      )}
-    </div>
+            <Link role="menuitem" href={`/admin/elections/${e.id}/voters`} className={itemCls}>
+              Voters
+            </Link>
+            <Link role="menuitem" href={`/admin/elections/${e.id}/candidates`} className={itemCls}>
+              Candidates
+            </Link>
+            {(e.status === "OPEN" || e.status === "CLOSED") && (
+              <Link role="menuitem" href={`/admin/elections/${e.id}/monitor`} className={itemCls}>
+                Monitor
+              </Link>
+            )}
+            <Link role="menuitem" href="/admin/results" className={itemCls}>
+              Results
+            </Link>
+            <div className="my-1 border-t border-white/[0.06]" />
+            <button
+              type="button"
+              role="menuitem"
+              onClick={handleArchive}
+              disabled={!archiveCheck.ok || isPending}
+              title={archiveCheck.ok ? undefined : archiveCheck.reason}
+              className={`${itemCls} disabled:opacity-30 disabled:cursor-not-allowed`}
+            >
+              Archive
+            </button>
+          </div>,
+          document.body,
+        )}
+    </>
   );
 }
