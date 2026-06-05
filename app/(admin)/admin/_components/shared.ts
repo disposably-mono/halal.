@@ -7,6 +7,8 @@ export type Election = {
   status: ElectionStatus;
   scheduledOpen: Date | null;
   scheduledClose: Date | null;
+  archivedAt: Date | null;
+  archivedBy: string | null;
   _count: { voters: number; votes: number; positions: number; candidates: number };
   votedCount: number;
 };

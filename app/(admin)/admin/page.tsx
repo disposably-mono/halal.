@@ -17,6 +17,8 @@ export default async function AdminDashboard() {
         status: true,
         scheduledOpen: true,
         scheduledClose: true,
+        archivedAt: true,
+        archivedBy: true,
         _count: {
           select: {
             voters: true,
@@ -41,10 +43,14 @@ export default async function AdminDashboard() {
     votedCount: votedCounts[i],
   }));
 
+  const activeElections = electionsWithVoted.filter((e) => e.archivedAt === null);
+  const archivedElections = electionsWithVoted.filter((e) => e.archivedAt !== null);
+
   return (
     <div className="p-6 flex flex-col gap-[18px]">
       <DashboardClient
-        elections={electionsWithVoted}
+        elections={activeElections}
+        archivedElections={archivedElections}
         globalVoterCount={globalVoterCount}
       />
     </div>

@@ -4,16 +4,26 @@ import Link from "next/link";
 import { useState } from "react";
 import { AttnCard } from "./_components/AttnCard";
 import { ElectionRow } from "./_components/ElectionRow";
+import { ArchivedSection } from "./_components/ArchivedSection";
+import { Toast } from "@/components/admin/ui";
 import { pct, type Election, type ElectionStatus } from "./_components/shared";
 
 export default function DashboardClient({
   elections,
+  archivedElections,
   globalVoterCount,
 }: {
   elections: Election[];
+  archivedElections: Election[];
   globalVoterCount: number;
 }) {
   const [allOpen, setAllOpen] = useState(true);
+  const [toast, setToast] = useState<{ msg: string; color: "green" | "red" } | null>(null);
+
+  function onToast(msg: string, ok: boolean) {
+    setToast({ msg, color: ok ? "green" : "red" });
+    setTimeout(() => setToast(null), 2500);
+  }
 
   const byStatus = (s: ElectionStatus) => elections.filter((e) => e.status === s).length;
   const openC = byStatus("OPEN");
@@ -139,9 +149,14 @@ export default function DashboardClient({
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
-          {allOpen && elections.map((e) => <ElectionRow key={e.id} e={e} />)}
+          {allOpen && elections.map((e) => <ElectionRow key={e.id} e={e} onToast={onToast} />)}
         </div>
       )}
+
+      {/* Archived elections */}
+      <ArchivedSection elections={archivedElections} onToast={onToast} />
+
+      {toast && <Toast msg={toast.msg} color={toast.color} />}
     </>
   );
 }
