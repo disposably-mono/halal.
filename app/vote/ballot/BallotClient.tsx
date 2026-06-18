@@ -75,7 +75,7 @@ export default function BallotClient({
         explicit hex values and are NOT affected by shadcn CSS variables,
         so this single override is all that is needed.
       */}
-      <div className="min-h-screen bg-ballot-bg text-navy flex flex-col" style={{ colorScheme: "light", color: "#1B1F5E" }}>
+      <div className="ballot-scrollbar min-h-screen bg-ballot-bg text-navy flex flex-col" style={{ colorScheme: "light", color: "#1B1F5E" }}>
         <BallotHeader
           electionName={electionName}
           division={division}

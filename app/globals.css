@@ -56,6 +56,47 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  html {
+    scrollbar-color: rgba(245, 192, 0, 0.45) #0f1235;
+    scrollbar-width: thin;
+  }
+
+  html::-webkit-scrollbar {
+    width: 11px;
+    height: 11px;
+  }
+
+  html::-webkit-scrollbar-track {
+    background: #0f1235;
+  }
+
+  html::-webkit-scrollbar-thumb {
+    background: rgba(245, 192, 0, 0.36);
+    border: 3px solid #0f1235;
+    border-radius: 999px;
+  }
+
+  html::-webkit-scrollbar-thumb:hover {
+    background: rgba(245, 192, 0, 0.58);
+  }
+
+  .ballot-scrollbar {
+    scrollbar-color: rgba(27, 31, 94, 0.35) #e8e4db;
+  }
+
+  .ballot-scrollbar::-webkit-scrollbar-track {
+    background: #e8e4db;
+  }
+
+  .ballot-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(27, 31, 94, 0.28);
+    border-color: #e8e4db;
+  }
+
+  .ballot-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(27, 31, 94, 0.44);
+  }
 }
 
 /* Disable autofill globally */
@@ -70,5 +111,4 @@ select:-webkit-autofill {
   -webkit-text-fill-color: inherit !important;
   transition: background-color 5000s ease-in-out 0s;
 }
-
 

@@ -21,15 +21,15 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         // Admin theme — dark navy + amber accents. Always pair with size="adminMd" or "adminSm".
         adminPrimary:
-          "font-semibold bg-amber-400 text-[#0b1220] hover:opacity-90 active:scale-[0.97] disabled:opacity-40",
+          "font-semibold bg-amber-400 text-[#0b1220] hover:opacity-90 active:scale-[0.97] focus-visible:border-amber-200 focus-visible:ring-amber-400/30 disabled:opacity-40",
         adminGhost:
-          "font-semibold text-white/50 border border-white/[0.10] bg-transparent hover:text-white/80 hover:border-white/[0.20] active:scale-[0.97] disabled:opacity-30",
+          "font-semibold text-white/50 border border-white/[0.10] bg-transparent hover:text-white/80 hover:border-white/[0.20] active:scale-[0.97] focus-visible:border-amber-400/45 focus-visible:ring-amber-400/20 disabled:opacity-30",
         adminEmerald:
-          "font-semibold bg-emerald-400 text-[#0b1220] hover:opacity-90 active:scale-[0.97] disabled:opacity-30",
+          "font-semibold bg-emerald-400 text-[#0b1220] hover:opacity-90 active:scale-[0.97] focus-visible:border-emerald-200 focus-visible:ring-emerald-400/30 disabled:opacity-30",
         adminBlue:
-          "font-semibold bg-blue-400/[0.10] text-blue-400 border border-blue-400/25 hover:bg-blue-400/20 active:scale-[0.97] disabled:opacity-30",
+          "font-semibold bg-blue-400/[0.10] text-blue-400 border border-blue-400/25 hover:bg-blue-400/20 active:scale-[0.97] focus-visible:border-blue-400/50 focus-visible:ring-blue-400/25 disabled:opacity-30",
         adminDestructive:
-          "font-semibold bg-red-400/[0.10] text-red-400 border border-red-400/25 hover:bg-red-400/20 active:scale-[0.97] disabled:opacity-30",
+          "font-semibold bg-red-400/[0.10] text-red-400 border border-red-400/25 hover:bg-red-400/20 active:scale-[0.97] focus-visible:border-red-400/50 focus-visible:ring-red-400/25 disabled:opacity-30",
       },
       size: {
         default:

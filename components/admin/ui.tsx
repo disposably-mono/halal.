@@ -19,7 +19,7 @@ const CARD_TITLE_CLASS = "text-[10px] font-semibold uppercase tracking-[0.08em] 
 const CARD_BODY = "p-4";
 
 const adminInputClass =
-  "bg-white/[0.04] border border-white/[0.10] rounded-[7px] px-[10px] py-[7px] text-[12px] text-white/80 font-mono outline-none transition-colors focus:border-blue-400/50 w-full [color-scheme:dark] disabled:opacity-40 disabled:cursor-not-allowed";
+  "bg-white/[0.04] border border-white/[0.10] rounded-[7px] px-[10px] py-[7px] text-[12px] text-white/80 font-mono outline-none transition-colors focus:border-amber-400/50 focus:ring-2 focus:ring-amber-400/10 w-full [color-scheme:dark] disabled:opacity-40 disabled:cursor-not-allowed";
 
 // ─── Admin form primitives ────────────────────────────────────────────────────
 

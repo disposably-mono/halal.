@@ -22,7 +22,7 @@ export function ElectionSelector({
       <button
         onClick={onPrev}
         disabled={!canPrev}
-        className="p-2 border border-white/10 rounded-sm text-white/40 hover:text-white/70 hover:border-white/25 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+        className="p-2 border border-white/10 rounded-sm text-white/40 hover:text-white/70 hover:border-white/25 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/20 focus-visible:border-gold/30 disabled:opacity-20 disabled:cursor-not-allowed"
         aria-label="Previous election"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
@@ -44,7 +44,7 @@ export function ElectionSelector({
       <button
         onClick={onNext}
         disabled={!canNext}
-        className="p-2 border border-white/10 rounded-sm text-white/40 hover:text-white/70 hover:border-white/25 transition-all disabled:opacity-20 disabled:cursor-not-allowed"
+        className="p-2 border border-white/10 rounded-sm text-white/40 hover:text-white/70 hover:border-white/25 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/20 focus-visible:border-gold/30 disabled:opacity-20 disabled:cursor-not-allowed"
         aria-label="Next election"
       >
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none">

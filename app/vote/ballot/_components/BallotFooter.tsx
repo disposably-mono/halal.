@@ -29,7 +29,7 @@ export function BallotFooter({
           type="button"
           onClick={onSubmit}
           disabled={isPending}
-          className="px-[22px] py-[10px] bg-gold text-navy font-ballot-mono text-[11px] font-bold tracking-[0.22em] uppercase hover:opacity-88 active:opacity-75 transition-opacity disabled:opacity-45 disabled:cursor-not-allowed flex items-center gap-2"
+          className="px-[22px] py-[10px] bg-gold text-navy font-ballot-mono text-[11px] font-bold tracking-[0.22em] uppercase hover:opacity-[0.88] active:opacity-75 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/45 focus-visible:ring-offset-2 focus-visible:ring-offset-navy disabled:opacity-45 disabled:cursor-not-allowed flex items-center gap-2"
         >
           {isPending ? (
             <>

@@ -106,7 +106,7 @@ export default function AdminLoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoFocus
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04]"
+                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -123,12 +123,12 @@ export default function AdminLoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04]"
+                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
                   />
                 </div>
                 <button
                   type="submit"
-                  className="mt-1 h-10 w-full rounded-lg bg-amber-400 text-[13px] font-semibold text-[#0b1220] transition-opacity hover:opacity-90 active:scale-[0.97]"
+                  className="mt-1 h-10 w-full rounded-lg bg-amber-400 text-[13px] font-semibold text-[#0b1220] transition-opacity hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2540]"
                 >
                   Continue →
                 </button>
@@ -152,7 +152,7 @@ export default function AdminLoginPage() {
                     autoFocus
                     aria-invalid={hasError}
                     aria-describedby={hasError ? "admin-login-error" : undefined}
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04]"
+                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
                   />
                 </div>
 
@@ -175,14 +175,14 @@ export default function AdminLoginPage() {
                       setPassword("");
                       setOfficerKey("");
                     }}
-                    className="h-10 flex-1 rounded-lg border border-white/[0.12] text-[13px] text-white/50 transition-colors hover:border-white/[0.2] hover:bg-white/[0.04] hover:text-white/80"
+                    className="h-10 flex-1 rounded-lg border border-white/[0.12] text-[13px] text-white/50 transition-colors hover:border-white/[0.2] hover:bg-white/[0.04] hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/20"
                   >
                     ← Back
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="h-10 flex-1 rounded-lg bg-amber-400 text-[13px] font-semibold text-[#0b1220] transition-opacity hover:opacity-90 active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-10 flex-1 rounded-lg bg-amber-400 text-[13px] font-semibold text-[#0b1220] transition-opacity hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2540] disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? "Signing in…" : "Sign In"}
                   </button>

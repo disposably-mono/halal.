@@ -18,7 +18,7 @@ function SubmitButton() {
     <button
       type="submit"
       disabled={pending}
-      className="w-full bg-gold text-navy font-heading font-bold text-sm tracking-[0.2em] uppercase py-3.5 rounded-sm hover:bg-gold/90 active:bg-gold/80 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      className="w-full bg-gold text-navy font-heading font-bold text-sm tracking-[0.2em] uppercase py-3.5 rounded-sm hover:bg-gold/90 active:bg-gold/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
     >
       {pending ? (
         <>
@@ -76,7 +76,7 @@ export default function VotePage() {
       <nav className="px-6 py-4 border-b border-white/5">
         <Link
           href="/"
-          className="inline-flex items-center gap-2 font-body text-mid text-xs tracking-[0.2em] uppercase hover:text-gold/70 transition-colors"
+          className="inline-flex items-center gap-2 font-body text-mid text-xs tracking-[0.2em] uppercase hover:text-gold/70 transition-colors focus-visible:outline-none focus-visible:text-gold focus-visible:ring-2 focus-visible:ring-gold/20 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep"
         >
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-50">
             <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -129,7 +129,7 @@ export default function VotePage() {
                 placeholder="0000-0000"
                 aria-invalid={hasError}
                 aria-describedby={fieldDescriptionId}
-                className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] outline-none transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 ${errorBorderClass}`}
+                className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] outline-none transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25 ${errorBorderClass}`}
               />
             </div>
 
@@ -154,7 +154,7 @@ export default function VotePage() {
                 placeholder="e.g. 2611A001"
                 aria-invalid={hasError}
                 aria-describedby={fieldDescriptionId}
-                className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] uppercase outline-none transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 ${errorBorderClass}`}
+                className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] uppercase outline-none transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25 ${errorBorderClass}`}
               />
             </div>
 
