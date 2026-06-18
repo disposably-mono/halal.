@@ -117,6 +117,12 @@ app/
 4. On success, sets session with `role` (COMMISSIONER/OFFICER)
 5. `middleware.ts` protects all `/admin/*` routes using NextAuth's `auth()` redirect
 
+> **Multi-host auth:** `auth.config.ts` sets `trustHost: true`, so callback URLs and
+> cookies use the requesting host (`X-Forwarded-Host`) rather than a fixed
+> `NEXTAUTH_URL`. Login works on `localhost` and tunneled hosts (e.g. ngrok) with no
+> config change. The login form calls `signIn(..., { redirect: false })` then
+> `router.push("/admin")` (relative), so it stays on whatever host the browser is on.
+
 ### Database Patterns
 - **Global Prisma Client:** `lib/prisma.ts` uses singleton pattern with `globalThis` to prevent dev HMR issues
 - **PostgreSQL Adapter:** Uses `@prisma/adapter-pg` to connect via `DATABASE_URL`
@@ -309,7 +315,10 @@ When adding integration or E2E tests later, use a separate `DATABASE_URL_TEST` a
 ```bash
 DATABASE_URL="postgresql://user:pass@host:5432/db"
 NEXTAUTH_SECRET="random-32+char-string-for-jwt-signing"
-NEXTAUTH_URL="http://localhost:3000"  # Match deployment URL
+# NEXTAUTH_URL is OPTIONAL. auth.config.ts sets `trustHost: true`, so the host is
+# derived from each request. Leave it unset to support multiple hosts at once
+# (localhost + tunnels like ngrok); set it only to pin auth to one origin.
+# NEXTAUTH_URL="http://localhost:3000"
 ```
 
 ### Development `.env` (already configured)
@@ -320,7 +329,7 @@ NEXTAUTH_URL="http://localhost:3000"  # Match deployment URL
 ### Production Considerations
 - Generate strong `NEXTAUTH_SECRET` with `openssl rand -base64 32`
 - Use managed PostgreSQL (RDS, Supabase, etc.)
-- Set `NEXTAUTH_URL` to production domain
+- `NEXTAUTH_URL` is optional (`trustHost: true` derives the host from the request); set it only to pin auth to a single production origin
 - Harden `AdminUser.officerKey` - unique per officer in production
 - Enable HTTPS (NextAuth requires secure cookies in production)
 
