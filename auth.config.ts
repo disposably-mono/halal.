@@ -2,6 +2,9 @@ import type { NextAuthConfig } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 
 export const authConfig = {
+  // Derive the callback host from each incoming request instead of a fixed
+  // NEXTAUTH_URL, so auth works on localhost and tunneled hosts (e.g. ngrok).
+  trustHost: true,
   pages: {
     signIn: "/admin/login",
   },
