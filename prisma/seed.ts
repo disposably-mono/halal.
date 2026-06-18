@@ -4,14 +4,24 @@ import { prisma } from "../lib/prisma";
 import bcrypt from "bcryptjs";
 
 async function main() {
-  const passwordHash = await bcrypt.hash(process.env.SEED_ADMIN_PASSWORD!, 12);
-  const officerKeyHash = await bcrypt.hash(process.env.SEED_ADMIN_OFFICER_KEY!, 12);
+  const email = process.env.SEED_ADMIN_EMAIL;
+  const password = process.env.SEED_ADMIN_PASSWORD;
+  const officerKey = process.env.SEED_ADMIN_OFFICER_KEY;
+
+  if (!email || !password || !officerKey) {
+    throw new Error(
+      "Missing seed credentials. Set SEED_ADMIN_EMAIL, SEED_ADMIN_PASSWORD, and SEED_ADMIN_OFFICER_KEY in .env",
+    );
+  }
+
+  const passwordHash = await bcrypt.hash(password, 12);
+  const officerKeyHash = await bcrypt.hash(officerKey, 12);
 
   const admin = await prisma.adminUser.upsert({
-    where: { email: "comelec.club@olps.edu.ph" },
+    where: { email },
     update: {},
     create: {
-      email: "comelec.club@olps.edu.ph",
+      email,
       passwordHash,
       officerKey: officerKeyHash,
       name: "OLPS COMELEC",
