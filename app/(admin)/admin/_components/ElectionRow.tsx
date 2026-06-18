@@ -8,7 +8,7 @@ export function ElectionRow({ e }: { e: Election }) {
   const p = pct(e.votedCount, e._count.voters);
   const showProg = e.status === "OPEN" || e.status === "CLOSED";
 
-  const ghostBtn = "text-[10px] text-white/40 border border-white/[0.07] rounded-[5px] px-[7px] py-[3px] hover:text-white/70 hover:border-white/[0.12] transition-all no-underline";
+  const ghostBtn = "text-[10px] text-white/50 border border-white/[0.07] rounded-[5px] px-[7px] py-[3px] hover:text-white/70 hover:border-white/[0.12] transition-all no-underline";
   const amberBtn = "text-[10px] text-amber-400 bg-amber-400/[0.08] border border-amber-400/20 rounded-[5px] px-[7px] py-[3px] hover:bg-amber-400/[0.15] transition-all no-underline";
   const emeraldBtn = "text-[10px] text-emerald-400 bg-emerald-400/[0.06] border border-emerald-400/20 rounded-[5px] px-[7px] py-[3px] hover:bg-emerald-400/[0.12] transition-all no-underline";
 
@@ -19,11 +19,11 @@ export function ElectionRow({ e }: { e: Election }) {
       {/* Name + division */}
       <div className="flex-1 min-w-0">
         <div className="text-[12px] font-medium text-white/80 truncate group-hover:text-white/90 transition-colors">{e.name}</div>
-        <div className="text-[10px] text-white/30 mt-[1px]">{DIVISION_LABELS[e.division] ?? e.division}</div>
+        <div className="text-[10px] text-white/40 mt-[1px]">{DIVISION_LABELS[e.division] ?? e.division}</div>
       </div>
 
       {/* Stats */}
-      <div className="hidden md:flex items-center gap-4 flex-shrink-0 text-[10px] text-white/40">
+      <div className="hidden md:flex items-center gap-4 flex-shrink-0 text-[10px] text-white/50">
         <span className="flex items-center gap-[5px]">
           <svg style={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />

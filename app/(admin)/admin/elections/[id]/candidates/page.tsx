@@ -65,13 +65,13 @@ export default async function CandidatesPage({ params }: { params: { id: string 
       <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-[#131c2e]">
         <div className="mx-auto flex h-[52px] max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
-            <Link href="/admin" className="text-[11px] text-white/30 transition-colors hover:text-white/60">
+            <Link href="/admin" className="text-[11px] text-white/40 transition-colors hover:text-white/60">
               ← Dashboard
             </Link>
             <span className="text-white/10">/</span>
             <span className="max-w-[200px] truncate text-[11px] text-white/60">{election.name}</span>
             <span className="text-white/10">/</span>
-            <span className="text-[11px] text-white/35">Candidates</span>
+            <span className="text-[11px] text-white/45">Candidates</span>
           </div>
           <StatusPill status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} />
         </div>
@@ -87,7 +87,7 @@ export default async function CandidatesPage({ params }: { params: { id: string 
         {/* ── Page header + stepper ── */}
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/30">{election.name}</p>
+            <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/40">{election.name}</p>
             <h1 className="text-[22px] font-semibold tracking-tight text-white/90">Candidates</h1>
           </div>
           <SetupStepper
@@ -153,14 +153,14 @@ export default async function CandidatesPage({ params }: { params: { id: string 
         {/* ── Positions + candidates ── */}
         {positions.length === 0 ? (
           <div className="rounded-xl border border-white/[0.08] bg-[#1a2540] px-6 py-14 text-center">
-            <p className="text-[13px] text-white/30">
+            <p className="text-[13px] text-white/40">
               No positions yet. Use &quot;Seed All Positions&quot; or add them one at a time above.
             </p>
           </div>
         ) : (
           <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
             <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
-              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
+              <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50">
                 Positions &amp; Candidates
               </span>
               <div className="flex items-center gap-3">
@@ -169,7 +169,7 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                     {emptyPositions.length} position{emptyPositions.length !== 1 ? "s" : ""} need candidates
                   </span>
                 )}
-                <span className="text-[10px] text-white/25">
+                <span className="text-[10px] text-white/35">
                   {positions.length} position{positions.length !== 1 ? "s" : ""} · {totalCandidates} candidate{totalCandidates !== 1 ? "s" : ""}
                 </span>
               </div>
@@ -180,28 +180,28 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                 return (
                   <details key={pos.id} open className="group">
                     <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 select-none transition-colors hover:bg-white/[0.02]">
-                      <span className="flex h-4 w-4 shrink-0 items-center justify-center text-white/25 transition-transform duration-200 group-open:rotate-90">
+                      <span className="flex h-4 w-4 shrink-0 items-center justify-center text-white/35 transition-transform duration-200 group-open:rotate-90">
                         <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
                           <path d="M2 1L6 4L2 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </span>
                       <div className="flex flex-1 items-center gap-2 min-w-0">
                         <AdminCardTitle>{pos.title}</AdminCardTitle>
-                        <span className="text-[9px] text-white/20">Gr. {pos.candidateGrade}</span>
+                        <span className="text-[9px] text-white/30">Gr. {pos.candidateGrade}</span>
                       </div>
                       {isEmpty && !isLocked ? (
                         <span className="shrink-0 rounded-full border border-amber-400/20 bg-amber-400/[0.07] px-[7px] py-[2px] text-[9px] font-semibold text-amber-400/80">
                           No candidates
                         </span>
                       ) : (
-                        <span className="shrink-0 text-[10px] text-white/25">
+                        <span className="shrink-0 text-[10px] text-white/35">
                           {pos.candidates.length} candidate{pos.candidates.length !== 1 ? "s" : ""}
                         </span>
                       )}
                     </summary>
                     <div className="border-t border-white/[0.04]">
                       {pos.candidates.length === 0 ? (
-                        <p className="py-4 pl-[52px] pr-4 text-[11px] italic text-white/25">No candidates added yet</p>
+                        <p className="py-4 pl-[52px] pr-4 text-[11px] italic text-white/35">No candidates added yet</p>
                       ) : (
                         <div className="divide-y divide-white/[0.04]">
                           {pos.candidates.map((cand) => (
@@ -210,7 +210,7 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                                 {initials(cand.fullName)}
                               </div>
                               <span className="flex-1 text-[12px] text-white/80">{cand.fullName}</span>
-                              <span className="text-[10px] text-white/30">Gr. {cand.gradeLevel}</span>
+                              <span className="text-[10px] text-white/40">Gr. {cand.gradeLevel}</span>
                               {!isLocked && (
                                 <form action={removeCandidate}>
                                   <input type="hidden" name="candidateId" value={cand.id} />
@@ -229,7 +229,7 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                           <input type="hidden" name="positionId" value={pos.id} />
                           <input type="hidden" name="electionId" value={election.id} />
                           <div className="flex flex-1 flex-col gap-[5px]">
-                            <label className="text-[10px] text-white/35">Full name</label>
+                            <label className="text-[10px] text-white/45">Full name</label>
                             <AdminInput name="fullName" placeholder="e.g. Maria Santos" required />
                           </div>
                           <Button type="submit" variant="adminGhost" size="adminSm" className="shrink-0">+ Add</Button>

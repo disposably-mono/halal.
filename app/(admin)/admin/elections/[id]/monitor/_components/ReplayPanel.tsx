@@ -40,7 +40,7 @@ export function ReplayPanel({
   }, [replayIndex]);
 
   const iconBtn =
-    "flex h-7 w-7 items-center justify-center rounded-[6px] border border-white/10 text-white/50 transition-all hover:border-white/25 hover:text-white/90 disabled:cursor-not-allowed disabled:opacity-20 cursor-pointer";
+    "flex h-7 w-7 items-center justify-center rounded-[6px] border border-white/10 text-white/60 transition-all hover:border-white/25 hover:text-white/90 disabled:cursor-not-allowed disabled:opacity-20 cursor-pointer";
 
   return (
     <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
@@ -55,7 +55,7 @@ export function ReplayPanel({
             </span>
           )}
         </div>
-        <span className="font-mono text-[10px] text-white/25">
+        <span className="font-mono text-[10px] text-white/35">
           {snapshots.length} snapshot{snapshots.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -77,7 +77,7 @@ export function ReplayPanel({
           onClick={isReplaying ? onPause : onPlay}
           className={`flex h-7 w-7 items-center justify-center rounded-[6px] border transition-all cursor-pointer ${isReplaying
             ? "border-amber-400/40 bg-amber-400/10 text-amber-400"
-            : "border-white/10 text-white/50 hover:border-white/25 hover:text-white/90"
+            : "border-white/10 text-white/60 hover:border-white/25 hover:text-white/90"
             }`}
           aria-label={isReplaying ? "Pause replay" : "Play replay"}
         >
@@ -123,14 +123,14 @@ export function ReplayPanel({
           />
         </div>
 
-        <span className="w-9 shrink-0 text-right font-mono text-[9px] text-white/30">
+        <span className="w-9 shrink-0 text-right font-mono text-[9px] text-white/40">
           {isLive ? "LIVE" : (snapshots[frameIdx]?.label ?? "—")}
         </span>
 
         <select
           value={speed}
           onChange={(e) => onSpeedChange(parseInt(e.target.value))}
-          className="cursor-pointer rounded-[5px] border border-white/10 bg-transparent px-[5px] py-[3px] text-[9px] text-white/40 outline-none"
+          className="cursor-pointer rounded-[5px] border border-white/10 bg-transparent px-[5px] py-[3px] text-[9px] text-white/50 outline-none"
           aria-label="Replay speed"
         >
           <option value={800}>0.5×</option>
@@ -156,10 +156,10 @@ export function ReplayPanel({
                 }`}
             >
               <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isActive ? "bg-amber-400" : "bg-emerald-500/60"}`} />
-              <span className="w-10 shrink-0 font-mono text-[9px] text-white/30">
+              <span className="w-10 shrink-0 font-mono text-[9px] text-white/40">
                 {snap.label}
               </span>
-              <span className="flex-1 truncate text-[10px] text-white/40">
+              <span className="flex-1 truncate text-[10px] text-white/50">
                 {totalV.toLocaleString()} votes · {snap.payload.turnout?.pct ?? 0}% turnout
               </span>
               {i === snapshots.length - 1 && (

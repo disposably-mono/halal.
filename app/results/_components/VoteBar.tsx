@@ -31,20 +31,20 @@ export function VoteBar({
           ? "border-gold/40 bg-navy/60"
           : isTie
             ? "border-sky-400/30 bg-navy/40"
-            : "border-white/8 bg-navy/20"}`}
+            : "border-white/[0.08] bg-navy/25"}`}
     >
       {/* Animated fill */}
       <div
         className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out
           ${isLeader && !isTie
-            ? "bg-gold/15"
+            ? "bg-gold/[0.15]"
             : isTie
               ? "bg-sky-400/[0.07]"
               : "bg-white/[0.04]"}`}
         style={{ width: `${displayPct}%` }}
       />
 
-      <div className="relative flex items-center gap-3 px-4 py-3">
+      <div className="relative flex items-center gap-3 px-3 py-3 sm:px-4">
         {/* Rank */}
         <span
           className={`font-mono text-[11px] w-5 text-center shrink-0
@@ -52,14 +52,14 @@ export function VoteBar({
               ? "text-gold/70"
               : isTie
                 ? "text-sky-400/70"
-                : "text-white/20"}`}
+                : "text-white/30"}`}
         >
           {rank}
         </span>
 
         {/* Name */}
         <span
-          className={`flex-1 font-heading font-bold text-sm tracking-wide uppercase min-w-0 truncate
+          className={`min-w-0 flex-1 truncate font-heading text-sm font-bold uppercase tracking-wide
             ${isLeader && !isTie
               ? "text-white"
               : isTie
@@ -70,7 +70,7 @@ export function VoteBar({
         </span>
 
         {/* Grade */}
-        <span className="font-mono text-[10px] text-white/25 shrink-0">
+        <span className="hidden shrink-0 font-mono text-[10px] text-white/35 sm:inline">
           Gr.{candidate.gradeLevel}
         </span>
 
@@ -82,7 +82,7 @@ export function VoteBar({
                 ? "text-gold"
                 : isTie
                   ? "text-sky-400"
-                  : "text-white/40"}`}
+                  : "text-white/50"}`}
           >
             {candidate.votes.toLocaleString()}
           </span>
@@ -92,7 +92,7 @@ export function VoteBar({
                 ? "text-gold/50"
                 : isTie
                   ? "text-sky-400/50"
-                  : "text-white/20"}`}
+                  : "text-white/30"}`}
           >
             {pct.toFixed(1)}%
           </span>

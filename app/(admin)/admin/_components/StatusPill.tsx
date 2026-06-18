@@ -4,10 +4,10 @@ import { STATUS_LABELS, type ElectionStatus } from "./shared";
 
 export function StatusPill({ status }: { status: ElectionStatus }) {
   const styles: Record<ElectionStatus, string> = {
-    DRAFT: "bg-white/[0.06] text-white/50",
+    DRAFT: "bg-white/[0.06] text-white/60",
     SCHEDULED: "bg-blue-400/[0.12] text-blue-400",
     OPEN: "bg-emerald-400/[0.12] text-emerald-400",
-    CLOSED: "bg-white/[0.05] text-white/20",
+    CLOSED: "bg-white/[0.05] text-white/30",
   };
   const dots: Record<ElectionStatus, string> = {
     DRAFT: "bg-white/20",

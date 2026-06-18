@@ -15,12 +15,12 @@ export default async function NewElectionPage() {
         <div className="mx-auto flex h-[52px] max-w-4xl items-center gap-2 px-6">
           <Link
             href="/admin"
-            className="text-[13px] text-white/30 transition-colors hover:text-white/60"
+            className="text-[13px] text-white/40 transition-colors hover:text-white/60"
           >
             ← Elections
           </Link>
-          <span className="text-[13px] text-white/20">/</span>
-          <span className="text-[13px] text-white/50">New Election</span>
+          <span className="text-[13px] text-white/30">/</span>
+          <span className="text-[13px] text-white/60">New Election</span>
         </div>
       </nav>
 
@@ -31,7 +31,7 @@ export default async function NewElectionPage() {
           <h1 className="text-[22px] font-semibold tracking-tight text-white/90">
             Create Election
           </h1>
-          <p className="mt-1 text-[13px] text-white/30">
+          <p className="mt-1 text-[13px] text-white/40">
             Set up the details. You can add candidates and voters after creation.
           </p>
         </div>
@@ -51,7 +51,7 @@ export default async function NewElectionPage() {
 
             {/* Name */}
             <div className="flex flex-col gap-1.5">
-              <label className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.06em] text-white/30">
+              <label className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.06em] text-white/40">
                 Election Name
                 <span className="text-amber-400">*</span>
               </label>
@@ -60,13 +60,13 @@ export default async function NewElectionPage() {
                 type="text"
                 placeholder="e.g. JHSSCT Elections AY 2025–2026"
                 required
-                className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04]"
+                className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/35 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04]"
               />
             </div>
 
             {/* Division */}
             <div className="flex flex-col gap-1.5">
-              <label className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.06em] text-white/30">
+              <label className="flex items-center gap-1 text-[11px] font-medium uppercase tracking-[0.06em] text-white/40">
                 Division
                 <span className="text-amber-400">*</span>
               </label>
@@ -89,17 +89,17 @@ export default async function NewElectionPage() {
             {/* Schedule */}
             <div className="flex flex-col gap-1.5">
               <div className="flex items-baseline gap-2">
-                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/30">
+                <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/40">
                   Schedule
                 </label>
-                <span className="text-[11px] text-white/20">— optional</span>
+                <span className="text-[11px] text-white/30">— optional</span>
               </div>
-              <p className="text-[11px] text-white/25">
+              <p className="text-[11px] text-white/35">
                 Leave blank to open and close the election manually.
               </p>
               <div className="mt-1 grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-[11px] text-white/25">Opens</span>
+                  <span className="text-[11px] text-white/35">Opens</span>
                   <input
                     name="scheduledOpen"
                     type="datetime-local"
@@ -107,7 +107,7 @@ export default async function NewElectionPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-[11px] text-white/25">Closes</span>
+                  <span className="text-[11px] text-white/35">Closes</span>
                   <input
                     name="scheduledClose"
                     type="datetime-local"
@@ -125,7 +125,7 @@ export default async function NewElectionPage() {
               <Link href="/admin" className="flex-1">
                 <button
                   type="button"
-                  className="h-10 w-full rounded-lg border border-white/[0.12] text-[13px] text-white/50 transition-colors hover:border-white/[0.2] hover:bg-white/[0.04] hover:text-white/80"
+                  className="h-10 w-full rounded-lg border border-white/[0.12] text-[13px] text-white/60 transition-colors hover:border-white/[0.2] hover:bg-white/[0.04] hover:text-white/80"
                 >
                   Cancel
                 </button>

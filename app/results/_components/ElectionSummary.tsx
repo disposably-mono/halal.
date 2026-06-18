@@ -16,8 +16,8 @@ export function ElectionSummary({
       <span
         className={`inline-flex items-center gap-1.5 text-[10px] font-body tracking-[0.15em] uppercase border px-2 py-1 rounded-sm
           ${data.status === "CLOSED"
-            ? "border-white/20 text-white/40"
-            : "border-emerald-400/30 text-emerald-400 bg-emerald-400/8"
+            ? "border-white/20 text-white/50"
+            : "border-emerald-400/30 text-emerald-400 bg-emerald-400/[0.08]"
           }`}
       >
         {data.status === "CLOSED" ? (
@@ -30,21 +30,24 @@ export function ElectionSummary({
         )}
       </span>
 
-      <span className="font-mono text-[10px] text-white/20 border border-white/[0.06] px-2 py-1 rounded-sm">
+      <span className="font-mono text-[10px] text-white/30 border border-white/[0.06] px-2 py-1 rounded-sm">
         {totalVotes.toLocaleString()} total votes
       </span>
 
-      <span className="font-mono text-[10px] text-white/20 border border-white/[0.06] px-2 py-1 rounded-sm">
+      <span className="font-mono text-[10px] text-white/30 border border-white/[0.06] px-2 py-1 rounded-sm">
         {data.positions.length} position{data.positions.length !== 1 ? "s" : ""}
       </span>
 
       {lastUpdated && (
-        <span className="font-mono text-white/20 text-[10px] ml-auto">
-          {lastUpdated.toLocaleTimeString("en-PH", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit",
-          })}
+        <span className="basis-full font-mono text-white/35 text-[10px] sm:ml-auto sm:basis-auto">
+          Updated{" "}
+          <span className="text-white/[0.35]">
+            {lastUpdated.toLocaleTimeString("en-PH", {
+              hour: "2-digit",
+              minute: "2-digit",
+              second: "2-digit",
+            })}
+          </span>
         </span>
       )}
     </div>

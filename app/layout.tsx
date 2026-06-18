@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ViewTransitions } from "next-view-transitions";
 import {
   Bebas_Neue,
   Barlow_Condensed,
@@ -57,24 +58,26 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <head>
-        <meta name="autocomplete" content="off" />
-      </head>
-      <body
-        className={`
-          ${bebasNeue.variable}
-          ${barlowCondensed.variable}
-          ${dmSans.variable}
-          ${jetbrainsMono.variable}
-          ${playfairDisplay.variable}
-          ${playfairSC.variable}
-          ${courierPrime.variable}
-          font-body antialiased
-        `}
-      >
-        {children}
-      </body>
-    </html>
+    <ViewTransitions>
+      <html lang="en" className="dark">
+        <head>
+          <meta name="autocomplete" content="off" />
+        </head>
+        <body
+          className={`
+            ${bebasNeue.variable}
+            ${barlowCondensed.variable}
+            ${dmSans.variable}
+            ${jetbrainsMono.variable}
+            ${playfairDisplay.variable}
+            ${playfairSC.variable}
+            ${courierPrime.variable}
+            font-body antialiased
+          `}
+        >
+          {children}
+        </body>
+      </html>
+    </ViewTransitions>
   );
 }

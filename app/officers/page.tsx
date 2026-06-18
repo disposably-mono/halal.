@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
+import { LandingFooter } from "../_components/LandingFooter";
 
 /* ─────────────────────────────────────────────
    OFFICERS PAGE — OLPS COMELEC
@@ -192,7 +193,7 @@ function OfficerCard({ officer, past = false }: { officer: Officer; past?: boole
                 </span>
               </div>
             </div>
-            <span className="font-body text-[9px] tracking-[0.2em] uppercase text-white/20 mt-1">
+            <span className="font-body text-[9px] tracking-[0.2em] uppercase text-white/30 mt-1">
               Add pubmat
             </span>
           </div>
@@ -229,7 +230,7 @@ function OfficerCard({ officer, past = false }: { officer: Officer; past?: boole
         <p className={`font-tagline font-bold leading-snug text-white ${isFeatured ? "text-[0.9rem]" : "text-[0.8rem]"}`}>
           {officer.name}
         </p>
-        <p className="font-mono text-[9px] text-white/25 mt-auto pt-1">
+        <p className="font-mono text-[9px] text-white/35 mt-auto pt-1">
           {past ? "S.Y. 2024–2025" : "S.Y. 2025–2026"}
         </p>
       </div>
@@ -304,21 +305,27 @@ export default function OfficersPage() {
           </span>
         </Link>
 
-        <div className="hidden sm:flex gap-6">
+        <div className="hidden sm:flex items-center gap-4">
           {[
-            { label: "Home",          href: "/" },
-            { label: "Creator",       href: "/creator" },
-            { label: "About COMELEC", href: "/about" },
-            { label: "Officers",      href: "/officers", active: true },
-          ].map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="font-body text-[0.65rem] tracking-[0.2em] uppercase transition-colors duration-200 no-underline"
-              style={{ color: link.active ? "#F5C000" : "rgba(255,255,255,0.45)" }}
-            >
-              {link.label}
-            </Link>
+            { label: "COMELEC", href: "/about" },
+            { label: "LEADERSHIP", href: "/officers", active: true },
+            { label: "MAKER", href: "/creator" },
+          ].map((link, index) => (
+            <div key={link.label} className="flex items-center gap-4">
+              {index > 0 && (
+                <span className="font-body text-[0.65rem] text-gold/25" aria-hidden="true">
+                  |
+                </span>
+              )}
+              <Link
+                href={link.href}
+                className={`font-body text-[0.65rem] tracking-[0.2em] uppercase transition-colors duration-200 no-underline ${
+                  link.active ? "text-gold" : "text-white/[0.45] hover:text-gold"
+                }`}
+              >
+                {link.label}
+              </Link>
+            </div>
           ))}
         </div>
       </nav>
@@ -418,14 +425,12 @@ export default function OfficersPage() {
         )}
       </main>
 
-      {/* ── FOOTER ───────────────────────────────────────── */}
-      <footer className="py-12 px-6 border-t border-white/5">
-        <div className="max-w-5xl mx-auto flex flex-col items-center gap-4 text-center">
-          <p className="font-tagline text-white/30 text-sm italic">VOX POPULI VOX DEI</p>
-          <p className="font-body text-mid/50 text-xs tracking-wide">OLPS COMELEC — Commission on Elections</p>
-          <p className="font-body text-mid/30 text-[11px]">Our Lady of Peace School</p>
-        </div>
-      </footer>
+      <LandingFooter
+        eyebrow="Member Applications"
+        title="Interested in serving with COMELEC?"
+        description="Contact Sir Amadeo Maniba to inquire about member application details, requirements, and available opportunities."
+        signal="Applications still open"
+      />
     </div>
   );
 }

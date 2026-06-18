@@ -26,10 +26,10 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           <span className="text-[17px] font-bold tracking-[-0.6px] text-white/90">
             halal<span className="text-amber-400">.</span>
           </span>
-          <span className="text-[11px] text-white/30 ml-2 font-normal">Admin Panel</span>
+          <span className="text-[11px] text-white/40 ml-2 font-normal">Admin Panel</span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-[11px] text-white/40">
+          <span className="text-[11px] text-white/50">
             {new Date().toLocaleDateString("en-PH", {
               weekday: "short",
               month: "short",
@@ -45,7 +45,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
           >
             {adminInitial}
           </div>
-          <span className="text-[11px] text-white/40">{adminName}</span>
+          <span className="text-[11px] text-white/50">{adminName}</span>
           <form action={handleSignOut}>
             <button
               type="submit"

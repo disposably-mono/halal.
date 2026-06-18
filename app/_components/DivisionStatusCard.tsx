@@ -14,7 +14,7 @@ export function DivisionStatusCard({ card, index }: { card: DivisionCard; index:
     >
       {/* Division code */}
       <div className="flex items-center justify-between">
-        <span className="font-display text-3xl text-white/20 leading-none">{division}</span>
+        <span className="font-display text-3xl text-white/30 leading-none">{division}</span>
         {cfg && (
           <span
             className={`inline-flex items-center gap-1.5 text-[10px] font-body tracking-[0.15em] uppercase border px-2 py-1 rounded-sm ${cfg.color}`}
@@ -36,7 +36,7 @@ export function DivisionStatusCard({ card, index }: { card: DivisionCard; index:
 
       {/* Election name if exists */}
       {election && (
-        <p className="font-body text-white/40 text-xs leading-snug border-t border-white/5 pt-3">
+        <p className="font-body text-white/50 text-xs leading-snug border-t border-white/5 pt-3">
           {election.name}
         </p>
       )}

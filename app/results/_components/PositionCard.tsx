@@ -7,9 +7,9 @@ export function PositionCard({ position }: { position: PositionResult }) {
   const isTie = position.candidates.some((c) => c.isTie);
 
   return (
-    <div className="border border-white/8 rounded-sm overflow-hidden">
+    <div className="overflow-hidden rounded-sm border border-white/[0.08] bg-navy-deep/50 shadow-[0_18px_45px_rgba(0,0,0,0.18)]">
       {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 bg-navy/40 border-b border-white/8">
+      <div className="flex items-center justify-between border-b border-white/[0.08] bg-navy/[0.45] px-4 py-3">
         <h3 className="font-heading font-bold text-white text-sm tracking-wide uppercase">
           {position.title}
         </h3>
@@ -19,16 +19,16 @@ export function PositionCard({ position }: { position: PositionResult }) {
               TIE
             </span>
           )}
-          <span className="font-mono text-[10px] text-white/30">
+          <span className="font-mono text-[10px] text-white/40">
             {position.totalVotes} vote{position.totalVotes !== 1 ? "s" : ""}
           </span>
         </div>
       </div>
 
       {/* Candidates */}
-      <div className="p-3 space-y-2 bg-navy-deep/40">
+      <div className="space-y-2 bg-navy-deep/[0.45] p-3">
         {position.candidates.length === 0 ? (
-          <p className="font-body text-white/25 text-xs italic text-center py-4">
+          <p className="font-body text-white/35 text-xs italic text-center py-4">
             No candidates
           </p>
         ) : (

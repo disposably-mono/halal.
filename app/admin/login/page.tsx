@@ -67,7 +67,7 @@ export default function AdminLoginPage() {
           <h1 className="text-[42px] font-semibold leading-none tracking-[-1.5px] text-white/90">
             halal.
           </h1>
-          <p className="text-[12px] italic tracking-[0.06em] text-white/25">
+          <p className="text-[12px] italic tracking-[0.06em] text-white/35">
             VOX POPULI VOX DEI
           </p>
         </div>
@@ -80,7 +80,7 @@ export default function AdminLoginPage() {
             <h2 className="text-[14px] font-semibold text-white/90">
               {step === 1 ? "Admin Sign In" : "Officer Verification"}
             </h2>
-            <p className="mt-0.5 text-[12px] text-white/30">
+            <p className="mt-0.5 text-[12px] text-white/40">
               {step === 1
                 ? "Enter your COMELEC admin credentials."
                 : "Enter your unique personal officer key to complete sign in."}
@@ -94,7 +94,7 @@ export default function AdminLoginPage() {
                 <div className="flex flex-col gap-1.5">
                   <label
                     htmlFor="admin-email"
-                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/30"
+                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/40"
                   >
                     Email
                   </label>
@@ -106,13 +106,13 @@ export default function AdminLoginPage() {
                     onChange={(e) => setEmail(e.target.value)}
                     required
                     autoFocus
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
+                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/35 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label
                     htmlFor="admin-password"
-                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/30"
+                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/40"
                   >
                     Password
                   </label>
@@ -123,7 +123,7 @@ export default function AdminLoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
+                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/35 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
                   />
                 </div>
                 <button
@@ -138,7 +138,7 @@ export default function AdminLoginPage() {
                 <div className="flex flex-col gap-1.5">
                   <label
                     htmlFor="admin-officer-key"
-                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/30"
+                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/40"
                   >
                     Officer Key
                   </label>
@@ -152,7 +152,7 @@ export default function AdminLoginPage() {
                     autoFocus
                     aria-invalid={hasError}
                     aria-describedby={hasError ? "admin-login-error" : undefined}
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
+                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/35 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
                   />
                 </div>
 
@@ -175,7 +175,7 @@ export default function AdminLoginPage() {
                       setPassword("");
                       setOfficerKey("");
                     }}
-                    className="h-10 flex-1 rounded-lg border border-white/[0.12] text-[13px] text-white/50 transition-colors hover:border-white/[0.2] hover:bg-white/[0.04] hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/20"
+                    className="h-10 flex-1 rounded-lg border border-white/[0.12] text-[13px] text-white/60 transition-colors hover:border-white/[0.2] hover:bg-white/[0.04] hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/20"
                   >
                     ← Back
                   </button>

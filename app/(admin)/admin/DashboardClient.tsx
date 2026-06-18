@@ -49,7 +49,7 @@ export default function DashboardClient({
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-[20px] font-bold tracking-tight text-white/90">Elections Dashboard</h1>
-          <p className="text-[12px] text-white/40 mt-[3px]">{elections.length} elections · {openC} active now</p>
+          <p className="text-[12px] text-white/50 mt-[3px]">{elections.length} elections · {openC} active now</p>
         </div>
         <Link href="/admin/elections/new"
           className="inline-flex items-center gap-[5px] rounded-[7px] px-[13px] py-[7px] text-[12px] font-semibold bg-amber-400 text-[#0b1220] hover:opacity-90 transition-all no-underline">
@@ -64,31 +64,31 @@ export default function DashboardClient({
       <div className="grid grid-cols-4 gap-[10px]">
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-amber-400" />
-          <div className="text-[10px] text-white/40 uppercase tracking-[0.06em] font-medium">Total Elections</div>
+          <div className="text-[10px] text-white/50 uppercase tracking-[0.06em] font-medium">Total Elections</div>
           <div className="text-[26px] font-bold tracking-[-1px] leading-none mt-2 text-white/90">{elections.length}</div>
-          <div className="text-[10px] text-white/30 mt-1 truncate" title={statusBreakdown}>
+          <div className="text-[10px] text-white/40 mt-1 truncate" title={statusBreakdown}>
             {statusBreakdown || "No elections yet"}
           </div>
         </div>
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-emerald-400" />
-          <div className="text-[10px] text-white/40 uppercase tracking-[0.06em] font-medium">Active Now</div>
+          <div className="text-[10px] text-white/50 uppercase tracking-[0.06em] font-medium">Active Now</div>
           <div className={`text-[26px] font-bold tracking-[-1px] leading-none mt-2 ${openC > 0 ? "text-emerald-400" : "text-white/90"}`}>{openC}</div>
-          <div className="text-[10px] text-white/30 mt-1 truncate" title={activeNames}>{activeNames}</div>
+          <div className="text-[10px] text-white/40 mt-1 truncate" title={activeNames}>{activeNames}</div>
         </div>
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-blue-400" />
-          <div className="text-[10px] text-white/40 uppercase tracking-[0.06em] font-medium">Total Voters</div>
+          <div className="text-[10px] text-white/50 uppercase tracking-[0.06em] font-medium">Total Voters</div>
           <div className="text-[26px] font-bold tracking-[-1px] leading-none mt-2 text-white/90">{globalVoterCount.toLocaleString()}</div>
-          <div className="text-[10px] text-white/30 mt-1">unique control numbers</div>
+          <div className="text-[10px] text-white/40 mt-1">unique control numbers</div>
         </div>
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-amber-400/50" />
-          <div className="text-[10px] text-white/40 uppercase tracking-[0.06em] font-medium">Avg. Final Turnout</div>
+          <div className="text-[10px] text-white/50 uppercase tracking-[0.06em] font-medium">Avg. Final Turnout</div>
           <div className="text-[26px] font-bold tracking-[-1px] leading-none mt-2 text-white/90">
             {avgTurnout !== null ? `${avgTurnout}%` : "—"}
           </div>
-          <div className="text-[10px] text-white/30 mt-1">
+          <div className="text-[10px] text-white/40 mt-1">
             {closedWithVoters.length > 0
               ? `from ${closedWithVoters.length} closed election${closedWithVoters.length > 1 ? "s" : ""}`
               : "no closed elections yet"}
@@ -111,14 +111,14 @@ export default function DashboardClient({
       {/* Empty state */}
       {elections.length === 0 && (
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] flex flex-col items-center gap-[10px] py-12 text-center">
-          <div className="w-10 h-10 rounded-[10px] border border-white/[0.07] flex items-center justify-center text-white/20">
+          <div className="w-10 h-10 rounded-[10px] border border-white/[0.07] flex items-center justify-center text-white/30">
             <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" />
               <line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <div className="text-[13px] font-medium text-white/50">No elections yet</div>
-          <div className="text-[11px] text-white/30">Create your first election to get started</div>
+          <div className="text-[13px] font-medium text-white/60">No elections yet</div>
+          <div className="text-[11px] text-white/40">Create your first election to get started</div>
           <Link href="/admin/elections/new" className="mt-1 text-[11px] text-amber-400 hover:opacity-80 transition-all no-underline">
             Create election →
           </Link>
@@ -132,9 +132,9 @@ export default function DashboardClient({
             onClick={() => setAllOpen((v) => !v)}
             className="flex items-center gap-2 px-[14px] py-[10px] cursor-pointer border-b border-white/[0.07] bg-transparent w-full hover:bg-white/[0.025] transition-colors"
           >
-            <span className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/40 flex-1 text-left">All Elections</span>
-            <span className="text-[10px] bg-white/[0.06] text-white/40 rounded-full px-[7px] py-[1px]">{elections.length}</span>
-            <svg className={`w-3 h-3 text-white/40 ml-[6px] transition-transform duration-200 ${allOpen ? "rotate-180" : ""}`}
+            <span className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/50 flex-1 text-left">All Elections</span>
+            <span className="text-[10px] bg-white/[0.06] text-white/50 rounded-full px-[7px] py-[1px]">{elections.length}</span>
+            <svg className={`w-3 h-3 text-white/50 ml-[6px] transition-transform duration-200 ${allOpen ? "rotate-180" : ""}`}
               viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="6 9 12 15 18 9" />
             </svg>

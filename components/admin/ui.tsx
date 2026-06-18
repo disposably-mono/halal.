@@ -15,7 +15,7 @@ import type { VariantProps } from "class-variance-authority";
 
 const CARD = "overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]";
 const CARD_HEADER = "flex items-center justify-between border-b border-white/[0.07] px-4 py-3";
-const CARD_TITLE_CLASS = "text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40";
+const CARD_TITLE_CLASS = "text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50";
 const CARD_BODY = "p-4";
 
 const adminInputClass =
@@ -96,10 +96,10 @@ const STATUS_LABELS: Record<Status, string> = {
 
 export function StatusPill({ status }: { status: Status }) {
   const styles: Record<Status, string> = {
-    DRAFT: "border-white/10 bg-white/[0.05] text-white/50",
+    DRAFT: "border-white/10 bg-white/[0.05] text-white/60",
     SCHEDULED: "border-blue-400/30 bg-blue-400/[0.08] text-blue-400",
     OPEN: "border-emerald-500/30 bg-emerald-500/[0.08] text-emerald-400",
-    CLOSED: "border-white/10 bg-white/[0.03] text-white/20",
+    CLOSED: "border-white/10 bg-white/[0.03] text-white/30",
   };
   const dotStyles: Record<Status, string> = {
     DRAFT: "bg-white/20",
@@ -133,7 +133,7 @@ export function FlowTrack({ status }: { status: Status }) {
                 {STATUS_LABELS[s]}
               </span>
             ) : (
-              <span className={`px-[9px] py-[3px] text-[10px] font-semibold ${state === "done" ? "text-white/25" : "text-white/10"}`}>
+              <span className={`px-[9px] py-[3px] text-[10px] font-semibold ${state === "done" ? "text-white/35" : "text-white/10"}`}>
                 {STATUS_LABELS[s]}
               </span>
             )}
@@ -209,7 +209,7 @@ export function ElectionSubNav({
             return (
               <span
                 key={tab.label}
-                className="flex items-center gap-[5px] px-[10px] py-[5px] text-[11px] text-white/20 cursor-not-allowed select-none"
+                className="flex items-center gap-[5px] px-[10px] py-[5px] text-[11px] text-white/30 cursor-not-allowed select-none"
                 title={`Available when election is Open`}
               >
                 {tab.icon}
@@ -223,7 +223,7 @@ export function ElectionSubNav({
               href={tab.href}
               className={`flex items-center gap-[5px] px-[10px] py-[5px] text-[11px] rounded-[5px] transition-all no-underline relative ${isActive
                 ? "text-white/90 bg-white/[0.06]"
-                : "text-white/40 hover:text-white/70 hover:bg-white/[0.03]"
+                : "text-white/50 hover:text-white/70 hover:bg-white/[0.03]"
                 }`}
             >
               {isActive && (
@@ -276,7 +276,7 @@ export function SetupStepper({
                 ? "bg-emerald-400/20 border border-emerald-400/40 text-emerald-400"
                 : isCurrent
                   ? "bg-amber-400/15 border border-amber-400/40 text-amber-400"
-                  : "bg-white/[0.04] border border-white/[0.10] text-white/20"
+                  : "bg-white/[0.04] border border-white/[0.10] text-white/30"
                 }`}>
                 {isDone ? (
                   <svg style={{ width: 9, height: 9 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -286,7 +286,7 @@ export function SetupStepper({
                   <span>{i + 1}</span>
                 )}
               </div>
-              <span className={`text-[11px] font-medium ${isDone ? "text-emerald-400/70" : isCurrent ? "text-amber-400/80" : "text-white/20"
+              <span className={`text-[11px] font-medium ${isDone ? "text-emerald-400/70" : isCurrent ? "text-amber-400/80" : "text-white/30"
                 }`}>
                 {step.label}
               </span>
@@ -405,11 +405,11 @@ export function StatCell({
 
   return (
     <div className="rounded-[8px] border border-white/[0.07] bg-white/[0.03] px-[13px] py-[10px]">
-      <p className="mb-[5px] text-[9px] uppercase tracking-[0.12em] text-white/30">{label}</p>
+      <p className="mb-[5px] text-[9px] uppercase tracking-[0.12em] text-white/40">{label}</p>
       <p className={`text-[18px] font-bold leading-none ${valColor} ${mono ? "font-mono text-[13px]" : ""}`}>
         {value}
       </p>
-      {sub && <p className="mt-[5px] text-[9px] text-white/25">{sub}</p>}
+      {sub && <p className="mt-[5px] text-[9px] text-white/35">{sub}</p>}
     </div>
   );
 }
@@ -446,7 +446,7 @@ export function ConfirmDialog({
       <div className="w-[90%] max-w-[360px] animate-in zoom-in-95 duration-150 rounded-[14px] border border-white/[0.12] bg-[#1e2a47] p-[22px]">
         {icon && <div className="mb-3 flex h-[38px] w-[38px] items-center justify-center rounded-[9px]">{icon}</div>}
         <p className="mb-[7px] text-[15px] font-bold text-white/90">{title}</p>
-        <p className="mb-[18px] text-[12px] leading-relaxed text-white/50">{body}</p>
+        <p className="mb-[18px] text-[12px] leading-relaxed text-white/60">{body}</p>
         <div className="flex justify-end gap-[7px]">
           <Button onClick={onCancel} variant="adminGhost" size="adminMd">Cancel</Button>
           <Button onClick={onConfirm} disabled={isPending} variant={confirmVariant} size="adminMd">
@@ -502,7 +502,7 @@ export function FinalizeButton({
       )}
       <form action={dispatch} className="flex items-center gap-3">
         <input type="hidden" name="electionId" value={electionId} />
-        {hint && <p className="text-[11px] text-white/30">{hint}</p>}
+        {hint && <p className="text-[11px] text-white/40">{hint}</p>}
         <Button
           type="submit"
           disabled={isPending}

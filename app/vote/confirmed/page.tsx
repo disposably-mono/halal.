@@ -1,7 +1,7 @@
 import { getVoterSession } from "@/lib/voter-session";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 
 export default async function ConfirmedPage() {
   // By the time this renders, middleware has already cleared the cookie.
@@ -45,7 +45,7 @@ export default async function ConfirmedPage() {
         <h1 className="font-display text-5xl text-white uppercase tracking-wide mb-3">
           Vote Recorded
         </h1>
-        <p className="font-tagline text-white/30 text-sm italic mb-8">
+        <p className="font-tagline text-white/40 text-sm italic mb-8">
           VOX POPULI VOX DEI
         </p>
         <div className="w-12 h-px bg-gold/30 mx-auto mb-8" />
@@ -55,7 +55,7 @@ export default async function ConfirmedPage() {
         </p>
         <Link
           href="/results"
-          className="inline-block px-6 py-3 border border-white/15 text-white/50 font-heading text-xs tracking-[0.2em] uppercase hover:border-gold/30 hover:text-gold/60 transition-colors rounded-sm"
+          className="inline-block px-6 py-3 border border-white/15 text-white/60 font-heading text-xs tracking-[0.2em] uppercase hover:border-gold/30 hover:text-gold/60 transition-colors rounded-sm"
         >
           View Results
         </Link>

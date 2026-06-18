@@ -112,3 +112,33 @@ select:-webkit-autofill {
   transition: background-color 5000s ease-in-out 0s;
 }
 
+/* ── Page view transitions ───────────────────────────────────────────
+   Crossfade between routes (e.g. home ↔ results) so differing nav
+   layouts dissolve into each other instead of snapping in and out. */
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+::view-transition-old(root) {
+  animation: vt-fade-out 260ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+::view-transition-new(root) {
+  animation: vt-fade-in 320ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+

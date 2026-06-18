@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { flushSync } from "react-dom";
 import { ElectionSelector } from "./_components/ElectionSelector";
 import { ElectionSummary } from "./_components/ElectionSummary";
 import { HoldingState } from "./_components/HoldingState";
@@ -8,7 +9,22 @@ import { PositionCard } from "./_components/PositionCard";
 import { ResultsFooter } from "./_components/ResultsFooter";
 import { ResultsNav } from "./_components/ResultsNav";
 import { TurnoutBadge } from "./_components/TurnoutBadge";
-import { POLL_INTERVAL, type ElectionMeta, type ResultsPayload } from "./_components/results-shared";
+import { DIVISION_LABELS, POLL_INTERVAL, type ElectionMeta, type ResultsPayload } from "./_components/results-shared";
+
+const PAGE_BACKGROUND = {
+  backgroundColor: "#0f1235",
+  backgroundImage: [
+    "radial-gradient(circle at 50% 16%, rgba(27,31,94,0.55) 0%, transparent 36rem)",
+    "radial-gradient(circle at 12% 46%, rgba(107,26,26,0.18) 0%, transparent 28rem)",
+    "radial-gradient(circle at 88% 82%, rgba(245,192,0,0.06) 0%, transparent 24rem)",
+    "repeating-linear-gradient(135deg, transparent 0 34rem, rgba(107,26,26,0.18) 34rem 38rem, transparent 38rem 72rem)",
+    "repeating-linear-gradient(135deg, transparent 0 50rem, rgba(27,31,94,0.26) 50rem 54rem, transparent 54rem 96rem)",
+    "linear-gradient(rgba(245,192,0,0.035) 1px, transparent 1px)",
+    "linear-gradient(90deg, rgba(245,192,0,0.035) 1px, transparent 1px)",
+  ].join(", "),
+  backgroundSize: "auto, auto, auto, auto, auto, 48px 48px, 48px 48px",
+  backgroundAttachment: "fixed",
+};
 
 export default function ResultsClient({
   elections,
@@ -20,6 +36,10 @@ export default function ResultsClient({
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
 
+  // Which election the visible tally belongs to, so we only animate when the
+  // viewer actually swaps elections (not on routine background poll refreshes).
+  const displayedElectionIdRef = useRef<string | null>(null);
+
   const currentElection = elections[currentIndex];
 
   const fetchResults = useCallback(async () => {
@@ -29,9 +49,28 @@ export default function ResultsClient({
         cache: "no-store",
       });
       if (res.ok) {
-        const json = await res.json();
-        setData(json);
-        setLastUpdated(new Date());
+        const json: ResultsPayload = await res.json();
+        const isElectionSwap =
+          displayedElectionIdRef.current !== null &&
+          displayedElectionIdRef.current !== json.electionId;
+
+        const commit = () => {
+          setData(json);
+          setLastUpdated(new Date());
+          displayedElectionIdRef.current = json.electionId;
+        };
+
+        const doc = document as Document & {
+          startViewTransition?: (cb: () => void) => void;
+        };
+
+        if (isElectionSwap && typeof doc.startViewTransition === "function") {
+          // Crossfade the old tally into the new one. flushSync forces the
+          // DOM swap to land inside the View Transition snapshot.
+          doc.startViewTransition(() => flushSync(commit));
+        } else {
+          commit();
+        }
       }
     } catch {
       // Silently fail — keep showing last data
@@ -40,17 +79,22 @@ export default function ResultsClient({
     }
   }, [currentElection]);
 
-  // Fetch on election change + poll
+  // Fetch on election change + poll. The previous tally stays on screen while
+  // the next election loads so the crossfade has something to animate from;
+  // the full-screen loader only appears on the very first load (data == null).
   useEffect(() => {
     setLoading(true);
-    setData(null);
     fetchResults();
     const interval = setInterval(fetchResults, POLL_INTERVAL);
     return () => clearInterval(interval);
   }, [fetchResults]);
 
+  const divisionLabel = data ? DIVISION_LABELS[data.division] ?? data.division : "";
+  const candidateCount =
+    data?.positions.reduce((sum, p) => sum + p.candidates.length, 0) ?? 0;
+
   return (
-    <div className="min-h-screen bg-navy-deep flex flex-col">
+    <div className="min-h-screen text-white overflow-x-hidden flex flex-col" style={PAGE_BACKGROUND}>
       <ResultsNav />
 
       {elections.length > 1 && (
@@ -70,21 +114,33 @@ export default function ResultsClient({
                 <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
                 <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
               </svg>
-              <p className="font-body text-white/30 text-xs tracking-widest uppercase">Loading…</p>
+              <p className="font-body text-white/40 text-xs tracking-widest uppercase">Loading…</p>
             </div>
           </div>
         ) : data?.embargoed ? (
           <HoldingState electionName={data.name} status={data.status} />
         ) : data ? (
-          <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 space-y-6">
+          <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-10 space-y-6">
             {/* Page header */}
             <div>
-              <p className="font-tagline text-white/25 text-sm italic mb-1">
+              <p className="font-tagline text-white/35 text-sm italic mb-1">
                 VOX POPULI VOX DEI
               </p>
               <h1 className="font-display text-4xl sm:text-5xl text-white uppercase tracking-wide mb-3">
                 {data.status === "CLOSED" ? "Final Results" : "Live Results"}
               </h1>
+              <div className="mb-4 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-body text-sm text-mid/60">
+                <span className="font-heading uppercase tracking-wide text-white/80">
+                  {data.name}
+                </span>
+                <span aria-hidden className="text-white/25">·</span>
+                <span>{divisionLabel}</span>
+                <span aria-hidden className="text-white/25">·</span>
+                <span>
+                  {candidateCount} candidate{candidateCount !== 1 ? "s" : ""} contesting{" "}
+                  {data.positions.length} position{data.positions.length !== 1 ? "s" : ""}
+                </span>
+              </div>
               <ElectionSummary data={data} lastUpdated={lastUpdated} />
             </div>
 
@@ -108,7 +164,7 @@ export default function ResultsClient({
 
             {data.status === "CLOSED" && (
               <div className="text-center pt-4 pb-8">
-                <p className="font-body text-white/20 text-xs tracking-widest uppercase">
+                <p className="font-body text-white/30 text-xs tracking-widest uppercase">
                   FINAL OFFICIAL RESULTS — OLPS COMELEC
                 </p>
               </div>

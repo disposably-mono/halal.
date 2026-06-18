@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { ComelecBirdPlaceholder } from "./_components/ComelecBirdPlaceholder";
 import { CountdownUnit } from "./_components/CountdownUnit";
 import { DivisionStatusCard } from "./_components/DivisionStatusCard";
@@ -91,7 +91,7 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
           </p>
 
           {/* Tagline */}
-          <p className="font-tagline text-white/50 text-base sm:text-lg italic mb-4 tracking-wide">
+          <p className="font-tagline text-white/60 text-base sm:text-lg italic mb-4 tracking-wide">
             VOX POPULI VOX DEI
           </p>
 

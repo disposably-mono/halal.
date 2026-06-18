@@ -2,7 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { validateVoterCode, VoterLoginResult } from "./actions";
 
 const ERROR_ICONS: Record<string, string> = {
@@ -97,7 +97,7 @@ export default function VotePage() {
             <h1 className="font-display text-5xl text-white tracking-wide mb-2 uppercase">
               Cast Your Vote
             </h1>
-            <p className="font-tagline text-white/30 text-sm italic">
+            <p className="font-tagline text-white/40 text-sm italic">
               VOX POPULI VOX DEI
             </p>
           </div>
@@ -201,11 +201,11 @@ export default function VotePage() {
               </p>
               <div className="flex items-center gap-0 font-mono text-xs">
                 <span className="text-gold/70 bg-gold/10 px-1.5 py-0.5 rounded-sm">YY</span>
-                <span className="text-white/20 px-0.5">·</span>
+                <span className="text-white/30 px-0.5">·</span>
                 <span className="text-gold/70 bg-gold/10 px-1.5 py-0.5 rounded-sm">GG</span>
-                <span className="text-white/20 px-0.5">·</span>
+                <span className="text-white/30 px-0.5">·</span>
                 <span className="text-gold/70 bg-gold/10 px-1.5 py-0.5 rounded-sm">S</span>
-                <span className="text-white/20 px-0.5">·</span>
+                <span className="text-white/30 px-0.5">·</span>
                 <span className="text-gold/70 bg-gold/10 px-1.5 py-0.5 rounded-sm">NNN</span>
               </div>
               <p className="font-body text-mid/40 text-[10px] mt-2">

@@ -26,13 +26,13 @@ export default async function MonitorPage({ params }: { params: { id: string } }
       <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-[#131c2e]">
         <div className="mx-auto flex h-[52px] max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
-            <Link href="/admin" className="text-[11px] text-white/30 transition-colors hover:text-white/60">
+            <Link href="/admin" className="text-[11px] text-white/40 transition-colors hover:text-white/60">
               ← Dashboard
             </Link>
             <span className="text-white/10">/</span>
             <span className="max-w-[200px] truncate text-[11px] text-white/60">{election.name}</span>
             <span className="text-white/10">/</span>
-            <span className="text-[11px] text-white/35">Monitor</span>
+            <span className="text-[11px] text-white/45">Monitor</span>
           </div>
           <StatusPill status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} />
         </div>

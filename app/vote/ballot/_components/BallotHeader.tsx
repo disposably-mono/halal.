@@ -34,7 +34,7 @@ export function BallotHeader({
             <p className="font-ballot-serif font-bold text-[14px] uppercase tracking-[0.1em] text-white whitespace-nowrap overflow-hidden text-ellipsis">
               {electionName}
             </p>
-            <p className="font-ballot-mono text-[9px] tracking-[0.18em] uppercase text-white/40 mt-0.5">
+            <p className="font-ballot-mono text-[9px] tracking-[0.18em] uppercase text-white/50 mt-0.5">
               Official Ballot
             </p>
           </div>

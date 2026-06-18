@@ -34,7 +34,7 @@ export default function MonitorClient({
       {/* ── Page header ── */}
       <div className="flex items-start justify-between gap-4">
         <div>
-          <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/30">
+          <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/40">
             {DIVISION_LABELS[division] ?? division}
           </p>
           <h1 className="text-[22px] font-semibold tracking-tight text-white/90">
@@ -62,7 +62,7 @@ export default function MonitorClient({
           )}
           <StatusPill status={status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} />
           {lastUpdated && replay.isLive && (
-            <p className="font-mono text-[10px] text-white/20">
+            <p className="font-mono text-[10px] text-white/30">
               {lastUpdated.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
             </p>
           )}
@@ -77,7 +77,7 @@ export default function MonitorClient({
       {/* ── Loading ── */}
       {loading && !displayData && (
         <div className="flex items-center justify-center py-20">
-          <svg className="h-5 w-5 animate-spin text-white/20" viewBox="0 0 24 24" fill="none">
+          <svg className="h-5 w-5 animate-spin text-white/30" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
             <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
           </svg>
@@ -91,7 +91,7 @@ export default function MonitorClient({
           <div>
             {displayData.positions.length === 0 ? (
               <div className="rounded-xl border border-white/[0.08] bg-[#1a2540] px-6 py-16 text-center">
-                <p className="text-[13px] text-white/30">No positions found for this election.</p>
+                <p className="text-[13px] text-white/40">No positions found for this election.</p>
               </div>
             ) : (
               <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

@@ -54,7 +54,7 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
       <input type="hidden" name="schoolYear" value={schoolYear} />
 
       <div className="flex items-center justify-between">
-        <label className="text-[10px] text-white/40">
+        <label className="text-[10px] text-white/50">
           Format:{" "}
           <code className="font-mono text-white/55">
             studentId, gradeLevel, section
@@ -94,7 +94,7 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
             </p>
           ))}
           {result.added === 0 && result.rejected === 0 && result.skippedDuplicates === 0 && (
-            <p className="text-white/40">No new voters to import.</p>
+            <p className="text-white/50">No new voters to import.</p>
           )}
         </div>
       )}
@@ -117,7 +117,7 @@ export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterForm
         <input type="hidden" name="schoolYear" value={schoolYear} />
 
         <div className="flex flex-1 flex-col gap-[5px]" style={{ minWidth: 120 }}>
-          <label className="text-[10px] text-white/40">Student ID</label>
+          <label className="text-[10px] text-white/50">Student ID</label>
           <AdminInput
             name="studentId"
             placeholder="e.g. 2025-0001"
@@ -127,7 +127,7 @@ export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterForm
         </div>
 
         <div className="flex flex-col gap-[5px]" style={{ width: 72 }}>
-          <label className="text-[10px] text-white/40">Grade</label>
+          <label className="text-[10px] text-white/50">Grade</label>
           <AdminInput
             name="gradeLevel"
             placeholder="11"
@@ -137,7 +137,7 @@ export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterForm
         </div>
 
         <div className="flex flex-col gap-[5px]" style={{ width: 84 }}>
-          <label className="text-[10px] text-white/40">Section</label>
+          <label className="text-[10px] text-white/50">Section</label>
           <AdminInput
             name="section"
             placeholder="A"

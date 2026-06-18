@@ -27,7 +27,7 @@ export function AttnBtn({
       </Link>
     );
   return (
-    <Link href={href} onClick={(e) => e.stopPropagation()} className={`${base} text-white/40 border border-white/[0.07] hover:text-white/70 hover:border-white/[0.12]`}>
+    <Link href={href} onClick={(e) => e.stopPropagation()} className={`${base} text-white/50 border border-white/[0.07] hover:text-white/70 hover:border-white/[0.12]`}>
       {label}
     </Link>
   );

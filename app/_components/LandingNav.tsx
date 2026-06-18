@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 
 export function LandingNav() {
   return (
@@ -30,21 +30,25 @@ export function LandingNav() {
       </Link>
 
       {/* Links */}
-      <div className="hidden sm:flex gap-6">
+      <div className="hidden sm:flex items-center gap-4">
         {[
-          { label: "Home", href: "/", active: true },
-          { label: "Creator", href: "/creator" },
-          { label: "About COMELEC", href: "/about" },
-          { label: "Officers", href: "/officers" },
-        ].map((link) => (
-          <Link
-            key={link.label}
-            href={link.href}
-            className="font-body text-[0.65rem] tracking-[0.2em] uppercase transition-colors duration-200"
-            style={{ color: link.active ? "#F5C000" : "rgba(255,255,255,0.45)" }}
-          >
-            {link.label}
-          </Link>
+          { label: "COMELEC", href: "/about" },
+          { label: "LEADERSHIP", href: "/officers" },
+          { label: "MAKER", href: "/creator" },
+        ].map((link, index) => (
+          <div key={link.label} className="flex items-center gap-4">
+            {index > 0 && (
+              <span className="font-body text-[0.65rem] text-gold/25" aria-hidden="true">
+                |
+              </span>
+            )}
+            <Link
+              href={link.href}
+              className="font-body text-[0.65rem] tracking-[0.2em] uppercase text-white/[0.45] transition-colors duration-200 hover:text-gold"
+            >
+              {link.label}
+            </Link>
+          </div>
         ))}
       </div>
     </nav>

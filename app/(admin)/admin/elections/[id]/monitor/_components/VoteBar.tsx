@@ -38,7 +38,7 @@ export function VoteBar({
     ? "text-amber-400"
     : isTie
       ? "text-sky-400"
-      : "text-white/50";
+      : "text-white/60";
 
   return (
     <div className={`relative overflow-hidden rounded-[7px] border transition-colors ${wrapCls}`}>
@@ -50,13 +50,13 @@ export function VoteBar({
         <span className="flex-1 truncate font-mono text-[11px] font-medium text-white/90">
           {candidate.fullName}
         </span>
-        <span className="shrink-0 font-mono text-[10px] text-white/30">
+        <span className="shrink-0 font-mono text-[10px] text-white/40">
           Gr.{candidate.gradeLevel}
         </span>
         <span className={`min-w-[32px] shrink-0 text-right font-mono text-[12px] font-bold tabular-nums ${countColor}`}>
           {candidate.votes}
         </span>
-        <span className="w-[38px] shrink-0 text-right font-mono text-[10px] text-white/25">
+        <span className="w-[38px] shrink-0 text-right font-mono text-[10px] text-white/35">
           {pct.toFixed(1)}%
         </span>
         {isTie && candidate.votes > 0 && (

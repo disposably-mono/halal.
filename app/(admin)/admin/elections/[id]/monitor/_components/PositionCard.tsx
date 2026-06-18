@@ -17,11 +17,11 @@ export function PositionCard({ position }: { position: PositionResult }) {
               TIE
             </span>
           )}
-          <span className="text-[10px] text-white/30">
+          <span className="text-[10px] text-white/40">
             {position.totalVotes} vote{position.totalVotes !== 1 ? "s" : ""}
           </span>
           {position.abstentions > 0 && (
-            <span className="rounded-full border border-white/[0.08] px-[7px] py-[2px] text-[9px] text-white/20">
+            <span className="rounded-full border border-white/[0.08] px-[7px] py-[2px] text-[9px] text-white/30">
               {position.abstentions} abstain{position.abstentions !== 1 ? "s" : ""}
             </span>
           )}
@@ -29,7 +29,7 @@ export function PositionCard({ position }: { position: PositionResult }) {
       </div>
       <div className="space-y-1.5 p-3">
         {position.candidates.length === 0 ? (
-          <p className="py-4 text-center text-[11px] italic text-white/25">
+          <p className="py-4 text-center text-[11px] italic text-white/35">
             No candidates
           </p>
         ) : (

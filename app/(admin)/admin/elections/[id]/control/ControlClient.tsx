@@ -226,7 +226,7 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
       {/* ── Page header ── */}
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/30">
+          <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/40">
             {DIVISION_LABELS[election.division] ?? election.division}
           </p>
           <h1 className="text-[22px] font-semibold tracking-tight text-white/90">
@@ -263,10 +263,10 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
           <StatCell label="Scheduled Close" value={fmt(election.scheduledClose)} mono />
           <StatCell label="Registered Voters" value={voters.toString()} />
           <div className="rounded-[8px] border border-white/[0.07] bg-white/[0.03] px-[13px] py-[10px]">
-            <p className="mb-[5px] text-[9px] uppercase tracking-[0.12em] text-white/30">Turnout</p>
+            <p className="mb-[5px] text-[9px] uppercase tracking-[0.12em] text-white/40">Turnout</p>
             <p className="text-[13px] font-semibold text-white/80">
               {voted}{" "}
-              <span className="text-[11px] font-normal text-white/35">/ {voters} ({pct}%)</span>
+              <span className="text-[11px] font-normal text-white/45">/ {voters} ({pct}%)</span>
             </p>
             <div className="mt-[6px] h-[3px] overflow-hidden rounded-full bg-white/[0.06]">
               <div
@@ -337,7 +337,7 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
             </WarnBanner>
             <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
               <div>
-                <label className="mb-[5px] block text-[10px] text-white/40">
+                <label className="mb-[5px] block text-[10px] text-white/50">
                   Open date &amp; time
                 </label>
                 <AdminInput
@@ -347,7 +347,7 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
                 />
               </div>
               <div>
-                <label className="mb-[5px] block text-[10px] text-white/40">
+                <label className="mb-[5px] block text-[10px] text-white/50">
                   Close date &amp; time
                 </label>
                 <AdminInput
@@ -370,9 +370,9 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
       )}
 
       {/* ── Audit trail ── */}
-      <Card title="Audit Trail" meta={<span className="text-[10px] text-white/25">{auditLogs.length} events</span>} noPad>
+      <Card title="Audit Trail" meta={<span className="text-[10px] text-white/35">{auditLogs.length} events</span>} noPad>
         {auditLogs.length === 0 ? (
-          <p className="py-6 text-center text-[11px] text-white/30">No events yet</p>
+          <p className="py-6 text-center text-[11px] text-white/40">No events yet</p>
         ) : (
           <div>
             {[...auditLogs].reverse().map((log) => {
@@ -386,7 +386,7 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
                       {log.action}
                       {isAuto && <AutoBadge />}
                     </div>
-                    <div className="mt-[2px] text-[10px] text-white/40">
+                    <div className="mt-[2px] text-[10px] text-white/50">
                       {log.adminEmail} ·{" "}
                       {new Date(log.createdAt).toLocaleString("en-PH", {
                         month: "short",

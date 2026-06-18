@@ -23,7 +23,7 @@ const buttonVariants = cva(
         adminPrimary:
           "font-semibold bg-amber-400 text-[#0b1220] hover:opacity-90 active:scale-[0.97] focus-visible:border-amber-200 focus-visible:ring-amber-400/30 disabled:opacity-40",
         adminGhost:
-          "font-semibold text-white/50 border border-white/[0.10] bg-transparent hover:text-white/80 hover:border-white/[0.20] active:scale-[0.97] focus-visible:border-amber-400/45 focus-visible:ring-amber-400/20 disabled:opacity-30",
+          "font-semibold text-white/60 border border-white/[0.10] bg-transparent hover:text-white/80 hover:border-white/[0.20] active:scale-[0.97] focus-visible:border-amber-400/45 focus-visible:ring-amber-400/20 disabled:opacity-30",
         adminEmerald:
           "font-semibold bg-emerald-400 text-[#0b1220] hover:opacity-90 active:scale-[0.97] focus-visible:border-emerald-200 focus-visible:ring-emerald-400/30 disabled:opacity-30",
         adminBlue:

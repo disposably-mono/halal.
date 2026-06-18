@@ -23,6 +23,7 @@
     "lucide-react": "^1.7.0",
     "next": "14.2.35",
     "next-auth": "^5.0.0-beta.30",
+    "next-view-transitions": "^0.3.5",
     "pg": "^8.20.0",
     "prisma": "^7.6.0",
     "radix-ui": "^1.4.3",

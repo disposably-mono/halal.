@@ -73,7 +73,7 @@ export default async function AdminCandidatesPage() {
       <div className="flex items-start justify-between gap-3">
         <div>
           <h1 className="text-[20px] font-bold tracking-tight text-white/90">All Candidates</h1>
-          <p className="text-[12px] text-white/40 mt-[3px]">
+          <p className="text-[12px] text-white/50 mt-[3px]">
             {totalCandidates.toLocaleString()} candidate{totalCandidates !== 1 ? "s" : ""} across all active elections
           </p>
         </div>
@@ -89,7 +89,7 @@ export default async function AdminCandidatesPage() {
               );
               return (
                 <a key={d} href={`#div-cand-${d}`}
-                  className="text-[10px] text-white/40 border border-white/[0.07] rounded-[5px] px-[8px] py-[3px] hover:text-white/70 hover:border-white/[0.12] transition-all no-underline">
+                  className="text-[10px] text-white/50 border border-white/[0.07] rounded-[5px] px-[8px] py-[3px] hover:text-white/70 hover:border-white/[0.12] transition-all no-underline">
                   {DIVISION_LABELS[d]} ({count})
                 </a>
               );
@@ -100,8 +100,8 @@ export default async function AdminCandidatesPage() {
 
       {totalCandidates === 0 && (
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] flex flex-col items-center gap-3 py-16 text-center">
-          <div className="text-[13px] font-medium text-white/50">No candidates encoded yet</div>
-          <div className="text-[11px] text-white/30">Add candidates via the election candidates page.</div>
+          <div className="text-[13px] font-medium text-white/60">No candidates encoded yet</div>
+          <div className="text-[11px] text-white/40">Add candidates via the election candidates page.</div>
         </div>
       )}
 
@@ -117,11 +117,11 @@ export default async function AdminCandidatesPage() {
           <div key={div} id={`div-cand-${div}`} className="flex flex-col gap-2">
             {/* Division heading */}
             <div className="flex items-center gap-3">
-              <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/30">
+              <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40">
                 {DIVISION_LABELS[div]}
               </div>
               <div className="flex-1 h-px bg-white/[0.05]" />
-              <div className="text-[10px] text-white/25">
+              <div className="text-[10px] text-white/35">
                 {divCandidates} candidate{divCandidates !== 1 ? "s" : ""} · {positionCount} positions
               </div>
             </div>
@@ -138,7 +138,7 @@ export default async function AdminCandidatesPage() {
                       <StatusDot status={el.status} />
                       <div className="text-[12px] font-semibold text-white/80 truncate">{el.name}</div>
                     </div>
-                    <div className="flex items-center gap-3 flex-shrink-0 text-[10px] text-white/40">
+                    <div className="flex items-center gap-3 flex-shrink-0 text-[10px] text-white/50">
                       <span>{elCandidates} candidate{elCandidates !== 1 ? "s" : ""} · {el.positions.length} positions</span>
                       <Link href={`/admin/elections/${eid}/candidates`}
                         className="text-amber-400 border border-amber-400/20 bg-amber-400/[0.07] rounded-[5px] px-[7px] py-[3px] hover:bg-amber-400/[0.14] transition-all no-underline">
@@ -156,21 +156,21 @@ export default async function AdminCandidatesPage() {
                           <span className="text-[11px] font-semibold text-white/65 uppercase tracking-[0.05em]">
                             {pos.title}
                           </span>
-                          <span className="text-[10px] text-white/25">
+                          <span className="text-[10px] text-white/35">
                             {formatCandidateGrade(pos.candidateGrade)}
                           </span>
                         </div>
 
                         {pos.candidates.length === 0 ? (
-                          <div className="text-[11px] text-white/20 italic pl-1">No candidates encoded</div>
+                          <div className="text-[11px] text-white/30 italic pl-1">No candidates encoded</div>
                         ) : (
                           <div className="flex flex-col gap-[4px]">
                             {pos.candidates.map((c, idx) => (
                               <div key={c.id}
                                 className="flex items-center gap-3 bg-white/[0.025] hover:bg-white/[0.04] rounded-[6px] px-3 py-[6px] transition-colors">
-                                <span className="text-[10px] text-white/20 w-4 text-right flex-shrink-0">{idx + 1}</span>
+                                <span className="text-[10px] text-white/30 w-4 text-right flex-shrink-0">{idx + 1}</span>
                                 <div className="flex-1 text-[12px] font-medium text-white/80 truncate">{c.fullName}</div>
-                                <span className="text-[10px] text-white/30 font-mono flex-shrink-0">
+                                <span className="text-[10px] text-white/40 font-mono flex-shrink-0">
                                   {formatGrade(c.gradeLevel)}
                                 </span>
                               </div>
@@ -204,7 +204,7 @@ function StatusDot({ status }: { status: ElectionStatus }) {
     CLOSED: "Closed",
   };
   return (
-    <span className="inline-flex items-center gap-1 text-[10px] text-white/40 flex-shrink-0">
+    <span className="inline-flex items-center gap-1 text-[10px] text-white/50 flex-shrink-0">
       <span className={`w-[6px] h-[6px] rounded-full ${colors[status]}`} />
       {labels[status]}
     </span>

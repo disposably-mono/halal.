@@ -20,7 +20,7 @@ export function TurnoutCard({
   }, [turnout.pct]);
 
   return (
-    <Card title="Voter Turnout" meta={<span className="text-[10px] text-white/30">{turnout.voted} / {turnout.total}</span>}>
+    <Card title="Voter Turnout" meta={<span className="text-[10px] text-white/40">{turnout.voted} / {turnout.total}</span>}>
       <div className="mb-2 h-[3px] overflow-hidden rounded-full bg-white/[0.06]">
         <div
           className="h-full rounded-full bg-emerald-500 transition-all duration-700"
@@ -31,7 +31,7 @@ export function TurnoutCard({
         <span className="text-[13px] font-semibold text-emerald-400">
           {turnout.pct}% turnout
         </span>
-        <span className="text-[11px] text-white/25">
+        <span className="text-[11px] text-white/35">
           {turnout.total - turnout.voted} remaining
         </span>
       </div>

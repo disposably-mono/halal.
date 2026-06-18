@@ -1,7 +1,8 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "next-view-transitions";
 import { useEffect, useState } from "react";
+import { LandingFooter } from "../_components/LandingFooter";
 
 /* ─────────────────────────────────────────────
    ABOUT COMELEC — OLPS Commission on Elections
@@ -243,21 +244,27 @@ export default function AboutComelecClient() {
           </span>
         </Link>
 
-        <div className="hidden sm:flex gap-6">
+        <div className="hidden sm:flex items-center gap-4">
           {[
-            { label: "Home", href: "/" },
-            { label: "Creator", href: "/creator" },
-            { label: "About COMELEC", href: "/about", active: true },
-            { label: "Officers", href: "/officers" },
-          ].map((link) => (
-            <Link
-              key={link.label}
-              href={link.href}
-              className="font-body text-[0.65rem] tracking-[0.2em] uppercase transition-colors duration-200 no-underline"
-              style={{ color: link.active ? "#F5C000" : "rgba(255,255,255,0.45)" }}
-            >
-              {link.label}
-            </Link>
+            { label: "COMELEC", href: "/about", active: true },
+            { label: "LEADERSHIP", href: "/officers" },
+            { label: "MAKER", href: "/creator" },
+          ].map((link, index) => (
+            <div key={link.label} className="flex items-center gap-4">
+              {index > 0 && (
+                <span className="font-body text-[0.65rem] text-gold/25" aria-hidden="true">
+                  |
+                </span>
+              )}
+              <Link
+                href={link.href}
+                className={`font-body text-[0.65rem] tracking-[0.2em] uppercase transition-colors duration-200 no-underline ${
+                  link.active ? "text-gold" : "text-white/[0.45] hover:text-gold"
+                }`}
+              >
+                {link.label}
+              </Link>
+            </div>
           ))}
         </div>
       </nav>
@@ -593,20 +600,7 @@ export default function AboutComelecClient() {
         </div>
       </section>
 
-      {/* ── FOOTER ───────────────────────────────────────── */}
-      <footer className="py-12 px-6 border-t border-white/5">
-        <div className="max-w-5xl mx-auto flex flex-col items-center gap-4 text-center">
-          <p className="font-tagline text-white/30 text-sm italic">
-            VOX POPULI VOX DEI
-          </p>
-          <p className="font-body text-mid/50 text-xs tracking-wide">
-            OLPS COMELEC — Commission on Elections
-          </p>
-          <p className="font-body text-mid/30 text-[11px]">
-            Our Lady of Peace School
-          </p>
-        </div>
-      </footer>
+      <LandingFooter />
     </div>
   );
 }

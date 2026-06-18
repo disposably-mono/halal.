@@ -29,7 +29,7 @@ export function AttnCard({ e }: { e: Election }) {
       <div className="flex items-start justify-between gap-[6px]">
         <div>
           <div className="text-[11px] font-semibold text-white/90">{DIVISION_LABELS[e.division] ?? e.division}</div>
-          <div className="text-[10px] text-white/40 mt-[1px]">{subtitles[e.status]}</div>
+          <div className="text-[10px] text-white/50 mt-[1px]">{subtitles[e.status]}</div>
         </div>
         <StatusPill status={e.status} />
       </div>
@@ -41,14 +41,14 @@ export function AttnCard({ e }: { e: Election }) {
             <div className="text-[22px] font-bold tracking-[-0.5px] leading-none">
               {e.votedCount}<span className="text-[14px] text-white/[0.14] font-normal"> / {e._count.voters}</span>
             </div>
-            <div className="text-[10px] text-white/40 mt-[2px]">voters who have voted</div>
+            <div className="text-[10px] text-white/50 mt-[2px]">voters who have voted</div>
           </div>
           <div className="h-[3px] bg-white/[0.06] rounded-full overflow-hidden">
             <div className="h-full bg-emerald-400 rounded-full" style={{ width: `${p}%` }} />
           </div>
           <div className="flex justify-between">
             <span className="text-[11px] text-emerald-400 font-semibold">{p}% turnout</span>
-            <span className="text-[10px] text-white/40">{e._count.voters - e.votedCount} remaining</span>
+            <span className="text-[10px] text-white/50">{e._count.voters - e.votedCount} remaining</span>
           </div>
           <div className="grid grid-cols-2 gap-[5px] border-t border-white/[0.07] pt-2">
             <AttnBtn href="/admin/results" label="Results" />
@@ -64,9 +64,9 @@ export function AttnCard({ e }: { e: Election }) {
         <>
           <div>
             <div className="text-[16px] font-semibold text-blue-400 leading-snug">{fmt(e.scheduledOpen)}</div>
-            <div className="text-[10px] text-white/40 mt-[2px]">scheduled open</div>
+            <div className="text-[10px] text-white/50 mt-[2px]">scheduled open</div>
           </div>
-          <div className="text-[10px] text-white/40">{e._count.voters} voters registered</div>
+          <div className="text-[10px] text-white/50">{e._count.voters} voters registered</div>
           <div className="grid grid-cols-2 gap-[5px] border-t border-white/[0.07] pt-2">
             <AttnBtn href={`/admin/elections/${e.id}/voters`} label="Voters" />
             <AttnBtn href={`/admin/elections/${e.id}/candidates`} label="Candidates" />
@@ -103,7 +103,7 @@ export function AttnCard({ e }: { e: Election }) {
         <>
           <div>
             <div className="text-[22px] font-bold tracking-[-0.5px] leading-none">{p}%</div>
-            <div className="text-[10px] text-white/40 mt-[2px]">final turnout · {e.votedCount} of {e._count.voters}</div>
+            <div className="text-[10px] text-white/50 mt-[2px]">final turnout · {e.votedCount} of {e._count.voters}</div>
           </div>
           <div className="h-[3px] bg-white/[0.06] rounded-full overflow-hidden">
             <div className="h-full bg-white/20 rounded-full" style={{ width: `${p}%` }} />
