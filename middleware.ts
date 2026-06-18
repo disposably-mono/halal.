@@ -4,6 +4,7 @@ import { authConfig } from "@/auth.config";
 import { NextRequest, NextResponse } from "next/server";
 import { VOTER_COOKIE } from "@/lib/voter-session";
 import { jwtVerify } from "jose";
+import { can } from "@/lib/auth/permissions";
 
 const { auth } = NextAuth(authConfig);
 
@@ -23,6 +24,14 @@ export default auth(async function middleware(req: NextRequest & { auth: Session
   if (pathname.startsWith("/admin")) {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/admin/login", req.url));
+    }
+    // Account management is SUPERADMIN-only. The page guard is authoritative;
+    // this is an early redirect so other roles never reach the screen.
+    if (
+      pathname.startsWith("/admin/accounts") &&
+      !can(req.auth?.user?.role, "accounts:manage")
+    ) {
+      return NextResponse.redirect(new URL("/admin?denied=1", req.url));
     }
     return NextResponse.next();
   }

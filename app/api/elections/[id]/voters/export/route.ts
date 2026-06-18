@@ -1,4 +1,4 @@
-import { auth } from "@/auth";
+import { requireCapabilityOrError } from "@/lib/server/auth";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -6,8 +6,12 @@ export async function GET(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
-  const session = await auth();
-  if (!session) return new NextResponse("Unauthorized", { status: 401 });
+  const guard = await requireCapabilityOrError("voters:export");
+  if (!guard.ok) {
+    return new NextResponse(guard.error, {
+      status: guard.error === "Forbidden" ? 403 : 401,
+    });
+  }
 
   const voters = await prisma.voter.findMany({
     where: { electionId: params.id },

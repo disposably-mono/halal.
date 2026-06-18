@@ -1,4 +1,4 @@
-import type { NextAuthConfig } from "next-auth";
+import type { NextAuthConfig, Session, User } from "next-auth";
 import type { JWT } from "next-auth/jwt";
 
 export const authConfig = {
@@ -12,17 +12,17 @@ export const authConfig = {
     authorized() {
       return true; // Let middleware.ts handle all route protection
     },
-    jwt({ token, user }: { token: JWT; user?: any }) {
+    jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
         token.role = user.role;
         token.id = user.id;
       }
       return token;
     },
-    session({ session, token }: { session: any; token: JWT }) {
+    session({ session, token }: { session: Session; token: JWT }) {
       if (session.user) {
-        session.user.role = token.role;
-        session.user.id = token.id;
+        if (token.role) session.user.role = token.role;
+        if (token.id) session.user.id = token.id;
       }
       return session;
     },

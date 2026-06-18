@@ -7,7 +7,7 @@ import {
   isGradeInDivisionRange,
   parseVotersCSV,
 } from "@/lib/domain/voter-import";
-import { requireAdminSession } from "@/lib/server/auth";
+import { requireCapability } from "@/lib/server/auth";
 import { revalidateElectionVoters } from "@/lib/server/revalidate";
 import {
   AddVoterManualSchema,
@@ -31,7 +31,7 @@ export async function addVotersFromCSV(
   _prevState: CSVImportResult | null,
   formData: FormData,
 ): Promise<CSVImportResult | null> {
-  await requireAdminSession();
+  await requireCapability("voters:manage");
   const parsed = safeParseFormData(AddVotersFromCSVSchema, formData);
   if (!parsed.success) {
     return { added: 0, rejected: 0, skippedDuplicates: 0, reasons: ["Missing required fields."] };
@@ -93,7 +93,7 @@ export async function addVoterManual(
   _prevState: ManualAddResult | null,
   formData: FormData,
 ): Promise<ManualAddResult | null> {
-  await requireAdminSession();
+  await requireCapability("voters:manage");
   const parsed = safeParseFormData(AddVoterManualSchema, formData);
   if (!parsed.success) {
     return { success: false, error: "Invalid input." };
@@ -139,7 +139,7 @@ export async function addVoterManual(
 }
 
 export async function removeVoter(formData: FormData) {
-  await requireAdminSession();
+  await requireCapability("voters:manage");
   const parsed = safeParseFormData(RemoveVoterSchema, formData);
   if (!parsed.success) return;
   const { voterId, electionId } = parsed.data;
@@ -158,7 +158,7 @@ export async function finalizeVoters(
   _prevState: FinalizeResult | null,
   formData: FormData,
 ): Promise<FinalizeResult> {
-  await requireAdminSession();
+  await requireCapability("voters:manage");
   const parsed = safeParseFormData(ElectionIdSchema, formData);
   if (!parsed.success) return { success: false, error: "Missing election." };
   const { electionId } = parsed.data;
@@ -181,7 +181,7 @@ export async function unfinalizeVoters(
   _prevState: FinalizeResult | null,
   formData: FormData,
 ): Promise<FinalizeResult> {
-  await requireAdminSession();
+  await requireCapability("voters:manage");
   const parsed = safeParseFormData(ElectionIdSchema, formData);
   if (!parsed.success) return { success: false, error: "Missing election." };
   const { electionId } = parsed.data;
@@ -210,7 +210,7 @@ export async function unfinalizeVoters(
 }
 
 export async function removeVoterById(voterId: string, electionId: string) {
-  await requireAdminSession();
+  await requireCapability("voters:manage");
 
   const election = await prisma.election.findUnique({
     where: { id: electionId },

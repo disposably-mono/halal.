@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { can } from "@/lib/auth/permissions";
 import MonitorClient from "./MonitorClient";
 import Link from "next/link";
 import { StatusPill, ElectionSubNav } from "@/components/admin/ui";
@@ -48,6 +49,7 @@ export default async function MonitorPage({ params }: { params: { id: string } }
         electionName={election.name}
         division={election.division}
         status={election.status}
+        canExportResults={can(session.user?.role, "results:export")}
       />
     </div>
   );

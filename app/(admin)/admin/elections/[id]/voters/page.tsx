@@ -12,6 +12,7 @@ import {
 } from "@/components/admin/ui";
 import { CSVUploadForm, ManualAddForm } from "./VoterForms";
 import { finalizeVoters, unfinalizeVoters, removeVoterById } from "./actions";
+import { can } from "@/lib/auth/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -20,6 +21,8 @@ const SCHOOL_YEAR = new Date().getFullYear();
 export default async function VotersPage({ params }: { params: { id: string } }) {
   const session = await auth();
   if (!session) redirect("/admin/login");
+
+  const canManageVoters = can(session.user?.role, "voters:manage");
 
   const election = await prisma.election.findUnique({
     where: { id: params.id },
@@ -40,7 +43,8 @@ export default async function VotersPage({ params }: { params: { id: string } })
     },
   });
 
-  const canUnlock = election.status !== "OPEN" && election.status !== "CLOSED";
+  const canUnlock =
+    canManageVoters && election.status !== "OPEN" && election.status !== "CLOSED";
 
   return (
     <div className="min-h-screen bg-[#0b1220] font-sans">
@@ -93,7 +97,7 @@ export default async function VotersPage({ params }: { params: { id: string } })
           canUnlock={canUnlock}
         />
 
-        {!election.votersFinalized && (
+        {canManageVoters && !election.votersFinalized && (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
             <Card title="CSV Import">
               <CSVUploadForm
@@ -140,7 +144,7 @@ export default async function VotersPage({ params }: { params: { id: string } })
                       ? <span className="text-[10px] font-semibold text-emerald-400">✓ Voted</span>
                       : <span className="text-[10px] text-white/30">—</span>}
                   </span>
-                  {!election.votersFinalized ? (
+                  {canManageVoters && !election.votersFinalized ? (
                     <form action={removeVoterById.bind(null, voter.id, params.id)}>
                       <button type="submit" className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-white/[0.14] transition-colors hover:text-red-400" title="Remove voter" aria-label={`Remove voter ${voter.studentId}`}>
                         ×
@@ -155,7 +159,7 @@ export default async function VotersPage({ params }: { params: { id: string } })
           )}
         </div>
 
-        {!election.votersFinalized && (
+        {canManageVoters && !election.votersFinalized && (
           <FinalizeButton
             action={finalizeVoters}
             electionId={election.id}

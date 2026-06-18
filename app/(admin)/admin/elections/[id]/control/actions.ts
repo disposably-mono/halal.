@@ -9,7 +9,7 @@ import {
   canReschedule,
   nextStatusForReschedule,
 } from "@/lib/domain/election-state";
-import { requireAdminSessionOrError, adminEmailFromSession } from "@/lib/server/auth";
+import { requireCapabilityOrError, adminEmailFromSession } from "@/lib/server/auth";
 import {
   revalidateAdminDashboard,
   revalidateElectionControl,
@@ -48,7 +48,7 @@ async function transitionStatus(
 }
 
 export async function openElectionNow(electionId: string): Promise<ActionResult> {
-  const guard = await requireAdminSessionOrError();
+  const guard = await requireCapabilityOrError("election:lifecycle");
   if (!guard.ok) return { success: false, error: guard.error };
 
   const election = await prisma.election.findUnique({ where: { id: electionId } });
@@ -68,7 +68,7 @@ export async function openElectionNow(electionId: string): Promise<ActionResult>
 }
 
 export async function closeElectionNow(electionId: string): Promise<ActionResult> {
-  const guard = await requireAdminSessionOrError();
+  const guard = await requireCapabilityOrError("election:close");
   if (!guard.ok) return { success: false, error: guard.error };
 
   const election = await prisma.election.findUnique({ where: { id: electionId } });
@@ -92,7 +92,7 @@ export async function rescheduleElection(
   scheduledOpen: string | null,
   scheduledClose: string | null,
 ): Promise<ActionResult> {
-  const guard = await requireAdminSessionOrError();
+  const guard = await requireCapabilityOrError("election:lifecycle");
   if (!guard.ok) return { success: false, error: guard.error };
 
   const election = await prisma.election.findUnique({ where: { id: electionId } });
@@ -127,7 +127,7 @@ export async function rescheduleElection(
 }
 
 export async function advanceToScheduled(electionId: string): Promise<ActionResult> {
-  const guard = await requireAdminSessionOrError();
+  const guard = await requireCapabilityOrError("election:lifecycle");
   if (!guard.ok) return { success: false, error: guard.error };
 
   const election = await prisma.election.findUnique({ where: { id: electionId } });

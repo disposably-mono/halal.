@@ -117,6 +117,8 @@ enum ElectionStatus {
 }
 
 enum AdminRole {
+  SUPERADMIN
   COMMISSIONER
+  CANVASSER
   OFFICER
 }

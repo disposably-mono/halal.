@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { DIVISION_POSITIONS } from "@/lib/elections/constants";
+import { can } from "@/lib/auth/permissions";
 import {
   StatusPill,
   FinalizeBanner,
@@ -54,8 +55,13 @@ export default async function CandidatesPage({ params }: { params: { id: string 
   const existingTitles = new Set(positions.map((p) => p.title));
   const availablePositions = allPositionDefs.filter((p) => !existingTitles.has(p.title));
 
-  const canUnlock = election.status !== "OPEN" && election.status !== "CLOSED";
+  const canManageCandidates = can(session.user?.role, "candidates:manage");
+  const canUnlock =
+    canManageCandidates &&
+    election.status !== "OPEN" &&
+    election.status !== "CLOSED";
   const isLocked = election.candidatesFinalized;
+  const canEditCandidates = canManageCandidates && !isLocked;
   const totalCandidates = positions.reduce((sum, p) => sum + p.candidates.length, 0);
   const emptyPositions = positions.filter((p) => p.candidates.length === 0);
 
@@ -113,8 +119,8 @@ export default async function CandidatesPage({ params }: { params: { id: string 
           canUnlock={canUnlock}
         />
 
-        {/* ── Position management (hidden when locked) ── */}
-        {!isLocked && (
+        {/* ── Position management (hidden when locked or read-only role) ── */}
+        {canEditCandidates && (
           <Card title="Manage Positions">
             <div className="flex flex-wrap items-center gap-2">
               {positions.length === 0 && (
@@ -211,7 +217,7 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                               </div>
                               <span className="flex-1 text-[12px] text-white/80">{cand.fullName}</span>
                               <span className="text-[10px] text-white/40">Gr. {cand.gradeLevel}</span>
-                              {!isLocked && (
+                              {canEditCandidates && (
                                 <form action={removeCandidate}>
                                   <input type="hidden" name="candidateId" value={cand.id} />
                                   <input type="hidden" name="electionId" value={election.id} />
@@ -224,7 +230,7 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                           ))}
                         </div>
                       )}
-                      {!isLocked && (
+                      {canEditCandidates && (
                         <form action={addCandidate} className="flex items-end gap-2 border-t border-white/[0.04] py-3 pl-[52px] pr-4">
                           <input type="hidden" name="positionId" value={pos.id} />
                           <input type="hidden" name="electionId" value={election.id} />
@@ -243,7 +249,7 @@ export default async function CandidatesPage({ params }: { params: { id: string 
           </div>
         )}
 
-        {!isLocked && positions.length > 0 && (
+        {canEditCandidates && positions.length > 0 && (
           <FinalizeButton
             action={finalizeCandidates}
             electionId={election.id}
