@@ -4,10 +4,7 @@ import { VoteBar } from "./VoteBar";
 import type { PositionResult } from "./results-shared";
 
 export function PositionCard({ position }: { position: PositionResult }) {
-  const topVotes = position.candidates[0]?.votes ?? 0;
-  const isDraw =
-    topVotes > 0 &&
-    position.candidates.filter((c) => c.votes === topVotes).length > 1;
+  const isTie = position.candidates.some((c) => c.isTie);
 
   return (
     <div className="border border-white/8 rounded-sm overflow-hidden">
@@ -17,9 +14,9 @@ export function PositionCard({ position }: { position: PositionResult }) {
           {position.title}
         </h3>
         <div className="flex items-center gap-2 shrink-0 ml-3">
-          {isDraw && (
+          {isTie && (
             <span className="text-[10px] text-sky-400 border border-sky-400/20 bg-sky-400/[0.06] px-1.5 py-0.5 rounded-full">
-              Draw
+              TIE
             </span>
           )}
           <span className="font-mono text-[10px] text-white/30">
@@ -40,8 +37,8 @@ export function PositionCard({ position }: { position: PositionResult }) {
               key={c.id}
               candidate={c}
               totalVotes={position.totalVotes}
-              isLeader={c.votes === topVotes && !isDraw}
-              isDraw={isDraw && c.votes === topVotes}
+              isLeader={c.isWinner && !c.isTie}
+              isTie={c.isTie}
               rank={idx + 1}
             />
           ))

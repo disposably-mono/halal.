@@ -6,7 +6,7 @@
  * transitions.
  *
  * Secured with a CRON_SECRET env var so it cannot be triggered anonymously
- * from the public internet.
+ * from the public internet. Production fails closed if CRON_SECRET is missing.
  *
  * vercel.json schedule: { "path": "/api/cron/transition-elections", "schedule": "* * * * *" }
  * (every minute on Vercel Pro; every hour on Hobby — adjust as needed)
@@ -24,6 +24,11 @@ export async function GET(req: NextRequest) {
   // CRON_SECRET in your project environment variables.
   const authHeader = req.headers.get("authorization");
   const secret = process.env.CRON_SECRET;
+  const isProduction = process.env.NODE_ENV === "production";
+
+  if (!secret && isProduction) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   if (secret && authHeader !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

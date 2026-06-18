@@ -68,6 +68,7 @@ export default function VotePage() {
 
   const hasError = !!state?.error;
   const errorBorderClass = hasError ? "border-red-500/40 focus:border-red-400/60" : "border-white/10";
+  const fieldDescriptionId = hasError ? "vote-login-error" : "vote-login-helper";
 
   return (
     <div className="min-h-screen bg-navy-deep flex flex-col">
@@ -126,6 +127,8 @@ export default function VotePage() {
                 spellCheck={false}
                 onInput={handleStudentIdInput}
                 placeholder="0000-0000"
+                aria-invalid={hasError}
+                aria-describedby={fieldDescriptionId}
                 className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] outline-none transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 ${errorBorderClass}`}
               />
             </div>
@@ -149,18 +152,22 @@ export default function VotePage() {
                 spellCheck={false}
                 onInput={handleVoterCodeInput}
                 placeholder="e.g. 2611A001"
+                aria-invalid={hasError}
+                aria-describedby={fieldDescriptionId}
                 className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] uppercase outline-none transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 ${errorBorderClass}`}
               />
             </div>
 
             {/* Error / helper */}
             {!state && (
-              <p className="font-body text-mid/60 text-xs pt-1">
+              <p id="vote-login-helper" className="font-body text-mid/60 text-xs pt-1">
                 Enter the details from your printed voter slip.
               </p>
             )}
             {state?.error && (
               <div
+                id="vote-login-error"
+                role="alert"
                 className={`flex items-start gap-2.5 rounded-sm border px-3.5 py-3 ${state.error === "ALREADY_VOTED"
                     ? "border-maroon/40 bg-maroon/10 text-red-300"
                     : state.error === "ELECTION_NOT_OPEN"

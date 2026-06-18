@@ -1,8 +1,10 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildVerifiedVoteData,
   eligiblePositionsForGrade,
   parseCandidateGrades,
   pickCandidateDefaultGrade,
+  truncateToHour,
 } from "@/lib/domain/ballot";
 
 describe("eligiblePositionsForGrade", () => {
@@ -77,5 +79,70 @@ describe("pickCandidateDefaultGrade", () => {
 
   it("returns 0 when no grades parse", () => {
     expect(pickCandidateDefaultGrade("any")).toBe(0);
+  });
+});
+
+describe("buildVerifiedVoteData", () => {
+  it("builds one vote per eligible server-side position", () => {
+    const castAt = new Date("2026-06-18T05:43:12.345Z");
+
+    const votes = buildVerifiedVoteData({
+      electionId: "election-1",
+      castAt,
+      positions: [
+        { id: "president", candidates: [{ id: "candidate-1" }] },
+        { id: "secretary", candidates: [{ id: "candidate-2" }] },
+      ],
+      selections: {
+        president: "candidate-1",
+        secretary: null,
+        "forged-position": "candidate-3",
+      },
+    });
+
+    expect(votes).toEqual([
+      {
+        electionId: "election-1",
+        positionId: "president",
+        candidateId: "candidate-1",
+        isAbstain: false,
+        castAt,
+      },
+      {
+        electionId: "election-1",
+        positionId: "secretary",
+        candidateId: null,
+        isAbstain: true,
+        castAt,
+      },
+    ]);
+  });
+
+  it("rejects candidate ids that do not belong to the selected position", () => {
+    const votes = buildVerifiedVoteData({
+      electionId: "election-1",
+      castAt: new Date("2026-06-18T05:43:12.345Z"),
+      positions: [
+        { id: "president", candidates: [{ id: "candidate-1" }] },
+        { id: "secretary", candidates: [{ id: "candidate-2" }] },
+      ],
+      selections: {
+        president: "candidate-2",
+      },
+    });
+
+    expect(votes[0]).toMatchObject({
+      positionId: "president",
+      candidateId: null,
+      isAbstain: true,
+    });
+  });
+});
+
+describe("truncateToHour", () => {
+  it("coarsens a timestamp to the top of the hour", () => {
+    expect(truncateToHour(new Date("2026-06-18T05:43:12.345Z")).toISOString()).toBe(
+      "2026-06-18T05:00:00.000Z",
+    );
   });
 });

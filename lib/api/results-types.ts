@@ -8,7 +8,7 @@
  * locally and re-exports the pieces below.
  *
  * Distinct from `lib/domain/tally.ts`'s `CandidateResult`, which is the
- * server-side computed shape with an `isWinner` flag.
+ * server-side computed shape with optional domain-only fields.
  */
 
 export interface CandidateResult {
@@ -16,6 +16,8 @@ export interface CandidateResult {
   fullName: string;
   gradeLevel: number;
   votes: number;
+  isWinner: boolean;
+  isTie: boolean;
 }
 
 export interface TurnoutData {

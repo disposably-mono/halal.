@@ -20,6 +20,7 @@ import {
 export type CSVImportResult = {
   added: number;
   rejected: number;
+  skippedDuplicates: number;
   reasons: string[];
 };
 
@@ -33,7 +34,7 @@ export async function addVotersFromCSV(
   await requireAdminSession();
   const parsed = safeParseFormData(AddVotersFromCSVSchema, formData);
   if (!parsed.success) {
-    return { added: 0, rejected: 0, reasons: ["Missing required fields."] };
+    return { added: 0, rejected: 0, skippedDuplicates: 0, reasons: ["Missing required fields."] };
   }
   const { electionId, csvText, schoolYear } = parsed.data;
 
@@ -42,10 +43,15 @@ export async function addVotersFromCSV(
     select: { division: true, votersFinalized: true },
   });
   if (!election) {
-    return { added: 0, rejected: 0, reasons: ["Election not found."] };
+    return { added: 0, rejected: 0, skippedDuplicates: 0, reasons: ["Election not found."] };
   }
   if (election.votersFinalized) {
-    return { added: 0, rejected: 0, reasons: ["Voter list is finalized and cannot be modified."] };
+    return {
+      added: 0,
+      rejected: 0,
+      skippedDuplicates: 0,
+      reasons: ["Voter list is finalized and cannot be modified."],
+    };
   }
 
   const [existingForElection, allCodes, allVoters] = await Promise.all([
@@ -75,7 +81,12 @@ export async function addVotersFromCSV(
     revalidateElectionVoters(electionId);
   }
 
-  return { added: result.toCreate.length, rejected: result.rejected, reasons: result.reasons };
+  return {
+    added: result.toCreate.length,
+    rejected: result.rejected,
+    skippedDuplicates: result.skippedDuplicates,
+    reasons: result.reasons,
+  };
 }
 
 export async function addVoterManual(

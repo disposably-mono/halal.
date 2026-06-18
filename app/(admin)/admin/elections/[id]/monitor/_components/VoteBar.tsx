@@ -7,12 +7,12 @@ export function VoteBar({
   candidate,
   totalVotes,
   isLeader,
-  isDraw,
+  isTie,
 }: {
   candidate: CandidateResult;
   totalVotes: number;
   isLeader: boolean;
-  isDraw: boolean;
+  isTie: boolean;
 }) {
   const pct = totalVotes > 0 ? (candidate.votes / totalVotes) * 100 : 0;
   const [displayPct, setDisplayPct] = useState(0);
@@ -22,21 +22,21 @@ export function VoteBar({
     return () => clearTimeout(t);
   }, [pct]);
 
-  const wrapCls = isLeader && !isDraw
+  const wrapCls = isLeader && !isTie
     ? "border-amber-400/30 bg-[#1d2a3a]"
-    : isDraw
+    : isTie
       ? "border-sky-400/25 bg-[#131e30]"
       : "border-white/[0.06] bg-[#131c2e]";
 
-  const fillCls = isLeader && !isDraw
+  const fillCls = isLeader && !isTie
     ? "bg-amber-400/10"
-    : isDraw
+    : isTie
       ? "bg-sky-400/[0.07]"
       : "bg-white/[0.03]";
 
-  const countColor = isLeader && !isDraw
+  const countColor = isLeader && !isTie
     ? "text-amber-400"
-    : isDraw
+    : isTie
       ? "text-sky-400"
       : "text-white/50";
 
@@ -59,10 +59,10 @@ export function VoteBar({
         <span className="w-[38px] shrink-0 text-right font-mono text-[10px] text-white/25">
           {pct.toFixed(1)}%
         </span>
-        {isDraw && candidate.votes > 0 && (
+        {isTie && candidate.votes > 0 && (
           <span className="shrink-0 font-mono text-[11px] font-bold text-sky-400">=</span>
         )}
-        {isLeader && !isDraw && candidate.votes > 0 && (
+        {isLeader && !isTie && candidate.votes > 0 && (
           <span className="shrink-0 text-[11px] text-amber-400">★</span>
         )}
       </div>

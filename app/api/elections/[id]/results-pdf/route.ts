@@ -125,6 +125,9 @@ export async function GET(
     }));
 
     const maxVotes = Math.max(0, ...candidatesWithVotes.map((c) => c.votes));
+    const tiedTopCount = candidatesWithVotes.filter(
+      (c) => c.votes > 0 && c.votes === maxVotes,
+    ).length;
     const totalVotesForPosition = candidatesWithVotes.reduce(
       (s, c) => s + c.votes,
       0
@@ -139,6 +142,7 @@ export async function GET(
       candidates: candidatesWithVotes.map((c) => ({
         ...c,
         isWinner: c.votes > 0 && c.votes === maxVotes,
+        isTie: tiedTopCount > 1 && c.votes === maxVotes,
       })),
     };
   });

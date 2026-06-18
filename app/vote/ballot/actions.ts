@@ -3,6 +3,7 @@
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { getVoterSession } from "@/lib/voter-session";
+import { buildVerifiedVoteData, truncateToHour } from "@/lib/domain/ballot";
 
 const BallotSelectionSchema = z.record(z.string().min(1), z.string().min(1).nullable());
 const PositionIdsSchema = z.array(z.string().min(1));
@@ -12,6 +13,13 @@ export type BallotSelection = z.infer<typeof BallotSelectionSchema>;
 export type SubmitBallotResult =
   | { success: true }
   | { success: false; error: string };
+
+class AlreadyVotedError extends Error {
+  constructor() {
+    super("Voter has already submitted a ballot.");
+    this.name = "AlreadyVotedError";
+  }
+}
 
 export async function submitBallot(
   selections: BallotSelection,
@@ -33,10 +41,10 @@ export async function submitBallot(
 
   const voter = await prisma.voter.findUnique({
     where: { id: session.voterId },
-    select: { hasVoted: true, electionId: true },
+    select: { hasVoted: true, electionId: true, gradeLevel: true },
   });
 
-  if (!voter) {
+  if (!voter || voter.electionId !== session.electionId) {
     return { success: false, error: "Voter record not found." };
   }
 
@@ -53,30 +61,55 @@ export async function submitBallot(
     return { success: false, error: "This election is no longer open." };
   }
 
-  const now = new Date();
-  const voteData = parsedIds.data.map((positionId) => {
-    const candidateId = parsedSelections.data[positionId] ?? null;
-    return {
+  const positions = await prisma.position.findMany({
+    where: {
       electionId: session.electionId,
-      positionId,
-      candidateId,
-      isAbstain: candidateId === null,
-      castAt: now,
-    };
+      isActive: true,
+      eligibleGrades: { has: voter.gradeLevel },
+    },
+    select: {
+      id: true,
+      candidates: { select: { id: true } },
+    },
+    orderBy: { order: "asc" },
   });
 
+  const now = new Date();
+  const voteData = buildVerifiedVoteData({
+    electionId: session.electionId,
+    positions,
+    selections: parsedSelections.data,
+    castAt: now,
+  });
+  const votedAtBucket = truncateToHour(now);
+
   try {
-    await prisma.$transaction([
-      prisma.vote.createMany({ data: voteData }),
-      prisma.voter.update({
-        where: { id: session.voterId },
-        data: { hasVoted: true, votedAt: now },
-      }),
-    ]);
+    await prisma.$transaction(async (tx) => {
+      const updated = await tx.voter.updateMany({
+        where: {
+          id: session.voterId,
+          electionId: session.electionId,
+          hasVoted: false,
+        },
+        data: { hasVoted: true, votedAt: votedAtBucket },
+      });
+
+      if (updated.count !== 1) {
+        throw new AlreadyVotedError();
+      }
+
+      if (voteData.length > 0) {
+        await tx.vote.createMany({ data: voteData });
+      }
+    });
     // Voter session is intentionally cleared in /vote/confirmed/page.tsx, not here —
     // clearing here would let middleware redirect before the success message renders.
     return { success: true };
   } catch (error) {
+    if (error instanceof AlreadyVotedError) {
+      return { success: true };
+    }
+
     console.error("Ballot submission error:", error);
     return {
       success: false,

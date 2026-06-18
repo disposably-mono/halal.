@@ -73,7 +73,7 @@ Next.js 14 (Full Stack)
 ```
 
 ### Key Technical Decisions
-- **Real-time:** Server-Sent Events (SSE) for live tally (not yet implemented)
+- **Live updates:** Admin monitor and public results poll `/api/results/[id]`
 - **Auth:** NextAuth.js Credentials provider with bcrypt + officer key (2FA)
 - **Database:** Prisma 7 with PostgreSQL adapter (`@prisma/adapter-pg`)
 - **UI:** Tailwind CSS + shadcn/ui (Radix Nova style)
@@ -89,22 +89,20 @@ app/
 ├── globals.css                # Tailwind + design tokens
 ├── admin/                     # Admin panel (protected by middleware)
 │   ├── login/page.tsx        # 2FA login form
+├── (admin)/admin/             # Authenticated admin app
 │   ├── page.tsx              # Dashboard (elections list)
-│   └── elections/
-│       ├── new/
-│       │   ├── page.tsx      # Election creation form
-│       │   └── actions.ts    # Server Action: createElection()
-│       ├── [id]/
-│       │   ├── candidates/
-│       │   │   ├── page.tsx  # Candidate management UI
-│       │   │   └── actions.ts # CRUD Server Actions
-│       │   ├── voters/
-│       │   │   ├── page.tsx  # Voter management + CSV import
-│       │   │   └── actions.ts # voter import & controls
-│       │   └── (other pages)
+│   ├── results/page.tsx      # Admin results summary
+│   └── elections/[id]/       # Candidates, voters, control, monitor
+├── vote/                      # Voter login, ballot, confirmation
+├── results/                   # Public embargoed/final results
+├── officers/                  # Officer-facing info page
+├── about/                     # Public about page
 ├── api/
-│   └── auth/[...nextauth]/route.ts  # NextAuth handler
-└── (voter-facing pages not yet implemented) # Phase 3
+│   ├── auth/[...nextauth]/route.ts  # NextAuth handler
+│   ├── results/[id]/route.ts        # Public/admin JSON result payload
+│   ├── elections/[id]/results-pdf/route.ts
+│   ├── elections/[id]/voters/export/route.ts
+│   └── cron/transition-elections/route.ts
 ```
 
 ### Authentication Flow
@@ -154,10 +152,10 @@ app/
 
 ```
 Phase 1  ██████████  Complete (Foundation & Scaffold)
-Phase 2  █████░░░░░  In Progress (Admin Panel)
-Phase 3  ░░░░░░░░░░  Planned (Voter-Facing Pages)
-Phase 4  ░░░░░░░░░░  Planned (Real-Time Results)
-Phase 5  ░░░░░░░░░░  Planned (Deployment)
+Phase 2  ██████████  Complete (Admin Panel)
+Phase 3  ██████████  Complete (Voter-Facing Pages)
+Phase 4  ████████░░  Implemented (Polling Results + Monitor; SSE not used)
+Phase 5  ██████░░░░  In Progress (Deployment Hardening)
 ```
 
 ## Key Features to Understand
@@ -171,9 +169,9 @@ Phase 5  ░░░░░░░░░░  Planned (Deployment)
 ```
 Enter Code → Validate → Generate Ballot → Select → Review → Submit
 ```
-- Atomic submission (no partial votes)
+- Atomic submission guard with server-side eligible position validation
 - Skipped positions = implicit abstentions
-- One vote per student (DB enforced)
+- One vote per student (atomic server-side `hasVoted` claim)
 
 ### Results System
 | Phase              | Public View     | Admin View     |
@@ -185,7 +183,7 @@ Enter Code → Validate → Generate Ballot → Select → Review → Submit
 - ❌ No explicit abstain button (cleaner UX)
 - ⛔ Results embargo during voting (prevents influence)
 - 🔐 2FA admin auth (shared + personal accountability)
-- 📡 SSE for lightweight real-time
+- 📡 Polling-based live admin monitor and public final results
 
 ## Important Code Locations
 
@@ -204,19 +202,27 @@ Enter Code → Validate → Generate Ballot → Select → Review → Submit
 - `prisma.config.ts` - Prisma config for TypeScript
 
 ### Server Actions (Backend Logic)
-- `app/admin/elections/new/actions.ts` - `createElection()`
-- `app/admin/elections/[id]/candidates/actions.ts` - Candidate CRUD
-- `app/admin/elections/[id]/voters/actions.ts` - Voter import + control number generation
+- `app/(admin)/admin/elections/new/actions.ts` - `createElection()`
+- `app/(admin)/admin/elections/[id]/candidates/actions.ts` - Candidate CRUD
+- `app/(admin)/admin/elections/[id]/voters/actions.ts` - Voter import + control number generation
+- `app/(admin)/admin/elections/[id]/control/actions.ts` - Scheduling and status controls
+- `app/vote/actions.ts` - Voter code validation
+- `app/vote/ballot/actions.ts` - Atomic ballot submission
+- `app/api/cron/transition-elections/route.ts` - Scheduled status transitions
 - `app/api/auth/[...nextauth]/route.ts` - NextAuth route handler
 - `app/api/elections/[id]/voters/export/route.ts` - CSV export
 
 ### Frontend Pages
 - `app/admin/login/page.tsx` - Admin 2FA login form
-- `app/admin/page.tsx` - Dashboard (elections list)
-- `app/admin/elections/new/page.tsx` - Create election form
-- `app/admin/elections/[id]/candidates/page.tsx` - Manage candidates for an election
-- `app/admin/elections/[id]/voters/page.tsx` - Import voters, generate control numbers
-- `app/page.tsx` - Public homepage (placeholder until Phase 3)
+- `app/(admin)/admin/page.tsx` - Dashboard (elections list)
+- `app/(admin)/admin/elections/new/page.tsx` - Create election form
+- `app/(admin)/admin/elections/[id]/candidates/page.tsx` - Manage candidates for an election
+- `app/(admin)/admin/elections/[id]/voters/page.tsx` - Import voters, generate control numbers
+- `app/(admin)/admin/elections/[id]/monitor/page.tsx` - Live monitor
+- `app/vote/page.tsx` - Voter login
+- `app/vote/ballot/page.tsx` - Grade-filtered ballot
+- `app/results/page.tsx` - Public results
+- `app/page.tsx` - Public homepage
 - `app/layout.tsx` - Root layout with fonts
 
 ### UI Components (shadcn/ui)
@@ -229,7 +235,7 @@ Enter Code → Validate → Generate Ballot → Select → Review → Submit
 - `components/ui/dialog.tsx`
 
 ### Constants & Business Logic
-- `app/admin/elections/lib/constants.ts` - `DIVISION_POSITIONS`, `DIVISION_GRADE_RANGE`
+- `lib/elections/constants.ts` - `DIVISION_POSITIONS`, `DIVISION_GRADE_RANGE`
 - `lib/utils.ts` - `cn()` helper for Tailwind class merging
 
 ## Design System
@@ -248,7 +254,7 @@ Enter Code → Validate → Generate Ballot → Select → Review → Submit
 ## Business Logic & Constants
 
 ### Division & Position Configuration
-File: `app/admin/elections/lib/constants.ts`
+File: `lib/elections/constants.ts`
 
 Exports:
 - `DIVISION_POSITIONS`: Defines the position hierarchy per division (GS, JHS, SHS, HC)
@@ -300,7 +306,7 @@ npm run test:watch    # watch mode
 npm run test:coverage # coverage report (HTML in ./coverage/)
 ```
 
-**What's covered:** `lib/domain/*` and `lib/elections/constants.ts` — 100% statements/lines/functions, 98%+ branches across 76 tests. Threshold enforced at 80% via `vitest.config.ts`.
+**What's covered:** `lib/domain/*` and `lib/elections/constants.ts`. Threshold enforced at 80% via `vitest.config.ts`.
 
 **Not covered yet:**
 - Server actions (`app/**/actions.ts`) — would need a test DB + Prisma harness
@@ -353,18 +359,19 @@ Volume: halal_pgdata (persists between restarts)
 
 ## Implementation Notes & Future Work
 
-### Phase 3: Voter-Facing Pages (Not Yet Implemented)
-- Vote entry page: control number input → validation
-- Ballot page: grade-filtered positions, implicit abstentions
-- Review modal: highlight unselected positions
-- Submission: atomic `Vote` records for all positions
+### Implemented Voting Flow
+- Vote entry page: student ID + control number validation
+- Ballot page: server-side grade-filtered positions, implicit abstentions
+- Review modal: highlights unselected positions before submission
+- Submission: atomic voter claim plus anonymous `Vote` rows
 - Confirmation page: "Your vote has been cast"
 
-### Phase 4: Real-Time Results (Not Yet Implemented)
-- SSE endpoint for live tally
-- Admin dashboard charts (Chart.js or Recharts)
-- Public results page (embargoed until election CLOSED)
-- CSV export for official results
+### Implemented Results Flow
+- `/api/results/[id]` powers public final results and admin live monitor
+- Public results are embargoed until the election is `CLOSED`
+- Admin monitor polls for turnout, position tallies, momentum, and replay data
+- Official results PDF export is available for closed elections
+- Scheduled open/close transitions run through the cron endpoint
 
 ### Gotchas & Pitfalls
 - **Prisma Client reload:** Changes to schema require `npx prisma generate` before TypeScript recognizes new fields
@@ -378,8 +385,8 @@ Volume: halal_pgdata (persists between restarts)
 - **Component style:** Client components use `"use client"`; pages default to server
 - **Styling:** All shadcn/ui components use Tailwind classes; extend `tailwind.config.ts` for brand colors
 - **Dates:** Store as UTC in PostgreSQL; convert to local timezone only in UI
-- **CSV imports:** Voter import expects columns: `studentId,gradeLevel,section,division` (verify actual implementation)
-- **Election status transitions:** No built-in guardrails; admins manually change status (DRAFT → SCHEDULED → OPEN → CLOSED)
+- **CSV imports:** Voter import expects columns: `studentId,gradeLevel,section`
+- **Election status transitions:** Admin control actions and the cron endpoint enforce the `DRAFT → SCHEDULED → OPEN → CLOSED` lifecycle
 
 ---
 

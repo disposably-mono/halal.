@@ -10,6 +10,7 @@ export interface CandidateWithVotes extends CandidateInput {
 
 export interface CandidateResult extends CandidateWithVotes {
   isWinner: boolean;
+  isTie: boolean;
 }
 
 export interface PositionTally {
@@ -42,10 +43,12 @@ export function computePositionTally(
   const maxVotes = withVotes.reduce((m, c) => Math.max(m, c.votes), 0);
   const totalVotesCast = withVotes.reduce((s, c) => s + c.votes, 0);
   const abstentions = Math.max(0, totalVotersWhoVoted - totalVotesCast);
+  const tiedTopCount = withVotes.filter((c) => c.votes > 0 && c.votes === maxVotes).length;
 
   const result: CandidateResult[] = withVotes.map((c) => ({
     ...c,
     isWinner: c.votes > 0 && c.votes === maxVotes,
+    isTie: tiedTopCount > 1 && c.votes === maxVotes,
   }));
 
   return { candidates: result, abstentions, totalVotesCast, maxVotes };

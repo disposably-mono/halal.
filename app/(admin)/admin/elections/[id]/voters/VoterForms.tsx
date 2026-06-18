@@ -80,7 +80,7 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
 
       {result && (
         <div
-          className={`rounded-[8px] border px-4 py-3 text-[11px] ${result.rejected > 0
+          className={`rounded-[8px] border px-4 py-3 text-[11px] ${result.rejected > 0 || result.skippedDuplicates > 0
               ? "border-yellow-500/20 bg-yellow-500/[0.07]"
               : "border-emerald-500/20 bg-emerald-500/[0.07]"
             }`}
@@ -93,7 +93,7 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
               ⚠ {reason}
             </p>
           ))}
-          {result.added === 0 && result.rejected === 0 && (
+          {result.added === 0 && result.rejected === 0 && result.skippedDuplicates === 0 && (
             <p className="text-white/40">No new voters to import.</p>
           )}
         </div>

@@ -21,6 +21,7 @@ export interface VoterImportRow {
 export interface VoterImportResult {
   toCreate: VoterImportRow[];
   rejected: number;
+  skippedDuplicates: number;
   reasons: string[];
 }
 
@@ -37,6 +38,7 @@ export function parseVotersCSV(csvText: string, ctx: VoterImportContext): VoterI
   const voterCodes = new Set<string>(ctx.existingVoterCodes);
   const toCreate: VoterImportRow[] = [];
   let rejected = 0;
+  let skippedDuplicates = 0;
   const reasons = new Set<string>();
 
   for (const line of lines) {
@@ -58,14 +60,20 @@ export function parseVotersCSV(csvText: string, ctx: VoterImportContext): VoterI
       continue;
     }
 
-    if (studentIds.has(studentId)) continue;
+    if (studentIds.has(studentId)) {
+      skippedDuplicates++;
+      continue;
+    }
 
     const sectionUp = section.toUpperCase();
     const key = `${gradeLevel}-${sectionUp}`;
     seqMap[key] = (seqMap[key] ?? 0) + 1;
     const voterCode = generateControlNumber(ctx.schoolYear, gradeLevel, section, seqMap[key]);
 
-    if (voterCodes.has(voterCode)) continue;
+    if (voterCodes.has(voterCode)) {
+      skippedDuplicates++;
+      continue;
+    }
 
     toCreate.push({
       studentId,
@@ -78,5 +86,11 @@ export function parseVotersCSV(csvText: string, ctx: VoterImportContext): VoterI
     voterCodes.add(voterCode);
   }
 
-  return { toCreate, rejected, reasons: Array.from(reasons) };
+  if (skippedDuplicates > 0) {
+    reasons.add(
+      `${skippedDuplicates} duplicate row${skippedDuplicates !== 1 ? "s were" : " was"} skipped.`,
+    );
+  }
+
+  return { toCreate, rejected, skippedDuplicates, reasons: Array.from(reasons) };
 }

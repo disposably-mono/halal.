@@ -23,6 +23,7 @@ export type ResultCandidate = {
   fullName: string;
   votes: number;
   isWinner: boolean;
+  isTie: boolean;
 };
 
 export type ResultPosition = {
@@ -367,7 +368,9 @@ function PositionTable({ position }: { position: ResultPosition }) {
               <Text style={s.cellPct}>{pct(c.votes, totalCast)}</Text>
             </View>
             <View style={s.colStatus}>
-              {c.isWinner ? (
+              {c.isTie ? (
+                <Text style={[s.cellStatus, s.cellStatusWon]}>TIE</Text>
+              ) : c.isWinner ? (
                 <Text style={[s.cellStatus, s.cellStatusWon]}>WON</Text>
               ) : (
                 <Text style={{ ...s.cellStatus, color: TEXT_LIGHT }}>—</Text>

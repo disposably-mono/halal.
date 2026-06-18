@@ -40,6 +40,7 @@ describe("parseVotersCSV", () => {
 
     expect(result.toCreate).toHaveLength(3);
     expect(result.rejected).toBe(0);
+    expect(result.skippedDuplicates).toBe(0);
     expect(result.reasons).toEqual([]);
     expect(result.toCreate.map((v) => v.voterCode)).toEqual(["2611A001", "2611A002", "2610B001"]);
     expect(result.toCreate[0]).toMatchObject({
@@ -73,25 +74,29 @@ describe("parseVotersCSV", () => {
     expect(result.reasons[0]).toMatch(/within 10–11/);
   });
 
-  it("skips (without rejecting) rows whose studentId is already present", () => {
+  it("reports rows whose studentId is already present as skipped duplicates", () => {
     const csv = [header, "2025-0001,11,A", "2025-0002,11,A"].join("\n");
     const result = parseVotersCSV(
       csv,
       ctx({ existingStudentIds: new Set(["2025-0001"]) }),
     );
-    // Existing dup is skipped silently (no rejection counter), only the new row is created.
     expect(result.rejected).toBe(0);
+    expect(result.skippedDuplicates).toBe(1);
     expect(result.toCreate).toHaveLength(1);
     expect(result.toCreate[0].studentId).toBe("2025-0002");
+    expect(result.reasons).toContain("1 duplicate row was skipped.");
   });
 
-  it("skips rows whose generated voterCode collides with an existing code", () => {
+  it("reports rows whose generated voterCode collides with an existing code", () => {
     const csv = [header, "2025-0001,11,A"].join("\n");
     const result = parseVotersCSV(
       csv,
       ctx({ existingVoterCodes: new Set(["2611A001"]) }),
     );
     expect(result.toCreate).toHaveLength(0);
+    expect(result.rejected).toBe(0);
+    expect(result.skippedDuplicates).toBe(1);
+    expect(result.reasons).toContain("1 duplicate row was skipped.");
   });
 
   it("continues sequence numbering from existing seqByGradeSection", () => {
@@ -108,6 +113,7 @@ describe("parseVotersCSV", () => {
     const result = parseVotersCSV(csv, ctx());
     expect(result.toCreate).toHaveLength(2);
     expect(result.rejected).toBe(0);
+    expect(result.skippedDuplicates).toBe(0);
   });
 
   it("strips quotes from CSV cells", () => {
@@ -141,5 +147,8 @@ describe("parseVotersCSV", () => {
     const result = parseVotersCSV(csv, ctx());
     expect(result.toCreate).toHaveLength(1);
     expect(result.toCreate[0].section).toBe("A");
+    expect(result.rejected).toBe(0);
+    expect(result.skippedDuplicates).toBe(2);
+    expect(result.reasons).toContain("2 duplicate rows were skipped.");
   });
 });

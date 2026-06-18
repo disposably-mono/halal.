@@ -7,13 +7,13 @@ export function VoteBar({
   candidate,
   totalVotes,
   isLeader,
-  isDraw,
+  isTie,
   rank,
 }: {
   candidate: CandidateResult;
   totalVotes: number;
   isLeader: boolean;
-  isDraw: boolean;
+  isTie: boolean;
   rank: number;
 }) {
   const pct = totalVotes > 0 ? (candidate.votes / totalVotes) * 100 : 0;
@@ -27,18 +27,18 @@ export function VoteBar({
   return (
     <div
       className={`relative rounded-sm border transition-all duration-200 overflow-hidden
-        ${isLeader && !isDraw
+        ${isLeader && !isTie
           ? "border-gold/40 bg-navy/60"
-          : isDraw
+          : isTie
             ? "border-sky-400/30 bg-navy/40"
             : "border-white/8 bg-navy/20"}`}
     >
       {/* Animated fill */}
       <div
         className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out
-          ${isLeader && !isDraw
+          ${isLeader && !isTie
             ? "bg-gold/15"
-            : isDraw
+            : isTie
               ? "bg-sky-400/[0.07]"
               : "bg-white/[0.04]"}`}
         style={{ width: `${displayPct}%` }}
@@ -48,9 +48,9 @@ export function VoteBar({
         {/* Rank */}
         <span
           className={`font-mono text-[11px] w-5 text-center shrink-0
-            ${isLeader && !isDraw
+            ${isLeader && !isTie
               ? "text-gold/70"
-              : isDraw
+              : isTie
                 ? "text-sky-400/70"
                 : "text-white/20"}`}
         >
@@ -60,9 +60,9 @@ export function VoteBar({
         {/* Name */}
         <span
           className={`flex-1 font-heading font-bold text-sm tracking-wide uppercase min-w-0 truncate
-            ${isLeader && !isDraw
+            ${isLeader && !isTie
               ? "text-white"
-              : isDraw
+              : isTie
                 ? "text-white/90"
                 : "text-white/60"}`}
         >
@@ -78,9 +78,9 @@ export function VoteBar({
         <div className="text-right shrink-0 min-w-[52px]">
           <span
             className={`font-mono text-sm font-bold tabular-nums
-              ${isLeader && !isDraw
+              ${isLeader && !isTie
                 ? "text-gold"
-                : isDraw
+                : isTie
                   ? "text-sky-400"
                   : "text-white/40"}`}
           >
@@ -88,9 +88,9 @@ export function VoteBar({
           </span>
           <span
             className={`font-mono text-[10px] ml-1.5
-              ${isLeader && !isDraw
+              ${isLeader && !isTie
                 ? "text-gold/50"
-                : isDraw
+                : isTie
                   ? "text-sky-400/50"
                   : "text-white/20"}`}
           >
@@ -98,12 +98,12 @@ export function VoteBar({
           </span>
         </div>
 
-        {/* Draw indicator */}
-        {isDraw && candidate.votes > 0 && (
+        {/* Tie indicator */}
+        {isTie && candidate.votes > 0 && (
           <span className="text-sky-400 text-xs ml-1 shrink-0 font-mono font-bold">=</span>
         )}
         {/* Leader crown */}
-        {isLeader && !isDraw && candidate.votes > 0 && (
+        {isLeader && !isTie && candidate.votes > 0 && (
           <span className="text-gold text-xs ml-1 shrink-0">★</span>
         )}
       </div>

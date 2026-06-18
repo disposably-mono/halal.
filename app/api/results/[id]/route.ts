@@ -92,11 +92,20 @@ export async function GET(
 
   const positionResults = positions.map((pos) => {
     const abstentions = positionAbstentions.get(pos.id) ?? 0;
-    const candidates = pos.candidates.map((c) => ({
+    const candidatesWithVotes = pos.candidates.map((c) => ({
       id: c.id,
       fullName: c.fullName,
       gradeLevel: c.gradeLevel,
       votes: candidateVoteCounts.get(c.id) ?? 0,
+    }));
+    const maxVotes = candidatesWithVotes.reduce((m, c) => Math.max(m, c.votes), 0);
+    const tiedTopCount = candidatesWithVotes.filter(
+      (c) => c.votes > 0 && c.votes === maxVotes,
+    ).length;
+    const candidates = candidatesWithVotes.map((c) => ({
+      ...c,
+      isWinner: c.votes > 0 && c.votes === maxVotes,
+      isTie: tiedTopCount > 1 && c.votes === maxVotes,
     }));
     const totalCandidateVotes = candidates.reduce((s, c) => s + c.votes, 0);
 

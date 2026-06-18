@@ -42,6 +42,7 @@ describe("computePositionTally", () => {
     expect(result.candidates.find((c) => c.id === "c1")?.isWinner).toBe(true);
     expect(result.candidates.find((c) => c.id === "c2")?.isWinner).toBe(false);
     expect(result.candidates.find((c) => c.id === "c3")?.isWinner).toBe(false);
+    expect(result.candidates.every((c) => c.isTie === false)).toBe(true);
     expect(result.maxVotes).toBe(10);
     expect(result.totalVotesCast).toBe(14);
     expect(result.abstentions).toBe(0);
@@ -58,6 +59,11 @@ describe("computePositionTally", () => {
       "c1",
       "c2",
     ]);
+    expect(result.candidates.filter((c) => c.isTie).map((c) => c.id)).toEqual([
+      "c1",
+      "c2",
+    ]);
+    expect(result.candidates.find((c) => c.id === "c3")?.isTie).toBe(false);
     expect(result.maxVotes).toBe(5);
   });
 
@@ -65,6 +71,7 @@ describe("computePositionTally", () => {
     const map = new Map<string, number>();
     const result = computePositionTally(candidates, map, 7);
     expect(result.candidates.every((c) => c.isWinner === false)).toBe(true);
+    expect(result.candidates.every((c) => c.isTie === false)).toBe(true);
     expect(result.maxVotes).toBe(0);
     expect(result.abstentions).toBe(7);
   });

@@ -12,6 +12,7 @@ export default function AdminLoginPage() {
   const [officerKey, setOfficerKey] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const hasError = error.length > 0;
 
   function handleStep1(e: React.FormEvent) {
     e.preventDefault();
@@ -36,8 +37,6 @@ export default function AdminLoginPage() {
 
     if (result?.error) {
       setError("Invalid credentials or officer key. Please try again.");
-      setStep(1);
-      setPassword("");
       setOfficerKey("");
     } else {
       router.push("/admin");
@@ -93,10 +92,14 @@ export default function AdminLoginPage() {
             {step === 1 ? (
               <form onSubmit={handleStep1} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/30">
+                  <label
+                    htmlFor="admin-email"
+                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/30"
+                  >
                     Email
                   </label>
                   <input
+                    id="admin-email"
                     type="email"
                     placeholder="comelec@olps.edu.ph"
                     value={email}
@@ -107,10 +110,14 @@ export default function AdminLoginPage() {
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/30">
+                  <label
+                    htmlFor="admin-password"
+                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/30"
+                  >
                     Password
                   </label>
                   <input
+                    id="admin-password"
                     type="password"
                     placeholder="••••••••"
                     value={password}
@@ -129,22 +136,32 @@ export default function AdminLoginPage() {
             ) : (
               <form onSubmit={handleStep2} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                  <label className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/30">
+                  <label
+                    htmlFor="admin-officer-key"
+                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/30"
+                  >
                     Officer Key
                   </label>
                   <input
+                    id="admin-officer-key"
                     type="password"
                     placeholder="Enter your officer key"
                     value={officerKey}
                     onChange={(e) => setOfficerKey(e.target.value)}
                     required
                     autoFocus
+                    aria-invalid={hasError}
+                    aria-describedby={hasError ? "admin-login-error" : undefined}
                     className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/25 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04]"
                   />
                 </div>
 
                 {error && (
-                  <div className="rounded-lg border border-red-500/20 bg-red-500/[0.10] px-3 py-2.5 text-[12px] text-red-400">
+                  <div
+                    id="admin-login-error"
+                    role="alert"
+                    className="rounded-lg border border-red-500/20 bg-red-500/[0.10] px-3 py-2.5 text-[12px] text-red-400"
+                  >
                     {error}
                   </div>
                 )}
