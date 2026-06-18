@@ -143,6 +143,21 @@ const HIGHLIGHTS = [
   },
 ];
 
+const PAGE_BACKGROUND = {
+  backgroundColor: "#0d0f2b",
+  backgroundImage: [
+    "radial-gradient(circle at 50% 18%, rgba(27,31,94,0.55) 0%, transparent 36rem)",
+    "radial-gradient(circle at 12% 52%, rgba(107,26,26,0.18) 0%, transparent 28rem)",
+    "radial-gradient(circle at 88% 78%, rgba(245,192,0,0.06) 0%, transparent 24rem)",
+    "repeating-linear-gradient(135deg, transparent 0 34rem, rgba(107,26,26,0.18) 34rem 38rem, transparent 38rem 72rem)",
+    "repeating-linear-gradient(135deg, transparent 0 50rem, rgba(27,31,94,0.26) 50rem 54rem, transparent 54rem 96rem)",
+    "linear-gradient(rgba(245,192,0,0.035) 1px, transparent 1px)",
+    "linear-gradient(90deg, rgba(245,192,0,0.035) 1px, transparent 1px)",
+  ].join(", "),
+  backgroundSize: "auto, auto, auto, auto, auto, 48px 48px, 48px 48px",
+  backgroundAttachment: "fixed",
+};
+
 // ── Decorative SVGs ──────────────────────────────────────────────
 
 function HeroRibbons() {
@@ -211,7 +226,7 @@ export default function AboutCreatorClient() {
   return (
     <div
       className="min-h-screen font-body text-white overflow-x-hidden"
-      style={{ background: "#0d0f2b" }}
+      style={PAGE_BACKGROUND}
     >
       {/* ── NAV ──────────────────────────────────────────── */}
       <nav
@@ -427,7 +442,7 @@ export default function AboutCreatorClient() {
           {HIGHLIGHTS.map((h) => (
             <div
               key={h.num}
-              className="relative overflow-hidden group transition-all duration-250"
+              className="relative overflow-hidden group transition-all duration-[250ms]"
               style={{
                 padding: "1.75rem 1.5rem",
                 border: "1px solid rgba(255,255,255,0.07)",
@@ -448,7 +463,7 @@ export default function AboutCreatorClient() {
               }}
             >
               <div
-                className="card-accent absolute left-0 top-3 bottom-3 w-0.5 rounded-full transition-opacity duration-250"
+                className="card-accent absolute left-0 top-3 bottom-3 w-0.5 rounded-full transition-opacity duration-[250ms]"
                 style={{ background: "#F5C000", opacity: 0 }}
               />
               <p className="font-mono text-[0.65rem] mb-2" style={{ color: "rgba(245,192,0,0.45)" }}>

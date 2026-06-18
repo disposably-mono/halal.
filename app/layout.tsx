@@ -48,7 +48,7 @@ const courierPrime = Courier_Prime({
   variable: "--font-courier-prime",
 });
 export const metadata: Metadata = {
-  title: "halal. — OLPS COMELEC",
+  title: "halal. OLPS COMELEC",
   description: "VOX POPULI VOX DEI",
 };
 export default function RootLayout({

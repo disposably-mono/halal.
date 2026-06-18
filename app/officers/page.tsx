@@ -66,6 +66,21 @@ function groupOfficers(officers: Officer[]) {
   };
 }
 
+const PAGE_BACKGROUND = {
+  backgroundColor: "#0d0f2b",
+  backgroundImage: [
+    "radial-gradient(circle at 50% 18%, rgba(27,31,94,0.55) 0%, transparent 36rem)",
+    "radial-gradient(circle at 12% 52%, rgba(107,26,26,0.18) 0%, transparent 28rem)",
+    "radial-gradient(circle at 88% 78%, rgba(245,192,0,0.06) 0%, transparent 24rem)",
+    "repeating-linear-gradient(135deg, transparent 0 34rem, rgba(107,26,26,0.18) 34rem 38rem, transparent 38rem 72rem)",
+    "repeating-linear-gradient(135deg, transparent 0 50rem, rgba(27,31,94,0.26) 50rem 54rem, transparent 54rem 96rem)",
+    "linear-gradient(rgba(245,192,0,0.035) 1px, transparent 1px)",
+    "linear-gradient(90deg, rgba(245,192,0,0.035) 1px, transparent 1px)",
+  ].join(", "),
+  backgroundSize: "auto, auto, auto, auto, auto, 48px 48px, 48px 48px",
+  backgroundAttachment: "fixed",
+};
+
 // ── Decorative SVGs ──────────────────────────────────────────────
 
 function HeroRibbons() {
@@ -139,7 +154,7 @@ function OfficerCard({ officer, past = false }: { officer: Officer; past?: boole
   return (
     <div
       className={`relative flex flex-col border rounded-sm overflow-hidden transition-all duration-300 group
-        ${isFeatured ? "border-gold/30 bg-navy/50" : "border-white/8 bg-navy/25 hover:border-gold/20"}
+        ${isFeatured ? "border-gold/30 bg-navy/50" : "border-white/[0.08] bg-navy/25 hover:border-gold/20"}
         ${past ? "opacity-80 hover:opacity-100" : ""}
       `}
     >
@@ -184,7 +199,7 @@ function OfficerCard({ officer, past = false }: { officer: Officer; past?: boole
         )}
 
         {!officer.photo && (
-          <div className="absolute top-2 right-2 border border-gold/20 bg-gold/8 rounded-sm px-1.5 py-0.5">
+          <div className="absolute top-2 right-2 border border-gold/20 bg-gold/[0.08] rounded-sm px-1.5 py-0.5">
             <span className="font-body text-[8px] tracking-[0.15em] uppercase text-gold/50">Pubmat</span>
           </div>
         )}
@@ -200,14 +215,14 @@ function OfficerCard({ officer, past = false }: { officer: Officer; past?: boole
       {/* Info */}
       <div className="p-3 flex flex-col gap-1 flex-1">
         {isFeatured && (
-          <div className="inline-flex items-center self-start border border-gold/20 bg-gold/8 rounded-sm px-1.5 py-0.5 mb-0.5">
+          <div className="inline-flex items-center self-start border border-gold/20 bg-gold/[0.08] rounded-sm px-1.5 py-0.5 mb-0.5">
             <span className="font-body text-[8px] tracking-[0.2em] uppercase text-gold/70">
               {officer.role}
             </span>
           </div>
         )}
         {!isFeatured && (
-          <p className="font-body text-[9px] tracking-[0.18em] uppercase text-gold/55 leading-tight">
+          <p className="font-body text-[9px] tracking-[0.18em] uppercase text-gold/[0.55] leading-tight">
             {officer.role}
           </p>
         )}
@@ -266,7 +281,7 @@ export default function OfficersPage() {
   return (
     <div
       className="min-h-screen font-body text-white overflow-x-hidden"
-      style={{ background: "#0d0f2b" }}
+      style={PAGE_BACKGROUND}
     >
       {/* ── NAV ──────────────────────────────────────────── */}
       <nav

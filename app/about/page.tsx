@@ -80,6 +80,21 @@ const MILESTONES = [
   },
 ];
 
+const PAGE_BACKGROUND = {
+  backgroundColor: "#0d0f2b",
+  backgroundImage: [
+    "radial-gradient(circle at 50% 18%, rgba(27,31,94,0.55) 0%, transparent 36rem)",
+    "radial-gradient(circle at 12% 52%, rgba(107,26,26,0.18) 0%, transparent 28rem)",
+    "radial-gradient(circle at 88% 78%, rgba(245,192,0,0.06) 0%, transparent 24rem)",
+    "repeating-linear-gradient(135deg, transparent 0 34rem, rgba(107,26,26,0.18) 34rem 38rem, transparent 38rem 72rem)",
+    "repeating-linear-gradient(135deg, transparent 0 50rem, rgba(27,31,94,0.26) 50rem 54rem, transparent 54rem 96rem)",
+    "linear-gradient(rgba(245,192,0,0.035) 1px, transparent 1px)",
+    "linear-gradient(90deg, rgba(245,192,0,0.035) 1px, transparent 1px)",
+  ].join(", "),
+  backgroundSize: "auto, auto, auto, auto, auto, 48px 48px, 48px 48px",
+  backgroundAttachment: "fixed",
+};
+
 // ── Decorative SVGs ──────────────────────────────────────────────
 
 function HeroRibbons() {
@@ -205,7 +220,7 @@ export default function AboutComelecClient() {
   return (
     <div
       className="min-h-screen font-body text-white overflow-x-hidden"
-      style={{ background: "#0d0f2b" }}
+      style={PAGE_BACKGROUND}
     >
       {/* ── NAV ──────────────────────────────────────────── */}
       <nav
@@ -285,7 +300,7 @@ export default function AboutComelecClient() {
             <div className="w-8 h-px bg-gold opacity-50" />
           </div>
 
-          <p className="font-tagline text-[0.9rem] italic mb-3 tracking-[0.2em] text-gold/65">
+          <p className="font-tagline text-[0.9rem] italic mb-3 tracking-[0.2em] text-gold/[0.65]">
             VOX POPULI VOX DEI
           </p>
 
@@ -404,7 +419,7 @@ export default function AboutComelecClient() {
           {PRINCIPLES.map((p) => (
             <div
               key={p.num}
-              className="text-center transition-all duration-250 hover:-translate-y-1"
+              className="text-center transition-all duration-[250ms] hover:-translate-y-1"
               style={{
                 padding: "1.75rem 1.25rem",
                 border: "1px solid rgba(245,192,0,0.1)",

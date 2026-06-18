@@ -17,6 +17,21 @@ interface Props {
   countdownTarget: CountdownTarget | null;
 }
 
+const PAGE_BACKGROUND = {
+  backgroundColor: "#0f1235",
+  backgroundImage: [
+    "radial-gradient(circle at 50% 18%, rgba(27,31,94,0.55) 0%, transparent 36rem)",
+    "radial-gradient(circle at 12% 52%, rgba(107,26,26,0.18) 0%, transparent 28rem)",
+    "radial-gradient(circle at 88% 78%, rgba(245,192,0,0.06) 0%, transparent 24rem)",
+    "repeating-linear-gradient(135deg, transparent 0 34rem, rgba(107,26,26,0.18) 34rem 38rem, transparent 38rem 72rem)",
+    "repeating-linear-gradient(135deg, transparent 0 50rem, rgba(27,31,94,0.26) 50rem 54rem, transparent 54rem 96rem)",
+    "linear-gradient(rgba(245,192,0,0.035) 1px, transparent 1px)",
+    "linear-gradient(90deg, rgba(245,192,0,0.035) 1px, transparent 1px)",
+  ].join(", "),
+  backgroundSize: "auto, auto, auto, auto, auto, 48px 48px, 48px 48px",
+  backgroundAttachment: "fixed",
+};
+
 export default function LandingClient({ divisionCards, countdownTarget }: Props) {
   const countdown = useCountdown(
     countdownTarget?.status === "SCHEDULED" ? countdownTarget.date : null
@@ -31,7 +46,7 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
   }, []);
 
   return (
-    <div className="min-h-screen bg-navy-deep text-white overflow-x-hidden">
+    <div className="min-h-screen text-white overflow-x-hidden" style={PAGE_BACKGROUND}>
       <LandingNav />
 
       {/* ── HERO ──────────────────────────────────────────────────── */}
