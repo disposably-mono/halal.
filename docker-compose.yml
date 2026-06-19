@@ -4,9 +4,9 @@ services:
     container_name: halal_db
     restart: unless-stopped
     environment:
-      POSTGRES_USER: halal.
+      POSTGRES_USER: ${DB_USER:-halal}
       POSTGRES_PASSWORD: ${DB_PASSWORD}
-      POSTGRES_DB: halal_db
+      POSTGRES_DB: ${DB_NAME:-halal_db}
     ports:
       - "5432:5432"
     volumes:
