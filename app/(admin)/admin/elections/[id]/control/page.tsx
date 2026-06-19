@@ -70,6 +70,8 @@ export default async function ControlPage({ params }: PageProps) {
         <ElectionSubNav
           electionId={election.id}
           status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"}
+          candidatesFinalized={election.candidatesFinalized}
+          votersFinalized={election.votersFinalized}
         />
       </nav>
 

@@ -106,11 +106,11 @@ export function RowActions({
             style={{ position: "fixed", top: coords.top, left: coords.left, width: MENU_WIDTH }}
             className="z-50 overflow-hidden rounded-[8px] border border-white/[0.10] bg-[#1a2540] py-1 shadow-xl"
           >
-            <Link role="menuitem" href={`/admin/elections/${e.id}/voters`} className={itemCls}>
-              Voters
-            </Link>
             <Link role="menuitem" href={`/admin/elections/${e.id}/candidates`} className={itemCls}>
               Candidates
+            </Link>
+            <Link role="menuitem" href={`/admin/elections/${e.id}/voters`} className={itemCls}>
+              Voters
             </Link>
             {(e.status === "OPEN" || e.status === "CLOSED") && (
               <Link role="menuitem" href={`/admin/elections/${e.id}/monitor`} className={itemCls}>

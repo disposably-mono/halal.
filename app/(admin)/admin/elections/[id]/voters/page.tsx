@@ -9,6 +9,7 @@ import {
   FinalizeButton,
   ElectionSubNav,
   SetupStepper,
+  SetupNextStep,
 } from "@/components/admin/ui";
 import { CSVUploadForm, ManualAddForm } from "./VoterForms";
 import { finalizeVoters, unfinalizeVoters, removeVoterById } from "./actions";
@@ -65,6 +66,8 @@ export default async function VotersPage({ params }: { params: { id: string } })
         <ElectionSubNav
           electionId={election.id}
           status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"}
+          candidatesFinalized={election.candidatesFinalized}
+          votersFinalized={election.votersFinalized}
         />
       </nav>
 
@@ -96,6 +99,24 @@ export default async function VotersPage({ params }: { params: { id: string } })
           electionId={election.id}
           canUnlock={canUnlock}
         />
+
+        {election.status === "DRAFT" && election.votersFinalized && election.candidatesFinalized && (
+          <SetupNextStep
+            href={`/admin/elections/${election.id}/control`}
+            title="Election content is ready"
+            description="Review the schedule and launch settings before publishing."
+            label="Continue to Control"
+          />
+        )}
+
+        {election.status === "DRAFT" && election.votersFinalized && !election.candidatesFinalized && (
+          <SetupNextStep
+            href={`/admin/elections/${election.id}/candidates`}
+            title="Candidate setup still needs attention"
+            description="Lock the candidate list before moving to election control."
+            label="Review Candidates"
+          />
+        )}
 
         {canManageVoters && !election.votersFinalized && (
           <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">

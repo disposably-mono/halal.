@@ -16,6 +16,7 @@ export default async function MonitorPage({ params }: { params: { id: string } }
     where: { id: params.id },
     select: {
       id: true, name: true, division: true, status: true,
+      candidatesFinalized: true, votersFinalized: true,
     },
   });
 
@@ -41,6 +42,8 @@ export default async function MonitorPage({ params }: { params: { id: string } }
         <ElectionSubNav
           electionId={election.id}
           status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"}
+          candidatesFinalized={election.candidatesFinalized}
+          votersFinalized={election.votersFinalized}
         />
       </nav>
 

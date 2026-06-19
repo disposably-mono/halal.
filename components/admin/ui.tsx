@@ -150,48 +150,44 @@ export function FlowTrack({ status }: { status: Status }) {
 export function ElectionSubNav({
   electionId,
   status,
+  candidatesFinalized,
+  votersFinalized,
 }: {
   electionId: string;
   status: Status;
+  candidatesFinalized: boolean;
+  votersFinalized: boolean;
 }) {
   const pathname = usePathname();
   const base = `/admin/elections/${electionId}`;
 
   const tabs = [
     {
-      href: `${base}/voters`,
-      label: "Voters",
-      icon: (
-        <svg style={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
-          <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-        </svg>
-      ),
+      href: `${base}/candidates`,
+      label: "Candidates",
+      step: 1,
+      done: candidatesFinalized,
       disabled: false,
     },
     {
-      href: `${base}/candidates`,
-      label: "Candidates",
-      icon: (
-        <svg style={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
-        </svg>
-      ),
+      href: `${base}/voters`,
+      label: "Voters",
+      step: 2,
+      done: votersFinalized,
       disabled: false,
     },
     {
       href: `${base}/control`,
       label: "Control",
-      icon: (
-        <svg style={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-          <circle cx="12" cy="12" r="3" /><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14" />
-        </svg>
-      ),
+      step: 3,
+      done: status !== "DRAFT",
       disabled: false,
     },
     {
       href: `${base}/monitor`,
       label: "Monitor",
+      step: null,
+      done: false,
       icon: (
         <svg style={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
@@ -202,18 +198,29 @@ export function ElectionSubNav({
   ];
 
   return (
-    <div className="border-b border-white/[0.06] bg-[#0f1928]">
-      <div className="mx-auto flex h-[38px] max-w-7xl items-center gap-[2px] px-6">
+    <div className="overflow-x-auto border-b border-white/[0.06] bg-[#0f1928]">
+      <div className="mx-auto flex h-[42px] min-w-max max-w-7xl items-center gap-1 px-4 sm:px-6" aria-label="Election setup navigation">
         {tabs.map((tab) => {
           const isActive = pathname.startsWith(tab.href);
+          const marker = tab.step ? (
+            <span className={`flex h-[17px] w-[17px] items-center justify-center rounded-full border text-[9px] font-bold ${tab.done
+              ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-400"
+              : isActive
+                ? "border-amber-400/40 bg-amber-400/10 text-amber-400"
+                : "border-white/[0.12] text-white/35"
+              }`}>
+              {tab.done ? "✓" : tab.step}
+            </span>
+          ) : tab.icon;
+
           if (tab.disabled) {
             return (
               <span
                 key={tab.label}
-                className="flex items-center gap-[5px] px-[10px] py-[5px] text-[11px] text-white/30 cursor-not-allowed select-none"
-                title={`Available when election is Open`}
+                className="ml-2 flex cursor-not-allowed select-none items-center gap-[5px] border-l border-white/[0.08] px-[12px] py-[5px] text-[11px] text-white/25"
+                title="Available once the election opens"
               >
-                {tab.icon}
+                {marker}
                 {tab.label}
               </span>
             );
@@ -222,7 +229,7 @@ export function ElectionSubNav({
             <Link
               key={tab.label}
               href={tab.href}
-              className={`flex items-center gap-[5px] px-[10px] py-[5px] text-[11px] rounded-[5px] transition-all no-underline relative ${isActive
+              className={`relative flex items-center gap-[6px] rounded-[6px] px-[10px] py-[6px] text-[11px] no-underline transition-all ${tab.step === null ? "ml-2 border-l border-white/[0.08] pl-[14px]" : ""} ${isActive
                 ? "text-white/90 bg-white/[0.06]"
                 : "text-white/50 hover:text-white/70 hover:bg-white/[0.03]"
                 }`}
@@ -230,8 +237,11 @@ export function ElectionSubNav({
               {isActive && (
                 <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-amber-400 rounded-t-[2px]" />
               )}
-              {tab.icon}
+              {marker}
               {tab.label}
+              {tab.step && tab.step < 3 && (
+                <span className="ml-1 text-white/[0.12]">›</span>
+              )}
             </Link>
           );
         })}
@@ -256,7 +266,7 @@ export function SetupStepper({
   const steps = [
     { label: "Candidates", done: candidatesFinalized },
     { label: "Voters", done: votersFinalized },
-    { label: "Launch", done: electionLaunched },
+    { label: "Control", done: electionLaunched },
   ];
 
   const firstIncomplete = steps.findIndex((s) => !s.done);
@@ -295,6 +305,33 @@ export function SetupStepper({
           </div>
         );
       })}
+    </div>
+  );
+}
+
+export function SetupNextStep({
+  href,
+  title,
+  description,
+  label,
+}: {
+  href: string;
+  title: string;
+  description: string;
+  label: string;
+}) {
+  return (
+    <div className="flex flex-col gap-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.05] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div>
+        <p className="text-[12px] font-semibold text-white/80">{title}</p>
+        <p className="mt-0.5 text-[10px] text-white/40">{description}</p>
+      </div>
+      <Button asChild variant="adminPrimary" size="adminMd" className="shrink-0">
+        <Link href={href}>
+          {label}
+          <span aria-hidden="true">→</span>
+        </Link>
+      </Button>
     </div>
   );
 }

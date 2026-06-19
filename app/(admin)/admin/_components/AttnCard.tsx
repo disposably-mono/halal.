@@ -87,12 +87,12 @@ export function AttnCard({ e }: { e: Election }) {
             Needs setup
           </div>
           <div className="flex flex-col gap-[5px]">
-            <CheckRow done={e._count.voters > 0} yes={`${e._count.voters} voters added`} no="Add voters" />
             <CheckRow done={e._count.positions > 0} yes="Candidates set" no="Add candidates" />
+            <CheckRow done={e._count.voters > 0} yes={`${e._count.voters} voters added`} no="Add voters" />
           </div>
           <div className="grid grid-cols-2 gap-[5px] border-t border-white/[0.07] pt-2">
-            <AttnBtn href={`/admin/elections/${e.id}/voters`} label="Voters" />
             <AttnBtn href={`/admin/elections/${e.id}/candidates`} label="Candidates" />
+            <AttnBtn href={`/admin/elections/${e.id}/voters`} label="Voters" />
             <AttnBtn href={`/admin/elections/${e.id}/control`} label="⚡ Control" primary />
           </div>
         </>

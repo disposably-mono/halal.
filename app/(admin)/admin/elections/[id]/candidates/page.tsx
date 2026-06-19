@@ -13,6 +13,7 @@ import {
   FinalizeButton,
   ElectionSubNav,
   SetupStepper,
+  SetupNextStep,
 } from "@/components/admin/ui";
 import { ThemedSelect } from "@/components/admin/ThemedSelect";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,8 @@ export default async function CandidatesPage({ params }: { params: { id: string 
         <ElectionSubNav
           electionId={election.id}
           status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"}
+          candidatesFinalized={election.candidatesFinalized}
+          votersFinalized={election.votersFinalized}
         />
       </nav>
 
@@ -118,6 +121,24 @@ export default async function CandidatesPage({ params }: { params: { id: string 
           electionId={election.id}
           canUnlock={canUnlock}
         />
+
+        {isLocked && election.status === "DRAFT" && !election.votersFinalized && (
+          <SetupNextStep
+            href={`/admin/elections/${election.id}/voters`}
+            title="Candidate setup is complete"
+            description="Next, register voters and lock the voter list."
+            label="Continue to Voters"
+          />
+        )}
+
+        {isLocked && election.status === "DRAFT" && election.votersFinalized && (
+          <SetupNextStep
+            href={`/admin/elections/${election.id}/control`}
+            title="Election content is ready"
+            description="Review the schedule and launch settings before publishing."
+            label="Continue to Control"
+          />
+        )}
 
         {/* ── Position management (hidden when locked or read-only role) ── */}
         {canEditCandidates && (
