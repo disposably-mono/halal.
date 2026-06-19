@@ -2,16 +2,37 @@ import bcrypt from "bcryptjs";
 
 export type OfficerKeyCheck = "valid" | "ownOfficerKey" | "officerKey";
 
+export type OfficerKeyMatch =
+  | { result: "valid"; matchIndex: number }
+  | { result: "ownOfficerKey" | "officerKey" };
+
+export async function findDifferentOfficerKeyMatch(
+  submittedKey: string,
+  ownKeyHash: string,
+  otherKeyHashes: string[],
+): Promise<OfficerKeyMatch> {
+  if (await bcrypt.compare(submittedKey, ownKeyHash)) {
+    return { result: "ownOfficerKey" };
+  }
+
+  for (let index = 0; index < otherKeyHashes.length; index += 1) {
+    if (await bcrypt.compare(submittedKey, otherKeyHashes[index])) {
+      return { result: "valid", matchIndex: index };
+    }
+  }
+
+  return { result: "officerKey" };
+}
+
 export async function verifyDifferentOfficerKey(
   submittedKey: string,
   ownKeyHash: string,
   otherKeyHashes: string[],
 ): Promise<OfficerKeyCheck> {
-  if (await bcrypt.compare(submittedKey, ownKeyHash)) return "ownOfficerKey";
-
-  for (const keyHash of otherKeyHashes) {
-    if (await bcrypt.compare(submittedKey, keyHash)) return "valid";
-  }
-
-  return "officerKey";
+  const match = await findDifferentOfficerKeyMatch(
+    submittedKey,
+    ownKeyHash,
+    otherKeyHashes,
+  );
+  return match.result;
 }

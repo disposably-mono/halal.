@@ -18,12 +18,26 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           credentials.password as string,
           credentials.officerKey as string,
         );
-        if (!result.ok) return null;
+        if (!result.ok || !result.verifier) return null;
 
-        await prisma.adminUser.update({
-          where: { id: result.admin.id },
-          data: { lastLogin: new Date() },
-        });
+        const loggedInAt = new Date();
+        await prisma.$transaction([
+          prisma.adminUser.update({
+            where: { id: result.admin.id },
+            data: { lastLogin: loggedInAt },
+          }),
+          prisma.adminLoginHistory.create({
+            data: {
+              officerId: result.admin.id,
+              officerName: result.admin.name,
+              officerEmail: result.admin.email,
+              verifierId: result.verifier.id,
+              verifierName: result.verifier.name,
+              verifierEmail: result.verifier.email,
+              createdAt: loggedInAt,
+            },
+          }),
+        ]);
 
         return {
           id: result.admin.id,

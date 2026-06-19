@@ -1,6 +1,6 @@
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
-import { verifyDifferentOfficerKey } from "@/lib/auth/officer-key";
+import { findDifferentOfficerKeyMatch } from "@/lib/auth/officer-key";
 
 const DUMMY_PASSWORD_HASH =
   "$2b$12$vluSzNas.K9RRXVA9825bOgkOpRXCn1mK7G9A8q1Y3an7O9CrhexC";
@@ -19,6 +19,11 @@ export type AdminCredentialResult =
         email: string;
         name: string;
         role: "SUPERADMIN" | "COMMISSIONER" | "CANVASSER" | "OFFICER";
+      };
+      verifier?: {
+        id: string;
+        email: string;
+        name: string;
       };
     }
   | { ok: false; reason: AdminCredentialFailure };
@@ -52,18 +57,30 @@ export async function checkAdminCredentials(
 
   const otherAdmins = await prisma.adminUser.findMany({
     where: { id: { not: admin.id } },
-    select: { officerKey: true },
+    select: { id: true, email: true, name: true, officerKey: true },
   });
   if (otherAdmins.length === 0) {
     return { ok: false, reason: "noOtherOfficer" };
   }
 
-  const keyCheck = await verifyDifferentOfficerKey(
+  const keyMatch = await findDifferentOfficerKeyMatch(
     officerKey,
     admin.officerKey,
     otherAdmins.map((otherAdmin) => otherAdmin.officerKey),
   );
-  if (keyCheck !== "valid") return { ok: false, reason: keyCheck };
+  if (keyMatch.result !== "valid") {
+    return { ok: false, reason: keyMatch.result };
+  }
 
-  return { ok: true, admin };
+  const verifier = otherAdmins[keyMatch.matchIndex];
+
+  return {
+    ok: true,
+    admin,
+    verifier: {
+      id: verifier.id,
+      email: verifier.email,
+      name: verifier.name,
+    },
+  };
 }

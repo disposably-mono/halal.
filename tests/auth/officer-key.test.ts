@@ -1,6 +1,9 @@
 import { beforeAll, describe, expect, test } from "vitest";
 import bcrypt from "bcryptjs";
-import { verifyDifferentOfficerKey } from "@/lib/auth/officer-key";
+import {
+  findDifferentOfficerKeyMatch,
+  verifyDifferentOfficerKey,
+} from "@/lib/auth/officer-key";
 
 describe("different-officer key verification", () => {
   let ownKeyHash: string;
@@ -17,6 +20,17 @@ describe("different-officer key verification", () => {
     await expect(
       verifyDifferentOfficerKey("officer-two-key", ownKeyHash, [otherKeyHash]),
     ).resolves.toBe("valid");
+  });
+
+  test("identifies which other account supplied the matching key", async () => {
+    const firstOtherKeyHash = await bcrypt.hash("officer-three-key", 4);
+
+    await expect(
+      findDifferentOfficerKeyMatch("officer-two-key", ownKeyHash, [
+        firstOtherKeyHash,
+        otherKeyHash,
+      ]),
+    ).resolves.toEqual({ result: "valid", matchIndex: 1 });
   });
 
   test("rejects the signing-in account's own key", async () => {

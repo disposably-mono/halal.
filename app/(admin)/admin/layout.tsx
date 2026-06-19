@@ -116,6 +116,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
                   <line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
                 </svg>
               } />
+              <ActiveNavItem href="/admin/history" label="History" icon={
+                <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" />
+                  <path d="M3 3v5h5" /><path d="M12 7v5l3 2" />
+                </svg>
+              } />
             </>
           )}
         </nav>

@@ -104,6 +104,19 @@ model AdminUser {
   officerKey   String
 }
 
+model AdminLoginHistory {
+  id            String   @id @default(cuid())
+  officerId     String
+  officerName   String
+  officerEmail  String
+  verifierId    String
+  verifierName  String
+  verifierEmail String
+  createdAt     DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 enum Division {
   GS
   JHS
