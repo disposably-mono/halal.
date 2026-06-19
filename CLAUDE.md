@@ -70,6 +70,8 @@ See your local `.env` (or `.env.example` for the variable names):
 - Email: `$SEED_ADMIN_EMAIL`
 - Password: `$SEED_ADMIN_PASSWORD`
 - Officer Key: `$SEED_ADMIN_OFFICER_KEY`
+- A second bootstrap officer is configured with the matching `SEED_SECOND_ADMIN_*`
+  variables. Login requires an officer key belonging to a different admin account.
 
 ## Architecture Overview
 

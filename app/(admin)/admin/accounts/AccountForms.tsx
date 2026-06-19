@@ -165,7 +165,7 @@ function CreateAdminForm({ onResult }: { onResult: (t: ToastState) => void }) {
           <Field label="Password" hint="Min 8 characters">
             <AdminSecretInput name="password" secretLabel="password" placeholder="••••••••" required />
           </Field>
-          <Field label="Officer key" hint="Min 6 characters — 2FA at login">
+          <Field label="Officer key" hint="Min 6 characters — unique per officer">
             <AdminSecretInput name="officerKey" secretLabel="officer key" placeholder="••••••" required />
           </Field>
         </div>

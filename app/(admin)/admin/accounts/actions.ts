@@ -21,6 +21,21 @@ export type AccountActionResult =
   | { success: true }
   | { success: false; error: string };
 
+async function officerKeyIsInUse(
+  officerKey: string,
+  excludeAdminId?: string,
+): Promise<boolean> {
+  const accounts = await prisma.adminUser.findMany({
+    where: excludeAdminId ? { id: { not: excludeAdminId } } : undefined,
+    select: { officerKey: true },
+  });
+
+  for (const account of accounts) {
+    if (await bcrypt.compare(officerKey, account.officerKey)) return true;
+  }
+  return false;
+}
+
 /**
  * Guards a SUPERADMIN demotion/deletion so the last super-admin can never be
  * removed (which would lock everyone out of account management). The count and
@@ -56,6 +71,13 @@ export async function createAdmin(
   const { email, name, role, password, officerKey } = parsed.data;
   if (!isGrantableRole(role)) {
     return { success: false, error: "Super-admin can no longer be granted." };
+  }
+
+  if (await officerKeyIsInUse(officerKey)) {
+    return {
+      success: false,
+      error: "That officer key is already assigned to another account.",
+    };
   }
 
   const [passwordHash, officerKeyHash] = await Promise.all([
@@ -160,6 +182,13 @@ export async function resetAdminOfficerKey(
     return {
       success: false,
       error: parsed.error.issues[0]?.message ?? "Invalid officer key.",
+    };
+  }
+
+  if (await officerKeyIsInUse(parsed.data.officerKey, parsed.data.adminId)) {
+    return {
+      success: false,
+      error: "That officer key is already assigned to another account.",
     };
   }
 

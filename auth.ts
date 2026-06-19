@@ -1,8 +1,8 @@
 import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { prisma } from "@/lib/prisma";
 import { authConfig } from "@/auth.config";
+import { checkAdminCredentials } from "@/lib/auth/admin-login";
+import { prisma } from "@/lib/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -13,29 +13,23 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const admin = await prisma.adminUser.findUnique({
-          where: { email: credentials.email as string },
+        const result = await checkAdminCredentials(
+          credentials.email as string,
+          credentials.password as string,
+          credentials.officerKey as string,
+        );
+        if (!result.ok) return null;
+
+        await prisma.adminUser.update({
+          where: { id: result.admin.id },
+          data: { lastLogin: new Date() },
         });
 
-        if (!admin) return null;
-
-        const passwordValid = await bcrypt.compare(
-          credentials.password as string,
-          admin.passwordHash
-        );
-        if (!passwordValid) return null;
-
-        const keyValid = await bcrypt.compare(
-          credentials.officerKey as string,
-          admin.officerKey
-        );
-        if (!keyValid) return null;
-
         return {
-          id: admin.id,
-          email: admin.email,
-          name: admin.name,
-          role: admin.role,
+          id: result.admin.id,
+          email: result.admin.email,
+          name: result.admin.name,
+          role: result.admin.role,
         };
       },
     }),

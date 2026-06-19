@@ -4,6 +4,7 @@ import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { SecretInput } from "@/components/ui/secret-input";
+import { verifyAdminCredentials } from "./actions";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -11,33 +12,99 @@ export default function AdminLoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [officerKey, setOfficerKey] = useState("");
-  const [error, setError] = useState("");
+  const [credentialsError, setCredentialsError] = useState("");
+  const [officerKeyError, setOfficerKeyError] = useState("");
   const [loading, setLoading] = useState(false);
-  const hasError = error.length > 0;
+  const [verifying, setVerifying] = useState(false);
+  const hasCredentialsError = credentialsError.length > 0;
+  const hasOfficerKeyError = officerKeyError.length > 0;
 
-  function handleStep1(e: React.FormEvent) {
+  async function handleStep1(e: React.FormEvent) {
     e.preventDefault();
     if (!email || !password) return;
-    setError("");
+    setCredentialsError("");
+    setVerifying(true);
+
+    let result;
+    try {
+      result = await verifyAdminCredentials(email, password);
+    } catch {
+      setCredentialsError("Unable to verify credentials right now. Please try again.");
+      setVerifying(false);
+      return;
+    }
+    setVerifying(false);
+
+    if (!result.ok) {
+      setCredentialsError("Incorrect email or password. Please try again.");
+      return;
+    }
+
+    setOfficerKeyError("");
     setStep(2);
   }
 
   async function handleStep2(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
-    setError("");
+    setOfficerKeyError("");
 
-    const result = await signIn("credentials", {
-      email,
-      password,
-      officerKey,
-      redirect: false,
-    });
+    let credentialCheck;
+    try {
+      credentialCheck = await verifyAdminCredentials(
+        email,
+        password,
+        officerKey,
+      );
+    } catch {
+      setOfficerKeyError("Unable to verify the officer key right now. Please try again.");
+      setLoading(false);
+      return;
+    }
+
+    if (!credentialCheck.ok) {
+      setLoading(false);
+      if (credentialCheck.reason === "primary") {
+        setCredentialsError("Incorrect email or password. Please try again.");
+        setPassword("");
+        setOfficerKey("");
+        setStep(1);
+      } else if (credentialCheck.reason === "ownOfficerKey") {
+        setOfficerKeyError(
+          "You cannot use your own officer key. Ask another COMELEC officer to verify.",
+        );
+        setOfficerKey("");
+      } else if (credentialCheck.reason === "noOtherOfficer") {
+        setOfficerKeyError(
+          "Another admin account is required for officer verification.",
+        );
+      } else {
+        setOfficerKeyError(
+          "That key does not match another COMELEC officer. Please try again.",
+        );
+        setOfficerKey("");
+      }
+      return;
+    }
+
+    let result;
+    try {
+      result = await signIn("credentials", {
+        email,
+        password,
+        officerKey,
+        redirect: false,
+      });
+    } catch {
+      setOfficerKeyError("Sign in could not be completed. Please try again.");
+      setLoading(false);
+      return;
+    }
 
     setLoading(false);
 
     if (result?.error) {
-      setError("Invalid credentials or officer key. Please try again.");
+      setOfficerKeyError("Sign in could not be completed. Please try again.");
       setOfficerKey("");
     } else {
       router.push("/admin");
@@ -84,7 +151,7 @@ export default function AdminLoginPage() {
             <p className="mt-0.5 text-[12px] text-white/40">
               {step === 1
                 ? "Enter your COMELEC admin credentials."
-                : "Enter your unique personal officer key to complete sign in."}
+                : "Ask another COMELEC officer to enter their personal key."}
             </p>
           </div>
 
@@ -104,9 +171,14 @@ export default function AdminLoginPage() {
                     type="email"
                     placeholder="comelec@olps.edu.ph"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      setCredentialsError("");
+                    }}
                     required
                     autoFocus
+                    aria-invalid={hasCredentialsError}
+                    aria-describedby={hasCredentialsError ? "admin-credentials-error" : undefined}
                     className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/35 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
                   />
                 </div>
@@ -122,16 +194,31 @@ export default function AdminLoginPage() {
                     secretLabel="password"
                     placeholder="••••••••"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={(e) => {
+                      setPassword(e.target.value);
+                      setCredentialsError("");
+                    }}
                     required
+                    aria-invalid={hasCredentialsError}
+                    aria-describedby={hasCredentialsError ? "admin-credentials-error" : undefined}
                     className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/35 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
                   />
                 </div>
+                {credentialsError && (
+                  <div
+                    id="admin-credentials-error"
+                    role="alert"
+                    className="rounded-lg border border-red-500/20 bg-red-500/[0.10] px-3 py-2.5 text-[12px] text-red-400"
+                  >
+                    {credentialsError}
+                  </div>
+                )}
                 <button
                   type="submit"
-                  className="mt-1 h-10 w-full rounded-lg bg-amber-400 text-[13px] font-semibold text-[#0b1220] transition-opacity hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2540]"
+                  disabled={verifying}
+                  className="mt-1 h-10 w-full rounded-lg bg-amber-400 text-[13px] font-semibold text-[#0b1220] transition-opacity hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2540] disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Continue →
+                  {verifying ? "Checking…" : "Continue →"}
                 </button>
               </form>
             ) : (
@@ -141,29 +228,32 @@ export default function AdminLoginPage() {
                     htmlFor="admin-officer-key"
                     className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/40"
                   >
-                    Officer Key
+                    Another Officer&apos;s Key
                   </label>
                   <SecretInput
                     id="admin-officer-key"
                     secretLabel="officer key"
                     placeholder="Enter your officer key"
                     value={officerKey}
-                    onChange={(e) => setOfficerKey(e.target.value)}
+                    onChange={(e) => {
+                      setOfficerKey(e.target.value);
+                      setOfficerKeyError("");
+                    }}
                     required
                     autoFocus
-                    aria-invalid={hasError}
-                    aria-describedby={hasError ? "admin-login-error" : undefined}
+                    aria-invalid={hasOfficerKeyError}
+                    aria-describedby={hasOfficerKeyError ? "admin-officer-key-error" : undefined}
                     className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/35 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
                   />
                 </div>
 
-                {error && (
+                {officerKeyError && (
                   <div
-                    id="admin-login-error"
+                    id="admin-officer-key-error"
                     role="alert"
-                    className="rounded-lg border border-red-500/20 bg-red-500/[0.10] px-3 py-2.5 text-[12px] text-red-400"
+                    className="rounded-lg border border-amber-400/20 bg-amber-400/[0.08] px-3 py-2.5 text-[12px] text-amber-300"
                   >
-                    {error}
+                    {officerKeyError}
                   </div>
                 )}
 
@@ -172,7 +262,8 @@ export default function AdminLoginPage() {
                     type="button"
                     onClick={() => {
                       setStep(1);
-                      setError("");
+                      setCredentialsError("");
+                      setOfficerKeyError("");
                       setPassword("");
                       setOfficerKey("");
                     }}
