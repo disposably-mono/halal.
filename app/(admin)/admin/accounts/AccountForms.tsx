@@ -11,7 +11,7 @@ import {
   deleteAdmin,
   type AccountActionResult,
 } from "./actions";
-import { AdminInput, Card, ConfirmDialog, Toast } from "@/components/admin/ui";
+import { AdminInput, AdminSecretInput, Card, ConfirmDialog, Toast } from "@/components/admin/ui";
 import { ThemedSelect } from "@/components/admin/ThemedSelect";
 import { Button } from "@/components/ui/button";
 import { GRANTABLE_ROLES } from "@/lib/auth/permissions";
@@ -163,10 +163,10 @@ function CreateAdminForm({ onResult }: { onResult: (t: ToastState) => void }) {
           </Field>
           <div className="hidden sm:block" />
           <Field label="Password" hint="Min 8 characters">
-            <AdminInput name="password" type="password" placeholder="••••••••" required />
+            <AdminSecretInput name="password" secretLabel="password" placeholder="••••••••" required />
           </Field>
           <Field label="Officer key" hint="Min 6 characters — 2FA at login">
-            <AdminInput name="officerKey" type="password" placeholder="••••••" required />
+            <AdminSecretInput name="officerKey" secretLabel="officer key" placeholder="••••••" required />
           </Field>
         </div>
 
@@ -321,8 +321,8 @@ function AccountRow({
 
         {secretOpen && (
           <div className="mt-2 flex flex-wrap items-center gap-2">
-            <AdminInput
-              type="password"
+            <AdminSecretInput
+              secretLabel={secretOpen === "password" ? "password" : "officer key"}
               autoFocus
               value={secretValue}
               onChange={(e) => setSecretValue(e.target.value)}

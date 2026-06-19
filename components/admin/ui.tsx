@@ -6,6 +6,7 @@ import type { ComponentProps, ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button, type buttonVariants } from "@/components/ui/button";
+import { SecretInput } from "@/components/ui/secret-input";
 import { cn } from "@/lib/utils";
 import type { VariantProps } from "class-variance-authority";
 
@@ -25,6 +26,10 @@ const adminInputClass =
 
 export function AdminInput({ className, ...props }: ComponentProps<"input">) {
   return <input className={cn(adminInputClass, className)} {...props} />;
+}
+
+export function AdminSecretInput({ className, ...props }: ComponentProps<typeof SecretInput>) {
+  return <SecretInput className={cn(adminInputClass, className)} {...props} />;
 }
 
 export function AdminTextarea({ className, ...props }: ComponentProps<"textarea">) {

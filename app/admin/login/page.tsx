@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { SecretInput } from "@/components/ui/secret-input";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -116,9 +117,9 @@ export default function AdminLoginPage() {
                   >
                     Password
                   </label>
-                  <input
+                  <SecretInput
                     id="admin-password"
-                    type="password"
+                    secretLabel="password"
                     placeholder="••••••••"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
@@ -142,9 +143,9 @@ export default function AdminLoginPage() {
                   >
                     Officer Key
                   </label>
-                  <input
+                  <SecretInput
                     id="admin-officer-key"
-                    type="password"
+                    secretLabel="officer key"
                     placeholder="Enter your officer key"
                     value={officerKey}
                     onChange={(e) => setOfficerKey(e.target.value)}
