@@ -27,11 +27,6 @@ export interface ResultsPayload {
   turnout: TurnoutData | null;
 }
 
-export const DIVISION_LABELS: Record<string, string> = {
-  GS: "Grade School",
-  JHS: "Junior High School",
-  SHS: "Senior High School",
-  HC: "House Council",
-};
+export { DIVISION_LABELS } from "@/lib/ui/division-labels";
 
 export const POLL_INTERVAL = 30000;

@@ -27,6 +27,7 @@ const PAGE_BACKGROUND = {
 
 export default async function ResultsPage() {
   const elections = await prisma.election.findMany({
+    where: { archivedAt: null },
     select: {
       id: true,
       name: true,

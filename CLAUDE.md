@@ -43,6 +43,18 @@ npm run lint
 npm run lint -- --fix
 ```
 
+### Testing
+```bash
+# One-shot unit test run (Vitest)
+npm test
+
+# Watch mode
+npm run test:watch
+
+# Coverage report (HTML in ./coverage/, 80% threshold enforced)
+npm run test:coverage
+```
+
 ### Build & Production
 ```bash
 # Build for production
@@ -82,27 +94,42 @@ Next.js 14 (Full Stack)
 - **Anonymity:** `Vote` model has no `Voter` foreign key (DB-level privacy)
 
 ### Next.js 14 App Router Structure
+The admin panel lives in a `(admin)` route group so it gets its own chrome
+(`app/(admin)/admin/layout.tsx`) without affecting public routes. Most client
+pages are decomposed into colocated `_components/` directories plus a thin
+`*Client.tsx` shell. The legacy `app/admin/login/page.tsx` is the only page still
+outside the route group.
+
 ```
 app/
-├── layout.tsx                 # Root layout with fonts & providers
-├── page.tsx                   # Public homepage
-├── globals.css                # Tailwind + design tokens
-├── admin/                     # Admin panel (protected by middleware)
-│   ├── login/page.tsx        # 2FA login form
-├── (admin)/admin/             # Authenticated admin app
-│   ├── page.tsx              # Dashboard (elections list)
-│   ├── results/page.tsx      # Admin results summary
-│   └── elections/[id]/       # Candidates, voters, control, monitor
-├── vote/                      # Voter login, ballot, confirmation
-├── results/                   # Public embargoed/final results
-├── officers/                  # Officer-facing info page
-├── about/                     # Public about page
-├── api/
-│   ├── auth/[...nextauth]/route.ts  # NextAuth handler
-│   ├── results/[id]/route.ts        # Public/admin JSON result payload
-│   ├── elections/[id]/results-pdf/route.ts
-│   ├── elections/[id]/voters/export/route.ts
-│   └── cron/transition-elections/route.ts
+├── layout.tsx                      # Root layout with fonts & providers
+├── page.tsx                        # Public homepage (division status cards)
+├── globals.css                     # Tailwind + design tokens
+├── about/ creator/ officers/       # Public info pages
+├── results/                        # Public results (embargoed until CLOSED)
+│   ├── page.tsx · ResultsClient.tsx · _components/
+├── vote/                           # Voter-facing flow
+│   ├── actions.ts                  # validateCode / submitBallot
+│   ├── ballot/ (BallotClient + _components/) · confirmed/
+├── admin/login/page.tsx            # 2FA login form (outside route group)
+├── (admin)/admin/                  # Protected admin panel (middleware)
+│   ├── layout.tsx                  # Topbar + sidebar chrome
+│   ├── page.tsx · DashboardClient.tsx · _components/   # Dashboard + archive
+│   ├── actions.ts                  # updateElectionStatus / archive / restore
+│   ├── candidates/ voters/ results/ # Global cross-election admin views
+│   └── elections/
+│       ├── new/ (page.tsx + actions.ts)        # createElection()
+│       └── [id]/
+│           ├── candidates/ (page + actions)    # Position/candidate CRUD
+│           ├── voters/ (page + VoterForms + actions)  # CSV import + controls
+│           ├── control/ (ControlClient + actions)     # Status transitions + archive
+│           └── monitor/ (MonitorClient + _components/) # Live tally (polling)
+└── api/
+    ├── auth/[...nextauth]/route.ts             # NextAuth handler
+    ├── results/[id]/route.ts                   # Tally API (admin + public)
+    ├── elections/[id]/voters/export/route.ts   # CSV export
+    ├── elections/[id]/results-pdf/route.ts     # PDF export
+    └── cron/transition-elections/route.ts      # Scheduled open/close
 ```
 
 ### Authentication Flow
@@ -131,6 +158,10 @@ app/
     server action pre-checks vote count and short-circuits before the DB rejects.
 - **Anonymous Voting:** `Vote` intentionally lacks `voterId` to guarantee anonymity; linked only via `electionId` + implicit `voterCode` consumption
 - **Control Number Format:** `YYGGSNNN` (e.g., `2611A001`) - year, grade, section, student number
+- **Archiving:** `Election.archivedAt` / `archivedBy` are an orthogonal soft-retire flag,
+  independent of `status`. Archived elections are hidden from the active dashboard and from
+  public results, but remain in the DB and are restorable. Never conflate archive with the
+  status lifecycle.
 
 ### Server Actions Pattern
 - Located in `app/.../actions.ts` files adjacent to the UI they serve
@@ -200,8 +231,17 @@ Enter Code → Validate → Generate Ballot → Select → Review → Submit
 ### Data Layer
 - `lib/prisma.ts` - Global PrismaClient singleton with PostgreSQL adapter
 - `prisma.config.ts` - Prisma config for TypeScript
+- `lib/api/results-types.ts` - Shared wire types for the results API
+
+### Domain Logic (pure, unit-tested — `tests/domain/`)
+- `lib/domain/election-state.ts` - Status-transition + archive/restore guards (`canArchive`, `canRestore`, …)
+- `lib/domain/control-number.ts` - Control-number parse/validate
+- `lib/domain/ballot.ts` - Grade-filtered ballot construction
+- `lib/domain/tally.ts` - Vote tallying
+- `lib/domain/voter-import.ts` - CSV parsing for voter import
 
 ### Server Actions (Backend Logic)
+- `app/(admin)/admin/actions.ts` - Election status, archive, and restore actions
 - `app/(admin)/admin/elections/new/actions.ts` - `createElection()`
 - `app/(admin)/admin/elections/[id]/candidates/actions.ts` - Candidate CRUD
 - `app/(admin)/admin/elections/[id]/voters/actions.ts` - Voter import + control number generation
@@ -210,11 +250,12 @@ Enter Code → Validate → Generate Ballot → Select → Review → Submit
 - `app/vote/ballot/actions.ts` - Atomic ballot submission
 - `app/api/cron/transition-elections/route.ts` - Scheduled status transitions
 - `app/api/auth/[...nextauth]/route.ts` - NextAuth route handler
+- `app/api/results/[id]/route.ts` - Tally API (admin + public, archive-aware)
 - `app/api/elections/[id]/voters/export/route.ts` - CSV export
 
 ### Frontend Pages
 - `app/admin/login/page.tsx` - Admin 2FA login form
-- `app/(admin)/admin/page.tsx` - Dashboard (elections list)
+- `app/(admin)/admin/page.tsx` - Dashboard (active and archived elections)
 - `app/(admin)/admin/elections/new/page.tsx` - Create election form
 - `app/(admin)/admin/elections/[id]/candidates/page.tsx` - Manage candidates for an election
 - `app/(admin)/admin/elections/[id]/voters/page.tsx` - Import voters, generate control numbers
@@ -225,17 +266,14 @@ Enter Code → Validate → Generate Ballot → Select → Review → Submit
 - `app/page.tsx` - Public homepage
 - `app/layout.tsx` - Root layout with fonts
 
-### UI Components (shadcn/ui)
-- `components/ui/button.tsx`
-- `components/ui/input.tsx`
-- `components/ui/card.tsx`
-- `components/ui/badge.tsx`
-- `components/ui/table.tsx`
-- `components/ui/tabs.tsx`
-- `components/ui/dialog.tsx`
+### Shared UI Components
+- `components/ui/*.tsx` - shadcn/ui primitives (button, input, card, badge, table, tabs, dialog)
+- `components/admin/ui.tsx` - Admin-specific primitives: `Card`, `StatusPill`, `ConfirmDialog`, `Toast`, `FlowTrack`, admin form inputs, etc.
+- `app/(admin)/admin/_components/` - Dashboard pieces: `ElectionRow`, `RowActions` (portalled overflow menu), `ArchivedSection`, `AttnCard`, `StatusPill` (re-export)
 
 ### Constants & Business Logic
 - `lib/elections/constants.ts` - `DIVISION_POSITIONS`, `DIVISION_GRADE_RANGE`
+- `lib/ui/division-labels.ts` - Shared `DIVISION_LABELS` / `DIVISION_ORDER` (single source)
 - `lib/utils.ts` - `cn()` helper for Tailwind class merging
 
 ## Design System
@@ -288,6 +326,11 @@ DRAFT → SCHEDULED → OPEN → CLOSED
 - **SCHEDULED:** Future election with scheduled open/close times; voters still cannot vote
 - **OPEN:** Active voting period; ballots available; results hidden from public
 - **CLOSED:** Voting ended; public results released; admin sees full data
+- **Archived (orthogonal):** `archivedAt`/`archivedBy` flag, independent of status. Only
+  `DRAFT` and `CLOSED` elections can be archived (`OPEN`/`SCHEDULED` are blocked by
+  `canArchive`). Archive/restore is available from the dashboard row overflow menu and the
+  Control page, writes an `AuditLog` entry, and hides the election from the active dashboard
+  and public results.
 
 ### AdminUser Model
 - `email`: Unique, used for login
@@ -374,11 +417,17 @@ Volume: halal_pgdata (persists between restarts)
 - Scheduled open/close transitions run through the cron endpoint
 
 ### Gotchas & Pitfalls
-- **Prisma Client reload:** Changes to schema require `npx prisma generate` before TypeScript recognizes new fields
+- **Prisma Client reload:** Changes to schema require `npx prisma generate` before TypeScript
+  recognizes new fields (e.g. after the `archivedAt` migration).
 - **Middleware path matching:** `middleware.ts` only protects `/admin/*`; public pages need no auth
 - **Anonymous voting:** Cannot trace votes back to voters by design; audits rely on `voterCode` consumption flag
 - **Division inference:** When parsing control numbers, ensure grade falls within known ranges; reject invalid
 - **Server Actions:** Must be colocated in `app/` directory (cannot import from `src/` or elsewhere)
+- **Portalled menus:** The dashboard row overflow menu (`RowActions`) renders via a `createPortal`
+  to `document.body` with fixed positioning — the `All Elections` card uses `overflow-hidden`, so an
+  in-flow absolute menu would be clipped. Keep dropdowns/popovers portalled inside that card.
+- **Archive vs status:** Archiving is orthogonal to the status lifecycle — filter on `archivedAt`
+  where you want only active elections; don't add an `ARCHIVED` status.
 
 ### Codebase Conventions
 - **Path aliases:** `@/*` maps to project root (Next.js default)

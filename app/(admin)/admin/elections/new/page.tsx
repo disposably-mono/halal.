@@ -9,23 +9,21 @@ export default async function NewElectionPage() {
   if (!session) redirect("/admin/login");
 
   return (
-    <div className="min-h-screen bg-[#0b1220] font-sans">
+    <div className="p-6">
 
-      {/* ── Topbar ── */}
-      <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-[#131c2e]">
-        <div className="mx-auto flex h-[52px] max-w-4xl items-center gap-2 px-6">
-          <Link
-            href="/admin"
-            className="text-[13px] text-white/40 transition-colors hover:text-white/60"
-          >
-            ← Elections
-          </Link>
-          <span className="text-[13px] text-white/30">/</span>
-          <span className="text-[13px] text-white/60">New Election</span>
-        </div>
-      </nav>
+      {/* ── Breadcrumb ── */}
+      <div className="mb-6 flex items-center gap-2 text-[13px]">
+        <Link
+          href="/admin"
+          className="text-white/30 transition-colors hover:text-white/60"
+        >
+          Elections
+        </Link>
+        <span className="text-white/20">/</span>
+        <span className="text-white/50">New Election</span>
+      </div>
 
-      <main className="mx-auto max-w-xl px-6 py-10">
+      <main className="mx-auto max-w-xl">
 
         {/* ── Page header ── */}
         <div className="mb-7">

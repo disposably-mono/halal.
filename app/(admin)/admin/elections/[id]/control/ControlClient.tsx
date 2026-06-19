@@ -8,6 +8,8 @@ import {
   rescheduleElection,
   advanceToScheduled,
 } from "./actions";
+import { archiveElection, restoreElection } from "@/app/(admin)/admin/actions";
+import { canArchive } from "@/lib/domain/election-state";
 import {
   Card,
   AdminInput,
@@ -22,6 +24,7 @@ import {
   Toast,
 } from "@/components/admin/ui";
 import { Button, type buttonVariants } from "@/components/ui/button";
+import { DIVISION_LABELS } from "@/lib/ui/division-labels";
 import type { VariantProps } from "class-variance-authority";
 
 type AdminButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
@@ -45,6 +48,8 @@ type Election = {
   status: ElectionStatus;
   scheduledOpen: Date | null;
   scheduledClose: Date | null;
+  archivedAt: Date | null;
+  archivedBy: string | null;
   _count: { voters: number; votes: number };
   votedCount: number;
 };
@@ -57,13 +62,6 @@ interface ControlClientProps {
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const DIVISION_LABELS: Record<string, string> = {
-  GS: "Grade School",
-  JHS: "Junior High School",
-  SHS: "Senior High School",
-  HC: "House Council",
-};
 
 function fmt(d: Date | null) {
   if (!d) return "—";
@@ -80,7 +78,7 @@ function toInput(d: Date | null) {
   return new Date(d).toISOString().slice(0, 16);
 }
 
-type DlgType = "open" | "close" | "reschedule" | "advance" | null;
+type DlgType = "open" | "close" | "reschedule" | "advance" | "archive" | "restore" | null;
 
 interface DlgConfig {
   title: string;
@@ -153,6 +151,24 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         iconBg: "bg-blue-400/[0.12] text-blue-400",
         icon: icons.calendar,
       };
+    case "archive":
+      return {
+        title: "Archive this election?",
+        body: "It will be hidden from the active dashboard and from public results. You can restore it anytime. This is logged.",
+        confirmLabel: "Archive Election",
+        confirmVariant: "adminDestructive",
+        iconBg: "bg-white/[0.06] text-white/60",
+        icon: icons.close,
+      };
+    case "restore":
+      return {
+        title: "Restore this election?",
+        body: "It will return to the active dashboard. This is logged.",
+        confirmLabel: "Restore Election",
+        confirmVariant: "adminPrimary",
+        iconBg: "bg-amber-400/[0.12] text-amber-400",
+        icon: icons.calendar,
+      };
     default:
       return { title: "", body: "", confirmLabel: "", confirmVariant: "adminGhost", iconBg: "", icon: null };
   }
@@ -202,6 +218,12 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
       } else if (dlg === "reschedule") {
         result = await rescheduleElection(election.id, dtOpen || null, dtClose || null);
         if (result.success) showToast("Schedule updated", "amber");
+      } else if (dlg === "archive") {
+        result = await archiveElection(election.id);
+        if (result.success) showToast("Election archived", "amber");
+      } else if (dlg === "restore") {
+        result = await restoreElection(election.id);
+        if (result.success) showToast("Election restored", "green");
       } else {
         result = await advanceToScheduled(election.id);
         if (result.success) showToast("Advanced to Scheduled", "blue");
@@ -414,6 +436,37 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
           </div>
         )}
       </Card>
+
+      {/* ── Archive ── */}
+      {canLifecycle && <Card title="Archive">
+        {election.archivedAt ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[11px] text-white/50">
+              Archived{election.archivedBy ? ` by ${election.archivedBy}` : ""} on {fmt(election.archivedAt)}.
+              Hidden from the active dashboard and public results.
+            </p>
+            <Button onClick={() => setDlg("restore")} disabled={isPending} variant="adminPrimary" size="adminMd">
+              Restore
+            </Button>
+          </div>
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[11px] text-white/50">
+              {canArchive(status, election.archivedAt).ok
+                ? "Hide this election from the active dashboard and public results. Reversible."
+                : "Close or unschedule the election before it can be archived."}
+            </p>
+            <Button
+              onClick={() => setDlg("archive")}
+              disabled={isPending || !canArchive(status, election.archivedAt).ok}
+              variant="adminGhost"
+              size="adminMd"
+            >
+              Archive
+            </Button>
+          </div>
+        )}
+      </Card>}
 
       {/* ── Confirm dialog ── */}
       <ConfirmDialog

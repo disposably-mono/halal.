@@ -2,15 +2,22 @@
 
 import Link from "next/link";
 import { StatusPill } from "./StatusPill";
+import { RowActions } from "./RowActions";
 import { DIVISION_LABELS, fmt, pct, type Election } from "./shared";
 
-export function ElectionRow({ e }: { e: Election }) {
+export function ElectionRow({
+  e,
+  onToast,
+  canLifecycle,
+}: {
+  e: Election;
+  onToast: (msg: string, ok: boolean) => void;
+  canLifecycle: boolean;
+}) {
   const p = pct(e.votedCount, e._count.voters);
   const showProg = e.status === "OPEN" || e.status === "CLOSED";
 
-  const ghostBtn = "text-[10px] text-white/50 border border-white/[0.07] rounded-[5px] px-[7px] py-[3px] hover:text-white/70 hover:border-white/[0.12] transition-all no-underline";
   const amberBtn = "text-[10px] text-amber-400 bg-amber-400/[0.08] border border-amber-400/20 rounded-[5px] px-[7px] py-[3px] hover:bg-amber-400/[0.15] transition-all no-underline";
-  const emeraldBtn = "text-[10px] text-emerald-400 bg-emerald-400/[0.06] border border-emerald-400/20 rounded-[5px] px-[7px] py-[3px] hover:bg-emerald-400/[0.12] transition-all no-underline";
 
   return (
     <div className="flex items-center gap-3 px-[14px] py-[10px] border-b border-white/[0.04] last:border-0 hover:bg-white/[0.025] transition-colors group">
@@ -60,20 +67,10 @@ export function ElectionRow({ e }: { e: Election }) {
         )}
       </div>
 
-      {/* Actions — all 4 always visible */}
-      <div className="flex gap-1 flex-shrink-0">
-        <Link href={`/admin/elections/${e.id}/voters`} className={ghostBtn}>Voters</Link>
-        <Link href={`/admin/elections/${e.id}/candidates`} className={ghostBtn}>Candidates</Link>
-        {(e.status === "OPEN" || e.status === "CLOSED") && (
-          <Link href={`/admin/elections/${e.id}/monitor`} className={emeraldBtn}>Monitor</Link>
-        )}
-        {(e.status === "DRAFT" || e.status === "SCHEDULED") && (
-          <Link href="/admin/results" className={ghostBtn}>Results</Link>
-        )}
-        {(e.status === "OPEN" || e.status === "CLOSED") && (
-          <Link href="/admin/results" className={ghostBtn}>Results</Link>
-        )}
+      {/* Actions — primary Control + overflow menu */}
+      <div className="flex items-center gap-1 flex-shrink-0">
         <Link href={`/admin/elections/${e.id}/control`} className={amberBtn}>⚡ Control</Link>
+        <RowActions e={e} onToast={onToast} canLifecycle={canLifecycle} />
       </div>
     </div>
   );

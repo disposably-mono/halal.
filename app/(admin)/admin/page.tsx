@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
+import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import DashboardClient from "./DashboardClient";
 import PermissionNotice from "./PermissionNotice";
@@ -11,6 +12,7 @@ export default async function AdminDashboard({
 }) {
   const session = await auth();
   if (!session) redirect("/admin/login");
+  const canLifecycle = can(session.user?.role, "election:lifecycle");
 
   const deniedParam = Array.isArray(searchParams.denied)
     ? searchParams.denied[0]
@@ -27,6 +29,8 @@ export default async function AdminDashboard({
           status: true,
           scheduledOpen: true,
           scheduledClose: true,
+          archivedAt: true,
+          archivedBy: true,
           _count: {
             select: {
               voters: true,
@@ -60,13 +64,18 @@ export default async function AdminDashboard({
     votedCount: votedByElection.get(e.id) ?? 0,
   }));
 
+  const activeElections = electionsWithVoted.filter((e) => e.archivedAt === null);
+  const archivedElections = electionsWithVoted.filter((e) => e.archivedAt !== null);
+
   return (
     <div className="p-6 flex flex-col gap-[18px]">
       <PermissionNotice denied={deniedParam} />
       <DashboardClient
-        elections={electionsWithVoted}
+        elections={activeElections}
+        archivedElections={archivedElections}
         uniqueStudentCount={distinctStudents.length}
         totalRegistrations={totalRegistrations}
+        canLifecycle={canLifecycle}
       />
     </div>
   );

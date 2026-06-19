@@ -27,9 +27,4 @@ export interface Snapshot {
 export const POLL_INTERVAL = 30_000;
 export const MAX_SNAPSHOTS = 60;
 
-export const DIVISION_LABELS: Record<string, string> = {
-  GS: "Grade School",
-  JHS: "Junior High School",
-  SHS: "Senior High School",
-  HC: "House Council",
-};
+export { DIVISION_LABELS } from "@/lib/ui/division-labels";

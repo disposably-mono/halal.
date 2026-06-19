@@ -4,18 +4,30 @@ import Link from "next/link";
 import { useState } from "react";
 import { AttnCard } from "./_components/AttnCard";
 import { ElectionRow } from "./_components/ElectionRow";
+import { ArchivedSection } from "./_components/ArchivedSection";
+import { Toast } from "@/components/admin/ui";
 import { pct, type Election, type ElectionStatus } from "./_components/shared";
 
 export default function DashboardClient({
   elections,
   uniqueStudentCount,
   totalRegistrations,
+  archivedElections,
+  canLifecycle,
 }: {
   elections: Election[];
   uniqueStudentCount: number;
   totalRegistrations: number;
+  archivedElections: Election[];
+  canLifecycle: boolean;
 }) {
   const [allOpen, setAllOpen] = useState(true);
+  const [toast, setToast] = useState<{ msg: string; color: "green" | "red" } | null>(null);
+
+  function onToast(msg: string, ok: boolean) {
+    setToast({ msg, color: ok ? "green" : "red" });
+    setTimeout(() => setToast(null), 2500);
+  }
 
   const byStatus = (s: ElectionStatus) => elections.filter((e) => e.status === s).length;
   const openC = byStatus("OPEN");
@@ -59,13 +71,15 @@ export default function DashboardClient({
           <h1 className="text-[20px] font-bold tracking-tight text-white/90">Elections Dashboard</h1>
           <p className="text-[12px] text-white/50 mt-[3px]">{elections.length} elections · {openC} active now</p>
         </div>
-        <Link href="/admin/elections/new"
-          className="inline-flex items-center gap-[5px] rounded-[7px] px-[13px] py-[7px] text-[12px] font-semibold bg-amber-400 text-[#0b1220] hover:opacity-90 transition-all no-underline">
-          <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-          New Election
-        </Link>
+        {canLifecycle && (
+          <Link href="/admin/elections/new"
+            className="inline-flex items-center gap-[5px] rounded-[7px] px-[13px] py-[7px] text-[12px] font-semibold bg-amber-400 text-[#0b1220] hover:opacity-90 transition-all no-underline">
+            <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            New Election
+          </Link>
+        )}
       </div>
 
       {/* Stats grid */}
@@ -132,11 +146,17 @@ export default function DashboardClient({
               <line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           </div>
-          <div className="text-[13px] font-medium text-white/60">No elections yet</div>
-          <div className="text-[11px] text-white/40">Create your first election to get started</div>
-          <Link href="/admin/elections/new" className="mt-1 text-[11px] text-amber-400 hover:opacity-80 transition-all no-underline">
-            Create election →
-          </Link>
+          <div className="text-[13px] font-medium text-white/60">No active elections</div>
+          <div className="text-[11px] text-white/40">
+            {canLifecycle
+              ? "Create an election or restore one from the archive"
+              : "No elections are currently active"}
+          </div>
+          {canLifecycle && (
+            <Link href="/admin/elections/new" className="mt-1 text-[11px] text-amber-400 hover:opacity-80 transition-all no-underline">
+              Create election →
+            </Link>
+          )}
         </div>
       )}
 
@@ -154,9 +174,16 @@ export default function DashboardClient({
               <polyline points="6 9 12 15 18 9" />
             </svg>
           </button>
-          {allOpen && elections.map((e) => <ElectionRow key={e.id} e={e} />)}
+          {allOpen && elections.map((e) => (
+            <ElectionRow key={e.id} e={e} onToast={onToast} canLifecycle={canLifecycle} />
+          ))}
         </div>
       )}
+
+      {/* Archived elections */}
+      <ArchivedSection elections={archivedElections} onToast={onToast} canLifecycle={canLifecycle} />
+
+      {toast && <Toast msg={toast.msg} color={toast.color} />}
     </>
   );
 }

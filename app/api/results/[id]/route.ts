@@ -32,10 +32,16 @@ export async function GET(
       status: true,
       scheduledOpen: true,
       scheduledClose: true,
+      archivedAt: true,
     },
   });
 
   if (!election) {
+    return NextResponse.json({ error: "Election not found" }, { status: 404 });
+  }
+
+  // Archived elections are retired from public results (admins retain access)
+  if (!isAdminRequest && election.archivedAt !== null) {
     return NextResponse.json({ error: "Election not found" }, { status: 404 });
   }
 
