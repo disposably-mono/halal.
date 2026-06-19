@@ -14,11 +14,13 @@ export default function MonitorClient({
   electionName,
   division,
   status,
+  canExportResults,
 }: {
   electionId: string;
   electionName: string;
   division: string;
   status: string;
+  canExportResults: boolean;
 }) {
   const { liveData, snapshots, loading, lastUpdated } = useMonitorPolling(electionId);
   const replay = useMonitorReplay(snapshots, lastUpdated);
@@ -47,7 +49,7 @@ export default function MonitorClient({
               Replaying {snapshots[replay.replayIndex!]?.label}
             </span>
           )}
-          {status === "CLOSED" && (
+          {status === "CLOSED" && canExportResults && (
             <a
               href={`/api/elections/${electionId}/results-pdf`}
               download

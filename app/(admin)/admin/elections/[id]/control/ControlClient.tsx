@@ -52,6 +52,8 @@ type Election = {
 interface ControlClientProps {
   election: Election;
   auditLogs: AuditEntry[];
+  canLifecycle: boolean;
+  canClose: boolean;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -167,7 +169,7 @@ const DOT_COLORS: Record<string, string> = {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ControlClient({ election, auditLogs }: ControlClientProps) {
+export default function ControlClient({ election, auditLogs, canLifecycle, canClose }: ControlClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [dlg, setDlg] = useState<DlgType>(null);
@@ -279,25 +281,27 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
 
         {/* Action row */}
         <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.07] pt-4">
-          {/* Open Now */}
-          <Button
-            onClick={() => {
-              if (status !== "SCHEDULED") return;
-              setDlg("open");
-            }}
-            disabled={status !== "SCHEDULED" || isPending}
-            variant="adminEmerald"
-            size="adminMd"
-          >
-            <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <circle cx="12" cy="12" r="10" />
-              <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
-            </svg>
-            Open Now
-          </Button>
+          {/* Open Now — Commissioner (lifecycle) */}
+          {canLifecycle && (
+            <Button
+              onClick={() => {
+                if (status !== "SCHEDULED") return;
+                setDlg("open");
+              }}
+              disabled={status !== "SCHEDULED" || isPending}
+              variant="adminEmerald"
+              size="adminMd"
+            >
+              <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <circle cx="12" cy="12" r="10" />
+                <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
+              </svg>
+              Open Now
+            </Button>
+          )}
 
-          {/* Advance to Scheduled (DRAFT only) */}
-          {status === "DRAFT" && (
+          {/* Advance to Scheduled (DRAFT only) — Commissioner (lifecycle) */}
+          {canLifecycle && status === "DRAFT" && (
             <Button
               onClick={() => setDlg("advance")}
               disabled={isPending}
@@ -308,28 +312,36 @@ export default function ControlClient({ election, auditLogs }: ControlClientProp
             </Button>
           )}
 
-          {/* Close Election */}
-          <Button
-            onClick={() => {
-              if (status !== "OPEN") return;
-              setDlg("close");
-            }}
-            disabled={status !== "OPEN" || isPending}
-            variant="adminGhost"
-            size="adminMd"
-          >
-            <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-              <rect x="6" y="6" width="12" height="12" rx="2" />
-            </svg>
-            Close Election
-          </Button>
+          {/* Close Election — Canvassing Head */}
+          {canClose && (
+            <Button
+              onClick={() => {
+                if (status !== "OPEN") return;
+                setDlg("close");
+              }}
+              disabled={status !== "OPEN" || isPending}
+              variant="adminGhost"
+              size="adminMd"
+            >
+              <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                <rect x="6" y="6" width="12" height="12" rx="2" />
+              </svg>
+              Close Election
+            </Button>
+          )}
+
+          {!canLifecycle && !canClose && (
+            <span className="text-[11px] text-white/40">
+              You have read-only access to this election.
+            </span>
+          )}
 
           <span className="ml-1 text-[10px] text-white/[0.18]">{contextHint[status]}</span>
         </div>
       </Card>
 
-      {/* ── Schedule override ── */}
-      {status !== "CLOSED" && (
+      {/* ── Schedule override ── Commissioner (lifecycle) only */}
+      {canLifecycle && status !== "CLOSED" && (
         <Card title="Override Schedule" meta={<AdminBadge />}>
           <div className="flex flex-col gap-3">
             <WarnBanner>

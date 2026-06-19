@@ -2,11 +2,11 @@
 
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import { requireAdminSession } from "@/lib/server/auth";
+import { requireCapability } from "@/lib/server/auth";
 import { CreateElectionSchema, safeParseFormData } from "@/lib/validation/schemas";
 
 export async function createElection(formData: FormData) {
-  await requireAdminSession();
+  await requireCapability("election:lifecycle");
 
   const parsed = safeParseFormData(CreateElectionSchema, formData);
   if (!parsed.success) return;

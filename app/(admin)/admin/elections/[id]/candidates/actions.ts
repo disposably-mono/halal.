@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { DIVISION_POSITIONS } from "@/lib/elections/constants";
 import { pickCandidateDefaultGrade } from "@/lib/domain/ballot";
 import { canFinalizeUnlock } from "@/lib/domain/election-state";
-import { requireAdminSession } from "@/lib/server/auth";
+import { requireCapability } from "@/lib/server/auth";
 import { revalidateElectionCandidates } from "@/lib/server/revalidate";
 import {
   AddCandidateSchema,
@@ -22,7 +22,7 @@ export type FinalizeResult = {
 };
 
 export async function seedAllPositions(formData: FormData) {
-  await requireAdminSession();
+  await requireCapability("candidates:manage");
   const parsed = safeParseFormData(SeedPositionsSchema, formData);
   if (!parsed.success) return;
   const { electionId, division } = parsed.data;
@@ -46,7 +46,7 @@ export async function seedAllPositions(formData: FormData) {
 }
 
 export async function addSinglePosition(formData: FormData) {
-  await requireAdminSession();
+  await requireCapability("candidates:manage");
   const parsed = safeParseFormData(AddSinglePositionSchema, formData);
   if (!parsed.success) return;
   const { electionId, division, title } = parsed.data;
@@ -74,7 +74,7 @@ export async function addSinglePosition(formData: FormData) {
 }
 
 export async function removePosition(formData: FormData) {
-  await requireAdminSession();
+  await requireCapability("candidates:manage");
   const parsed = safeParseFormData(RemovePositionSchema, formData);
   if (!parsed.success) return;
   const { positionId, electionId } = parsed.data;
@@ -87,7 +87,7 @@ export async function removePosition(formData: FormData) {
 }
 
 export async function addCandidate(formData: FormData) {
-  await requireAdminSession();
+  await requireCapability("candidates:manage");
   const parsed = safeParseFormData(AddCandidateSchema, formData);
   if (!parsed.success) return;
   const { positionId, electionId, fullName } = parsed.data;
@@ -110,7 +110,7 @@ export async function addCandidate(formData: FormData) {
 }
 
 export async function removeCandidate(formData: FormData) {
-  await requireAdminSession();
+  await requireCapability("candidates:manage");
   const parsed = safeParseFormData(RemoveCandidateSchema, formData);
   if (!parsed.success) return;
   const { candidateId, electionId } = parsed.data;
@@ -132,7 +132,7 @@ export async function finalizeCandidates(
   _prevState: FinalizeResult | null,
   formData: FormData,
 ): Promise<FinalizeResult> {
-  await requireAdminSession();
+  await requireCapability("candidates:manage");
   const parsed = safeParseFormData(ElectionIdSchema, formData);
   if (!parsed.success) {
     return { success: false, error: "Missing election." };
@@ -170,7 +170,7 @@ export async function unfinalizeCandidates(
   _prevState: FinalizeResult | null,
   formData: FormData,
 ): Promise<FinalizeResult> {
-  await requireAdminSession();
+  await requireCapability("candidates:manage");
   const parsed = safeParseFormData(ElectionIdSchema, formData);
   if (!parsed.success) {
     return { success: false, error: "Missing election." };

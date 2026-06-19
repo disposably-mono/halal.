@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
+import { requireCapabilityOrError } from "@/lib/server/auth";
 
 export const dynamic = "force-dynamic";
 
@@ -11,11 +11,14 @@ export async function GET(
   const { id } = params;
   const isAdminRequest = req.nextUrl.searchParams.get("admin") === "1";
 
-  // Verify admin session if requesting admin data
+  // Verify admin access if requesting admin (live/embargoed) data
   if (isAdminRequest) {
-    const session = await auth();
-    if (!session) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const guard = await requireCapabilityOrError("admin:view");
+    if (!guard.ok) {
+      return NextResponse.json(
+        { error: guard.error },
+        { status: guard.error === "Forbidden" ? 403 : 401 },
+      );
     }
   }
 

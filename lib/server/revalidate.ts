@@ -15,3 +15,7 @@ export function revalidateElectionVoters(electionId: string): void {
 export function revalidateElectionControl(electionId: string): void {
   revalidatePath(`/admin/elections/${electionId}/control`);
 }
+
+export function revalidateAdminAccounts(): void {
+  revalidatePath("/admin/accounts");
+}

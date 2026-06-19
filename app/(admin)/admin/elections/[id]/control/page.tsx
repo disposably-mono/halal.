@@ -2,6 +2,7 @@ import { notFound } from "next/navigation";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
+import { can } from "@/lib/auth/permissions";
 import ControlClient from "./ControlClient";
 import Link from "next/link";
 import { StatusPill, ElectionSubNav, SetupStepper } from "@/components/admin/ui";
@@ -15,6 +16,9 @@ interface PageProps {
 export default async function ControlPage({ params }: PageProps) {
   const session = await auth();
   if (!session) redirect("/admin/login");
+
+  const canLifecycle = can(session.user?.role, "election:lifecycle");
+  const canClose = can(session.user?.role, "election:close");
 
   const [election, auditLogs] = await Promise.all([
     prisma.election.findUnique({
@@ -71,6 +75,8 @@ export default async function ControlPage({ params }: PageProps) {
       <ControlClient
         election={{ ...election, votedCount }}
         auditLogs={auditLogs}
+        canLifecycle={canLifecycle}
+        canClose={canClose}
       />
     </div>
   );

@@ -2,10 +2,15 @@ import type { ReactNode } from "react";
 import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
 import { ActiveNavItem } from "./ActiveNavItem";
+import { can } from "@/lib/auth/permissions";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const session = await auth();
   if (!session) redirect("/admin/login");
+
+  const role = session.user?.role;
+  const canManageAccounts = can(role, "accounts:manage");
+  const canCreateElection = can(role, "election:lifecycle");
 
   const adminName = session.user?.name ?? "Admin";
   const adminInitial = adminName[0]?.toUpperCase() ?? "A";
@@ -72,12 +77,16 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </svg>
           } />
 
-          <NavSection label="Elections" />
-          <ActiveNavItem href="/admin/elections/new" label="New Election" icon={
-            <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-          } />
+          {canCreateElection && (
+            <>
+              <NavSection label="Elections" />
+              <ActiveNavItem href="/admin/elections/new" label="New Election" icon={
+                <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+              } />
+            </>
+          )}
 
           <NavSection label="Reports" />
           <ActiveNavItem href="/admin/results" label="Results" icon={
@@ -96,6 +105,18 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
             </svg>
           } />
+
+          {canManageAccounts && (
+            <>
+              <NavSection label="Administration" />
+              <ActiveNavItem href="/admin/accounts" label="Accounts" icon={
+                <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
+                  <line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
+                </svg>
+              } />
+            </>
+          )}
         </nav>
 
         {/* ── Page content ── */}

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { Division, ElectionStatus } from "@prisma/client";
+import type { AdminRole, Division, ElectionStatus } from "@prisma/client";
 import { CONTROL_NUMBER_REGEX, STUDENT_ID_REGEX } from "@/lib/domain/control-number";
 
 const NonEmptyString = z.string().trim().min(1);
@@ -7,9 +7,16 @@ const Cuid = z.string().min(1);
 
 const DIVISION_VALUES = ["GS", "JHS", "SHS", "HC"] as const satisfies readonly Division[];
 const ELECTION_STATUS_VALUES = ["DRAFT", "SCHEDULED", "OPEN", "CLOSED"] as const satisfies readonly ElectionStatus[];
+const ADMIN_ROLE_VALUES = [
+  "SUPERADMIN",
+  "COMMISSIONER",
+  "CANVASSER",
+  "OFFICER",
+] as const satisfies readonly AdminRole[];
 
 export const DivisionSchema = z.enum(DIVISION_VALUES);
 export const ElectionStatusSchema = z.enum(ELECTION_STATUS_VALUES);
+export const AdminRoleSchema = z.enum(ADMIN_ROLE_VALUES);
 
 const NormalizedControlNumber = z
   .string()
@@ -97,6 +104,45 @@ export const AddVoterManualSchema = z.object({
   section: NonEmptyString,
   schoolYear: SchoolYear,
 });
+
+// ─── Admin account management ───────────────────────────────────────────────
+
+const Password = z.string().min(8, "Password must be at least 8 characters.");
+const OfficerKey = z.string().min(6, "Officer key must be at least 6 characters.");
+const Email = z.string().trim().toLowerCase().email();
+
+export const CreateAdminSchema = z.object({
+  email: Email,
+  name: NonEmptyString,
+  role: AdminRoleSchema,
+  password: Password,
+  officerKey: OfficerKey,
+});
+
+export const UpdateAdminRoleSchema = z.object({
+  adminId: Cuid,
+  role: AdminRoleSchema,
+});
+
+export const ResetPasswordSchema = z.object({
+  adminId: Cuid,
+  password: Password,
+});
+
+export const ResetOfficerKeySchema = z.object({
+  adminId: Cuid,
+  officerKey: OfficerKey,
+});
+
+export const DeleteAdminSchema = z.object({
+  adminId: Cuid,
+});
+
+export type CreateAdminInput = z.infer<typeof CreateAdminSchema>;
+export type UpdateAdminRoleInput = z.infer<typeof UpdateAdminRoleSchema>;
+export type ResetPasswordInput = z.infer<typeof ResetPasswordSchema>;
+export type ResetOfficerKeyInput = z.infer<typeof ResetOfficerKeySchema>;
+export type DeleteAdminInput = z.infer<typeof DeleteAdminSchema>;
 
 export type VoterLoginInput = z.infer<typeof VoterLoginSchema>;
 export type CreateElectionInput = z.infer<typeof CreateElectionSchema>;

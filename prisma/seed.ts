@@ -17,6 +17,10 @@ async function main() {
   const passwordHash = await bcrypt.hash(password, 12);
   const officerKeyHash = await bcrypt.hash(officerKey, 12);
 
+  // Bootstrap the COMELEC super-admin. This account manages other admin
+  // accounts but cannot run elections itself (separation of duties). It must
+  // first create a COMMISSIONER (and a CANVASSER) via the Accounts screen
+  // before any election can be operated.
   const admin = await prisma.adminUser.upsert({
     where: { email },
     update: {},
@@ -25,11 +29,11 @@ async function main() {
       passwordHash,
       officerKey: officerKeyHash,
       name: "OLPS COMELEC",
-      role: "COMMISSIONER",
+      role: "SUPERADMIN",
     },
   });
 
-  console.log("✅ Seed complete — admin created:", admin.email);
+  console.log("✅ Seed complete — COMELEC super-admin created:", admin.email);
 }
 
 main()

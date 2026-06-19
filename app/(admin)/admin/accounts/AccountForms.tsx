@@ -1,0 +1,379 @@
+"use client";
+
+import { useEffect, useState, useTransition } from "react";
+import { useFormState, useFormStatus } from "react-dom";
+import type { AdminRole } from "@prisma/client";
+import {
+  createAdmin,
+  updateAdminRole,
+  resetAdminPassword,
+  resetAdminOfficerKey,
+  deleteAdmin,
+  type AccountActionResult,
+} from "./actions";
+import { AdminInput, AdminSelect, Card, ConfirmDialog, Toast } from "@/components/admin/ui";
+import { Button } from "@/components/ui/button";
+
+// ─── Types & constants ──────────────────────────────────────────────────────
+
+export type Account = {
+  id: string;
+  email: string;
+  name: string;
+  role: AdminRole;
+  lastLogin: string | null;
+  createdAt: string;
+};
+
+const ROLE_OPTIONS: AdminRole[] = [
+  "SUPERADMIN",
+  "COMMISSIONER",
+  "CANVASSER",
+  "OFFICER",
+];
+
+const ROLE_LABELS: Record<AdminRole, string> = {
+  SUPERADMIN: "COMELEC · Super-admin",
+  COMMISSIONER: "Commissioner",
+  CANVASSER: "Canvassing Head",
+  OFFICER: "Officer",
+};
+
+const ROLE_HINTS: Record<AdminRole, string> = {
+  SUPERADMIN: "Manages accounts only — cannot run elections",
+  COMMISSIONER: "Election lifecycle, voters & candidates",
+  CANVASSER: "Closes elections & exports results",
+  OFFICER: "Read-only monitor & dashboard",
+};
+
+type ToastState = { msg: string; color: "green" | "red" | "amber" | "blue" } | null;
+
+function formatDate(iso: string | null): string {
+  if (!iso) return "Never";
+  return new Date(iso).toLocaleDateString("en-PH", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  });
+}
+
+// ─── Manager (owns toast state) ─────────────────────────────────────────────
+
+export function AccountsManager({
+  accounts,
+  currentUserId,
+  superadminCount,
+}: {
+  accounts: Account[];
+  currentUserId: string;
+  superadminCount: number;
+}) {
+  const [toast, setToast] = useState<ToastState>(null);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 2600);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  return (
+    <div className="flex flex-col gap-[18px]">
+      <CreateAdminForm onResult={setToast} />
+
+      <Card title="Accounts" noPad>
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-white/[0.06]">
+                {["Account", "Role", "Last login", "Actions"].map((h) => (
+                  <th
+                    key={h}
+                    className="text-left px-4 py-[7px] text-[10px] font-semibold uppercase tracking-[0.06em] text-white/35"
+                  >
+                    {h}
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {accounts.map((account) => (
+                <AccountRow
+                  key={account.id}
+                  account={account}
+                  isSelf={account.id === currentUserId}
+                  isLastSuperadmin={
+                    account.role === "SUPERADMIN" && superadminCount <= 1
+                  }
+                  onResult={setToast}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </Card>
+
+      {toast && <Toast msg={toast.msg} color={toast.color} />}
+    </div>
+  );
+}
+
+// ─── Create form ────────────────────────────────────────────────────────────
+
+function CreateSubmit() {
+  const { pending } = useFormStatus();
+  return (
+    <Button type="submit" disabled={pending} variant="adminPrimary" size="adminMd">
+      {pending ? "Creating…" : "Create account"}
+    </Button>
+  );
+}
+
+function CreateAdminForm({ onResult }: { onResult: (t: ToastState) => void }) {
+  const [result, action] = useFormState<AccountActionResult | null, FormData>(
+    createAdmin,
+    null,
+  );
+
+  useEffect(() => {
+    if (result?.success) onResult({ msg: "Account created.", color: "green" });
+  }, [result, onResult]);
+
+  return (
+    <Card title="New account">
+      <form action={action} className="flex flex-col gap-3">
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <Field label="Full name">
+            <AdminInput name="name" placeholder="Juan Dela Cruz" required />
+          </Field>
+          <Field label="Email">
+            <AdminInput name="email" type="email" placeholder="name@olps.edu" required />
+          </Field>
+          <Field label="Role">
+            <AdminSelect name="role" defaultValue="OFFICER" required>
+              {ROLE_OPTIONS.map((r) => (
+                <option key={r} value={r}>
+                  {ROLE_LABELS[r]}
+                </option>
+              ))}
+            </AdminSelect>
+          </Field>
+          <div className="hidden sm:block" />
+          <Field label="Password" hint="Min 8 characters">
+            <AdminInput name="password" type="password" placeholder="••••••••" required />
+          </Field>
+          <Field label="Officer key" hint="Min 6 characters — 2FA at login">
+            <AdminInput name="officerKey" type="password" placeholder="••••••" required />
+          </Field>
+        </div>
+
+        <div className="flex items-center justify-between gap-3">
+          <p className="text-[11px] text-white/40">
+            Share the password and officer key with the officer out-of-band.
+          </p>
+          <CreateSubmit />
+        </div>
+
+        {result && !result.success && (
+          <p className="text-[11px] text-red-400">✗ {result.error}</p>
+        )}
+      </form>
+    </Card>
+  );
+}
+
+function Field({
+  label,
+  hint,
+  children,
+}: {
+  label: string;
+  hint?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex flex-col gap-[5px]">
+      <label className="text-[10px] text-white/50">
+        {label}
+        {hint && <span className="text-white/30"> · {hint}</span>}
+      </label>
+      {children}
+    </div>
+  );
+}
+
+// ─── Account row ────────────────────────────────────────────────────────────
+
+function AccountRow({
+  account,
+  isSelf,
+  isLastSuperadmin,
+  onResult,
+}: {
+  account: Account;
+  isSelf: boolean;
+  isLastSuperadmin: boolean;
+  onResult: (t: ToastState) => void;
+}) {
+  const [pending, startTransition] = useTransition();
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [secretOpen, setSecretOpen] = useState<null | "password" | "officerKey">(null);
+  const [secretValue, setSecretValue] = useState("");
+
+  function notify(result: AccountActionResult, okMsg: string) {
+    if (result.success) onResult({ msg: okMsg, color: "green" });
+    else onResult({ msg: result.error, color: "red" });
+  }
+
+  function onRoleChange(role: string) {
+    if (role === account.role) return;
+    startTransition(async () => {
+      notify(await updateAdminRole(account.id, role), "Role updated.");
+    });
+  }
+
+  function submitSecret() {
+    const kind = secretOpen;
+    if (!kind) return;
+    const value = secretValue;
+    startTransition(async () => {
+      const result =
+        kind === "password"
+          ? await resetAdminPassword(account.id, value)
+          : await resetAdminOfficerKey(account.id, value);
+      notify(result, kind === "password" ? "Password reset." : "Officer key reset.");
+      if (result.success) {
+        setSecretOpen(null);
+        setSecretValue("");
+      }
+    });
+  }
+
+  function onDelete() {
+    startTransition(async () => {
+      const result = await deleteAdmin(account.id);
+      notify(result, "Account deleted.");
+      if (result.success) setConfirmDelete(false);
+    });
+  }
+
+  return (
+    <tr className="border-b border-white/[0.03] last:border-0 align-top">
+      {/* Account */}
+      <td className="px-4 py-[10px]">
+        <div className="text-[12px] font-medium text-white/85">
+          {account.name}
+          {isSelf && <span className="ml-2 text-[9px] text-amber-400/80">you</span>}
+        </div>
+        <div className="font-mono text-[11px] text-white/45">{account.email}</div>
+      </td>
+
+      {/* Role */}
+      <td className="px-4 py-[10px]">
+        <AdminSelect
+          value={account.role}
+          disabled={pending || isLastSuperadmin}
+          onChange={(e) => onRoleChange(e.target.value)}
+          className="min-w-[170px]"
+        >
+          {ROLE_OPTIONS.map((r) => (
+            <option key={r} value={r}>
+              {ROLE_LABELS[r]}
+            </option>
+          ))}
+        </AdminSelect>
+        <div className="mt-[3px] text-[10px] text-white/35">
+          {isLastSuperadmin ? "Last super-admin — locked" : ROLE_HINTS[account.role]}
+        </div>
+      </td>
+
+      {/* Last login */}
+      <td className="px-4 py-[10px] text-[11px] text-white/50">
+        {formatDate(account.lastLogin)}
+      </td>
+
+      {/* Actions */}
+      <td className="px-4 py-[10px]">
+        <div className="flex flex-wrap gap-[6px]">
+          <RowButton onClick={() => { setSecretOpen("password"); setSecretValue(""); }}>
+            Reset password
+          </RowButton>
+          <RowButton onClick={() => { setSecretOpen("officerKey"); setSecretValue(""); }}>
+            Reset key
+          </RowButton>
+          <RowButton
+            tone="danger"
+            disabled={isSelf || isLastSuperadmin}
+            onClick={() => setConfirmDelete(true)}
+          >
+            Delete
+          </RowButton>
+        </div>
+
+        {secretOpen && (
+          <div className="mt-2 flex flex-wrap items-center gap-2">
+            <AdminInput
+              type="password"
+              autoFocus
+              value={secretValue}
+              onChange={(e) => setSecretValue(e.target.value)}
+              placeholder={secretOpen === "password" ? "New password" : "New officer key"}
+              className="min-w-[180px]"
+            />
+            <Button
+              onClick={submitSecret}
+              disabled={pending || secretValue.length === 0}
+              variant="adminPrimary"
+              size="adminMd"
+            >
+              Save
+            </Button>
+            <Button
+              onClick={() => { setSecretOpen(null); setSecretValue(""); }}
+              variant="adminGhost"
+              size="adminMd"
+            >
+              Cancel
+            </Button>
+          </div>
+        )}
+      </td>
+
+      <td className="p-0">
+        <ConfirmDialog
+          open={confirmDelete}
+          title="Delete account?"
+          body={`${account.name} (${account.email}) will lose all access. This cannot be undone.`}
+          confirmLabel="Delete"
+          confirmVariant="adminDestructive"
+          isPending={pending}
+          onCancel={() => setConfirmDelete(false)}
+          onConfirm={onDelete}
+        />
+      </td>
+    </tr>
+  );
+}
+
+function RowButton({
+  children,
+  onClick,
+  disabled,
+  tone = "default",
+}: {
+  children: React.ReactNode;
+  onClick: () => void;
+  disabled?: boolean;
+  tone?: "default" | "danger";
+}) {
+  const base =
+    "rounded-[5px] border px-[8px] py-[3px] text-[10px] transition-all disabled:opacity-40 disabled:cursor-not-allowed";
+  const tones =
+    tone === "danger"
+      ? "border-red-400/20 bg-red-400/[0.06] text-red-300 hover:bg-red-400/[0.12]"
+      : "border-white/[0.1] bg-white/[0.03] text-white/60 hover:bg-white/[0.07]";
+  return (
+    <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${tones}`}>
+      {children}
+    </button>
+  );
+}
