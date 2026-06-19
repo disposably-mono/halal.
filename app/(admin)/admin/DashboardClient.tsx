@@ -8,10 +8,12 @@ import { pct, type Election, type ElectionStatus } from "./_components/shared";
 
 export default function DashboardClient({
   elections,
-  globalVoterCount,
+  uniqueStudentCount,
+  totalRegistrations,
 }: {
   elections: Election[];
-  globalVoterCount: number;
+  uniqueStudentCount: number;
+  totalRegistrations: number;
 }) {
   const [allOpen, setAllOpen] = useState(true);
 
@@ -28,15 +30,21 @@ export default function DashboardClient({
     closedC > 0 && `${closedC} closed`,
   ].filter(Boolean).join(" · ");
 
-  const activeNames = elections
-    .filter((e) => e.status === "OPEN")
-    .map((e) => e.name)
-    .join(", ") || "None active";
+  const openElections = elections.filter((e) => e.status === "OPEN");
+  const activeNames = openElections.map((e) => e.name).join(", ") || "None active";
+
+  // Live turnout across all currently-open elections (voters who have cast a ballot).
+  const openVoters = openElections.reduce((a, e) => a + e._count.voters, 0);
+  const openVoted = openElections.reduce((a, e) => a + e.votedCount, 0);
+  const activeTurnout = pct(openVoted, openVoters);
 
   const closedWithVoters = elections.filter((e) => e.status === "CLOSED" && e._count.voters > 0);
   const avgTurnout = closedWithVoters.length
     ? Math.round(closedWithVoters.reduce((a, e) => a + pct(e.votedCount, e._count.voters), 0) / closedWithVoters.length)
     : null;
+
+  // Total ballots cast across every election (each voter votes at most once).
+  const totalBallotsCast = elections.reduce((a, e) => a + e.votedCount, 0);
 
   const attnOrder: ElectionStatus[] = ["OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
   const attnElections = [...elections].sort(
@@ -74,13 +82,19 @@ export default function DashboardClient({
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-emerald-400" />
           <div className="text-[10px] text-white/50 uppercase tracking-[0.06em] font-medium">Active Now</div>
           <div className={`text-[26px] font-bold tracking-[-1px] leading-none mt-2 ${openC > 0 ? "text-emerald-400" : "text-white/90"}`}>{openC}</div>
-          <div className="text-[10px] text-white/40 mt-1 truncate" title={activeNames}>{activeNames}</div>
+          <div className="text-[10px] text-white/40 mt-1 truncate" title={activeNames}>
+            {openC > 0 ? `${activeNames} · ${activeTurnout}% voted` : "None active"}
+          </div>
         </div>
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-blue-400" />
-          <div className="text-[10px] text-white/50 uppercase tracking-[0.06em] font-medium">Total Voters</div>
-          <div className="text-[26px] font-bold tracking-[-1px] leading-none mt-2 text-white/90">{globalVoterCount.toLocaleString()}</div>
-          <div className="text-[10px] text-white/40 mt-1">unique control numbers</div>
+          <div className="text-[10px] text-white/50 uppercase tracking-[0.06em] font-medium">Registered Voters</div>
+          <div className="text-[26px] font-bold tracking-[-1px] leading-none mt-2 text-white/90">{uniqueStudentCount.toLocaleString()}</div>
+          <div className="text-[10px] text-white/40 mt-1 truncate" title={`${totalRegistrations.toLocaleString()} roster entries across ${elections.length} election${elections.length === 1 ? "" : "s"}`}>
+            {uniqueStudentCount === totalRegistrations
+              ? "unique students"
+              : `unique students · ${totalRegistrations.toLocaleString()} registrations`}
+          </div>
         </div>
         <div className="bg-[#1a2540] border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
           <div className="absolute top-0 left-0 right-0 h-[2px] bg-amber-400/50" />
@@ -88,10 +102,11 @@ export default function DashboardClient({
           <div className="text-[26px] font-bold tracking-[-1px] leading-none mt-2 text-white/90">
             {avgTurnout !== null ? `${avgTurnout}%` : "—"}
           </div>
-          <div className="text-[10px] text-white/40 mt-1">
+          <div className="text-[10px] text-white/40 mt-1 truncate">
+            {totalBallotsCast.toLocaleString()} ballot{totalBallotsCast === 1 ? "" : "s"} cast
             {closedWithVoters.length > 0
-              ? `from ${closedWithVoters.length} closed election${closedWithVoters.length > 1 ? "s" : ""}`
-              : "no closed elections yet"}
+              ? ` · ${closedWithVoters.length} closed`
+              : ""}
           </div>
         </div>
       </div>
