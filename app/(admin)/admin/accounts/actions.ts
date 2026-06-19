@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireCapabilityOrError } from "@/lib/server/auth";
+import { isGrantableRole, permissionErrorMessage } from "@/lib/auth/permissions";
 import { revalidateAdminAccounts } from "@/lib/server/revalidate";
 import {
   CreateAdminSchema,
@@ -42,7 +43,7 @@ export async function createAdmin(
   formData: FormData,
 ): Promise<AccountActionResult> {
   const guard = await requireCapabilityOrError("accounts:manage");
-  if (!guard.ok) return { success: false, error: guard.error };
+  if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
 
   const parsed = safeParseFormData(CreateAdminSchema, formData);
   if (!parsed.success) {
@@ -53,6 +54,10 @@ export async function createAdmin(
   }
 
   const { email, name, role, password, officerKey } = parsed.data;
+  if (!isGrantableRole(role)) {
+    return { success: false, error: "Super-admin can no longer be granted." };
+  }
+
   const [passwordHash, officerKeyHash] = await Promise.all([
     bcrypt.hash(password, HASH_ROUNDS),
     bcrypt.hash(officerKey, HASH_ROUNDS),
@@ -81,10 +86,15 @@ export async function updateAdminRole(
   role: string,
 ): Promise<AccountActionResult> {
   const guard = await requireCapabilityOrError("accounts:manage");
-  if (!guard.ok) return { success: false, error: guard.error };
+  if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
 
   const parsed = UpdateAdminRoleSchema.safeParse({ adminId, role });
   if (!parsed.success) return { success: false, error: "Invalid role." };
+
+  // SUPERADMIN is a fixed tier: it can never be handed out as a new role.
+  if (!isGrantableRole(parsed.data.role)) {
+    return { success: false, error: "Super-admin can no longer be granted." };
+  }
 
   const result = await prisma.$transaction(async (tx) => {
     const target = await tx.adminUser.findUnique({
@@ -93,6 +103,11 @@ export async function updateAdminRole(
     });
     if (!target) return { success: false, error: "Account not found." } as const;
     if (target.role === parsed.data.role) return { success: true } as const;
+
+    // ...and an existing super-admin can never be demoted: the COMELEC tier is locked.
+    if (target.role === "SUPERADMIN") {
+      return { success: false, error: "Super-admin accounts are locked." } as const;
+    }
 
     const blocked = await lastSuperadminBlock(tx, target.role);
     if (blocked) return blocked;
@@ -113,7 +128,7 @@ export async function resetAdminPassword(
   password: string,
 ): Promise<AccountActionResult> {
   const guard = await requireCapabilityOrError("accounts:manage");
-  if (!guard.ok) return { success: false, error: guard.error };
+  if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
 
   const parsed = ResetPasswordSchema.safeParse({ adminId, password });
   if (!parsed.success) {
@@ -138,7 +153,7 @@ export async function resetAdminOfficerKey(
   officerKey: string,
 ): Promise<AccountActionResult> {
   const guard = await requireCapabilityOrError("accounts:manage");
-  if (!guard.ok) return { success: false, error: guard.error };
+  if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
 
   const parsed = ResetOfficerKeySchema.safeParse({ adminId, officerKey });
   if (!parsed.success) {
@@ -160,7 +175,7 @@ export async function resetAdminOfficerKey(
 
 export async function deleteAdmin(adminId: string): Promise<AccountActionResult> {
   const guard = await requireCapabilityOrError("accounts:manage");
-  if (!guard.ok) return { success: false, error: guard.error };
+  if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
 
   const parsed = DeleteAdminSchema.safeParse({ adminId });
   if (!parsed.success) return { success: false, error: "Invalid account." };

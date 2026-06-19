@@ -13,6 +13,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { renderToBuffer, type DocumentProps } from "@react-pdf/renderer";
 import React from "react";
 import { requireCapabilityOrError } from "@/lib/server/auth";
+import { permissionErrorMessage } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/prisma";
 import { ResultsPDF, type ResultPosition } from "@/lib/pdf/ResultsPDF";
 
@@ -59,7 +60,7 @@ export async function GET(
   const guard = await requireCapabilityOrError("results:export");
   if (!guard.ok) {
     return NextResponse.json(
-      { error: guard.error },
+      { error: permissionErrorMessage(guard.error) },
       { status: guard.error === "Forbidden" ? 403 : 401 },
     );
   }

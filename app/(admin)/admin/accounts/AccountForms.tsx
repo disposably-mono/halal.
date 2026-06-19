@@ -11,8 +11,10 @@ import {
   deleteAdmin,
   type AccountActionResult,
 } from "./actions";
-import { AdminInput, AdminSelect, Card, ConfirmDialog, Toast } from "@/components/admin/ui";
+import { AdminInput, Card, ConfirmDialog, Toast } from "@/components/admin/ui";
+import { ThemedSelect } from "@/components/admin/ThemedSelect";
 import { Button } from "@/components/ui/button";
+import { GRANTABLE_ROLES } from "@/lib/auth/permissions";
 
 // ─── Types & constants ──────────────────────────────────────────────────────
 
@@ -25,12 +27,10 @@ export type Account = {
   createdAt: string;
 };
 
-const ROLE_OPTIONS: AdminRole[] = [
-  "SUPERADMIN",
-  "COMMISSIONER",
-  "CANVASSER",
-  "OFFICER",
-];
+// SUPERADMIN is intentionally absent: the COMELEC tier is fixed and never granted
+// through the UI (server enforces this too). Existing super-admins render as a
+// locked pill instead of a dropdown.
+const ROLE_OPTIONS: readonly AdminRole[] = GRANTABLE_ROLES;
 
 const ROLE_LABELS: Record<AdminRole, string> = {
   SUPERADMIN: "COMELEC · Super-admin",
@@ -45,6 +45,11 @@ const ROLE_HINTS: Record<AdminRole, string> = {
   CANVASSER: "Closes elections & exports results",
   OFFICER: "Read-only monitor & dashboard",
 };
+
+const ROLE_SELECT_OPTIONS = ROLE_OPTIONS.map((r) => ({
+  value: r,
+  label: ROLE_LABELS[r],
+}));
 
 type ToastState = { msg: string; color: "green" | "red" | "amber" | "blue" } | null;
 
@@ -149,13 +154,12 @@ function CreateAdminForm({ onResult }: { onResult: (t: ToastState) => void }) {
             <AdminInput name="email" type="email" placeholder="name@olps.edu" required />
           </Field>
           <Field label="Role">
-            <AdminSelect name="role" defaultValue="OFFICER" required>
-              {ROLE_OPTIONS.map((r) => (
-                <option key={r} value={r}>
-                  {ROLE_LABELS[r]}
-                </option>
-              ))}
-            </AdminSelect>
+            <ThemedSelect
+              name="role"
+              defaultValue="OFFICER"
+              required
+              options={ROLE_SELECT_OPTIONS}
+            />
           </Field>
           <div className="hidden sm:block" />
           <Field label="Password" hint="Min 8 characters">
@@ -219,6 +223,8 @@ function AccountRow({
   const [secretOpen, setSecretOpen] = useState<null | "password" | "officerKey">(null);
   const [secretValue, setSecretValue] = useState("");
 
+  const isSuperadmin = account.role === "SUPERADMIN";
+
   function notify(result: AccountActionResult, okMsg: string) {
     if (result.success) onResult({ msg: okMsg, color: "green" });
     else onResult({ msg: result.error, color: "red" });
@@ -269,20 +275,24 @@ function AccountRow({
 
       {/* Role */}
       <td className="px-4 py-[10px]">
-        <AdminSelect
-          value={account.role}
-          disabled={pending || isLastSuperadmin}
-          onChange={(e) => onRoleChange(e.target.value)}
-          className="min-w-[170px]"
-        >
-          {ROLE_OPTIONS.map((r) => (
-            <option key={r} value={r}>
-              {ROLE_LABELS[r]}
-            </option>
-          ))}
-        </AdminSelect>
+        {isSuperadmin ? (
+          <div className="inline-flex items-center gap-[6px] rounded-[7px] border border-amber-400/25 bg-amber-400/[0.07] px-[10px] py-[7px] text-[12px] font-medium text-amber-300/90">
+            <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
+            </svg>
+            {ROLE_LABELS.SUPERADMIN}
+          </div>
+        ) : (
+          <ThemedSelect
+            value={account.role}
+            disabled={pending}
+            onValueChange={onRoleChange}
+            options={ROLE_SELECT_OPTIONS}
+            className="min-w-[170px]"
+          />
+        )}
         <div className="mt-[3px] text-[10px] text-white/35">
-          {isLastSuperadmin ? "Last super-admin — locked" : ROLE_HINTS[account.role]}
+          {isSuperadmin ? "COMELEC tier — locked" : ROLE_HINTS[account.role]}
         </div>
       </td>
 

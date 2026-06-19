@@ -1,6 +1,7 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { createElection } from "./actions";
+import { ThemedSelect } from "@/components/admin/ThemedSelect";
 import Link from "next/link";
 
 export default async function NewElectionPage() {
@@ -70,20 +71,18 @@ export default async function NewElectionPage() {
                 Division
                 <span className="text-amber-400">*</span>
               </label>
-              <select
+              <ThemedSelect
                 name="division"
                 required
-                defaultValue=""
-                className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/70 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] [&>option]:bg-[#0b1220]"
-              >
-                <option value="" disabled>
-                  Select a division
-                </option>
-                <option value="GS">Grade School (Grades 3–5)</option>
-                <option value="JHS">Junior High School (Grades 6–9)</option>
-                <option value="SHS">Senior High School (Grades 10–11)</option>
-                <option value="HC">House Council (Grades 10–11)</option>
-              </select>
+                placeholder="Select a division"
+                className="h-10 rounded-lg"
+                options={[
+                  { value: "GS", label: "Grade School (Grades 3–5)" },
+                  { value: "JHS", label: "Junior High School (Grades 6–9)" },
+                  { value: "SHS", label: "Senior High School (Grades 10–11)" },
+                  { value: "HC", label: "House Council (Grades 10–11)" },
+                ]}
+              />
             </div>
 
             {/* Schedule */}

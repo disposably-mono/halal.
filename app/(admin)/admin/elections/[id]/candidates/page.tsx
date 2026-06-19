@@ -10,11 +10,11 @@ import {
   Card,
   AdminCardTitle,
   AdminInput,
-  AdminSelect,
   FinalizeButton,
   ElectionSubNav,
   SetupStepper,
 } from "@/components/admin/ui";
+import { ThemedSelect } from "@/components/admin/ThemedSelect";
 import { Button } from "@/components/ui/button";
 import {
   seedAllPositions,
@@ -134,11 +134,12 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                 <form action={addSinglePosition} className="flex items-center gap-2">
                   <input type="hidden" name="electionId" value={election.id} />
                   <input type="hidden" name="division" value={election.division} />
-                  <AdminSelect name="title" className="w-auto" style={{ width: "auto", paddingTop: 6, paddingBottom: 6 }}>
-                    {availablePositions.map((p) => (
-                      <option key={p.title} value={p.title}>{p.title}</option>
-                    ))}
-                  </AdminSelect>
+                  <ThemedSelect
+                    name="title"
+                    defaultValue={availablePositions[0]?.title}
+                    options={availablePositions.map((p) => ({ value: p.title, label: p.title }))}
+                    className="w-auto"
+                  />
                   <Button type="submit" variant="adminGhost" size="adminSm">+ Add Position</Button>
                 </form>
               )}
