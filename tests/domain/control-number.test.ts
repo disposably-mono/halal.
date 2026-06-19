@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
+  controlNumberPrefix,
   formatControlNumber,
   generateControlNumber,
   isValidControlNumber,
   isValidStudentId,
+  nextControlNumber,
   normalizeControlNumber,
   parseControlNumber,
 } from "@/lib/domain/control-number";
@@ -144,5 +146,41 @@ describe("generateControlNumber", () => {
     expect(generateControlNumber(2026, 11, "A", 1)).toBe(
       formatControlNumber({ year: 2026, grade: 11, section: "A", seq: 1 }),
     );
+  });
+});
+
+describe("controlNumberPrefix", () => {
+  it("builds the YYGGS cohort prefix", () => {
+    expect(controlNumberPrefix(2026, 11, "A")).toBe("2611A");
+    expect(controlNumberPrefix(2026, 3, "h")).toBe("2603H");
+  });
+});
+
+describe("nextControlNumber", () => {
+  it("starts a fresh cohort at 001", () => {
+    expect(nextControlNumber(2026, 11, "A", [])).toBe("2611A001");
+  });
+
+  it("issues one above the highest sequence in the cohort", () => {
+    expect(
+      nextControlNumber(2026, 11, "A", ["2611A001", "2611A002", "2611A003"]),
+    ).toBe("2611A004");
+  });
+
+  it("never reuses a freed gap number (monotonic)", () => {
+    // 002 was deleted; the next code is 004, not the gap 002.
+    expect(nextControlNumber(2026, 11, "A", ["2611A001", "2611A003"])).toBe(
+      "2611A004",
+    );
+  });
+
+  it("ignores codes from other cohorts (year, grade, or section)", () => {
+    const others = ["2711A050", "2610A050", "2611B050", "2611A007"];
+    // Only 2611A007 shares the cohort prefix.
+    expect(nextControlNumber(2026, 11, "A", others)).toBe("2611A008");
+  });
+
+  it("is robust to mixed-case and untrimmed existing codes", () => {
+    expect(nextControlNumber(2026, 11, "A", [" 2611a004 "])).toBe("2611A005");
   });
 });
