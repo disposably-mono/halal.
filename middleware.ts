@@ -20,8 +20,8 @@ export default auth(async function middleware(req: NextRequest & { auth: Session
     return NextResponse.next();
   }
 
-  // Protect all /admin routes
-  if (pathname.startsWith("/admin")) {
+  // Protect /admin and its children without catching public routes such as /admin-help.
+  if (pathname === "/admin" || pathname.startsWith("/admin/")) {
     if (!isLoggedIn) {
       return NextResponse.redirect(new URL("/admin/login", req.url));
     }

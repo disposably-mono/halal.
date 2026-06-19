@@ -1,5 +1,7 @@
 "use client";
 
+import { Link } from "next-view-transitions";
+
 type FooterAction = {
   href: string;
   label: string;
@@ -83,6 +85,15 @@ export function LandingFooter({
           OLPS COMELEC — Commission on Elections
         </p>
         <p className="font-body text-mid/30 text-[11px]">Our Lady of Peace School</p>
+        <div className="flex items-center gap-3 pt-2 font-body text-[10px] uppercase tracking-[0.16em]">
+          <Link href="/voter-help" className="text-white/35 transition-colors hover:text-gold">
+            Voter Help
+          </Link>
+          <span className="text-gold/20" aria-hidden="true">|</span>
+          <Link href="/admin-help" className="text-white/35 transition-colors hover:text-gold">
+            Officer Help
+          </Link>
+        </div>
         </div>
       </div>
     </footer>
