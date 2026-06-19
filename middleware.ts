@@ -31,7 +31,9 @@ export default auth(async function middleware(req: NextRequest & { auth: Session
       pathname.startsWith("/admin/accounts") &&
       !can(req.auth?.user?.role, "accounts:manage")
     ) {
-      return NextResponse.redirect(new URL("/admin?denied=1", req.url));
+      return NextResponse.redirect(
+        new URL("/admin?denied=accounts:manage", req.url),
+      );
     }
     return NextResponse.next();
   }

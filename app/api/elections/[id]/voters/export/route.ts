@@ -1,4 +1,5 @@
 import { requireCapabilityOrError } from "@/lib/server/auth";
+import { permissionErrorMessage } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -8,7 +9,7 @@ export async function GET(
 ) {
   const guard = await requireCapabilityOrError("voters:export");
   if (!guard.ok) {
-    return new NextResponse(guard.error, {
+    return new NextResponse(permissionErrorMessage(guard.error), {
       status: guard.error === "Forbidden" ? 403 : 401,
     });
   }

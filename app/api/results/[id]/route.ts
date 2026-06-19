@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireCapabilityOrError } from "@/lib/server/auth";
+import { permissionErrorMessage } from "@/lib/auth/permissions";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export async function GET(
     const guard = await requireCapabilityOrError("admin:view");
     if (!guard.ok) {
       return NextResponse.json(
-        { error: guard.error },
+        { error: permissionErrorMessage(guard.error) },
         { status: guard.error === "Forbidden" ? 403 : 401 },
       );
     }

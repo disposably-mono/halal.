@@ -36,7 +36,9 @@ export function adminRoleFromSession(session: Session): AdminRole | undefined {
 export async function requireCapability(cap: Capability): Promise<Session> {
   const session = await auth();
   if (!session) redirect("/admin/login");
-  if (!can(session.user?.role, cap)) redirect("/admin?denied=1");
+  if (!can(session.user?.role, cap)) {
+    redirect(`/admin?denied=${encodeURIComponent(cap)}`);
+  }
   return session;
 }
 

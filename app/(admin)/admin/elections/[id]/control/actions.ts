@@ -10,6 +10,7 @@ import {
   nextStatusForReschedule,
 } from "@/lib/domain/election-state";
 import { requireCapabilityOrError, adminEmailFromSession } from "@/lib/server/auth";
+import { permissionErrorMessage } from "@/lib/auth/permissions";
 import {
   revalidateAdminDashboard,
   revalidateElectionControl,
@@ -49,7 +50,7 @@ async function transitionStatus(
 
 export async function openElectionNow(electionId: string): Promise<ActionResult> {
   const guard = await requireCapabilityOrError("election:lifecycle");
-  if (!guard.ok) return { success: false, error: guard.error };
+  if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
 
   const election = await prisma.election.findUnique({ where: { id: electionId } });
   if (!election) return { success: false, error: "Election not found" };
@@ -69,7 +70,7 @@ export async function openElectionNow(electionId: string): Promise<ActionResult>
 
 export async function closeElectionNow(electionId: string): Promise<ActionResult> {
   const guard = await requireCapabilityOrError("election:close");
-  if (!guard.ok) return { success: false, error: guard.error };
+  if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
 
   const election = await prisma.election.findUnique({ where: { id: electionId } });
   if (!election) return { success: false, error: "Election not found" };
@@ -93,7 +94,7 @@ export async function rescheduleElection(
   scheduledClose: string | null,
 ): Promise<ActionResult> {
   const guard = await requireCapabilityOrError("election:lifecycle");
-  if (!guard.ok) return { success: false, error: guard.error };
+  if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
 
   const election = await prisma.election.findUnique({ where: { id: electionId } });
   if (!election) return { success: false, error: "Election not found" };
@@ -128,7 +129,7 @@ export async function rescheduleElection(
 
 export async function advanceToScheduled(electionId: string): Promise<ActionResult> {
   const guard = await requireCapabilityOrError("election:lifecycle");
-  if (!guard.ok) return { success: false, error: guard.error };
+  if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
 
   const election = await prisma.election.findUnique({ where: { id: electionId } });
   if (!election) return { success: false, error: "Election not found" };
