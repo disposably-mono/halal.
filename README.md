@@ -17,6 +17,7 @@ The platform supports the full election lifecycle: preparing candidates and vote
 - Prevents an accepted Control Number from being used again
 - Keeps public results unavailable until the election has closed
 - Provides a public voter guide at `/voter-help`
+- Prints a one-time anonymous receipt and verifies ballot inclusion at `/verify`
 
 ### For COMELEC Officers
 
@@ -29,6 +30,7 @@ The platform supports the full election lifecycle: preparing candidates and vote
 - Exports voter rosters and official results according to officer permissions
 - Archives completed elections without removing their records
 - Records election actions and successful two-officer admin sign-ins
+- Freezes a certified tally at closing and records Canvasser-initiated recounts
 - Provides a key-protected officer guide at `/admin-help`
 
 ## Election Workflow
@@ -65,6 +67,8 @@ Permissions are enforced on the server. Hiding an action in the interface is not
 ## Ballot Privacy
 
 Voter records contain eligibility information and whether a Control Number has been used. Ballot selections are stored separately and do not include a Student ID, Control Number, or voter-record reference.
+
+New-format votes are grouped under anonymous ballot records. A receipt proves that the grouped ballot remains present and unchanged, but public verification never reveals its choices. Receipt codes are shown once and cannot be recovered because only their hashes are stored.
 
 Operational logs identify officers performing administrative actions. They do not contain student ballot choices or plaintext passwords and Officer Keys.
 
@@ -142,6 +146,7 @@ The seed requires two accounts with different emails and Officer Keys. This is i
 | `DB_USER`, `DB_PASSWORD`, `DB_NAME` | Credentials used by the local Docker database |
 | `NEXTAUTH_SECRET` | Secret used to sign authentication and voter-session tokens |
 | `NEXTAUTH_URL` | Public application URL used by Auth.js |
+| `ELECTION_AUDIT_MASTER_KEY` | Base64-encoded 32-byte key used to encrypt election audit keys |
 | `SEED_ADMIN_*` | Bootstrap Super-admin credentials |
 | `SEED_SECOND_ADMIN_*` | Bootstrap verification Officer credentials |
 | `CRON_SECRET` | Bearer token protecting scheduled election transitions |
@@ -153,6 +158,8 @@ openssl rand -base64 32
 ```
 
 Never commit `.env`, real officer credentials, voter rosters, or exported election records.
+
+Back up `ELECTION_AUDIT_MASTER_KEY` before creating elections. Changing or losing it without re-encrypting every election audit key makes existing receipt verification and recounts unavailable. Audit operations fail closed when the key cannot be decrypted.
 
 ## Useful Commands
 
@@ -190,6 +197,8 @@ tests/                 Authentication and election-domain tests
 - Admin sign-in requires credentials from two different officer accounts.
 - Role capabilities are checked by server actions and protected routes.
 - Voter access uses a short-lived, signed HTTP-only session cookie.
+- Verifiable elections use AES-256-GCM encrypted election keys and versioned HMAC-SHA-256 ballot commitments.
+- Closing a verifiable election atomically freezes a signed tally snapshot for later recount comparison.
 - Election transitions validate roster and candidate readiness.
 - The scheduler endpoint requires `Authorization: Bearer <CRON_SECRET>`.
 - Production deployments should use HTTPS, managed secrets, regular backups, and restricted database access.

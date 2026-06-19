@@ -9,6 +9,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
+import { closeElectionWithCertification } from "@/lib/server/close-election";
 
 export type TransitionSummary = {
   opened: string[]; // IDs flipped SCHEDULED → OPEN
@@ -27,6 +28,7 @@ export async function applyScheduledTransitions(): Promise<TransitionSummary> {
       status: "SCHEDULED",
       candidatesFinalized: true,
       votersFinalized: true,
+      auditVersion: { not: null },
       scheduledOpen: { lte: now },
       scheduledClose: { gt: now },
     },
@@ -50,11 +52,8 @@ export async function applyScheduledTransitions(): Promise<TransitionSummary> {
     select: { id: true },
   });
 
-  if (toClose.length > 0) {
-    await prisma.election.updateMany({
-      where: { id: { in: toClose.map((e) => e.id) } },
-      data: { status: "CLOSED" },
-    });
+  for (const election of toClose) {
+    await closeElectionWithCertification(election.id, "scheduler", ["OPEN"]);
   }
 
   // ── 3. SCHEDULED → CLOSED (missed entire window while server was down) ────
@@ -70,11 +69,8 @@ export async function applyScheduledTransitions(): Promise<TransitionSummary> {
     select: { id: true },
   });
 
-  if (missedWindow.length > 0) {
-    await prisma.election.updateMany({
-      where: { id: { in: missedWindow.map((e) => e.id) } },
-      data: { status: "CLOSED" },
-    });
+  for (const election of missedWindow) {
+    await closeElectionWithCertification(election.id, "scheduler", ["SCHEDULED"]);
   }
 
   return {

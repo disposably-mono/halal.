@@ -19,6 +19,7 @@ export default async function ControlPage({ params }: PageProps) {
 
   const canLifecycle = can(session.user?.role, "election:lifecycle");
   const canClose = can(session.user?.role, "election:close");
+  const canRecount = can(session.user?.role, "recounts:run");
 
   const [election, auditLogs] = await Promise.all([
     prisma.election.findUnique({
@@ -28,6 +29,12 @@ export default async function ControlPage({ params }: PageProps) {
         scheduledOpen: true, scheduledClose: true,
         candidatesFinalized: true, votersFinalized: true,
         archivedAt: true, archivedBy: true,
+        auditFingerprint: true, auditVersion: true,
+        certification: { select: { snapshotHash: true, createdAt: true, createdBy: true } },
+        recounts: {
+          orderBy: { createdAt: "desc" },
+          select: { id: true, createdAt: true, initiatedBy: true, matchesOfficial: true, ballotCount: true, validBallots: true, invalidBallots: true, discrepancies: true },
+        },
         _count: { select: { voters: true, votes: true } },
       },
     }),
@@ -80,6 +87,7 @@ export default async function ControlPage({ params }: PageProps) {
         auditLogs={auditLogs}
         canLifecycle={canLifecycle}
         canClose={canClose}
+        canRecount={canRecount}
       />
     </div>
   );

@@ -25,11 +25,12 @@ export type Capability =
   | "voters:export"
   | "candidates:manage"
   | "results:export"
+  | "recounts:run"
   | "admin:view";
 
 export const ROLE_CAPABILITIES: Record<AdminRole, readonly Capability[]> = {
   SUPERADMIN: ["accounts:manage", "admin:view"],
-  CANVASSER: ["election:close", "results:export", "admin:view"],
+  CANVASSER: ["election:close", "results:export", "recounts:run", "admin:view"],
   COMMISSIONER: [
     "election:lifecycle",
     "voters:manage",
@@ -111,6 +112,7 @@ export const CAPABILITY_DENIED_MESSAGES: Record<Capability, string> = {
   "voters:export": "Only a Commissioner can export the voter roster.",
   "candidates:manage": "Only a Commissioner can manage candidates.",
   "results:export": "Only the Canvassing Head can export official results.",
+  "recounts:run": "Only the Canvassing Head can initiate a recount.",
   "admin:view": "You don't have access to that page.",
 };
 

@@ -117,8 +117,16 @@ export default function ResultsClient({
               <p className="font-body text-white/40 text-xs tracking-widest uppercase">Loading…</p>
             </div>
           </div>
+        ) : data?.integrityFailure ? (
+          <div className="flex-1 flex items-center justify-center px-6 py-20 text-center">
+            <div className="max-w-lg border border-red-400/30 bg-red-400/[0.06] p-8">
+              <p className="text-[10px] uppercase tracking-[0.25em] text-red-300/70">Integrity Warning</p>
+              <h2 className="mt-3 font-display text-4xl uppercase">Certified Results Unavailable</h2>
+              <p className="mt-4 text-sm leading-6 text-white/55">The official closing snapshot did not pass cryptographic verification. Results are withheld until OLPS COMELEC completes an audit.</p>
+            </div>
+          </div>
         ) : data?.embargoed ? (
-          <HoldingState electionName={data.name} status={data.status} />
+          <HoldingState electionName={data.name} status={data.status} audit={data.audit} />
         ) : data ? (
           <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-10 space-y-6">
             {/* Page header */}

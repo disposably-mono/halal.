@@ -29,7 +29,13 @@ model Election {
   votersFinalized     Boolean        @default(false)
   archivedAt          DateTime?
   archivedBy          String?
+  auditKeyEncrypted   String?
+  auditFingerprint    String?         @unique
+  auditVersion        Int?
   auditLogs           AuditLog[]
+  ballots             Ballot[]
+  certification       ElectionCertification?
+  recounts            Recount[]
   positions           Position[]
   votes               Vote[]
   voters              Voter[]
@@ -84,6 +90,7 @@ model Vote {
   isAbstain   Boolean    @default(false)
   candidateId String?
   castAt      DateTime   @default(now())
+  ballotId    String?
   // Cascade — deleting an election clears its votes (mirrors Position/Voter/Candidate cascade)
   election    Election   @relation(fields: [electionId], references: [id], onDelete: Cascade)
   // Cascade — positions are election-scoped; if a position is removed, its votes go with it
@@ -91,6 +98,53 @@ model Vote {
   // Restrict — never silently nullify or destroy cast votes; the candidates/actions.ts
   // removeCandidate guard checks vote count and short-circuits before this fires.
   candidate   Candidate? @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+  ballot      Ballot?    @relation(fields: [ballotId], references: [id], onDelete: Cascade)
+
+  @@index([ballotId])
+}
+
+model Ballot {
+  id          String   @id @default(cuid())
+  electionId  String
+  receiptHash String   @unique
+  nonce       String
+  commitment  String
+  version     Int      @default(1)
+  castAt      DateTime @default(now())
+  election    Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  votes       Vote[]
+
+  @@index([electionId])
+}
+
+model ElectionCertification {
+  id           String   @id @default(cuid())
+  electionId   String   @unique
+  snapshot     Json
+  snapshotHash String
+  signature    String
+  createdAt    DateTime @default(now())
+  createdBy    String
+  election     Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+}
+
+model Recount {
+  id             String   @id @default(cuid())
+  electionId     String
+  snapshot       Json
+  snapshotHash   String
+  signature      String
+  baselineHash   String
+  ballotCount    Int
+  validBallots   Int
+  invalidBallots Int
+  matchesOfficial Boolean
+  discrepancies  Json
+  initiatedBy    String
+  createdAt      DateTime @default(now())
+  election       Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+
+  @@index([electionId, createdAt])
 }
 
 model AdminUser {

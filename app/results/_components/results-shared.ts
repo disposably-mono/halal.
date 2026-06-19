@@ -5,7 +5,7 @@ export interface ElectionMeta {
   status: string;
 }
 
-import type { CandidateResult, TurnoutData } from "@/lib/api/results-types";
+import type { CandidateResult, TurnoutData, ElectionAuditData } from "@/lib/api/results-types";
 
 export type { CandidateResult, TurnoutData };
 
@@ -25,6 +25,8 @@ export interface ResultsPayload {
   embargoed: boolean;
   positions: PositionResult[];
   turnout: TurnoutData | null;
+  audit: ElectionAuditData;
+  integrityFailure?: boolean;
 }
 
 export { DIVISION_LABELS } from "@/lib/ui/division-labels";
