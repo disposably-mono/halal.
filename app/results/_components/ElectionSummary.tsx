@@ -34,6 +34,18 @@ export function ElectionSummary({
         {totalVotes.toLocaleString()} total votes
       </span>
 
+      {data.audit.receiptVerificationSupported ? (
+        <a href="/verify" className="font-mono text-[10px] text-gold/60 border border-gold/15 px-2 py-1 rounded-sm hover:text-gold">
+          Verify receipt
+        </a>
+      ) : (
+        <span className="font-mono text-[10px] text-amber-300/50 border border-amber-300/10 px-2 py-1 rounded-sm">Legacy election</span>
+      )}
+
+      {data.audit.fingerprint && (
+        <span className="basis-full break-all font-mono text-[9px] text-white/20">Audit fingerprint: {data.audit.fingerprint}</span>
+      )}
+
       <span className="font-mono text-[10px] text-white/30 border border-white/[0.06] px-2 py-1 rounded-sm">
         {data.positions.length} position{data.positions.length !== 1 ? "s" : ""}
       </span>

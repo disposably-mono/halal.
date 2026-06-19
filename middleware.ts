@@ -5,6 +5,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { VOTER_COOKIE } from "@/lib/voter-session";
 import { jwtVerify } from "jose";
 import { can } from "@/lib/auth/permissions";
+import { BALLOT_CONFIRMATION_COOKIE } from "@/lib/ballot-confirmation";
 
 const { auth } = NextAuth(authConfig);
 
@@ -56,6 +57,9 @@ export default auth(async function middleware(req: NextRequest & { auth: Session
   if (pathname === "/vote/confirmed") {
     const response = NextResponse.next();
     if (req.cookies.has(VOTER_COOKIE)) response.cookies.delete(VOTER_COOKIE);
+    if (req.cookies.has(BALLOT_CONFIRMATION_COOKIE)) {
+      response.cookies.delete(BALLOT_CONFIRMATION_COOKIE);
+    }
     return response;
   }
 

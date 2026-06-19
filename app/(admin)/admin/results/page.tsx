@@ -3,6 +3,8 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { DIVISION_LABELS } from "@/lib/ui/division-labels";
+import type { AuditSnapshot } from "@/lib/domain/audit-tally";
+import { verifyStoredCertification } from "@/lib/server/election-audit";
 
 export default async function AdminResultsPage() {
   const session = await auth();
@@ -18,6 +20,9 @@ export default async function AdminResultsPage() {
       status: true,
       scheduledClose: true,
       _count: { select: { voters: true } },
+      auditKeyEncrypted: true,
+      auditVersion: true,
+      certification: { select: { snapshot: true, snapshotHash: true, signature: true } },
     },
   });
 
@@ -45,6 +50,37 @@ export default async function AdminResultsPage() {
 
   const electionData = await Promise.all(
     closedFirst.map(async (el) => {
+      const certified = el.certification?.snapshot as unknown as AuditSnapshot | undefined;
+      if (el.status === "CLOSED" && el.auditVersion !== null && !certified) {
+        return { ...el, votedCount: 0, positions: [], integrityFailure: true };
+      }
+      if (certified) {
+        const certificationValid = !!el.auditKeyEncrypted && verifyStoredCertification({
+          encryptedKey: el.auditKeyEncrypted,
+          snapshot: el.certification!.snapshot,
+          snapshotHash: el.certification!.snapshotHash,
+          signature: el.certification!.signature,
+        });
+        if (!certificationValid) {
+          return { ...el, votedCount: 0, positions: [], integrityFailure: true };
+        }
+        const certifiedPositions = certified.positions.map((position) => {
+          const sorted = [...position.candidates].sort((a, b) => b.votes - a.votes);
+          const top = sorted[0];
+          const isDrawn = !!top && top.votes > 0 && sorted.filter((candidate) => candidate.votes === top.votes).length > 1;
+          return {
+            id: position.id,
+            title: position.title,
+            order: position.order,
+            candidates: position.candidates,
+            winner: top && top.votes > 0 && !isDrawn ? top : null,
+            draw: isDrawn ? sorted.filter((candidate) => candidate.votes === top.votes) : null,
+            winnerVotes: top?.votes ?? 0,
+            totalVotes: position.candidates.reduce((sum, candidate) => sum + candidate.votes, 0),
+          };
+        });
+        return { ...el, votedCount: certified.turnout.voted, positions: certifiedPositions, integrityFailure: false };
+      }
       const votedCount = await prisma.voter.count({
         where: { electionId: el.id, hasVoted: true },
       });
@@ -97,7 +133,7 @@ export default async function AdminResultsPage() {
         })
       );
 
-      return { ...el, votedCount, positions: positionsWithWinner };
+      return { ...el, votedCount, positions: positionsWithWinner, integrityFailure: false };
     })
   );
 
@@ -154,7 +190,11 @@ export default async function AdminResultsPage() {
 
               {/* Winners grid */}
               <div className="p-4">
-                {el.positions.length === 0 ? (
+                {el.integrityFailure ? (
+                  <div className="rounded-[8px] border border-red-400/25 bg-red-400/[0.05] px-4 py-3 text-[11px] text-red-300">
+                    Certified results failed cryptographic verification. Results are withheld pending a recount and audit.
+                  </div>
+                ) : el.positions.length === 0 ? (
                   <div className="text-[11px] text-white/35 italic">No positions configured</div>
                 ) : (
                   <div

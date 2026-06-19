@@ -22,6 +22,7 @@ const ALL_CAPABILITIES: Capability[] = [
   "voters:export",
   "candidates:manage",
   "results:export",
+  "recounts:run",
   "admin:view",
 ];
 
@@ -30,7 +31,7 @@ const ALL_CAPABILITIES: Capability[] = [
 // setup; Officer observes.
 const EXPECTED: Record<AdminRole, Capability[]> = {
   SUPERADMIN: ["accounts:manage", "admin:view"],
-  CANVASSER: ["election:close", "results:export", "admin:view"],
+  CANVASSER: ["election:close", "results:export", "recounts:run", "admin:view"],
   COMMISSIONER: [
     "election:lifecycle",
     "voters:manage",
@@ -62,6 +63,7 @@ describe("separation of duties invariants", () => {
   test("only CANVASSER can close elections or export results", () => {
     expect(ROLES.filter((r) => can(r, "election:close"))).toEqual(["CANVASSER"]);
     expect(ROLES.filter((r) => can(r, "results:export"))).toEqual(["CANVASSER"]);
+    expect(ROLES.filter((r) => can(r, "recounts:run"))).toEqual(["CANVASSER"]);
   });
 
   test("SUPERADMIN cannot run elections", () => {

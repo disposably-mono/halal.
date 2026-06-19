@@ -25,3 +25,9 @@ export interface TurnoutData {
   total: number;
   pct: number;
 }
+
+export interface ElectionAuditData {
+  receiptVerificationSupported: boolean;
+  fingerprint: string | null;
+  certifiedSnapshotHash: string | null;
+}

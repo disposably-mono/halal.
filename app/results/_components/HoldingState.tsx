@@ -3,9 +3,11 @@
 export function HoldingState({
   electionName,
   status,
+  audit,
 }: {
   electionName: string;
   status: string;
+  audit: { receiptVerificationSupported: boolean; fingerprint: string | null };
 }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 py-20 text-center">
@@ -29,6 +31,11 @@ export function HoldingState({
           ? "Voting is currently in progress. Results will be published once polls close."
           : "Results will be available after this election closes."}
       </p>
+      {audit.fingerprint && (
+        <p className="mt-6 max-w-md break-all font-mono text-[9px] text-white/25">
+          Published audit fingerprint: {audit.fingerprint}
+        </p>
+      )}
     </div>
   );
 }

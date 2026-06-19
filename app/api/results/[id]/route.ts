@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireCapabilityOrError } from "@/lib/server/auth";
 import { permissionErrorMessage } from "@/lib/auth/permissions";
+import type { AuditSnapshot } from "@/lib/domain/audit-tally";
+import { verifyStoredCertification } from "@/lib/server/election-audit";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +35,10 @@ export async function GET(
       scheduledOpen: true,
       scheduledClose: true,
       archivedAt: true,
+      auditFingerprint: true,
+      auditVersion: true,
+      auditKeyEncrypted: true,
+      certification: { select: { snapshot: true, snapshotHash: true, signature: true } },
     },
   });
 
@@ -55,8 +61,46 @@ export async function GET(
       embargoed: true,
       positions: [],
       turnout: null,
+      audit: {
+        receiptVerificationSupported: election.auditVersion !== null,
+        fingerprint: election.auditFingerprint,
+        certifiedSnapshotHash: null,
+      },
     });
   }
+
+  const certificationValid = !!(
+    election.certification &&
+    election.auditKeyEncrypted &&
+    verifyStoredCertification({
+      encryptedKey: election.auditKeyEncrypted,
+      snapshot: election.certification.snapshot,
+      snapshotHash: election.certification.snapshotHash,
+      signature: election.certification.signature,
+    })
+  );
+  if (election.status === "CLOSED" && election.auditVersion !== null && !certificationValid) {
+    return NextResponse.json({
+      electionId: id,
+      status: election.status,
+      name: election.name,
+      division: election.division,
+      embargoed: false,
+      integrityFailure: true,
+      positions: [],
+      turnout: null,
+      audit: {
+        receiptVerificationSupported: true,
+        fingerprint: election.auditFingerprint,
+        certifiedSnapshotHash: election.certification?.snapshotHash ?? null,
+      },
+    });
+  }
+
+  const certified =
+    election.status === "CLOSED" && election.certification && certificationValid
+      ? (election.certification.snapshot as unknown as AuditSnapshot)
+      : null;
 
   // Fetch positions with candidates and vote counts
   const positions = await prisma.position.findMany({
@@ -100,7 +144,7 @@ export async function GET(
     where: { electionId: id, hasVoted: true },
   });
 
-  const positionResults = positions.map((pos) => {
+  const livePositionResults = positions.map((pos) => {
     const abstentions = positionAbstentions.get(pos.id) ?? 0;
     const candidatesWithVotes = pos.candidates.map((c) => ({
       id: c.id,
@@ -129,6 +173,27 @@ export async function GET(
     };
   });
 
+  const positionResults = certified
+    ? certified.positions.map((position) => {
+        const maxVotes = position.candidates.reduce((max, candidate) => Math.max(max, candidate.votes), 0);
+        const tiedTopCount = position.candidates.filter((candidate) => candidate.votes > 0 && candidate.votes === maxVotes).length;
+        return {
+          id: position.id,
+          title: position.title,
+          order: position.order,
+          candidates: position.candidates
+            .map((candidate) => ({
+              ...candidate,
+              isWinner: candidate.votes > 0 && candidate.votes === maxVotes,
+              isTie: tiedTopCount > 1 && candidate.votes === maxVotes,
+            }))
+            .sort((a, b) => b.votes - a.votes),
+          abstentions: isAdminRequest ? position.abstentions : undefined,
+          totalVotes: position.candidates.reduce((sum, candidate) => sum + candidate.votes, 0),
+        };
+      })
+    : livePositionResults;
+
   return NextResponse.json({
     electionId: id,
     status: election.status,
@@ -136,10 +201,16 @@ export async function GET(
     division: election.division,
     embargoed: false,
     positions: positionResults,
-    turnout: {
-      voted: votedCount,
-      total: totalVoters,
-      pct: totalVoters > 0 ? Math.round((votedCount / totalVoters) * 100) : 0,
+    turnout: (() => {
+      const voted = certified?.turnout.voted ?? votedCount;
+      const total = certified?.turnout.total ?? totalVoters;
+      return { voted, total, pct: total > 0 ? Math.round((voted / total) * 100) : 0 };
+    })(),
+    audit: {
+      receiptVerificationSupported: election.auditVersion !== null,
+      fingerprint: election.auditFingerprint,
+      certifiedSnapshotHash: election.certification?.snapshotHash ?? null,
     },
+    integrityFailure: false,
   });
 }

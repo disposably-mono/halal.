@@ -13,6 +13,7 @@ import {
 import { permissionErrorMessage } from "@/lib/auth/permissions";
 import { ElectionStatusSchema } from "@/lib/validation/schemas";
 import { canArchive, canRestore } from "@/lib/domain/election-state";
+import { closeElectionWithCertification } from "@/lib/server/close-election";
 
 type ActionResult = { success: true } | { success: false; error: string };
 
@@ -28,7 +29,7 @@ export async function updateElectionStatus(
 
   // Closing an election is the Canvassing Head's domain; all other transitions
   // belong to the Commissioner (election lifecycle).
-  await requireCapability(
+  const session = await requireCapability(
     nextStatus === "CLOSED" ? "election:close" : "election:lifecycle",
   );
 
@@ -44,10 +45,14 @@ export async function updateElectionStatus(
     }
   }
 
-  await prisma.election.update({
-    where: { id: electionId },
-    data: { status: nextStatus },
-  });
+  if (nextStatus === "CLOSED") {
+    await closeElectionWithCertification(electionId, adminEmailFromSession(session));
+  } else {
+    await prisma.election.update({
+      where: { id: electionId },
+      data: { status: nextStatus },
+    });
+  }
 
   revalidateAdminDashboard();
 }

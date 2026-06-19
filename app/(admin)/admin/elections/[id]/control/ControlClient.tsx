@@ -7,6 +7,7 @@ import {
   closeElectionNow,
   rescheduleElection,
   advanceToScheduled,
+  initiateRecount,
 } from "./actions";
 import { archiveElection, restoreElection } from "@/app/(admin)/admin/actions";
 import { canArchive } from "@/lib/domain/election-state";
@@ -52,6 +53,19 @@ type Election = {
   archivedBy: string | null;
   _count: { voters: number; votes: number };
   votedCount: number;
+  auditFingerprint: string | null;
+  auditVersion: number | null;
+  certification: { snapshotHash: string; createdAt: Date; createdBy: string } | null;
+  recounts: Array<{
+    id: string;
+    createdAt: Date;
+    initiatedBy: string;
+    matchesOfficial: boolean;
+    ballotCount: number;
+    validBallots: number;
+    invalidBallots: number;
+    discrepancies: unknown;
+  }>;
 };
 
 interface ControlClientProps {
@@ -59,6 +73,7 @@ interface ControlClientProps {
   auditLogs: AuditEntry[];
   canLifecycle: boolean;
   canClose: boolean;
+  canRecount: boolean;
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -78,7 +93,7 @@ function toInput(d: Date | null) {
   return new Date(d).toISOString().slice(0, 16);
 }
 
-type DlgType = "open" | "close" | "reschedule" | "advance" | "archive" | "restore" | null;
+type DlgType = "open" | "close" | "recount" | "reschedule" | "advance" | "archive" | "restore" | null;
 
 interface DlgConfig {
   title: string;
@@ -133,6 +148,15 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         iconBg: "bg-red-400/[0.12] text-red-400",
         icon: icons.close,
       };
+    case "recount":
+      return {
+        title: "Initiate certified recount?",
+        body: "Every anonymous ballot commitment will be revalidated and the rebuilt tally will be compared with the official closing snapshot. The result is permanent and audited.",
+        confirmLabel: "Run Recount",
+        confirmVariant: "adminPrimary",
+        iconBg: "bg-amber-400/[0.12] text-amber-400",
+        icon: icons.calendar,
+      };
     case "reschedule":
       return {
         title: "Save schedule override?",
@@ -185,7 +209,7 @@ const DOT_COLORS: Record<string, string> = {
 
 // ─── Main component ───────────────────────────────────────────────────────────
 
-export default function ControlClient({ election, auditLogs, canLifecycle, canClose }: ControlClientProps) {
+export default function ControlClient({ election, auditLogs, canLifecycle, canClose, canRecount }: ControlClientProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [dlg, setDlg] = useState<DlgType>(null);
@@ -215,6 +239,9 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
       } else if (dlg === "close") {
         result = await closeElectionNow(election.id);
         if (result.success) showToast("Election closed", "red");
+      } else if (dlg === "recount") {
+        result = await initiateRecount(election.id);
+        if (result.success) showToast("Recount completed", "green");
       } else if (dlg === "reschedule") {
         result = await rescheduleElection(election.id, dtOpen || null, dtClose || null);
         if (result.success) showToast("Schedule updated", "amber");
@@ -402,6 +429,55 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
           </div>
         </Card>
       )}
+
+      <Card
+        title="Ballot Integrity & Recounts"
+        meta={election.auditVersion ? <span className="text-[10px] text-emerald-400/70">Verifiable v{election.auditVersion}</span> : <span className="text-[10px] text-amber-400/70">Legacy</span>}
+      >
+        {!election.auditVersion ? (
+          <WarnBanner>This election predates verifiable ballots. Existing votes remain available, but receipts and cryptographic recounts are not supported.</WarnBanner>
+        ) : (
+          <div className="flex flex-col gap-4">
+            <div className="rounded-[8px] border border-white/[0.07] bg-white/[0.025] p-3">
+              <div className="text-[9px] uppercase tracking-[0.14em] text-white/35">Public audit fingerprint</div>
+              <div className="mt-1 break-all font-mono text-[10px] text-white/60">{election.auditFingerprint}</div>
+            </div>
+            {election.certification ? (
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <div>
+                  <div className="text-[12px] font-medium text-emerald-300">Official tally certified</div>
+                  <div className="mt-1 text-[10px] text-white/40">{fmt(election.certification.createdAt)} by {election.certification.createdBy}</div>
+                </div>
+                {canRecount && (
+                  <Button onClick={() => setDlg("recount")} disabled={isPending || status !== "CLOSED"} variant="adminPrimary" size="adminMd">Initiate Recount</Button>
+                )}
+              </div>
+            ) : (
+              <p className="text-[11px] text-white/45">The official snapshot will be frozen when this election closes.</p>
+            )}
+            {election.recounts.length > 0 && (
+              <div className="border-t border-white/[0.07] pt-3">
+                <div className="mb-2 text-[9px] uppercase tracking-[0.14em] text-white/35">Recount history</div>
+                <div className="flex flex-col gap-2">
+                  {election.recounts.map((recount) => {
+                    const discrepancies = Array.isArray(recount.discrepancies) ? recount.discrepancies.filter((item): item is string => typeof item === "string") : [];
+                    return (
+                      <div key={recount.id} className={`rounded-[7px] border px-3 py-2 ${recount.matchesOfficial ? "border-emerald-400/15 bg-emerald-400/[0.04]" : "border-red-400/25 bg-red-400/[0.05]"}`}>
+                        <div className="flex justify-between gap-3 text-[11px]">
+                          <span className={recount.matchesOfficial ? "text-emerald-300" : "text-red-300"}>{recount.matchesOfficial ? "Matched official tally" : "Integrity discrepancy"}</span>
+                          <span className="text-white/35">{fmt(recount.createdAt)}</span>
+                        </div>
+                        <div className="mt-1 text-[10px] text-white/40">{recount.ballotCount} ballots · {recount.validBallots} valid · {recount.invalidBallots} invalid · {recount.initiatedBy}</div>
+                        {discrepancies.map((item) => <div key={item} className="mt-1 text-[10px] text-red-300/80">{item}</div>)}
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+      </Card>
 
       {/* ── Audit trail ── */}
       <Card title="Audit Trail" meta={<span className="text-[10px] text-white/35">{auditLogs.length} events</span>} noPad>

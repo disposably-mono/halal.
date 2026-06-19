@@ -16,6 +16,8 @@ import { requireCapabilityOrError } from "@/lib/server/auth";
 import { permissionErrorMessage } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/prisma";
 import { ResultsPDF, type ResultPosition } from "@/lib/pdf/ResultsPDF";
+import type { AuditSnapshot } from "@/lib/domain/audit-tally";
+import { verifyStoredCertification } from "@/lib/server/election-audit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -77,6 +79,9 @@ export async function GET(
       status: true,
       updatedAt: true,
       _count: { select: { voters: true } },
+      certification: { select: { snapshot: true } },
+      auditKeyEncrypted: true,
+      auditVersion: true,
     },
   });
 
@@ -89,6 +94,24 @@ export async function GET(
       { error: "PDF export is only available for closed elections." },
       { status: 400 }
     );
+  }
+
+  if (election.auditVersion !== null) {
+    const certification = await prisma.electionCertification.findUnique({
+      where: { electionId },
+      select: { snapshot: true, snapshotHash: true, signature: true },
+    });
+    if (!certification || !election.auditKeyEncrypted || !verifyStoredCertification({
+      encryptedKey: election.auditKeyEncrypted,
+      snapshot: certification.snapshot,
+      snapshotHash: certification.snapshotHash,
+      signature: certification.signature,
+    })) {
+      return NextResponse.json(
+        { error: "The official result certification failed integrity verification." },
+        { status: 409 },
+      );
+    }
   }
 
   // ── Fetch positions with candidates and vote counts ───────────────────────
@@ -122,7 +145,7 @@ export async function GET(
   });
 
   // Build the shape expected by ResultsPDF
-  const resultPositions: ResultPosition[] = positions.map((pos) => {
+  const legacyResultPositions: ResultPosition[] = positions.map((pos) => {
     const candidatesWithVotes = pos.candidates.map((c) => ({
       id: c.id,
       fullName: c.fullName,
@@ -151,6 +174,26 @@ export async function GET(
       })),
     };
   });
+  const certified = election.certification?.snapshot as unknown as AuditSnapshot | undefined;
+  const resultPositions: ResultPosition[] = certified
+    ? certified.positions.map((position) => {
+        const maxVotes = Math.max(0, ...position.candidates.map((candidate) => candidate.votes));
+        const tiedTopCount = position.candidates.filter((candidate) => candidate.votes > 0 && candidate.votes === maxVotes).length;
+        return {
+          id: position.id,
+          title: position.title,
+          totalVoters: certified.turnout.total,
+          abstentions: position.abstentions,
+          candidates: position.candidates.map((candidate) => ({
+            id: candidate.id,
+            fullName: candidate.fullName,
+            votes: candidate.votes,
+            isWinner: candidate.votes > 0 && candidate.votes === maxVotes,
+            isTie: tiedTopCount > 1 && candidate.votes === maxVotes,
+          })),
+        };
+      })
+    : legacyResultPositions;
 
   // ── Render PDF ────────────────────────────────────────────────────────────
   try {
