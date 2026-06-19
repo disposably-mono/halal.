@@ -1,13 +1,17 @@
 import type { Division } from "@prisma/client";
 import { DIVISION_GRADE_RANGE } from "@/lib/elections/constants";
-import { generateControlNumber } from "@/lib/domain/control-number";
+import { nextControlNumber } from "@/lib/domain/control-number";
 
 export interface VoterImportContext {
   division: Division;
   schoolYear: number;
   existingStudentIds: ReadonlySet<string>;
+  /**
+   * Every control number already issued (any election/year). New codes are
+   * assigned one above the highest in each cohort, so this set seeds the
+   * monotonic counter and guarantees no collisions.
+   */
   existingVoterCodes: ReadonlySet<string>;
-  seqByGradeSection: Readonly<Record<string, number>>;
 }
 
 export interface VoterImportRow {
@@ -33,9 +37,10 @@ export function isGradeInDivisionRange(division: Division, grade: number): boole
 export function parseVotersCSV(csvText: string, ctx: VoterImportContext): VoterImportResult {
   const range = DIVISION_GRADE_RANGE[ctx.division];
   const lines = csvText.trim().split("\n").slice(1);
-  const seqMap: Record<string, number> = { ...ctx.seqByGradeSection };
   const studentIds = new Set<string>(ctx.existingStudentIds);
-  const voterCodes = new Set<string>(ctx.existingVoterCodes);
+  // Grows as we assign so every new code is monotonic vs. both stored and
+  // just-issued codes — never colliding and never reusing a freed number.
+  const issuedCodes = new Set<string>(ctx.existingVoterCodes);
   const toCreate: VoterImportRow[] = [];
   let rejected = 0;
   let skippedDuplicates = 0;
@@ -60,20 +65,15 @@ export function parseVotersCSV(csvText: string, ctx: VoterImportContext): VoterI
       continue;
     }
 
+    // A row is only a duplicate if the *student* is already registered — never
+    // because a control number happened to be taken. Codes are issued, not matched.
     if (studentIds.has(studentId)) {
       skippedDuplicates++;
       continue;
     }
 
     const sectionUp = section.toUpperCase();
-    const key = `${gradeLevel}-${sectionUp}`;
-    seqMap[key] = (seqMap[key] ?? 0) + 1;
-    const voterCode = generateControlNumber(ctx.schoolYear, gradeLevel, section, seqMap[key]);
-
-    if (voterCodes.has(voterCode)) {
-      skippedDuplicates++;
-      continue;
-    }
+    const voterCode = nextControlNumber(ctx.schoolYear, gradeLevel, sectionUp, issuedCodes);
 
     toCreate.push({
       studentId,
@@ -83,7 +83,7 @@ export function parseVotersCSV(csvText: string, ctx: VoterImportContext): VoterI
       voterCode,
     });
     studentIds.add(studentId);
-    voterCodes.add(voterCode);
+    issuedCodes.add(voterCode);
   }
 
   if (skippedDuplicates > 0) {

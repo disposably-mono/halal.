@@ -1,7 +1,8 @@
 "use server";
 
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { generateControlNumber } from "@/lib/domain/control-number";
+import { nextControlNumber } from "@/lib/domain/control-number";
 import { canFinalizeUnlock } from "@/lib/domain/election-state";
 import {
   isGradeInDivisionRange,
@@ -54,24 +55,16 @@ export async function addVotersFromCSV(
     };
   }
 
-  const [existingForElection, allCodes, allVoters] = await Promise.all([
+  const [existingForElection, allCodes] = await Promise.all([
     prisma.voter.findMany({ where: { electionId }, select: { studentId: true } }),
     prisma.voter.findMany({ select: { voterCode: true } }),
-    prisma.voter.findMany({ select: { gradeLevel: true, section: true } }),
   ]);
-
-  const seqMap: Record<string, number> = {};
-  for (const v of allVoters) {
-    const key = `${v.gradeLevel}-${v.section}`;
-    seqMap[key] = (seqMap[key] ?? 0) + 1;
-  }
 
   const result = parseVotersCSV(csvText, {
     division: election.division,
     schoolYear,
     existingStudentIds: new Set(existingForElection.map((v) => v.studentId)),
     existingVoterCodes: new Set(allCodes.map((v) => v.voterCode)),
-    seqByGradeSection: seqMap,
   });
 
   if (result.toCreate.length > 0) {
@@ -117,22 +110,41 @@ export async function addVoterManual(
   if (existingStudent) return { success: false, error: "Student ID already registered." };
 
   const sectionUp = section.toUpperCase();
-  const count = await prisma.voter.count({
+  // Issue one above the highest code already in this year+grade+section cohort
+  // (across every election), so the number is monotonic and never collides.
+  const cohort = await prisma.voter.findMany({
     where: { gradeLevel, section: sectionUp },
+    select: { voterCode: true },
   });
+  const voterCode = nextControlNumber(
+    schoolYear,
+    gradeLevel,
+    sectionUp,
+    cohort.map((v) => v.voterCode),
+  );
 
-  const voterCode = generateControlNumber(schoolYear, gradeLevel, section, count + 1);
-
-  await prisma.voter.create({
-    data: {
-      electionId,
-      studentId,
-      gradeLevel,
-      section: sectionUp,
-      division: election.division,
-      voterCode,
-    },
-  });
+  try {
+    await prisma.voter.create({
+      data: {
+        electionId,
+        studentId,
+        gradeLevel,
+        section: sectionUp,
+        division: election.division,
+        voterCode,
+      },
+    });
+  } catch (error) {
+    // A concurrent add can claim the same next code; the unique constraint guards
+    // it. Surface a friendly retry instead of a raw Prisma error.
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2002"
+    ) {
+      return { success: false, error: "That control number was just taken. Please try again." };
+    }
+    throw error;
+  }
 
   revalidateElectionVoters(electionId);
   return { success: true };

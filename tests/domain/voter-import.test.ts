@@ -26,7 +26,6 @@ function ctx(overrides: Partial<VoterImportContext> = {}): VoterImportContext {
     schoolYear: 2026,
     existingStudentIds: new Set(),
     existingVoterCodes: new Set(),
-    seqByGradeSection: {},
     ...overrides,
   };
 }
@@ -87,25 +86,49 @@ describe("parseVotersCSV", () => {
     expect(result.reasons).toContain("1 duplicate row was skipped.");
   });
 
-  it("reports rows whose generated voterCode collides with an existing code", () => {
+  it("issues the next free code instead of dropping a student when a code is taken", () => {
     const csv = [header, "2025-0001,11,A"].join("\n");
     const result = parseVotersCSV(
       csv,
       ctx({ existingVoterCodes: new Set(["2611A001"]) }),
     );
-    expect(result.toCreate).toHaveLength(0);
-    expect(result.rejected).toBe(0);
-    expect(result.skippedDuplicates).toBe(1);
-    expect(result.reasons).toContain("1 duplicate row was skipped.");
+    // The student is registered with the next monotonic code — never silently dropped.
+    expect(result.toCreate).toHaveLength(1);
+    expect(result.toCreate[0].voterCode).toBe("2611A002");
+    expect(result.skippedDuplicates).toBe(0);
   });
 
-  it("continues sequence numbering from existing seqByGradeSection", () => {
+  it("continues monotonic numbering above the highest existing code in the cohort", () => {
     const csv = [header, "2025-0099,11,A"].join("\n");
     const result = parseVotersCSV(
       csv,
-      ctx({ seqByGradeSection: { "11-A": 4 } }),
+      ctx({ existingVoterCodes: new Set(["2611A001", "2611A004"]) }),
     );
     expect(result.toCreate[0].voterCode).toBe("2611A005");
+  });
+
+  it("never reuses a gap freed by a mid-roster deletion (monotonic)", () => {
+    // Codes 001 and 003 exist (002 was deleted); the next code is 004, not 002.
+    const csv = [header, "2025-0050,11,A"].join("\n");
+    const result = parseVotersCSV(
+      csv,
+      ctx({ existingVoterCodes: new Set(["2611A001", "2611A003"]) }),
+    );
+    expect(result.toCreate[0].voterCode).toBe("2611A004");
+  });
+
+  it("scopes the sequence per year+grade+section cohort", () => {
+    const csv = [header, "2025-0001,11,A", "2025-0002,11,B", "2025-0003,10,A"].join("\n");
+    const result = parseVotersCSV(
+      csv,
+      // Only the 11-A cohort is seeded; other cohorts start fresh at 001.
+      ctx({ existingVoterCodes: new Set(["2611A009"]) }),
+    );
+    expect(result.toCreate.map((v) => v.voterCode)).toEqual([
+      "2611A010",
+      "2611B001",
+      "2610A001",
+    ]);
   });
 
   it("ignores blank lines", () => {
@@ -126,7 +149,6 @@ describe("parseVotersCSV", () => {
   it("does not mutate the input contexts", () => {
     const existingStudentIds = new Set(["2025-0001"]);
     const existingVoterCodes = new Set(["2611A001"]);
-    const seqByGradeSection = { "11-A": 1 };
     const csv = [header, "2025-0002,11,A", "2025-0003,11,B"].join("\n");
 
     parseVotersCSV(csv, {
@@ -134,12 +156,10 @@ describe("parseVotersCSV", () => {
       schoolYear: 2026,
       existingStudentIds,
       existingVoterCodes,
-      seqByGradeSection,
     });
 
     expect(existingStudentIds.size).toBe(1);
     expect(existingVoterCodes.size).toBe(1);
-    expect(seqByGradeSection).toEqual({ "11-A": 1 });
   });
 
   it("dedupes within a single batch by studentId", () => {
