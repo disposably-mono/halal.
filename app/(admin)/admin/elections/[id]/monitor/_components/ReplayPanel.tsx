@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { AdminCardTitle } from "@/components/admin/ui";
+import { ThemedSelect } from "@/components/admin/ThemedSelect";
 import type { Snapshot } from "./monitor-shared";
 
 export function ReplayPanel({
@@ -127,17 +128,18 @@ export function ReplayPanel({
           {isLive ? "LIVE" : (snapshots[frameIdx]?.label ?? "—")}
         </span>
 
-        <select
-          value={speed}
-          onChange={(e) => onSpeedChange(parseInt(e.target.value))}
-          className="cursor-pointer rounded-[5px] border border-white/10 bg-transparent px-[5px] py-[3px] text-[9px] text-white/50 outline-none"
-          aria-label="Replay speed"
-        >
-          <option value={800}>0.5×</option>
-          <option value={400}>1×</option>
-          <option value={200}>2×</option>
-          <option value={100}>4×</option>
-        </select>
+        <ThemedSelect
+          value={String(speed)}
+          onValueChange={(v) => onSpeedChange(parseInt(v))}
+          ariaLabel="Replay speed"
+          className="w-auto px-[7px] py-[2px] text-[9px]"
+          options={[
+            { value: "800", label: "0.5×" },
+            { value: "400", label: "1×" },
+            { value: "200", label: "2×" },
+            { value: "100", label: "4×" },
+          ]}
+        />
       </div>
 
       {/* Timeline */}

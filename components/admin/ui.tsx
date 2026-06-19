@@ -11,7 +11,7 @@ import type { VariantProps } from "class-variance-authority";
 
 // ─── Internal class strings ───────────────────────────────────────────────────
 // Kept module-private — external consumers should use the wrapper components
-// (AdminInput / AdminSelect / AdminTextarea) or shadcn's <Button> with admin variants.
+// (AdminInput / AdminTextarea), ThemedSelect, or shadcn's <Button> with admin variants.
 
 const CARD = "overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]";
 const CARD_HEADER = "flex items-center justify-between border-b border-white/[0.07] px-4 py-3";
@@ -29,10 +29,6 @@ export function AdminInput({ className, ...props }: ComponentProps<"input">) {
 
 export function AdminTextarea({ className, ...props }: ComponentProps<"textarea">) {
   return <textarea className={cn(adminInputClass, className)} {...props} />;
-}
-
-export function AdminSelect({ className, ...props }: ComponentProps<"select">) {
-  return <select className={cn(adminInputClass, className)} {...props} />;
 }
 
 export function AdminCardTitle({ className, children, as: As = "span" }: { className?: string; children: ReactNode; as?: "span" | "h2" | "h3" | "h4" }) {
