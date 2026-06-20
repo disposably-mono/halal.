@@ -48,3 +48,9 @@ docker-compose.override.yml
 
 # officer pubmats
 /public/officers
+
+# local planning and review artifacts
+/.docs/
+/docs/superpowers/
+/test-voters-500.csv
+/TODO.md
