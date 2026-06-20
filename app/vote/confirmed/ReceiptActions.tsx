@@ -1,8 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect } from "react";
 
 export function ReceiptActions() {
+  useEffect(() => {
+    void fetch("/api/ballot-confirmation", { method: "DELETE", keepalive: true });
+  }, []);
+
   return (
     <div className="print:hidden flex flex-wrap justify-center gap-3">
       <button
