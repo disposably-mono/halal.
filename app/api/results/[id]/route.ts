@@ -4,8 +4,14 @@ import { requireCapabilityOrError } from "@/lib/server/auth";
 import { permissionErrorMessage } from "@/lib/auth/permissions";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
+import { cached } from "@/lib/server/ttl-cache";
 
 export const dynamic = "force-dynamic";
+
+// Short micro-cache for the live tally. Both the public results page and the
+// admin monitor poll every 30s, so a 3s window is invisible to users yet
+// collapses a burst of concurrent pollers into one vote scan (single-flight).
+const RESULTS_CACHE_TTL_MS = 3000;
 
 export async function GET(
   req: NextRequest,
@@ -102,55 +108,22 @@ export async function GET(
       ? (election.certification.snapshot as unknown as AuditSnapshot)
       : null;
 
-  // Fetch positions with candidates and vote counts
-  const positions = await prisma.position.findMany({
-    where: { electionId: id, isActive: true },
-    include: {
-      candidates: {
-        select: { id: true, fullName: true, gradeLevel: true },
-        orderBy: { fullName: "asc" },
-      },
-    },
-    orderBy: { order: "asc" },
-  });
-
-  // Fetch all votes for this election in one query
-  const votes = await prisma.vote.findMany({
-    where: { electionId: id },
-    select: { positionId: true, candidateId: true, isAbstain: true },
-  });
-
-  // Build vote count maps
-  const candidateVoteCounts = new Map<string, number>();
-  const positionAbstentions = new Map<string, number>();
-
-  for (const vote of votes) {
-    if (vote.isAbstain || !vote.candidateId) {
-      positionAbstentions.set(
-        vote.positionId,
-        (positionAbstentions.get(vote.positionId) ?? 0) + 1
+  // The live tally is the expensive, frequently-polled path. Only compute it
+  // when we are NOT serving a certified snapshot, and route it through a
+  // single-flight micro-cache so concurrent pollers share one vote scan.
+  const aggregate = certified
+    ? null
+    : await cached(`results-agg:${id}`, RESULTS_CACHE_TTL_MS, () =>
+        computeResultsAggregate(id),
       );
-    } else {
-      candidateVoteCounts.set(
-        vote.candidateId,
-        (candidateVoteCounts.get(vote.candidateId) ?? 0) + 1
-      );
-    }
-  }
 
-  // Turnout
-  const totalVoters = await prisma.voter.count({ where: { electionId: id } });
-  const votedCount = await prisma.voter.count({
-    where: { electionId: id, hasVoted: true },
-  });
-
-  const livePositionResults = positions.map((pos) => {
-    const abstentions = positionAbstentions.get(pos.id) ?? 0;
+  const livePositionResults = (aggregate?.positions ?? []).map((pos) => {
+    const abstentions = aggregate!.positionAbstentions.get(pos.id) ?? 0;
     const candidatesWithVotes = pos.candidates.map((c) => ({
       id: c.id,
       fullName: c.fullName,
       gradeLevel: c.gradeLevel,
-      votes: candidateVoteCounts.get(c.id) ?? 0,
+      votes: aggregate!.candidateVoteCounts.get(c.id) ?? 0,
     }));
     const maxVotes = candidatesWithVotes.reduce((m, c) => Math.max(m, c.votes), 0);
     const tiedTopCount = candidatesWithVotes.filter(
@@ -202,8 +175,8 @@ export async function GET(
     embargoed: false,
     positions: positionResults,
     turnout: (() => {
-      const voted = certified?.turnout.voted ?? votedCount;
-      const total = certified?.turnout.total ?? totalVoters;
+      const voted = certified?.turnout.voted ?? aggregate?.votedCount ?? 0;
+      const total = certified?.turnout.total ?? aggregate?.totalVoters ?? 0;
       return { voted, total, pct: total > 0 ? Math.round((voted / total) * 100) : 0 };
     })(),
     audit: {
@@ -213,4 +186,52 @@ export async function GET(
     },
     integrityFailure: false,
   });
+}
+
+/**
+ * The expensive live-tally aggregate: positions + candidates, the full vote
+ * scan reduced into per-candidate and per-position-abstention counts, and
+ * turnout. Kept as a standalone producer so it can be wrapped by the cache and
+ * shared across admin and public callers (the per-request view layer decides
+ * whether to expose abstentions).
+ */
+async function computeResultsAggregate(id: string) {
+  const positions = await prisma.position.findMany({
+    where: { electionId: id, isActive: true },
+    include: {
+      candidates: {
+        select: { id: true, fullName: true, gradeLevel: true },
+        orderBy: { fullName: "asc" },
+      },
+    },
+    orderBy: { order: "asc" },
+  });
+
+  const votes = await prisma.vote.findMany({
+    where: { electionId: id },
+    select: { positionId: true, candidateId: true, isAbstain: true },
+  });
+
+  const candidateVoteCounts = new Map<string, number>();
+  const positionAbstentions = new Map<string, number>();
+  for (const vote of votes) {
+    if (vote.isAbstain || !vote.candidateId) {
+      positionAbstentions.set(
+        vote.positionId,
+        (positionAbstentions.get(vote.positionId) ?? 0) + 1,
+      );
+    } else {
+      candidateVoteCounts.set(
+        vote.candidateId,
+        (candidateVoteCounts.get(vote.candidateId) ?? 0) + 1,
+      );
+    }
+  }
+
+  const totalVoters = await prisma.voter.count({ where: { electionId: id } });
+  const votedCount = await prisma.voter.count({
+    where: { electionId: id, hasVoted: true },
+  });
+
+  return { positions, candidateVoteCounts, positionAbstentions, totalVoters, votedCount };
 }
