@@ -54,3 +54,6 @@ docker-compose.override.yml
 /docs/superpowers/
 /test-voters-500.csv
 /TODO.md
+
+# graphify knowledge graph output
+/graphify-out/
