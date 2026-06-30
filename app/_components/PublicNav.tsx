@@ -2,7 +2,10 @@
 
 import { Link } from "next-view-transitions";
 
-export function ResultsNav() {
+// Sticky top chrome shared by the public voter-facing pages (results, vote,
+// verify). The right-hand label changes per page; everything else is identical
+// so the three pages read as one product.
+export function PublicNav({ label = "Results" }: { label?: string }) {
   return (
     <nav className="sticky top-0 z-40 border-b border-gold/10 bg-navy-deep/[0.88] px-4 py-4 backdrop-blur-md sm:px-6">
       <div className="mx-auto flex max-w-5xl items-center justify-between gap-4">
@@ -25,7 +28,7 @@ export function ResultsNav() {
             OLPS COMELEC
           </p>
           <p className="font-heading text-white/60 text-xs tracking-[0.2em] uppercase">
-            Results
+            {label}
           </p>
         </div>
       </div>

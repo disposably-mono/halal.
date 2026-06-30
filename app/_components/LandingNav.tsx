@@ -35,7 +35,6 @@ export function LandingNav() {
           { label: "COMELEC", href: "/about" },
           { label: "LEADERSHIP", href: "/officers" },
           { label: "MAKER", href: "/creator" },
-          { label: "VERIFY", href: "/verify" },
         ].map((link, index) => (
           <div key={link.label} className="flex items-center gap-4">
             {index > 0 && (

@@ -143,6 +143,12 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
             >
               View Results
             </Link>
+            <Link
+              href="/verify"
+              className="px-8 py-3.5 border border-gold/30 text-gold/70 font-heading text-sm tracking-[0.15em] uppercase hover:border-gold/60 hover:text-gold transition-colors rounded-sm"
+            >
+              Verify Receipt
+            </Link>
           </div>
         </div>
 

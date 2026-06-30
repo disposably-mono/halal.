@@ -2,29 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { PublicFooter } from "@/app/_components/PublicFooter";
+import { PublicNav } from "@/app/_components/PublicNav";
+import { PUBLIC_PAGE_BACKGROUND } from "@/app/_components/public-page";
 import { ElectionSelector } from "./_components/ElectionSelector";
 import { ElectionSummary } from "./_components/ElectionSummary";
 import { HoldingState } from "./_components/HoldingState";
 import { PositionCard } from "./_components/PositionCard";
-import { ResultsFooter } from "./_components/ResultsFooter";
-import { ResultsNav } from "./_components/ResultsNav";
 import { TurnoutBadge } from "./_components/TurnoutBadge";
 import { DIVISION_LABELS, POLL_INTERVAL, type ElectionMeta, type ResultsPayload } from "./_components/results-shared";
-
-const PAGE_BACKGROUND = {
-  backgroundColor: "#0f1235",
-  backgroundImage: [
-    "radial-gradient(circle at 50% 16%, rgba(27,31,94,0.55) 0%, transparent 36rem)",
-    "radial-gradient(circle at 12% 46%, rgba(107,26,26,0.18) 0%, transparent 28rem)",
-    "radial-gradient(circle at 88% 82%, rgba(245,192,0,0.06) 0%, transparent 24rem)",
-    "repeating-linear-gradient(135deg, transparent 0 34rem, rgba(107,26,26,0.18) 34rem 38rem, transparent 38rem 72rem)",
-    "repeating-linear-gradient(135deg, transparent 0 50rem, rgba(27,31,94,0.26) 50rem 54rem, transparent 54rem 96rem)",
-    "linear-gradient(rgba(245,192,0,0.035) 1px, transparent 1px)",
-    "linear-gradient(90deg, rgba(245,192,0,0.035) 1px, transparent 1px)",
-  ].join(", "),
-  backgroundSize: "auto, auto, auto, auto, auto, 48px 48px, 48px 48px",
-  backgroundAttachment: "fixed",
-};
 
 export default function ResultsClient({
   elections,
@@ -94,8 +80,8 @@ export default function ResultsClient({
     data?.positions.reduce((sum, p) => sum + p.candidates.length, 0) ?? 0;
 
   return (
-    <div className="min-h-screen text-white overflow-x-hidden flex flex-col" style={PAGE_BACKGROUND}>
-      <ResultsNav />
+    <div className="min-h-screen text-white overflow-x-hidden flex flex-col" style={PUBLIC_PAGE_BACKGROUND}>
+      <PublicNav label="Results" />
 
       {elections.length > 1 && (
         <ElectionSelector
@@ -181,7 +167,7 @@ export default function ResultsClient({
         ) : null}
       </main>
 
-      <ResultsFooter />
+      <PublicFooter note="Public Results" />
     </div>
   );
 }

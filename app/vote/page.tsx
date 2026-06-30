@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { Link } from "next-view-transitions";
+import { PublicFooter } from "@/app/_components/PublicFooter";
+import { PublicNav } from "@/app/_components/PublicNav";
+import { PUBLIC_PAGE_BACKGROUND } from "@/app/_components/public-page";
 import { validateVoterCode, VoterLoginResult } from "./actions";
 
 const ERROR_ICONS: Record<string, string> = {
@@ -71,19 +73,8 @@ export default function VotePage() {
   const fieldDescriptionId = hasError ? "vote-login-error" : "vote-login-helper";
 
   return (
-    <div className="min-h-screen bg-navy-deep flex flex-col">
-      {/* Back nav */}
-      <nav className="px-6 py-4 border-b border-white/5">
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 font-body text-mid text-xs tracking-[0.2em] uppercase hover:text-gold/70 transition-colors focus-visible:outline-none focus-visible:text-gold focus-visible:ring-2 focus-visible:ring-gold/20 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep"
-        >
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none" className="opacity-50">
-            <path d="M9 2L4 7L9 12" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-          Back to Home
-        </Link>
-      </nav>
+    <div className="min-h-screen flex flex-col text-white overflow-x-hidden" style={PUBLIC_PAGE_BACKGROUND}>
+      <PublicNav label="Vote" />
 
       {/* Main content */}
       <main className="flex-1 flex items-center justify-center px-6 py-12">
@@ -91,18 +82,24 @@ export default function VotePage() {
 
           {/* Branding */}
           <div className="text-center mb-10">
-            <p className="font-body text-gold/50 text-[10px] tracking-[0.4em] uppercase mb-3">
-              OLPS COMELEC
+            <p className="font-tagline text-white/35 text-sm italic mb-2">
+              VOX POPULI VOX DEI
             </p>
-            <h1 className="font-display text-5xl text-white tracking-wide mb-2 uppercase">
+            <h1 className="font-display text-5xl text-white tracking-wide mb-3 uppercase">
               Cast Your Vote
             </h1>
-            <p className="font-tagline text-white/40 text-sm italic">
-              VOX POPULI VOX DEI
+            <p className="font-body text-mid/60 text-sm leading-6">
+              Enter the details from your printed voter slip to receive your ballot.
             </p>
           </div>
 
-          <div className="w-12 h-px bg-gold/40 mx-auto mb-10" />
+          <div className="flex items-center justify-center gap-4 mb-10">
+            <div className="w-8 h-px bg-gold/40" />
+            <span className="font-body text-gold/40 text-[10px] tracking-[0.3em] uppercase">
+              Voter Login
+            </span>
+            <div className="w-8 h-px bg-gold/40" />
+          </div>
 
           {/* Form */}
           <form action={formAction} className="space-y-4">
@@ -161,7 +158,7 @@ export default function VotePage() {
             {/* Error / helper */}
             {!state && (
               <p id="vote-login-helper" className="font-body text-mid/60 text-xs pt-1">
-                Enter the details from your printed voter slip.
+                Both fields are required to continue.
               </p>
             )}
             {state?.error && (
@@ -217,12 +214,7 @@ export default function VotePage() {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="py-5 px-6 border-t border-white/5 text-center">
-        <p className="font-body text-mid/30 text-[11px]">
-          OLPS COMELEC · Our Lady of Peace School
-        </p>
-      </footer>
+      <PublicFooter note="Cast Your Vote" />
     </div>
   );
 }
