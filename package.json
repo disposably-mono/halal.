@@ -10,7 +10,10 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "seed:load": "TS_NODE_PROJECT=scripts/tsconfig.json ts-node -r tsconfig-paths/register scripts/seed-load-test.ts",
+    "loadtest:clear": "TS_NODE_PROJECT=scripts/tsconfig.json ts-node -r tsconfig-paths/register scripts/clear-load-test.ts",
+    "test:correctness": "TS_NODE_PROJECT=scripts/tsconfig.json ts-node -r tsconfig-paths/register scripts/correctness/double-submit.ts"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",

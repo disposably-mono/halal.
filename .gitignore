@@ -57,3 +57,6 @@ docker-compose.override.yml
 
 # graphify knowledge graph output
 /graphify-out/
+
+# generated load-test fixtures (voter ids for k6 / correctness harness)
+/scripts/load/.data/
