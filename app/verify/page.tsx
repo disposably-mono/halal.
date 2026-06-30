@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { PublicEmptyState } from "@/app/_components/PublicEmptyState";
 import { PublicFooter } from "@/app/_components/PublicFooter";
 import { PublicNav } from "@/app/_components/PublicNav";
 import { PUBLIC_PAGE_BACKGROUND } from "@/app/_components/public-page";
@@ -83,6 +84,27 @@ export default async function VerifyPage({
 }: {
   searchParams: { code?: string };
 }) {
+  // Receipt verification is available under the same rule as casting a vote:
+  // at least one open (non-archived) election exists. Otherwise show the card.
+  const openCount = await prisma.election.count({
+    where: { status: "OPEN", archivedAt: null },
+  });
+
+  if (openCount === 0) {
+    return (
+      <div className="min-h-screen flex flex-col text-white overflow-x-hidden" style={PUBLIC_PAGE_BACKGROUND}>
+        <PublicNav label="Verify" />
+        <main className="flex-1 flex items-center justify-center px-6 py-12">
+          <PublicEmptyState
+            title="Verification Closed"
+            message="Receipt verification is available only while an election is open. Please check back when polls are open."
+          />
+        </main>
+        <PublicFooter note="Ballot Verification" />
+      </div>
+    );
+  }
+
   const result = await verifyReceipt(searchParams.code);
   return (
     <div className="min-h-screen flex flex-col text-white overflow-x-hidden" style={PUBLIC_PAGE_BACKGROUND}>

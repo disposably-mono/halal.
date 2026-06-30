@@ -127,7 +127,8 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
             </div>
           )}
 
-          {/* CTAs */}
+          {/* CTAs — Vote then Verify share the same availability (an election
+              is open); View Results is always reachable. */}
           <div className="flex flex-col sm:flex-row gap-3 mt-2">
             {anyOpen && (
               <Link
@@ -137,17 +138,19 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
                 Cast Your Vote
               </Link>
             )}
+            {anyOpen && (
+              <Link
+                href="/verify"
+                className="px-8 py-3.5 border border-gold/30 text-gold/70 font-heading text-sm tracking-[0.15em] uppercase hover:border-gold/60 hover:text-gold transition-colors rounded-sm"
+              >
+                Verify Receipt
+              </Link>
+            )}
             <Link
               href="/results"
               className="px-8 py-3.5 border border-white/20 text-white/70 font-heading text-sm tracking-[0.15em] uppercase hover:border-gold/40 hover:text-gold/80 transition-colors rounded-sm"
             >
               View Results
-            </Link>
-            <Link
-              href="/verify"
-              className="px-8 py-3.5 border border-gold/30 text-gold/70 font-heading text-sm tracking-[0.15em] uppercase hover:border-gold/60 hover:text-gold transition-colors rounded-sm"
-            >
-              Verify Receipt
             </Link>
           </div>
         </div>
