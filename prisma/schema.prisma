@@ -109,9 +109,10 @@ model Ballot {
   receiptHash String   @unique
   nonce       String
   commitment  String
-  version     Int      @default(1)
-  castAt      DateTime @default(now())
-  election    Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+  version     Int       @default(1)
+  castAt      DateTime  @default(now())
+  verifiedAt  DateTime?
+  election    Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
   votes       Vote[]
 
   @@index([electionId])
