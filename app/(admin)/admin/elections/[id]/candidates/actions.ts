@@ -94,19 +94,25 @@ export async function addCandidate(formData: FormData) {
 
   const position = await prisma.position.findUnique({
     where: { id: positionId },
-    select: { candidateGrade: true },
+    select: { candidateGrade: true, electionId: true },
   });
   if (!position) return;
+
+  // Trust the position's own election, never the caller-supplied electionId. A
+  // mismatch means a crafted/stale request trying to plant a Candidate row whose
+  // positionId and electionId span two elections — which would contaminate the
+  // ballots and tallies of both. Reject it outright.
+  if (position.electionId !== electionId) return;
 
   await prisma.candidate.create({
     data: {
       positionId,
-      electionId,
+      electionId: position.electionId,
       fullName,
       gradeLevel: pickCandidateDefaultGrade(position.candidateGrade),
     },
   });
-  revalidateElectionCandidates(electionId);
+  revalidateElectionCandidates(position.electionId);
 }
 
 export async function removeCandidate(formData: FormData) {

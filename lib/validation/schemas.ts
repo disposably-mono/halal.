@@ -1,6 +1,10 @@
 import { z } from "zod";
 import type { AdminRole, Division, ElectionStatus } from "@prisma/client";
-import { CONTROL_NUMBER_REGEX, STUDENT_ID_REGEX } from "@/lib/domain/control-number";
+import {
+  CONTROL_NUMBER_REGEX,
+  SECTION_REGEX,
+  STUDENT_ID_REGEX,
+} from "@/lib/domain/control-number";
 
 const NonEmptyString = z.string().trim().min(1);
 const Cuid = z.string().min(1);
@@ -27,6 +31,13 @@ const NormalizedStudentId = z
   .string()
   .transform((s) => s.trim())
   .pipe(z.string().regex(STUDENT_ID_REGEX));
+
+// Section is a single A–H letter — the exact slot a control number encodes. A
+// roster row outside this range would mint an unusable code, so reject it here.
+const NormalizedSection = z
+  .string()
+  .transform((s) => s.trim().toUpperCase())
+  .pipe(z.string().regex(SECTION_REGEX));
 
 export const VoterLoginSchema = z.object({
   voterCode: NormalizedControlNumber,
@@ -99,9 +110,9 @@ const GradeLevelString = z
 
 export const AddVoterManualSchema = z.object({
   electionId: Cuid,
-  studentId: NonEmptyString,
+  studentId: NormalizedStudentId,
   gradeLevel: GradeLevelString,
-  section: NonEmptyString,
+  section: NormalizedSection,
   schoolYear: SchoolYear,
 });
 

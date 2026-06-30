@@ -3,6 +3,8 @@ import { divisionForGrade } from "@/lib/elections/constants";
 
 export const CONTROL_NUMBER_REGEX = /^\d{4}[A-H]\d{3}$/;
 export const STUDENT_ID_REGEX = /^\d{4}-\d{4}$/;
+/** A single section letter A–H, mirroring the `[A-H]` slot in a control number. */
+export const SECTION_REGEX = /^[A-H]$/;
 
 export interface ParsedControlNumber {
   year: number;
@@ -18,6 +20,11 @@ export function isValidControlNumber(code: string): boolean {
 
 export function isValidStudentId(value: string): boolean {
   return STUDENT_ID_REGEX.test(value);
+}
+
+/** True when `section` is a single A–H letter (case-insensitive). */
+export function isValidSection(section: string): boolean {
+  return SECTION_REGEX.test(section.trim().toUpperCase());
 }
 
 export function normalizeControlNumber(code: string): string {

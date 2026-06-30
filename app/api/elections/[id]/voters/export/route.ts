@@ -1,5 +1,6 @@
 import { requireCapabilityOrError } from "@/lib/server/auth";
 import { permissionErrorMessage } from "@/lib/auth/permissions";
+import { rowsToCsv } from "@/lib/domain/csv";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
 
@@ -34,7 +35,7 @@ export async function GET(
     ]),
   ];
 
-  const csv = rows.map((r) => r.join(",")).join("\n");
+  const csv = rowsToCsv(rows);
 
   return new NextResponse(csv, {
     headers: {

@@ -5,11 +5,13 @@ import { signVoterSession, VOTER_COOKIE } from "@/lib/voter-session";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { safeParseFormData, VoterLoginSchema } from "@/lib/validation/schemas";
+import { rateLimit, RATE_LIMITS } from "@/lib/server/rate-limit";
 
 export type VoterLoginError =
   | "INVALID_CREDENTIALS"
   | "ALREADY_VOTED"
   | "ELECTION_NOT_OPEN"
+  | "RATE_LIMITED"
   | "UNKNOWN";
 
 export interface VoterLoginResult {
@@ -37,6 +39,18 @@ export async function validateVoterCode(
     return INVALID_CREDS;
   }
   const { voterCode, studentId } = parsed.data;
+
+  // Throttle per Student ID — the account under attack — not per IP. A whole
+  // computer lab shares one campus NAT, so an IP key would lock out legitimate
+  // voters; keying by Student ID caps guessing of one student's narrow
+  // control-number space while leaving everyone else unaffected.
+  if (!rateLimit(`voter-validate:${studentId}`, RATE_LIMITS.voterValidate).ok) {
+    return {
+      error: "RATE_LIMITED",
+      message:
+        "Too many attempts for this Student ID. Please wait a few minutes and try again.",
+    };
+  }
 
   let voter;
   try {

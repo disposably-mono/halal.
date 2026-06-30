@@ -1,6 +1,10 @@
 import type { Division } from "@prisma/client";
 import { DIVISION_GRADE_RANGE } from "@/lib/elections/constants";
-import { nextControlNumber } from "@/lib/domain/control-number";
+import {
+  isValidSection,
+  isValidStudentId,
+  nextControlNumber,
+} from "@/lib/domain/control-number";
 
 export interface VoterImportContext {
   division: Division;
@@ -55,6 +59,20 @@ export function parseVotersCSV(csvText: string, ctx: VoterImportContext): VoterI
     if (!studentId || !gradeLevelRaw || !section) {
       rejected++;
       reasons.add("Rows with missing columns were skipped.");
+      continue;
+    }
+
+    // Reject formats that login would later refuse — a Student ID outside
+    // NNNN-NNNN or a section beyond A–H produces a voter (or control number)
+    // that can never sign in. Catch it here instead of minting a dead row.
+    if (!isValidStudentId(studentId)) {
+      rejected++;
+      reasons.add("Rows rejected: Student IDs must look like 2025-0001.");
+      continue;
+    }
+    if (!isValidSection(section)) {
+      rejected++;
+      reasons.add("Rows rejected: Section must be a single letter A–H.");
       continue;
     }
 

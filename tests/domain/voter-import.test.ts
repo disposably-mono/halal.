@@ -65,6 +65,24 @@ describe("parseVotersCSV", () => {
     expect(result.reasons).toContain("Rows with missing columns were skipped.");
   });
 
+  it("rejects rows whose studentId is not in NNNN-NNNN form", () => {
+    const csv = [header, "abc,11,A", "20250001,11,A", "2025-0002,11,B"].join("\n");
+    const result = parseVotersCSV(csv, ctx());
+    expect(result.rejected).toBe(2);
+    expect(result.toCreate).toHaveLength(1);
+    expect(result.toCreate[0].studentId).toBe("2025-0002");
+    expect(result.reasons).toContain("Rows rejected: Student IDs must look like 2025-0001.");
+  });
+
+  it("rejects rows whose section is not a single A–H letter", () => {
+    const csv = [header, "2025-0001,11,Z", "2025-0002,11,AB", "2025-0003,11,B"].join("\n");
+    const result = parseVotersCSV(csv, ctx());
+    expect(result.rejected).toBe(2);
+    expect(result.toCreate).toHaveLength(1);
+    expect(result.toCreate[0].section).toBe("B");
+    expect(result.reasons).toContain("Rows rejected: Section must be a single letter A–H.");
+  });
+
   it("rejects grades outside the division range", () => {
     const csv = [header, "2025-0001,9,A", "2025-0002,12,B"].join("\n");
     const result = parseVotersCSV(csv, ctx({ division: "SHS" }));

@@ -1,5 +1,5 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { requireCapability } from "@/lib/server/auth";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import {
@@ -20,8 +20,9 @@ export const dynamic = "force-dynamic";
 const SCHOOL_YEAR = new Date().getFullYear();
 
 export default async function VotersPage({ params }: { params: { id: string } }) {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
+  // Control numbers shown below are live voting credentials, so viewing — not
+  // just editing — requires voters:manage. Other roles are bounced to the dashboard.
+  const session = await requireCapability("voters:manage");
 
   const canManageVoters = can(session.user?.role, "voters:manage");
 

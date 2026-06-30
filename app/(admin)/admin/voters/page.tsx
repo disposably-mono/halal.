@@ -1,13 +1,13 @@
 import { prisma } from "@/lib/prisma";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { ElectionStatus } from "@prisma/client";
 import { DIVISION_LABELS, DIVISION_ORDER } from "@/lib/ui/division-labels";
+import { requireCapability } from "@/lib/server/auth";
 
 export default async function AdminVotersPage() {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
+  // Control numbers are live voting credentials — restrict to roster managers
+  // (Commissioner). Other roles are bounced to the dashboard with an explanation.
+  await requireCapability("voters:manage");
 
   // All voters with their election info
   const allVoters = await prisma.voter.findMany({

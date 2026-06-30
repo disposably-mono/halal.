@@ -2,6 +2,7 @@ import NextAuth from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { authConfig } from "@/auth.config";
 import { checkAdminCredentials } from "@/lib/auth/admin-login";
+import { clientIp, rateLimit, RATE_LIMITS } from "@/lib/server/rate-limit";
 import { prisma } from "@/lib/prisma";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
@@ -10,6 +11,13 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     Credentials({
       async authorize(credentials) {
         if (!credentials?.email || !credentials?.password || !credentials?.officerKey) {
+          return null;
+        }
+
+        // Throttle the real credential path per-IP so brute force can't bypass
+        // the pre-check by hitting NextAuth's signIn endpoint directly.
+        const ip = await clientIp();
+        if (!rateLimit(`admin-login:${ip}`, RATE_LIMITS.adminLogin).ok) {
           return null;
         }
 

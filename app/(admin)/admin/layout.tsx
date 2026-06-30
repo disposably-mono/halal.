@@ -11,6 +11,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const role = session.user?.role;
   const canManageAccounts = can(role, "accounts:manage");
   const canCreateElection = can(role, "election:lifecycle");
+  const canManageVoters = can(role, "voters:manage");
 
   const adminName = session.user?.name ?? "Admin";
   const adminInitial = adminName[0]?.toUpperCase() ?? "A";
@@ -95,12 +96,14 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
             </svg>
           } />
-          <ActiveNavItem href="/admin/voters" label="Voters" icon={
-            <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
-              <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-            </svg>
-          } />
+          {canManageVoters && (
+            <ActiveNavItem href="/admin/voters" label="Voters" icon={
+              <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
+                <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
+              </svg>
+            } />
+          )}
           <ActiveNavItem href="/admin/candidates" label="Candidates" icon={
             <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />

@@ -4,6 +4,7 @@ import {
   formatControlNumber,
   generateControlNumber,
   isValidControlNumber,
+  isValidSection,
   isValidStudentId,
   nextControlNumber,
   normalizeControlNumber,
@@ -51,6 +52,23 @@ describe("isValidStudentId", () => {
   it("rejects wrong-length segments", () => {
     expect(isValidStudentId("202-0001")).toBe(false);
     expect(isValidStudentId("2025-001")).toBe(false);
+  });
+});
+
+describe("isValidSection", () => {
+  it("accepts a single A–H letter, case-insensitive and trimmed", () => {
+    expect(isValidSection("A")).toBe(true);
+    expect(isValidSection("H")).toBe(true);
+    expect(isValidSection("b")).toBe(true);
+    expect(isValidSection("  c  ")).toBe(true);
+  });
+
+  it("rejects letters beyond H, multi-letter, digits, and empty", () => {
+    expect(isValidSection("I")).toBe(false);
+    expect(isValidSection("Z")).toBe(false);
+    expect(isValidSection("AB")).toBe(false);
+    expect(isValidSection("1")).toBe(false);
+    expect(isValidSection("")).toBe(false);
   });
 });
 

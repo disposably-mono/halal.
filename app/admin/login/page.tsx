@@ -78,6 +78,13 @@ export default function AdminLoginPage() {
         setOfficerKeyError(
           "Another admin account is required for officer verification.",
         );
+      } else if (credentialCheck.reason === "rateLimited") {
+        setCredentialsError(
+          "Too many sign-in attempts. Please wait a few minutes and try again.",
+        );
+        setPassword("");
+        setOfficerKey("");
+        setStep(1);
       } else {
         setOfficerKeyError(
           "That key does not match another COMELEC officer. Please try again.",

@@ -227,9 +227,10 @@ export async function GET(
     });
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
+    // Keep the render detail server-side only — it can expose internals/paths.
     console.error("[results-pdf] render error:", message);
     return NextResponse.json(
-      { error: "Failed to generate PDF.", detail: message },
+      { error: "Failed to generate PDF." },
       { status: 500 }
     );
   }
