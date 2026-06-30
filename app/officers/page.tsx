@@ -50,6 +50,24 @@ const OFFICERS_2425: Officer[] = [
   { initials: "KM",  role: "JHS Information Officer",                 name: "Kristine Martinez",        photo: "/officers/2024-2025/11.png" },
 ];
 
+// Placeholder roster for the upcoming year — officers are not yet elected, so
+// every entry uses a "To Be Announced" name and the initials-icon placeholder
+// (no photo) until pubmats are added.
+const OFFICERS_2627: Officer[] = [
+  { initials: "TBA", role: "Moderator",        name: "To Be Announced", featured: true },
+  { initials: "TBA", role: "Chairperson",       name: "To Be Announced", featured: true },
+  { initials: "TBA", role: "Vice-Chairperson",  name: "To Be Announced", featured: true },
+  { initials: "TBA", role: "Internal Affairs Head",                   name: "To Be Announced" },
+  { initials: "TBA", role: "External Affairs Head",                   name: "To Be Announced" },
+  { initials: "TBA", role: "Executive Secretary",                     name: "To Be Announced" },
+  { initials: "TBA", role: "Electoral Ed., Reforms & Screening Head", name: "To Be Announced" },
+  { initials: "TBA", role: "Electoral Canvassing Head",               name: "To Be Announced" },
+  { initials: "TBA", role: "Electoral Complaint Committee Head",      name: "To Be Announced" },
+  { initials: "TBA", role: "SHS Information Officer",                 name: "To Be Announced" },
+  { initials: "TBA", role: "JHS Information Officer",                 name: "To Be Announced" },
+  { initials: "TBA", role: "GS Information Officer",                  name: "To Be Announced" },
+];
+
 // ── Section grouping helpers ─────────────────────────────────────
 
 const LEADERSHIP_ROLES = ["Moderator", "Chairperson", "Vice-Chairperson"];
@@ -142,7 +160,7 @@ function SectionDivider({ label }: { label: string }) {
   );
 }
 
-function OfficerCard({ officer, past = false }: { officer: Officer; past?: boolean }) {
+function OfficerCard({ officer, past = false, year }: { officer: Officer; past?: boolean; year: string }) {
   const isFeatured = officer.featured && !past;
   const isInfoOfficer = INFO_OFFICER_ROLES.includes(officer.role);
 
@@ -231,7 +249,7 @@ function OfficerCard({ officer, past = false }: { officer: Officer; past?: boole
           {officer.name}
         </p>
         <p className="font-mono text-[9px] text-white/35 mt-auto pt-1">
-          {past ? "S.Y. 2024–2025" : "S.Y. 2025–2026"}
+          {year}
         </p>
       </div>
     </div>
@@ -240,26 +258,26 @@ function OfficerCard({ officer, past = false }: { officer: Officer; past?: boole
 
 // ── Tab content ──────────────────────────────────────────────────
 
-function OfficersGrid({ officers, past = false }: { officers: Officer[]; past?: boolean }) {
+function OfficersGrid({ officers, past = false, year }: { officers: Officer[]; past?: boolean; year: string }) {
   const { leadership, heads, infoOfficers } = groupOfficers(officers);
 
   return (
     <div>
       <SectionDivider label="Leadership" />
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-2">
-        {leadership.map((o) => <OfficerCard key={o.name} officer={o} past={past} />)}
+        {leadership.map((o) => <OfficerCard key={o.role} officer={o} past={past} year={year} />)}
       </div>
 
       <SectionDivider label="Committee Heads" />
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {heads.map((o) => <OfficerCard key={o.name} officer={o} past={past} />)}
+        {heads.map((o) => <OfficerCard key={o.role} officer={o} past={past} year={year} />)}
       </div>
 
       {infoOfficers.length > 0 && (
         <>
           <SectionDivider label="Information Officers" />
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {infoOfficers.map((o) => <OfficerCard key={o.name} officer={o} past={past} />)}
+            {infoOfficers.map((o) => <OfficerCard key={o.role} officer={o} past={past} year={year} />)}
           </div>
         </>
       )}
@@ -271,8 +289,14 @@ function OfficersGrid({ officers, past = false }: { officers: Officer[]; past?: 
 
 export default function OfficersPage() {
   const [mounted, setMounted] = useState(false);
-  const [activeTab, setActiveTab] = useState<"current" | "past">("current");
+  const [activeTab, setActiveTab] = useState<"upcoming" | "current" | "past">("current");
   const gridRef = useRef<HTMLElement>(null);
+
+  const TABS: { key: "upcoming" | "current" | "past"; label: string }[] = [
+    { key: "upcoming", label: "S.Y. 2026–2027" },
+    { key: "current", label: "S.Y. 2025–2026" },
+    { key: "past", label: "S.Y. 2024–2025" },
+  ];
 
   useEffect(() => {
     const t = setTimeout(() => setMounted(true), 50);
@@ -332,15 +356,6 @@ export default function OfficersPage() {
 
       {/* ── HERO ─────────────────────────────────────────── */}
       <section className="relative min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-6 pt-28 pb-8 overflow-hidden">
-        {/* Grid texture */}
-        <div
-          className="absolute inset-0 opacity-[0.04] pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(245,192,0,1) 1px, transparent 1px), linear-gradient(90deg, rgba(245,192,0,1) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
         {/* Radial glow */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
@@ -383,45 +398,36 @@ export default function OfficersPage() {
             className="inline-flex border rounded-sm overflow-hidden"
             style={{ borderColor: "rgba(245,192,0,0.2)" }}
           >
-            <button
-              onClick={() => {
-                setActiveTab("current");
-                gridRef.current?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="px-6 py-2 font-body text-[0.65rem] tracking-[0.2em] uppercase transition-all duration-200 border-none outline-none cursor-pointer"
-              style={{
-                background: activeTab === "current" ? "#F5C000" : "transparent",
-                color: activeTab === "current" ? "#0d0f2b" : "rgba(255,255,255,0.4)",
-                fontWeight: activeTab === "current" ? 600 : 400,
-              }}
-            >
-              S.Y. 2025–2026
-            </button>
-            <button
-              onClick={() => {
-                setActiveTab("past");
-                gridRef.current?.scrollIntoView({ behavior: "smooth" });
-              }}
-              className="px-6 py-2 font-body text-[0.65rem] tracking-[0.2em] uppercase transition-all duration-200 border-none outline-none cursor-pointer border-l"
-              style={{
-                borderColor: "rgba(245,192,0,0.2)",
-                background: activeTab === "past" ? "#F5C000" : "transparent",
-                color: activeTab === "past" ? "#0d0f2b" : "rgba(255,255,255,0.4)",
-                fontWeight: activeTab === "past" ? 600 : 400,
-              }}
-            >
-              S.Y. 2024–2025
-            </button>
+            {TABS.map((tab, i) => (
+              <button
+                key={tab.key}
+                onClick={() => {
+                  setActiveTab(tab.key);
+                  gridRef.current?.scrollIntoView({ behavior: "smooth" });
+                }}
+                className={`px-4 sm:px-6 py-2 font-body text-[0.6rem] sm:text-[0.65rem] tracking-[0.2em] uppercase transition-all duration-200 outline-none cursor-pointer ${i > 0 ? "border-l" : "border-none"}`}
+                style={{
+                  borderColor: "rgba(245,192,0,0.2)",
+                  background: activeTab === tab.key ? "#F5C000" : "transparent",
+                  color: activeTab === tab.key ? "#0d0f2b" : "rgba(255,255,255,0.4)",
+                  fontWeight: activeTab === tab.key ? 600 : 400,
+                }}
+              >
+                {tab.label}
+              </button>
+            ))}
           </div>
         </div>
       </section>
 
       {/* ── OFFICERS GRID ────────────────────────────────── */}
       <main ref={gridRef} className="max-w-6xl mx-auto px-6 py-10">
-        {activeTab === "current" ? (
-          <OfficersGrid officers={OFFICERS_2526} past={false} />
+        {activeTab === "upcoming" ? (
+          <OfficersGrid officers={OFFICERS_2627} past={false} year="S.Y. 2026–2027" />
+        ) : activeTab === "current" ? (
+          <OfficersGrid officers={OFFICERS_2526} past={false} year="S.Y. 2025–2026" />
         ) : (
-          <OfficersGrid officers={OFFICERS_2425} past={true} />
+          <OfficersGrid officers={OFFICERS_2425} past={true} year="S.Y. 2024–2025" />
         )}
       </main>
 

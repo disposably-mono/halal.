@@ -77,6 +77,12 @@ const MILESTONES = [
     year: "S.Y. 25–26",
     title: "Continued Growth & Improvement",
     desc: "Building on its inaugural year of independence, COMELEC refined its processes, expanded its digital capabilities, and deepened its commitment to civic education and transparent electoral governance.",
+    highlight: false,
+  },
+  {
+    year: "S.Y. 26–27",
+    title: "First Year of HALAL",
+    desc: "Built during the summer transition out of S.Y. 2025–2026, HALAL — the commission's online voting and verifiable-ballot system — enters its first year of implementation. This marks COMELEC's first attempt at running fully digital, anonymous, and auditable elections at Our Lady of Peace School.",
     highlight: true,
   },
 ];
@@ -271,15 +277,6 @@ export default function AboutComelecClient() {
 
       {/* ── HERO ─────────────────────────────────────────── */}
       <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-28 pb-16 overflow-hidden">
-        {/* Grid texture */}
-        <div
-          className="absolute inset-0 opacity-[0.04] pointer-events-none"
-          style={{
-            backgroundImage:
-              "linear-gradient(rgba(245,192,0,1) 1px, transparent 1px), linear-gradient(90deg, rgba(245,192,0,1) 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
         {/* Radial glow */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
