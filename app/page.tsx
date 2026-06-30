@@ -12,8 +12,9 @@ const DIVISION_SUBLABELS: Record<string, string> = {
 };
 
 export default async function HomePage() {
-  // Get all elections, then pick most relevant per division
+  // Get all active (non-archived) elections, then pick most relevant per division
   const elections = await prisma.election.findMany({
+    where: { archivedAt: null },
     select: {
       id: true,
       name: true,
