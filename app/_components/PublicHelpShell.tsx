@@ -34,7 +34,6 @@ export function PublicHelpShell({
       <main>
         <section className="relative flex min-h-screen items-center justify-center overflow-hidden border-b border-white/[0.06] px-6 pb-20 pt-28 text-center">
           <HelpRibbons />
-          <div className="pointer-events-none absolute inset-0 opacity-[0.035]" style={{ backgroundImage: "linear-gradient(rgba(245,192,0,1) 1px, transparent 1px), linear-gradient(90deg, rgba(245,192,0,1) 1px, transparent 1px)", backgroundSize: "48px 48px" }} />
           <div className="relative z-10 mx-auto max-w-3xl">
             <p className="text-[10px] uppercase tracking-[0.38em] text-gold/70">{eyebrow}</p>
             <h1 className="mt-4 font-display text-5xl uppercase tracking-wide text-white sm:text-7xl">{title}</h1>

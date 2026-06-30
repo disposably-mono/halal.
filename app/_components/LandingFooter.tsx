@@ -28,7 +28,7 @@ export function LandingFooter({
   return (
     <footer className="border-t border-white/5">
       {hasContactBand && (
-        <div className="relative border-b border-gold/20 bg-navy/60 py-10 px-6 overflow-hidden">
+        <div className="relative border-y border-gold/20 bg-navy/60 py-10 px-6 overflow-hidden">
           <div
             className="absolute inset-0 opacity-5"
             style={{

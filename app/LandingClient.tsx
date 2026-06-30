@@ -51,15 +51,6 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
 
       {/* ── HERO ──────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
-        {/* Background grid texture */}
-        <div
-          className="absolute inset-0 opacity-[0.03]"
-          style={{
-            backgroundImage:
-              "linear-gradient(#F5C000 1px, transparent 1px), linear-gradient(90deg, #F5C000 1px, transparent 1px)",
-            backgroundSize: "48px 48px",
-          }}
-        />
         {/* Radial glow behind logo */}
         <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
           <div
