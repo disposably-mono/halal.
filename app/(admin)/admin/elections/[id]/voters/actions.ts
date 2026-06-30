@@ -3,7 +3,7 @@
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { nextControlNumber } from "@/lib/domain/control-number";
-import { canFinalizeUnlock } from "@/lib/domain/election-state";
+import { canEditVoterRoster, canFinalizeUnlock } from "@/lib/domain/election-state";
 import {
   isGradeInDivisionRange,
   parseVotersCSV,
@@ -41,17 +41,18 @@ export async function addVotersFromCSV(
 
   const election = await prisma.election.findUnique({
     where: { id: electionId },
-    select: { division: true, votersFinalized: true },
+    select: { division: true, status: true, votersFinalized: true },
   });
   if (!election) {
     return { added: 0, rejected: 0, skippedDuplicates: 0, reasons: ["Election not found."] };
   }
-  if (election.votersFinalized) {
+  const editGuard = canEditVoterRoster(election.status, election.votersFinalized);
+  if (!editGuard.ok) {
     return {
       added: 0,
       rejected: 0,
       skippedDuplicates: 0,
-      reasons: ["Voter list is finalized and cannot be modified."],
+      reasons: [editGuard.reason],
     };
   }
 
@@ -95,10 +96,11 @@ export async function addVoterManual(
 
   const election = await prisma.election.findUnique({
     where: { id: electionId },
-    select: { division: true, votersFinalized: true },
+    select: { division: true, status: true, votersFinalized: true },
   });
   if (!election) return { success: false, error: "Election not found." };
-  if (election.votersFinalized) return { success: false, error: "Voter list is locked." };
+  const editGuard = canEditVoterRoster(election.status, election.votersFinalized);
+  if (!editGuard.ok) return { success: false, error: editGuard.reason };
 
   if (!isGradeInDivisionRange(election.division, gradeLevel)) {
     return { success: false, error: `Grade outside ${election.division} range.` };
@@ -158,11 +160,11 @@ export async function removeVoter(formData: FormData) {
 
   const election = await prisma.election.findUnique({
     where: { id: electionId },
-    select: { votersFinalized: true },
+    select: { status: true, votersFinalized: true },
   });
-  if (election?.votersFinalized) return;
+  if (!election || !canEditVoterRoster(election.status, election.votersFinalized).ok) return;
 
-  await prisma.voter.delete({ where: { id: voterId } });
+  await prisma.voter.deleteMany({ where: { id: voterId, electionId } });
   revalidateElectionVoters(electionId);
 }
 
@@ -174,6 +176,14 @@ export async function finalizeVoters(
   const parsed = safeParseFormData(ElectionIdSchema, formData);
   if (!parsed.success) return { success: false, error: "Missing election." };
   const { electionId } = parsed.data;
+
+  const election = await prisma.election.findUnique({
+    where: { id: electionId },
+    select: { status: true, votersFinalized: true },
+  });
+  if (!election) return { success: false, error: "Election not found." };
+  const editGuard = canEditVoterRoster(election.status, election.votersFinalized);
+  if (!editGuard.ok) return { success: false, error: editGuard.reason };
 
   const count = await prisma.voter.count({ where: { electionId } });
   if (count < 1) {
@@ -226,10 +236,10 @@ export async function removeVoterById(voterId: string, electionId: string) {
 
   const election = await prisma.election.findUnique({
     where: { id: electionId },
-    select: { votersFinalized: true },
+    select: { status: true, votersFinalized: true },
   });
-  if (election?.votersFinalized) return;
+  if (!election || !canEditVoterRoster(election.status, election.votersFinalized).ok) return;
 
-  await prisma.voter.delete({ where: { id: voterId } });
+  await prisma.voter.deleteMany({ where: { id: voterId, electionId } });
   revalidateElectionVoters(electionId);
 }

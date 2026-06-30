@@ -49,6 +49,34 @@ export function canFinalizeUnlock(status: ElectionStatus): ValidationResult {
   return ok();
 }
 
+function canEditRoster(
+  status: ElectionStatus,
+  finalized: boolean,
+  label: "Candidate" | "Voter",
+): ValidationResult {
+  if (finalized) {
+    return fail(`${label} list is finalized and cannot be modified.`);
+  }
+  if (status === "OPEN" || status === "CLOSED") {
+    return fail(`${label} list cannot be modified while the election is Open or Closed.`);
+  }
+  return ok();
+}
+
+export function canEditCandidateRoster(
+  status: ElectionStatus,
+  candidatesFinalized: boolean,
+): ValidationResult {
+  return canEditRoster(status, candidatesFinalized, "Candidate");
+}
+
+export function canEditVoterRoster(
+  status: ElectionStatus,
+  votersFinalized: boolean,
+): ValidationResult {
+  return canEditRoster(status, votersFinalized, "Voter");
+}
+
 export function canArchive(
   status: ElectionStatus,
   archivedAt: Date | null,

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { castVerifiedBallot, type BallotSelection } from "@/lib/server/cast-ballot";
+import { isTestEndpointEnabled } from "@/lib/server/test-endpoints";
 
 export const dynamic = "force-dynamic";
 
@@ -16,7 +17,7 @@ export const dynamic = "force-dynamic";
  * election instance.
  */
 export async function POST(req: Request) {
-  if (process.env.ENABLE_TEST_ENDPOINTS !== "1") {
+  if (!isTestEndpointEnabled()) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
 

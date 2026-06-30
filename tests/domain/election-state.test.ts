@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   canAdvanceToScheduled,
   canArchive,
+  canEditCandidateRoster,
+  canEditVoterRoster,
   canFinalizeUnlock,
   canManuallyClose,
   canManuallyOpen,
@@ -116,6 +118,44 @@ describe("canFinalizeUnlock", () => {
   it("blocks unlock once OPEN or CLOSED", () => {
     expect(canFinalizeUnlock("OPEN").ok).toBe(false);
     expect(canFinalizeUnlock("CLOSED").ok).toBe(false);
+  });
+});
+
+describe("canEditCandidateRoster", () => {
+  it("allows candidate edits only while unlocked before voting opens", () => {
+    expect(canEditCandidateRoster("DRAFT", false)).toEqual({ ok: true });
+    expect(canEditCandidateRoster("SCHEDULED", false)).toEqual({ ok: true });
+  });
+
+  it("blocks candidate edits after finalization", () => {
+    expect(canEditCandidateRoster("DRAFT", true)).toEqual({
+      ok: false,
+      reason: "Candidate list is finalized and cannot be modified.",
+    });
+  });
+
+  it("blocks candidate edits once voting has opened or closed", () => {
+    expect(canEditCandidateRoster("OPEN", false).ok).toBe(false);
+    expect(canEditCandidateRoster("CLOSED", false).ok).toBe(false);
+  });
+});
+
+describe("canEditVoterRoster", () => {
+  it("allows voter edits only while unlocked before voting opens", () => {
+    expect(canEditVoterRoster("DRAFT", false)).toEqual({ ok: true });
+    expect(canEditVoterRoster("SCHEDULED", false)).toEqual({ ok: true });
+  });
+
+  it("blocks voter edits after finalization", () => {
+    expect(canEditVoterRoster("DRAFT", true)).toEqual({
+      ok: false,
+      reason: "Voter list is finalized and cannot be modified.",
+    });
+  });
+
+  it("blocks voter edits once voting has opened or closed", () => {
+    expect(canEditVoterRoster("OPEN", false).ok).toBe(false);
+    expect(canEditVoterRoster("CLOSED", false).ok).toBe(false);
   });
 });
 

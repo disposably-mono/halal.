@@ -3,7 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { DIVISION_POSITIONS } from "@/lib/elections/constants";
 import { pickCandidateDefaultGrade } from "@/lib/domain/ballot";
-import { canFinalizeUnlock } from "@/lib/domain/election-state";
+import {
+  canEditCandidateRoster,
+  canFinalizeUnlock,
+} from "@/lib/domain/election-state";
 import { requireCapability } from "@/lib/server/auth";
 import { revalidateElectionCandidates } from "@/lib/server/revalidate";
 import {
@@ -25,8 +28,17 @@ export async function seedAllPositions(formData: FormData) {
   await requireCapability("candidates:manage");
   const parsed = safeParseFormData(SeedPositionsSchema, formData);
   if (!parsed.success) return;
-  const { electionId, division } = parsed.data;
-  const positions = DIVISION_POSITIONS[division] ?? [];
+  const { electionId } = parsed.data;
+  const election = await prisma.election.findUnique({
+    where: { id: electionId },
+    select: { division: true, status: true, candidatesFinalized: true },
+  });
+  if (!election) return;
+  if (!canEditCandidateRoster(election.status, election.candidatesFinalized).ok) return;
+
+  const positions = DIVISION_POSITIONS[election.division] ?? [];
+  const existingCount = await prisma.position.count({ where: { electionId } });
+  if (existingCount > 0) return;
 
   await prisma.$transaction(
     positions.map((p, i) =>
@@ -49,9 +61,16 @@ export async function addSinglePosition(formData: FormData) {
   await requireCapability("candidates:manage");
   const parsed = safeParseFormData(AddSinglePositionSchema, formData);
   if (!parsed.success) return;
-  const { electionId, division, title } = parsed.data;
+  const { electionId, title } = parsed.data;
 
-  const positionDef = (DIVISION_POSITIONS[division] ?? []).find((p) => p.title === title);
+  const election = await prisma.election.findUnique({
+    where: { id: electionId },
+    select: { division: true, status: true, candidatesFinalized: true },
+  });
+  if (!election) return;
+  if (!canEditCandidateRoster(election.status, election.candidatesFinalized).ok) return;
+
+  const positionDef = (DIVISION_POSITIONS[election.division] ?? []).find((p) => p.title === title);
   if (!positionDef) return;
 
   const last = await prisma.position.findFirst({
@@ -79,6 +98,16 @@ export async function removePosition(formData: FormData) {
   if (!parsed.success) return;
   const { positionId, electionId } = parsed.data;
 
+  const position = await prisma.position.findUnique({
+    where: { id: positionId },
+    select: {
+      electionId: true,
+      election: { select: { status: true, candidatesFinalized: true } },
+    },
+  });
+  if (!position || position.electionId !== electionId) return;
+  if (!canEditCandidateRoster(position.election.status, position.election.candidatesFinalized).ok) return;
+
   await prisma.position.update({
     where: { id: positionId },
     data: { isActive: false },
@@ -94,7 +123,11 @@ export async function addCandidate(formData: FormData) {
 
   const position = await prisma.position.findUnique({
     where: { id: positionId },
-    select: { candidateGrade: true, electionId: true },
+    select: {
+      candidateGrade: true,
+      electionId: true,
+      election: { select: { status: true, candidatesFinalized: true } },
+    },
   });
   if (!position) return;
 
@@ -103,6 +136,7 @@ export async function addCandidate(formData: FormData) {
   // positionId and electionId span two elections — which would contaminate the
   // ballots and tallies of both. Reject it outright.
   if (position.electionId !== electionId) return;
+  if (!canEditCandidateRoster(position.election.status, position.election.candidatesFinalized).ok) return;
 
   await prisma.candidate.create({
     data: {
@@ -121,17 +155,27 @@ export async function removeCandidate(formData: FormData) {
   if (!parsed.success) return;
   const { candidateId, electionId } = parsed.data;
 
+  const candidate = await prisma.candidate.findUnique({
+    where: { id: candidateId },
+    select: {
+      electionId: true,
+      election: { select: { status: true, candidatesFinalized: true } },
+    },
+  });
+  if (!candidate || candidate.electionId !== electionId) return;
+  if (!canEditCandidateRoster(candidate.election.status, candidate.election.candidatesFinalized).ok) return;
+
   // Schema-level Restrict would reject this delete with an opaque FK error once
   // any vote references the candidate. Pre-checking lets the form action no-op
   // gracefully — the candidate stays visible, signalling that the delete didn't take.
   const voteCount = await prisma.vote.count({ where: { candidateId } });
   if (voteCount > 0) {
-    revalidateElectionCandidates(electionId);
+    revalidateElectionCandidates(candidate.electionId);
     return;
   }
 
   await prisma.candidate.delete({ where: { id: candidateId } });
-  revalidateElectionCandidates(electionId);
+  revalidateElectionCandidates(candidate.electionId);
 }
 
 export async function finalizeCandidates(
@@ -144,6 +188,14 @@ export async function finalizeCandidates(
     return { success: false, error: "Missing election." };
   }
   const { electionId } = parsed.data;
+
+  const election = await prisma.election.findUnique({
+    where: { id: electionId },
+    select: { status: true, candidatesFinalized: true },
+  });
+  if (!election) return { success: false, error: "Election not found." };
+  const editGuard = canEditCandidateRoster(election.status, election.candidatesFinalized);
+  if (!editGuard.ok) return { success: false, error: editGuard.reason };
 
   const positions = await prisma.position.findMany({
     where: { electionId, isActive: true },
