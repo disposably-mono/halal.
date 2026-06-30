@@ -51,7 +51,7 @@ export default function BallotClient({
       for (const p of positions) {
         finalSelections[p.id] = selections[p.id] || null;
       }
-      const result = await submitBallot(finalSelections, positions.map((p) => p.id));
+      const result = await submitBallot(finalSelections);
       if (result.success) {
         window.location.href = "/vote/confirmed";
       } else {
