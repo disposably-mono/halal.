@@ -3,21 +3,12 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import type { ElectionStatus } from "@prisma/client";
+import { parseGrades, formatGradeList } from "@/lib/domain/grade-format";
+import { gradesForDivision } from "@/lib/elections/constants";
 import { DIVISION_LABELS, DIVISION_ORDER } from "@/lib/ui/division-labels";
 
 function formatGrade(gradeLevel: number): string {
   return gradeLevel === 0 ? "All grades" : `Grade ${gradeLevel}`;
-}
-
-/** Parse Position.candidateGrade string (e.g. "9" or "9,10,11") for display. */
-function formatCandidateGrade(raw: string): string {
-  const parts = raw
-    .split(",")
-    .map((s) => parseInt(s.trim(), 10))
-    .filter((n) => !isNaN(n));
-  if (parts.length === 0) return "All grades";
-  if (parts.length === 1) return parts[0] === 0 ? "All grades" : `Grade ${parts[0]}`;
-  return `Grades ${parts.join(" / ")}`;
 }
 
 export default async function AdminCandidatesPage() {
@@ -30,6 +21,7 @@ export default async function AdminCandidatesPage() {
     select: {
       id: true,
       title: true,
+      eligibleGrades: true,
       candidateGrade: true,
       election: {
         select: { id: true, name: true, division: true, status: true },
@@ -144,36 +136,39 @@ export default async function AdminCandidatesPage() {
 
                   {/* Positions + candidates */}
                   <div className="divide-y divide-white/[0.04]">
-                    {el.positions.map((pos) => (
-                      <div key={pos.id} className="px-4 py-3">
-                        {/* Position title row */}
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="text-[11px] font-semibold text-white/65 uppercase tracking-[0.05em]">
-                            {pos.title}
-                          </span>
-                          <span className="text-[10px] text-white/35">
-                            {formatCandidateGrade(pos.candidateGrade)}
-                          </span>
-                        </div>
-
-                        {pos.candidates.length === 0 ? (
-                          <div className="text-[11px] text-white/30 italic pl-1">No candidates encoded</div>
-                        ) : (
-                          <div className="flex flex-col gap-[4px]">
-                            {pos.candidates.map((c, idx) => (
-                              <div key={c.id}
-                                className="flex items-center gap-3 bg-white/[0.025] hover:bg-white/[0.04] rounded-[6px] px-3 py-[6px] transition-colors">
-                                <span className="text-[10px] text-white/30 w-4 text-right flex-shrink-0">{idx + 1}</span>
-                                <div className="flex-1 text-[12px] font-medium text-white/80 truncate">{c.fullName}</div>
-                                <span className="text-[10px] text-white/40 font-mono flex-shrink-0">
-                                  {formatGrade(c.gradeLevel)}
-                                </span>
-                              </div>
-                            ))}
+                    {el.positions.map((pos) => {
+                      const full = gradesForDivision(pos.election.division);
+                      return (
+                        <div key={pos.id} className="px-4 py-3">
+                          {/* Position title row */}
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-[11px] font-semibold text-white/65 uppercase tracking-[0.05em]">
+                              {pos.title}
+                            </span>
+                            <span className="text-[10px] text-white/35">
+                              Votes: {formatGradeList(pos.eligibleGrades, full)} · Runs: {formatGradeList(parseGrades(pos.candidateGrade), full)}
+                            </span>
                           </div>
-                        )}
-                      </div>
-                    ))}
+
+                          {pos.candidates.length === 0 ? (
+                            <div className="text-[11px] text-white/30 italic pl-1">No candidates encoded</div>
+                          ) : (
+                            <div className="flex flex-col gap-[4px]">
+                              {pos.candidates.map((c, idx) => (
+                                <div key={c.id}
+                                  className="flex items-center gap-3 bg-white/[0.025] hover:bg-white/[0.04] rounded-[6px] px-3 py-[6px] transition-colors">
+                                  <span className="text-[10px] text-white/30 w-4 text-right flex-shrink-0">{idx + 1}</span>
+                                  <div className="flex-1 text-[12px] font-medium text-white/80 truncate">{c.fullName}</div>
+                                  <span className="text-[10px] text-white/40 font-mono flex-shrink-0">
+                                    {formatGrade(c.gradeLevel)}
+                                  </span>
+                                </div>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               );

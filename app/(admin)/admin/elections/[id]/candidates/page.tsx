@@ -2,7 +2,8 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { DIVISION_POSITIONS } from "@/lib/elections/constants";
+import { parseGrades, formatGradeList } from "@/lib/domain/grade-format";
+import { DIVISION_POSITIONS, gradesForDivision } from "@/lib/elections/constants";
 import { can } from "@/lib/auth/permissions";
 import {
   StatusPill,
@@ -51,6 +52,7 @@ export default async function CandidatesPage({ params }: { params: { id: string 
     orderBy: { order: "asc" },
     include: { candidates: { orderBy: { fullName: "asc" } } },
   });
+  const fullRange = gradesForDivision(election.division);
 
   const allPositionDefs = DIVISION_POSITIONS[election.division] ?? [];
   const existingTitles = new Set(positions.map((p) => p.title));
@@ -215,7 +217,9 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                       </span>
                       <div className="flex flex-1 items-center gap-2 min-w-0">
                         <AdminCardTitle>{pos.title}</AdminCardTitle>
-                        <span className="text-[9px] text-white/30">Gr. {pos.candidateGrade}</span>
+                        <span className="text-[9px] text-white/30">
+                          Votes: {formatGradeList(pos.eligibleGrades, fullRange)} · Runs: {formatGradeList(parseGrades(pos.candidateGrade), fullRange)}
+                        </span>
                       </div>
                       {isEmpty && !isLocked ? (
                         <span className="shrink-0 rounded-full border border-amber-400/20 bg-amber-400/[0.07] px-[7px] py-[2px] text-[9px] font-semibold text-amber-400/80">
