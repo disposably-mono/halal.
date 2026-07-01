@@ -1,6 +1,7 @@
 "use client";
 
 import { STATUS_CONFIG, type DivisionCard } from "./landing-shared";
+import { DIVISION_CODES } from "@/lib/ui/division-labels";
 
 export function DivisionStatusCard({ card, index }: { card: DivisionCard; index: number }) {
   const { division, label, sublabel, election } = card;
@@ -14,7 +15,7 @@ export function DivisionStatusCard({ card, index }: { card: DivisionCard; index:
     >
       {/* Division code */}
       <div className="flex items-center justify-between">
-        <span className="font-display text-3xl text-white/30 leading-none">{division}</span>
+        <span className="font-display text-3xl text-white/30 leading-none">{DIVISION_CODES[division] ?? division}</span>
         {cfg && (
           <span
             className={`inline-flex items-center gap-1.5 text-[10px] font-body tracking-[0.15em] uppercase border px-2 py-1 rounded-sm ${cfg.color}`}
