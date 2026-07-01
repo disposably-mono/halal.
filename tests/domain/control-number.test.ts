@@ -118,11 +118,15 @@ describe("parseControlNumber", () => {
     expect(parseControlNumber("2611Z001")).toBeNull();
   });
 
-  it("returns null for grade outside any division range", () => {
-    // Grade 02 is below GS (3-5) and not in any range
+  it("returns null for a grade below all division ranges", () => {
+    // Grade 02 is below GS min (3)
     expect(parseControlNumber("2602A001")).toBeNull();
-    // Grade 12 is above all ranges
-    expect(parseControlNumber("2612A001")).toBeNull();
+  });
+
+  it("parses grade 12 as HC", () => {
+    const parsed = parseControlNumber("2612A001");
+    expect(parsed?.grade).toBe(12);
+    expect(parsed?.division).toBe("HC");
   });
 
   it("derives SHS (not HC) for grade 11 — both share grade range, SHS wins by iteration order", () => {

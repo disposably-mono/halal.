@@ -40,6 +40,15 @@ describe("eligiblePositionsForGrade", () => {
     expect(eligiblePositionsForGrade("SHS", 5)).toEqual([]);
     expect(eligiblePositionsForGrade("GS", 11)).toEqual([]);
   });
+
+  it("returns all three HC positions for grades 11 and 12", () => {
+    expect(eligiblePositionsForGrade("HC", 11)).toHaveLength(3);
+    expect(eligiblePositionsForGrade("HC", 12)).toHaveLength(3);
+  });
+
+  it("excludes grade 10 from HC", () => {
+    expect(eligiblePositionsForGrade("HC", 10)).toEqual([]);
+  });
 });
 
 describe("parseCandidateGrades", () => {
