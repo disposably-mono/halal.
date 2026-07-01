@@ -52,6 +52,7 @@ docker-compose.override.yml
 # local planning and review artifacts
 /.docs/
 /docs/superpowers/
+/docs
 /test-voters-500.csv
 /TODO.md
 
