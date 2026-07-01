@@ -36,10 +36,25 @@ export async function applyScheduledTransitions(): Promise<TransitionSummary> {
   });
 
   if (toOpen.length > 0) {
-    await prisma.election.updateMany({
-      where: { id: { in: toOpen.map((e) => e.id) } },
-      data: { status: "OPEN" },
-    });
+    const openedIds = toOpen.map((e) => e.id);
+    // Flip status and record an audit entry per election in one transaction, so
+    // a scheduled open is attributable (who="scheduler", when=now) the same way
+    // the close path attributes automatic closes. Mirrors the manual-open audit
+    // write in the control actions.
+    await prisma.$transaction([
+      prisma.election.updateMany({
+        where: { id: { in: openedIds } },
+        data: { status: "OPEN" },
+      }),
+      prisma.auditLog.createMany({
+        data: openedIds.map((electionId) => ({
+          electionId,
+          action: "Automatically opened election (scheduled)",
+          toStatus: "OPEN",
+          adminEmail: "scheduler",
+        })),
+      }),
+    ]);
   }
 
   // ── 2. OPEN → CLOSED ──────────────────────────────────────────────────────
