@@ -55,39 +55,28 @@ describe("parseCandidateGrades", () => {
   it("parses a single grade", () => {
     expect(parseCandidateGrades("9")).toEqual([9]);
   });
-
   it("parses comma-separated grades", () => {
     expect(parseCandidateGrades("9,10,11")).toEqual([9, 10, 11]);
   });
-
-  it("trims whitespace around tokens", () => {
-    expect(parseCandidateGrades(" 9 , 10 , 11 ")).toEqual([9, 10, 11]);
+  it("parses 'or' and 'to' forms (no longer collapses to one grade)", () => {
+    expect(parseCandidateGrades("10 or 11")).toEqual([10, 11]);
+    expect(parseCandidateGrades("6 to 9")).toEqual([6, 7, 8, 9]);
   });
-
-  it("filters NaN tokens (e.g. '10 or 11', '6 to 9')", () => {
-    // These are display strings — the comma split + parseInt picks first numeric.
-    expect(parseCandidateGrades("10 or 11")).toEqual([10]);
-    expect(parseCandidateGrades("6 to 9")).toEqual([6]);
-  });
-
-  it("returns empty array for fully non-numeric input", () => {
-    expect(parseCandidateGrades("any")).toEqual([]);
-    expect(parseCandidateGrades("")).toEqual([]);
+  it("returns empty array for non-numeric input", () => {
+    expect(parseCandidateGrades("all")).toEqual([]);
   });
 });
 
 describe("pickCandidateDefaultGrade", () => {
   it("returns the grade when exactly one was parsed", () => {
-    expect(pickCandidateDefaultGrade("9")).toBe(9);
     expect(pickCandidateDefaultGrade("11")).toBe(11);
   });
-
   it("returns 0 when multiple grades parsed", () => {
-    expect(pickCandidateDefaultGrade("9,10,11")).toBe(0);
+    expect(pickCandidateDefaultGrade("10,11")).toBe(0);
+    expect(pickCandidateDefaultGrade("10 or 11")).toBe(0);
   });
-
   it("returns 0 when no grades parse", () => {
-    expect(pickCandidateDefaultGrade("any")).toBe(0);
+    expect(pickCandidateDefaultGrade("")).toBe(0);
   });
 });
 

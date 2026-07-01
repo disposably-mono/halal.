@@ -7,7 +7,8 @@ export interface Candidate {
 export interface Position {
   id: string;
   title: string;
-  candidateGrade: number | number[];
+  candidateGradeLabel: string;
+  voterLockLabel: string | null;
   candidates: Candidate[];
 }
 
