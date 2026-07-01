@@ -2,7 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
-import { DIVISION_LABELS } from "@/lib/ui/division-labels";
+import { DIVISION_CODES } from "@/lib/ui/division-labels";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
 
@@ -163,7 +163,7 @@ export default async function AdminResultsPage() {
                   </span>
                   <div className="min-w-0">
                     <div className="text-[13px] font-semibold text-white/90 truncate">{el.name}</div>
-                    <div className="text-[10px] text-white/50">{DIVISION_LABELS[el.division] ?? el.division}</div>
+                    <div className="text-[10px] text-white/50">{DIVISION_CODES[el.division] ?? el.division}</div>
                   </div>
                 </div>
 
