@@ -10,6 +10,7 @@ import {
   Courier_Prime,
 } from "next/font/google";
 import "./globals.css";
+import { CookieNotice } from "./_components/CookieNotice";
 const bebasNeue = Bebas_Neue({
   weight: "400",
   subsets: ["latin"],
@@ -76,6 +77,7 @@ export default function RootLayout({
           `}
         >
           {children}
+          <CookieNotice />
         </body>
       </html>
     </ViewTransitions>
