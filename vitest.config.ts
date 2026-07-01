@@ -8,7 +8,12 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
-      include: ["lib/domain/**/*.ts", "lib/elections/**/*.ts", "lib/auth/**/*.ts"],
+      include: [
+        "lib/domain/**/*.ts",
+        "lib/elections/**/*.ts",
+        "lib/auth/**/*.ts",
+        "lib/cookie-consent.ts",
+      ],
       thresholds: {
         lines: 80,
         functions: 80,

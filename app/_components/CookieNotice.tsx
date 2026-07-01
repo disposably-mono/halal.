@@ -31,7 +31,7 @@ export function CookieNotice() {
 
   return (
     <div
-      role="dialog"
+      role="region"
       aria-label="Cookie notice"
       className="fixed inset-x-0 bottom-0 z-[100] border-t border-gold/20 bg-navy-deep/95 px-6 py-4 backdrop-blur"
     >

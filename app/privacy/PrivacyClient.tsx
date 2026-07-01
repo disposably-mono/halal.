@@ -10,7 +10,7 @@ const COOKIES = [
   {
     name: "voter_session",
     purpose: "Keeps a voter's place during the voting flow.",
-    life: "Session (cleared after voting).",
+    life: "Up to 30 minutes; cleared after voting.",
   },
   {
     name: "ballot_confirmation",
