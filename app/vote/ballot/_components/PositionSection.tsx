@@ -42,10 +42,8 @@ export function PositionSection({
             {position.title}
           </h3>
           <p className="font-ballot-mono text-[9px] tracking-[0.14em] uppercase text-navy/40 mt-0.5">
-            Vote for one ·{" "}
-            {Array.isArray(position.candidateGrade)
-              ? `Candidate Grades ${position.candidateGrade[0]}–${position.candidateGrade[position.candidateGrade.length - 1]}`
-              : `Candidate Grade ${position.candidateGrade}`}
+            Vote for one · Candidates: {position.candidateGradeLabel}
+            {position.voterLockLabel ? ` · ${position.voterLockLabel} only` : ""}
           </p>
         </div>
         <div className="flex items-center pr-3 shrink-0">

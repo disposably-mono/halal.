@@ -3,6 +3,11 @@ import { redirect } from "next/navigation";
 import { createElection } from "./actions";
 import { ThemedSelect } from "@/components/admin/ThemedSelect";
 import Link from "next/link";
+import {
+  DIVISION_LABELS,
+  DIVISION_ORDER,
+  formatDivisionGrades,
+} from "@/lib/ui/division-labels";
 
 export default async function NewElectionPage() {
   const session = await auth();
@@ -74,12 +79,10 @@ export default async function NewElectionPage() {
                 required
                 placeholder="Select a division"
                 className="h-10 rounded-lg"
-                options={[
-                  { value: "GS", label: "Grade School (Grades 3–5)" },
-                  { value: "JHS", label: "Junior High School (Grades 6–9)" },
-                  { value: "SHS", label: "Senior High School (Grades 10–11)" },
-                  { value: "HC", label: "House Council (Grades 10–11)" },
-                ]}
+                options={DIVISION_ORDER.map((div) => ({
+                  value: div,
+                  label: `${DIVISION_LABELS[div]} (${formatDivisionGrades(div)})`,
+                }))}
               />
             </div>
 

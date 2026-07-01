@@ -1,6 +1,6 @@
 "use client";
 
-import { DIVISION_LABELS, type ElectionMeta } from "./results-shared";
+import { DIVISION_CODES, type ElectionMeta } from "./results-shared";
 
 export function ElectionSelector({
   elections,
@@ -36,7 +36,7 @@ export function ElectionSelector({
             {currentElection.name}
           </p>
           <p className="mt-0.5 font-body text-xs text-white/[0.35]">
-            {DIVISION_LABELS[currentElection.division] ?? currentElection.division}
+            {DIVISION_CODES[currentElection.division] ?? currentElection.division}
             {" · "}
             <span className="text-white/35">{currentIndex + 1} of {elections.length}</span>
           </p>

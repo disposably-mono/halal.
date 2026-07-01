@@ -15,8 +15,8 @@ export const DIVISION_POSITIONS: Record<Division, PositionDefinition[]> = {
     { title: "Treasurer", eligibleGrades: [10, 11], candidateGrade: "10" },
     { title: "Overall Staff", eligibleGrades: [10, 11], candidateGrade: "11" },
     { title: "Public Relations Officer", eligibleGrades: [10, 11], candidateGrade: "11" },
-    { title: "Art Director", eligibleGrades: [10, 11], candidateGrade: "10 or 11" },
-    { title: "Social Media Associate", eligibleGrades: [10, 11], candidateGrade: "10 or 11" },
+    { title: "Art Director", eligibleGrades: [10, 11], candidateGrade: "10,11" },
+    { title: "Social Media Associate", eligibleGrades: [10, 11], candidateGrade: "10,11" },
   ],
   JHS: [
     { title: "President", eligibleGrades: [6, 7, 8, 9], candidateGrade: "9" },
@@ -36,8 +36,8 @@ export const DIVISION_POSITIONS: Record<Division, PositionDefinition[]> = {
     { title: "Sophomore Governor", eligibleGrades: [7], candidateGrade: "7" },
     { title: "Junior Governor", eligibleGrades: [8], candidateGrade: "8" },
     { title: "Senior Governor", eligibleGrades: [9], candidateGrade: "9" },
-    { title: "Art Director", eligibleGrades: [6, 7, 8, 9], candidateGrade: "6 to 9" },
-    { title: "Social Media Associate", eligibleGrades: [6, 7, 8, 9], candidateGrade: "6 to 9" },
+    { title: "Art Director", eligibleGrades: [6, 7, 8, 9], candidateGrade: "6,7,8,9" },
+    { title: "Social Media Associate", eligibleGrades: [6, 7, 8, 9], candidateGrade: "6,7,8,9" },
   ],
   GS: [
     { title: "President", eligibleGrades: [3, 4, 5], candidateGrade: "5" },
@@ -52,9 +52,9 @@ export const DIVISION_POSITIONS: Record<Division, PositionDefinition[]> = {
     { title: "Public Relations Officer 5", eligibleGrades: [3, 4, 5], candidateGrade: "3" },
   ],
   HC: [
-    { title: "House Prefect", eligibleGrades: [10, 11], candidateGrade: "11" },
-    { title: "Assistant Prefect", eligibleGrades: [10, 11], candidateGrade: "10" },
-    { title: "Art Director", eligibleGrades: [10, 11], candidateGrade: "10 or 11" },
+    { title: "House Prefect", eligibleGrades: [11, 12], candidateGrade: "12" },
+    { title: "Assistant Prefect", eligibleGrades: [11, 12], candidateGrade: "11" },
+    { title: "Art Director", eligibleGrades: [11, 12], candidateGrade: "11,12" },
   ],
 };
 
@@ -62,7 +62,7 @@ export const DIVISION_GRADE_RANGE: Record<Division, { min: number; max: number }
   GS: { min: 3, max: 5 },
   JHS: { min: 6, max: 9 },
   SHS: { min: 10, max: 11 },
-  HC: { min: 10, max: 11 },
+  HC: { min: 11, max: 12 },
 };
 
 export function divisionForGrade(grade: number): Division | null {
@@ -70,4 +70,11 @@ export function divisionForGrade(grade: number): Division | null {
     if (grade >= range.min && grade <= range.max) return div;
   }
   return null;
+}
+
+export function gradesForDivision(division: Division): number[] {
+  const { min, max } = DIVISION_GRADE_RANGE[division];
+  const out: number[] = [];
+  for (let g = min; g <= max; g++) out.push(g);
+  return out;
 }

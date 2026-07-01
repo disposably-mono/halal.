@@ -1,20 +1,11 @@
 import { redirect } from "next/navigation";
 import { getVoterSession } from "@/lib/voter-session";
 import { prisma } from "@/lib/prisma";
+import { parseGrades, formatGradeList } from "@/lib/domain/grade-format";
+import { gradesForDivision } from "@/lib/elections/constants";
 import BallotClient from "./BallotClient";
 
 export const dynamic = "force-dynamic";
-
-/** Parse Position.candidateGrade (stored as string e.g. "9" or "9,10,11") */
-function parseCandidateGrade(raw: string): number | number[] {
-  const parts = raw
-    .split(",")
-    .map((s) => parseInt(s.trim(), 10))
-    .filter((n) => !isNaN(n));
-  if (parts.length === 0) return 0;
-  if (parts.length === 1) return parts[0];
-  return parts;
-}
 
 export default async function BallotPage() {
   const session = await getVoterSession();
@@ -57,12 +48,18 @@ export default async function BallotPage() {
       division={session.division}
       gradeLevel={voter.gradeLevel}
       section={voter.section}
-      positions={positions.map((p) => ({
-        id: p.id,
-        title: p.title,
-        candidateGrade: parseCandidateGrade(p.candidateGrade),
-        candidates: p.candidates,
-      }))}
+      positions={positions.map((p) => {
+        const fullRange = gradesForDivision(session.division as "GS" | "JHS" | "SHS" | "HC");
+        const voterGrades = p.eligibleGrades;
+        const isVoterLocked = voterGrades.length > 0 && voterGrades.length < fullRange.length;
+        return {
+          id: p.id,
+          title: p.title,
+          candidateGradeLabel: formatGradeList(parseGrades(p.candidateGrade), fullRange),
+          voterLockLabel: isVoterLocked ? formatGradeList(voterGrades, fullRange) : null,
+          candidates: p.candidates,
+        };
+      })}
     />
   );
 }

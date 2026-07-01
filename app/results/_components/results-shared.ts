@@ -29,6 +29,6 @@ export interface ResultsPayload {
   integrityFailure?: boolean;
 }
 
-export { DIVISION_LABELS } from "@/lib/ui/division-labels";
+export { DIVISION_LABELS, DIVISION_CODES } from "@/lib/ui/division-labels";
 
 export const POLL_INTERVAL = 30000;

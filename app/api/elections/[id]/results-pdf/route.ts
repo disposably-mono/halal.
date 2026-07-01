@@ -18,6 +18,7 @@ import { prisma } from "@/lib/prisma";
 import { ResultsPDF, type ResultPosition } from "@/lib/pdf/ResultsPDF";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
+import { DIVISION_CODES } from "@/lib/ui/division-labels";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -202,7 +203,7 @@ export async function GET(
     // Fix: cast through unknown to satisfy @react-pdf/renderer's ReactElement expectation
     const element = React.createElement(ResultsPDF, {
       electionName: election.name,
-      division: election.division as string,
+      division: DIVISION_CODES[election.division] ?? (election.division as string),
       schoolYear: schoolYearLabel(now),
       dateClosed: formatDate(election.updatedAt),
       generatedAt: formatDateTime(now),
