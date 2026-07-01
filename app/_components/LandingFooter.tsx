@@ -93,6 +93,10 @@ export function LandingFooter({
           <Link href="/admin-help" className="text-white/35 transition-colors hover:text-gold">
             Officer Help
           </Link>
+          <span className="text-gold/20" aria-hidden="true">|</span>
+          <Link href="/privacy" className="text-white/35 transition-colors hover:text-gold">
+            Privacy
+          </Link>
         </div>
         </div>
       </div>
