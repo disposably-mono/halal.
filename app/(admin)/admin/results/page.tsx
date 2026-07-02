@@ -249,15 +249,22 @@ export default async function AdminResultsPage() {
 }
 
 function ResultsHeader({ count }: { count: number }) {
+  const countLabel = count > 0 ? `${count.toLocaleString()} tracked` : "No tracked results";
   const summary =
     count > 0
-      ? `${count} election${count > 1 ? "s" : ""} with results · Winners per position`
+      ? `${count} election${count > 1 ? "s" : ""} with results. Winners are shown per position.`
       : "No elections with results yet";
 
   return (
     <PageHeader
+      eyebrow="Reports"
       title="Results"
-      meta={summary}
+      meta={
+        <span>
+          <span className="font-medium text-gold/80">{countLabel}</span>
+          {" · "}{summary}
+        </span>
+      }
     />
   );
 }

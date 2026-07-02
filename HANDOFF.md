@@ -2,7 +2,7 @@
 
 Updated: 2026-07-03
 Branch: `main`
-Current base before this handoff update: `065e47b style(admin): refine filter panels`
+Current base before this handoff update: `4ccd898 feat(admin): polish shell and receipt verification`
 
 ## Shipped
 
@@ -40,15 +40,18 @@ Current base before this handoff update: `065e47b style(admin): refine filter pa
 - Receipt verification update:
   - A valid one-time receipt verification now shows the recorded choices for that receipt, including abstentions.
   - Verification copy now warns that receipt codes should be kept private because they can reveal that receipt's recorded choices.
+- History/results/accounts polish:
+  - `/admin/history` now has the same filter-panel language as voters/candidates: search, person-role filters, date windows, metrics, visible counts, and filtered empty states.
+  - Results, accounts, and history now carry gold section/helper text and gold summary badges to match the dashboard, voters, and candidates pages.
 
 ## Verification Run
 
 - `npm run typecheck`
 - `npm run lint`
-- `npm test` - 35 files, 306 tests passed
+- `npm test` - 36 files, 317 tests passed
 - `npm run build`
 - `PLAYWRIGHT_HTML_OPEN=never npx playwright test` - 1 Chromium smoke test passed
-- Authenticated Chromium probes: login/account autocomplete, draft monitor redirect, mobile control topbar bounds, filter panels, collapsed-by-default groups, expand hints, and desktop/mobile overflow passed.
+- Authenticated Chromium probes: login/account autocomplete, draft monitor redirect, mobile control topbar bounds, filter panels, collapsed-by-default groups, expand hints, desktop/mobile overflow, history filters, and Results/Accounts/History gold cues passed.
 
 ## New Tests
 
@@ -61,10 +64,11 @@ Current base before this handoff update: `065e47b style(admin): refine filter pa
 - `tests/admin/candidate-index.test.ts`
 - `tests/admin/voter-index.test.ts`
 - `tests/auth/receipt-selections.test.ts`
+- `tests/admin/history-index.test.ts`
 
 ## Notes For Next Worker
 
 - The root `HANDOFF.md` was previously recreated from active code state and prior handoff summary.
-- Local branch is `main`; phase work is already on `origin/main` through `065e47b`.
+- Local branch is `main`; phase work is already on `origin/main` through `4ccd898`.
 - Do not modify `.env` or seed/reset the database without explicit approval.
 - If more visual polish is requested, resume with authenticated browser screenshots on desktop and mobile.

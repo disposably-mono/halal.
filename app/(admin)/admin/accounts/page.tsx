@@ -36,10 +36,16 @@ export default async function AdminAccountsPage() {
   return (
     <PageContainer className="flex flex-col gap-[18px]">
       <PageHeader
+        eyebrow="Administration"
         title="Admin Accounts"
-        meta="COMELEC super-admins manage who can operate elections, canvass results, and observe. Each account has its own password and officer key."
+        meta={
+          <span>
+            <span className="font-medium text-gold/80">Officer access is gated by two-person verification.</span>
+            {" "}Each account has its own password and officer key.
+          </span>
+        }
         actions={
-        <span className="bg-white/[0.04] border border-white/[0.07] text-white/50 rounded-[6px] px-[9px] py-[4px] text-[11px]">
+        <span className="rounded-[6px] border border-gold/20 bg-gold/[0.07] px-[9px] py-[4px] text-[11px] text-gold/80">
           {summary.totalLabel}
         </span>
         }
