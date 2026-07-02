@@ -23,6 +23,8 @@ export async function unlockAdminHelp(
 
   // This unlock compares the submitted key against every officer's hash, so it
   // is a prime brute-force target. Throttle per-IP before the bcrypt loop runs.
+  // The loop is O(n) over admin accounts (bcrypt hashes can't be indexed for
+  // lookup); at school scale that's a handful of accounts, so it's acceptable.
   const ip = await clientIp();
   if (!rateLimit(`admin-help-unlock:${ip}`, RATE_LIMITS.adminHelpUnlock).ok) {
     return { error: "Too many attempts. Please wait a few minutes and try again." };

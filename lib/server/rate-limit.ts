@@ -90,6 +90,16 @@ export function __resetRateLimits(): void {
  * Best-effort client IP from proxy headers. `trustHost` is enabled, so requests
  * arrive through a proxy/tunnel that sets `x-forwarded-for`. Falls back to a
  * shared "unknown" bucket when no header is present (e.g. local dev).
+ *
+ * SECURITY / DEPLOYMENT REQUIREMENT: `x-forwarded-for` (and `x-real-ip`) are
+ * client-supplied and trivially spoofable. This function trusts the first hop of
+ * `x-forwarded-for` verbatim, so a header-sanitizing reverse proxy that
+ * *overwrites* (not appends to) these headers with the real peer address is a
+ * hard deployment requirement. WITHOUT such a proxy, per-IP limits are fully
+ * bypassable — an attacker rotates the header to a new value per request and
+ * never shares a bucket. Note that the most sensitive limit (voter validation)
+ * is keyed by studentId, not IP, so it is unaffected; the IP-keyed limits
+ * (admin login, officer-key unlock) are the ones that degrade without a proxy.
  */
 export async function clientIp(): Promise<string> {
   const h = await headers();

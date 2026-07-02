@@ -117,7 +117,7 @@ app/
 ├── (admin)/admin/                  # Protected admin panel (middleware)
 │   ├── layout.tsx                  # Topbar + sidebar chrome
 │   ├── page.tsx · DashboardClient.tsx · _components/   # Dashboard + archive
-│   ├── actions.ts                  # updateElectionStatus / archive / restore
+│   ├── actions.ts                  # archiveElection / restoreElection (lifecycle transitions live in elections/[id]/control/actions.ts)
 │   ├── candidates/ voters/ results/ # Global cross-election admin views
 │   └── elections/
 │       ├── new/ (page.tsx + actions.ts)        # createElection()
@@ -140,8 +140,12 @@ app/
 3. `auth.ts` checks:
    - Email exists in `AdminUser`
    - Password matches `passwordHash` (bcrypt)
-   - Officer key matches `officerKey` (bcrypt)
-4. On success, sets session with `role` (COMMISSIONER/OFFICER)
+   - Officer key matches `officerKey` (bcrypt) — and the matched key must belong to a
+     *different* admin account than the one logging in (shared 2FA accountability)
+4. On success, sets session with `role` — one of `SUPERADMIN`, `COMMISSIONER`,
+   `CANVASSER`, or `OFFICER`. Authorization is capability-based: roles map to
+   capabilities in `lib/auth/permissions.ts` (`ROLE_CAPABILITIES`), and every
+   guard/UI gate derives from that single source of truth.
 5. `middleware.ts` protects all `/admin/*` routes using NextAuth's `auth()` redirect
 
 > **Multi-host auth:** `auth.config.ts` sets `trustHost: true`, so callback URLs and
@@ -243,7 +247,7 @@ Enter Code → Validate → Generate Ballot → Select → Review → Submit
 - `lib/domain/voter-import.ts` - CSV parsing for voter import
 
 ### Server Actions (Backend Logic)
-- `app/(admin)/admin/actions.ts` - Election status, archive, and restore actions
+- `app/(admin)/admin/actions.ts` - Archive and restore actions (status/lifecycle transitions live in `elections/[id]/control/actions.ts`)
 - `app/(admin)/admin/elections/new/actions.ts` - `createElection()`
 - `app/(admin)/admin/elections/[id]/candidates/actions.ts` - Candidate CRUD
 - `app/(admin)/admin/elections/[id]/voters/actions.ts` - Voter import + control number generation
@@ -338,7 +342,11 @@ DRAFT → SCHEDULED → OPEN → CLOSED
 - `email`: Unique, used for login
 - `passwordHash`: Bcrypt-hashed password
 - `officerKey`: Bcrypt-hashed unique personal key (2FA)
-- `role`: `COMMISSIONER` or `OFFICER` (future: role-based permissions)
+- `role`: one of `SUPERADMIN`, `COMMISSIONER`, `CANVASSER`, or `OFFICER`.
+  Capability-based permissions are defined in `lib/auth/permissions.ts`
+  (`ROLE_CAPABILITIES`): SUPERADMIN manages accounts only; CANVASSER owns results
+  (close/export/recount); COMMISSIONER owns election setup (lifecycle, voters,
+  candidates); OFFICER has authenticated read access only.
 - `lastLogin`: Timestamp for audit
 
 ## Testing
@@ -383,6 +391,11 @@ NEXTAUTH_SECRET="random-32+char-string-for-jwt-signing"
 - `NEXTAUTH_URL` is optional (`trustHost: true` derives the host from the request); set it only to pin auth to a single production origin
 - Harden `AdminUser.officerKey` - unique per officer in production
 - Enable HTTPS (NextAuth requires secure cookies in production)
+- **Run behind a header-sanitizing reverse proxy.** The per-IP rate limiter
+  (`lib/server/rate-limit.ts`) trusts `x-forwarded-for`, which is client-spoofable.
+  The proxy in front of the app MUST overwrite `x-forwarded-for` with the real
+  peer address — without it, the IP-keyed limits (admin login, officer-key unlock)
+  are trivially bypassable.
 
 ## Deployment
 
@@ -437,7 +450,16 @@ Volume: halal_pgdata (persists between restarts)
 - **Styling:** All shadcn/ui components use Tailwind classes; extend `tailwind.config.ts` for brand colors
 - **Dates:** Store as UTC in PostgreSQL; convert to local timezone only in UI
 - **CSV imports:** Voter import expects columns: `studentId,gradeLevel,section`
-- **Election status transitions:** Admin control actions and the cron endpoint enforce the `DRAFT → SCHEDULED → OPEN → CLOSED` lifecycle
+- **Election status transitions:** Enforced by the server actions in
+  `app/(admin)/admin/elections/[id]/control/actions.ts` and the cron endpoint,
+  both gated by the pure guards in `lib/domain/election-state.ts`
+  (`canManuallyOpen`, `canAdvanceToScheduled`, `canReschedule`, …). These enforce
+  the `DRAFT → SCHEDULED → OPEN → CLOSED` lifecycle and refuse transitions on
+  archived elections.
+- **Test-only endpoint:** `app/api/test/cast-ballot` exists for load testing but is
+  double-gated — it returns 404 unless `ENABLE_TEST_ENDPOINTS=1` **and**
+  `NODE_ENV !== "production"` (see `lib/server/test-endpoints.ts`), so it is invisible
+  on a real deployment.
 
 ---
 

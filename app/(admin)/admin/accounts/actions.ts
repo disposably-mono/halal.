@@ -25,6 +25,10 @@ async function officerKeyIsInUse(
   officerKey: string,
   excludeAdminId?: string,
 ): Promise<boolean> {
+  // O(n) by design: officer keys are stored as bcrypt hashes (per-row salt), so
+  // uniqueness cannot be checked with an indexed lookup — we must bcrypt-compare
+  // against every admin's hash. Admin accounts number in the low single digits at
+  // school scale, so this linear scan is an accepted tradeoff.
   const accounts = await prisma.adminUser.findMany({
     where: excludeAdminId ? { id: { not: excludeAdminId } } : undefined,
     select: { officerKey: true },

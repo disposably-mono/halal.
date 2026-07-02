@@ -202,6 +202,7 @@ tests/                 Authentication and election-domain tests
 - Election transitions validate roster and candidate readiness.
 - The scheduler endpoint requires `Authorization: Bearer <CRON_SECRET>`.
 - Production deployments should use HTTPS, managed secrets, regular backups, and restricted database access.
+- The app must sit behind a reverse proxy that overwrites the `x-forwarded-for` header with the real client address; per-IP rate limits are otherwise bypassable via header spoofing.
 
 ## Project Status
 

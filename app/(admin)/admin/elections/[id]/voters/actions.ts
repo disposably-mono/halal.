@@ -56,6 +56,11 @@ export async function addVotersFromCSV(
     };
   }
 
+  // O(n) by design: control-number uniqueness is enforced globally, so we load
+  // every existing voterCode into a Set for collision checks during import. This
+  // scans the whole Voter table per import; at school scale (a few thousand rows
+  // across all elections) that's a cheap single query and an accepted tradeoff
+  // versus a per-row existence check.
   const [existingForElection, allCodes] = await Promise.all([
     prisma.voter.findMany({ where: { electionId }, select: { studentId: true } }),
     prisma.voter.findMany({ select: { voterCode: true } }),
