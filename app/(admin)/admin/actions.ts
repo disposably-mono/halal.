@@ -2,7 +2,6 @@
 
 import { prisma } from "@/lib/prisma";
 import {
-  requireCapability,
   requireCapabilityOrError,
   adminEmailFromSession,
 } from "@/lib/server/auth";
@@ -11,51 +10,9 @@ import {
   revalidateElectionControl,
 } from "@/lib/server/revalidate";
 import { permissionErrorMessage } from "@/lib/auth/permissions";
-import { ElectionStatusSchema } from "@/lib/validation/schemas";
 import { canArchive, canRestore } from "@/lib/domain/election-state";
-import { closeElectionWithCertification } from "@/lib/server/close-election";
 
 type ActionResult = { success: true } | { success: false; error: string };
-
-export async function updateElectionStatus(
-  electionId: string,
-  status: string,
-): Promise<void> {
-  const parsed = ElectionStatusSchema.safeParse(status);
-  if (!parsed.success) {
-    throw new Error(`Invalid election status: ${status}`);
-  }
-  const nextStatus = parsed.data;
-
-  // Closing an election is the Canvassing Head's domain; all other transitions
-  // belong to the Commissioner (election lifecycle).
-  const session = await requireCapability(
-    nextStatus === "CLOSED" ? "election:close" : "election:lifecycle",
-  );
-
-  if (nextStatus === "SCHEDULED" || nextStatus === "OPEN") {
-    const election = await prisma.election.findUnique({
-      where: { id: electionId },
-      select: { candidatesFinalized: true, votersFinalized: true },
-    });
-    if (!election?.candidatesFinalized || !election?.votersFinalized) {
-      throw new Error(
-        "Both candidates and voters must be finalized before changing to this status.",
-      );
-    }
-  }
-
-  if (nextStatus === "CLOSED") {
-    await closeElectionWithCertification(electionId, adminEmailFromSession(session));
-  } else {
-    await prisma.election.update({
-      where: { id: electionId },
-      data: { status: nextStatus },
-    });
-  }
-
-  revalidateAdminDashboard();
-}
 
 export async function archiveElection(electionId: string): Promise<ActionResult> {
   const guard = await requireCapabilityOrError("election:lifecycle");
