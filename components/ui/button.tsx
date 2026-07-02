@@ -21,15 +21,15 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         // Admin theme — dark navy + gold accents. Always pair with size="adminMd" or "adminSm".
         adminPrimary:
-          "font-semibold bg-gold text-admin-bg hover:opacity-90 active:scale-[0.97] focus-visible:border-gold/60 focus-visible:ring-gold/30 disabled:opacity-40",
+          "font-semibold bg-gold text-admin-bg hover:opacity-90 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none disabled:opacity-40",
         adminGhost:
-          "font-semibold text-white/60 border border-white/[0.10] bg-transparent hover:text-white/80 hover:border-white/[0.20] active:scale-[0.97] focus-visible:border-gold/45 focus-visible:ring-gold/20 disabled:opacity-30",
+          "font-semibold text-white/60 border border-white/[0.10] bg-transparent hover:text-white/80 hover:border-white/[0.20] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none disabled:opacity-30",
         adminEmerald:
-          "font-semibold bg-emerald-400 text-admin-bg hover:opacity-90 active:scale-[0.97] focus-visible:border-emerald-200 focus-visible:ring-emerald-400/30 disabled:opacity-30",
+          "font-semibold bg-emerald-400 text-admin-bg hover:opacity-90 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none disabled:opacity-30",
         adminBlue:
-          "font-semibold bg-blue-400/[0.10] text-blue-400 border border-blue-400/25 hover:bg-blue-400/20 active:scale-[0.97] focus-visible:border-blue-400/50 focus-visible:ring-blue-400/25 disabled:opacity-30",
+          "font-semibold bg-blue-400/[0.10] text-blue-400 border border-blue-400/25 hover:bg-blue-400/20 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none disabled:opacity-30",
         adminDestructive:
-          "font-semibold bg-red-400/[0.10] text-red-400 border border-red-400/25 hover:bg-red-400/20 active:scale-[0.97] focus-visible:border-red-400/50 focus-visible:ring-red-400/25 disabled:opacity-30",
+          "font-semibold bg-red-400/[0.10] text-red-400 border border-red-400/25 hover:bg-red-400/20 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none disabled:opacity-30",
       },
       size: {
         default:

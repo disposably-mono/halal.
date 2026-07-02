@@ -4,6 +4,7 @@ import { can } from "@/lib/auth/permissions";
 import { redirect } from "next/navigation";
 import DashboardClient from "./DashboardClient";
 import PermissionNotice from "./PermissionNotice";
+import { PageContainer } from "@/components/admin/ui";
 
 export default async function AdminDashboard({
   searchParams,
@@ -68,7 +69,7 @@ export default async function AdminDashboard({
   const archivedElections = electionsWithVoted.filter((e) => e.archivedAt !== null);
 
   return (
-    <div className="p-6 flex flex-col gap-[18px]">
+    <PageContainer className="flex flex-col gap-[18px]">
       <PermissionNotice denied={deniedParam} />
       <DashboardClient
         elections={activeElections}
@@ -77,6 +78,6 @@ export default async function AdminDashboard({
         totalRegistrations={totalRegistrations}
         canLifecycle={canLifecycle}
       />
-    </div>
+    </PageContainer>
   );
 }

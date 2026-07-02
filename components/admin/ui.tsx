@@ -39,6 +39,18 @@ export function AdminCardTitle({ className, children, as: As = "span" }: { class
   return <As className={cn(CARD_TITLE_CLASS, className)}>{children}</As>;
 }
 
+// ─── PageContainer ────────────────────────────────────────────────────────────
+// Standard content-width wrapper for admin pages. Adopted on the dashboard in
+// Phase 1; other pages migrate in later phases (kills max-w-7xl/5xl/3xl drift).
+
+export function PageContainer({ children, className }: { children: ReactNode; className?: string }) {
+  return (
+    <div className={cn("mx-auto w-full max-w-7xl px-4 sm:px-6 py-6", className)}>
+      {children}
+    </div>
+  );
+}
+
 // ─── Card ─────────────────────────────────────────────────────────────────────
 
 export function Card({

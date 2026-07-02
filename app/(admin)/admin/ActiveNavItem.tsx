@@ -22,15 +22,13 @@ export function ActiveNavItem({
   return (
     <Link
       href={href}
-      className={`flex items-center gap-2 px-4 py-[7px] text-[12px] transition-all no-underline relative
+      className={`flex min-h-[40px] items-center gap-2 px-4 py-[7px] text-[12px] transition-all no-underline relative
+        focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none
         ${isActive
-          ? "text-white/90 bg-white/[0.05]"
-          : "text-white/40 hover:text-white/70 hover:bg-white/[0.03]"
+          ? "text-white/90 bg-white/[0.05] border-l-2 border-gold"
+          : "text-white/40 hover:text-white/70 hover:bg-white/[0.03] border-l-2 border-transparent"
         }`}
     >
-      {isActive && (
-        <span className="absolute left-0 top-1/4 bottom-1/4 w-[2px] bg-gold rounded-r-[2px]" />
-      )}
       <span className={isActive ? "opacity-100" : "opacity-70 group-hover:opacity-100"}>
         {icon}
       </span>

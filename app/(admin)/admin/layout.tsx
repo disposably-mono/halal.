@@ -1,8 +1,9 @@
 import type { ReactNode } from "react";
 import { auth, signOut } from "@/auth";
 import { redirect } from "next/navigation";
-import { ActiveNavItem } from "./ActiveNavItem";
 import { can } from "@/lib/auth/permissions";
+import { AdminShell } from "./_components/AdminShell";
+import type { NavSectionModel } from "./_components/nav-model";
 
 export default async function AdminLayout({ children }: { children: ReactNode }) {
   const session = await auth();
@@ -22,119 +23,70 @@ export default async function AdminLayout({ children }: { children: ReactNode })
     await signOut({ redirectTo: "/admin/login" });
   }
 
-  return (
-    <div className="min-h-screen flex flex-col bg-admin-bg">
-      {/* ── Topbar ── */}
-      <nav className="h-[52px] flex items-center justify-between px-5 sticky top-0 z-50 flex-shrink-0 border-b border-white/[0.07] bg-admin-surface">
-        <div className="flex items-baseline gap-[2px]">
-          <span className="text-[17px] font-bold tracking-[-0.6px] text-white/90">
-            halal<span className="text-gold">.</span>
-          </span>
-          <span className="text-[11px] text-white/40 ml-2 font-normal">Admin Panel</span>
-        </div>
-        <div className="flex items-center gap-3">
-          <span className="text-[11px] text-white/50">
-            {new Date().toLocaleDateString("en-PH", {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-            })}
-          </span>
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-gold flex-shrink-0 border border-gold/30 bg-gradient-to-br from-gold/30 to-gold/10">
-            {adminInitial}
-          </div>
-          <span className="text-[11px] text-white/50">{adminName}</span>
-          <form action={handleSignOut}>
-            <button
-              type="submit"
-              aria-label="Sign out"
-              className="text-[11px] text-white/40 hover:text-white/70 transition-colors cursor-pointer bg-transparent border-0 rounded-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
-      </nav>
+  // Serializable nav model, built AFTER the capability filter so unauthorized
+  // links never reach the client component.
+  const navSections: NavSectionModel[] = [
+    {
+      label: "Overview",
+      items: [{ href: "/admin", label: "Dashboard", iconKey: "dashboard", exact: true }],
+    },
+    ...(canCreateElection
+      ? [
+          {
+            label: "Elections",
+            items: [
+              { href: "/admin/elections/new", label: "New Election", iconKey: "new-election" as const },
+            ],
+          },
+        ]
+      : []),
+    {
+      label: "Reports",
+      items: [
+        { href: "/admin/results", label: "Results", iconKey: "results" as const },
+        ...(canViewVoters
+          ? [{ href: "/admin/voters", label: "Voters", iconKey: "voters" as const }]
+          : []),
+        { href: "/admin/candidates", label: "Candidates", iconKey: "candidates" as const },
+      ],
+    },
+    ...(canManageAccounts || canViewHistory
+      ? [
+          {
+            label: "Administration",
+            items: [
+              ...(canManageAccounts
+                ? [{ href: "/admin/accounts", label: "Accounts", iconKey: "accounts" as const }]
+                : []),
+              ...(canViewHistory
+                ? [{ href: "/admin/history", label: "History", iconKey: "history" as const }]
+                : []),
+            ],
+          },
+        ]
+      : []),
+  ];
 
-      {/* ── Body ── */}
-      <div className="flex flex-1 overflow-hidden">
-        {/* ── Sidebar ── */}
-        <nav className="w-[200px] flex-shrink-0 flex flex-col gap-[2px] py-4 overflow-y-auto border-r border-white/[0.07] bg-admin-surface">
-          <NavSection label="Overview" />
-          <ActiveNavItem exact href="/admin" label="Dashboard" icon={
-            <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7" /><rect x="14" y="3" width="7" height="7" />
-              <rect x="3" y="14" width="7" height="7" /><rect x="14" y="14" width="7" height="7" />
-            </svg>
-          } />
-
-          {canCreateElection && (
-            <>
-              <NavSection label="Elections" />
-              <ActiveNavItem href="/admin/elections/new" label="New Election" icon={
-                <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-              } />
-            </>
-          )}
-
-          <NavSection label="Reports" />
-          <ActiveNavItem href="/admin/results" label="Results" icon={
-            <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
-            </svg>
-          } />
-          {canViewVoters && (
-            <ActiveNavItem href="/admin/voters" label="Voters" icon={
-              <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
-                <path d="M23 21v-2a4 4 0 00-3-3.87" /><path d="M16 3.13a4 4 0 010 7.75" />
-              </svg>
-            } />
-          )}
-          <ActiveNavItem href="/admin/candidates" label="Candidates" icon={
-            <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" /><circle cx="12" cy="7" r="4" />
-            </svg>
-          } />
-
-          {(canManageAccounts || canViewHistory) && (
-            <>
-              <NavSection label="Administration" />
-              {canManageAccounts && (
-                <ActiveNavItem href="/admin/accounts" label="Accounts" icon={
-                  <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
-                    <line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
-                  </svg>
-                } />
-              )}
-              {canViewHistory && (
-                <ActiveNavItem href="/admin/history" label="History" icon={
-                  <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" />
-                    <path d="M3 3v5h5" /><path d="M12 7v5l3 2" />
-                  </svg>
-                } />
-              )}
-            </>
-          )}
-        </nav>
-
-        {/* ── Page content ── */}
-        <main className="flex-1 overflow-auto min-w-0">
-          {children}
-        </main>
-      </div>
-    </div>
+  const signOutForm = (
+    <form action={handleSignOut}>
+      <button
+        type="submit"
+        aria-label="Sign out"
+        className="text-[11px] text-white/40 hover:text-white/70 transition-colors cursor-pointer bg-transparent border-0 rounded-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50"
+      >
+        Sign out
+      </button>
+    </form>
   );
-}
 
-function NavSection({ label }: { label: string }) {
   return (
-    <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40 px-4 pt-3 pb-1">
-      {label}
-    </div>
+    <AdminShell
+      sections={navSections}
+      adminName={adminName}
+      adminInitial={adminInitial}
+      signOutForm={signOutForm}
+    >
+      {children}
+    </AdminShell>
   );
 }
