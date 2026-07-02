@@ -5,7 +5,7 @@ import { useState } from "react";
 import { AttnCard } from "./_components/AttnCard";
 import { ElectionRow } from "./_components/ElectionRow";
 import { ArchivedSection } from "./_components/ArchivedSection";
-import { Toast } from "@/components/admin/ui";
+import { Toast, useToast, type ToastVariant } from "@/components/admin/ui";
 import { pct, type Election, type ElectionStatus } from "./_components/shared";
 
 export default function DashboardClient({
@@ -22,11 +22,10 @@ export default function DashboardClient({
   canLifecycle: boolean;
 }) {
   const [allOpen, setAllOpen] = useState(true);
-  const [toast, setToast] = useState<{ msg: string; color: "green" | "red" } | null>(null);
+  const { toast, showToast, dismissToast } = useToast();
 
-  function onToast(msg: string, ok: boolean) {
-    setToast({ msg, color: ok ? "green" : "red" });
-    setTimeout(() => setToast(null), 2500);
+  function onToast(msg: string, variant: ToastVariant) {
+    showToast({ msg, variant });
   }
 
   const byStatus = (s: ElectionStatus) => elections.filter((e) => e.status === s).length;
@@ -183,7 +182,7 @@ export default function DashboardClient({
       {/* Archived elections */}
       <ArchivedSection elections={archivedElections} onToast={onToast} canLifecycle={canLifecycle} />
 
-      {toast && <Toast msg={toast.msg} color={toast.color} />}
+      <Toast toast={toast} onDismiss={dismissToast} />
     </>
   );
 }

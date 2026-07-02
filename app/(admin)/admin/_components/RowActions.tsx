@@ -6,6 +6,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { archiveElection } from "../actions";
 import { canArchive } from "@/lib/domain/election-state";
+import type { ToastVariant } from "@/components/admin/ui";
 import type { Election } from "./shared";
 
 const MENU_WIDTH = 150;
@@ -16,7 +17,7 @@ export function RowActions({
   canLifecycle,
 }: {
   e: Election;
-  onToast: (msg: string, ok: boolean) => void;
+  onToast: (msg: string, variant: ToastVariant) => void;
   canLifecycle: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -74,7 +75,7 @@ export function RowActions({
     setOpen(false);
     startTransition(async () => {
       const res = await archiveElection(e.id);
-      onToast(res.success ? "Election archived" : res.error, res.success);
+      onToast(res.success ? "Election archived" : res.error, res.success ? "success" : "error");
       if (res.success) router.refresh();
     });
   }

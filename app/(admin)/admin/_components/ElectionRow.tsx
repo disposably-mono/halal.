@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type { ToastVariant } from "@/components/admin/ui";
 import { StatusPill } from "./StatusPill";
 import { RowActions } from "./RowActions";
 import { DIVISION_LABELS, fmt, pct, type Election } from "./shared";
@@ -11,7 +12,7 @@ export function ElectionRow({
   canLifecycle,
 }: {
   e: Election;
-  onToast: (msg: string, ok: boolean) => void;
+  onToast: (msg: string, variant: ToastVariant) => void;
   canLifecycle: boolean;
 }) {
   const p = pct(e.votedCount, e._count.voters);

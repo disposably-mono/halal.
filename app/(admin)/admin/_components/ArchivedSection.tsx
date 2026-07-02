@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { restoreElection } from "../actions";
 import { DIVISION_LABELS } from "@/lib/ui/division-labels";
+import type { ToastVariant } from "@/components/admin/ui";
 import { fmt, type Election } from "./shared";
 
 export function ArchivedSection({
@@ -12,7 +13,7 @@ export function ArchivedSection({
   canLifecycle,
 }: {
   elections: Election[];
-  onToast: (msg: string, ok: boolean) => void;
+  onToast: (msg: string, variant: ToastVariant) => void;
   canLifecycle: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -24,7 +25,7 @@ export function ArchivedSection({
   function handleRestore(id: string) {
     startTransition(async () => {
       const res = await restoreElection(id);
-      onToast(res.success ? "Election restored" : res.error, res.success);
+      onToast(res.success ? "Election restored" : res.error, res.success ? "success" : "error");
       if (res.success) router.refresh();
     });
   }

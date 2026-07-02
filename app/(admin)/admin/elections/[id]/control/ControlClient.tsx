@@ -23,9 +23,12 @@ import {
   StatCell,
   ConfirmDialog,
   Toast,
+  useToast,
+  type ToastVariant,
 } from "@/components/admin/ui";
 import { Button, type buttonVariants } from "@/components/ui/button";
 import { DIVISION_LABELS } from "@/lib/ui/division-labels";
+import { getControlSuccessToast, type ControlToastAction } from "./toast-messages";
 import type { VariantProps } from "class-variance-authority";
 
 type AdminButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
@@ -213,7 +216,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [dlg, setDlg] = useState<DlgType>(null);
-  const [toast, setToast] = useState<{ msg: string; color: "green" | "red" | "amber" | "blue" } | null>(null);
+  const { toast, showToast, dismissToast } = useToast();
   const [dtOpen, setDtOpen] = useState(toInput(election.scheduledOpen));
   const [dtClose, setDtClose] = useState(toInput(election.scheduledClose));
   const [error, setError] = useState<string | null>(null);
@@ -223,9 +226,8 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
   const voted = election.votedCount;
   const pct = voters > 0 ? Math.round((voted / voters) * 100) : 0;
 
-  function showToast(msg: string, color: "green" | "red" | "amber" | "blue") {
-    setToast({ msg, color });
-    setTimeout(() => setToast(null), 2500);
+  function notify(msg: string, variant: ToastVariant) {
+    showToast({ msg, variant });
   }
 
   function confirmDlg() {
@@ -235,25 +237,22 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
       let result: { success: boolean; error?: string };
       if (dlg === "open") {
         result = await openElectionNow(election.id);
-        if (result.success) showToast("Election is now OPEN", "green");
       } else if (dlg === "close") {
         result = await closeElectionNow(election.id);
-        if (result.success) showToast("Election closed", "red");
       } else if (dlg === "recount") {
         result = await initiateRecount(election.id);
-        if (result.success) showToast("Recount completed", "green");
       } else if (dlg === "reschedule") {
         result = await rescheduleElection(election.id, dtOpen || null, dtClose || null);
-        if (result.success) showToast("Schedule updated", "amber");
       } else if (dlg === "archive") {
         result = await archiveElection(election.id);
-        if (result.success) showToast("Election archived", "amber");
       } else if (dlg === "restore") {
         result = await restoreElection(election.id);
-        if (result.success) showToast("Election restored", "green");
       } else {
         result = await advanceToScheduled(election.id);
-        if (result.success) showToast("Advanced to Scheduled", "blue");
+      }
+      if (result.success) {
+        const successToast = getControlSuccessToast(dlg as ControlToastAction);
+        notify(successToast.msg, successToast.variant);
       }
       if (!result.success) setError(result.error ?? "An error occurred");
       setDlg(null);
@@ -564,7 +563,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
       />
 
       {/* ── Toast ── */}
-      {toast && <Toast msg={toast.msg} color={toast.color} />}
+      <Toast toast={toast} onDismiss={dismissToast} />
     </div>
   );
 }

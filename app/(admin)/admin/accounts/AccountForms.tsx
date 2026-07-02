@@ -11,7 +11,7 @@ import {
   deleteAdmin,
   type AccountActionResult,
 } from "./actions";
-import { AdminInput, AdminSecretInput, Card, ConfirmDialog, Toast } from "@/components/admin/ui";
+import { AdminInput, AdminSecretInput, Card, ConfirmDialog, Toast, useToast, type ToastInput } from "@/components/admin/ui";
 import { ThemedSelect } from "@/components/admin/ThemedSelect";
 import { Button } from "@/components/ui/button";
 import { GRANTABLE_ROLES } from "@/lib/auth/permissions";
@@ -51,8 +51,6 @@ const ROLE_SELECT_OPTIONS = ROLE_OPTIONS.map((r) => ({
   label: ROLE_LABELS[r],
 }));
 
-type ToastState = { msg: string; color: "green" | "red" | "amber" | "blue" } | null;
-
 function formatDate(iso: string | null): string {
   if (!iso) return "Never";
   return new Date(iso).toLocaleDateString("en-PH", {
@@ -73,17 +71,11 @@ export function AccountsManager({
   currentUserId: string;
   superadminCount: number;
 }) {
-  const [toast, setToast] = useState<ToastState>(null);
-
-  useEffect(() => {
-    if (!toast) return;
-    const t = setTimeout(() => setToast(null), 2600);
-    return () => clearTimeout(t);
-  }, [toast]);
+  const { toast, showToast, dismissToast } = useToast();
 
   return (
     <div className="flex flex-col gap-[18px]">
-      <CreateAdminForm onResult={setToast} />
+      <CreateAdminForm onResult={showToast} />
 
       <Card title="Accounts" noPad>
         <div className="overflow-x-auto">
@@ -109,7 +101,7 @@ export function AccountsManager({
                   isLastSuperadmin={
                     account.role === "SUPERADMIN" && superadminCount <= 1
                   }
-                  onResult={setToast}
+                  onResult={showToast}
                 />
               ))}
             </tbody>
@@ -117,7 +109,7 @@ export function AccountsManager({
         </div>
       </Card>
 
-      {toast && <Toast msg={toast.msg} color={toast.color} />}
+      <Toast toast={toast} onDismiss={dismissToast} />
     </div>
   );
 }
@@ -132,7 +124,7 @@ function CreateSubmit({ isPending }: { isPending: boolean }) {
   );
 }
 
-function CreateAdminForm({ onResult }: { onResult: (t: ToastState) => void }) {
+function CreateAdminForm({ onResult }: { onResult: (toast: ToastInput) => void }) {
   const { state: result, isPending, handleSubmit } = useServerActionForm<AccountActionResult | null>(
     createAdmin,
     null,
@@ -140,7 +132,7 @@ function CreateAdminForm({ onResult }: { onResult: (t: ToastState) => void }) {
   );
 
   useEffect(() => {
-    if (result?.success) onResult({ msg: "Account created.", color: "green" });
+    if (result?.success) onResult({ msg: "Account created.", variant: "success" });
   }, [result, onResult]);
 
   return (
@@ -216,7 +208,7 @@ function AccountRow({
   account: Account;
   isSelf: boolean;
   isLastSuperadmin: boolean;
-  onResult: (t: ToastState) => void;
+  onResult: (toast: ToastInput) => void;
 }) {
   const [pending, startTransition] = useTransition();
   const [confirmDelete, setConfirmDelete] = useState(false);
@@ -226,8 +218,8 @@ function AccountRow({
   const isSuperadmin = account.role === "SUPERADMIN";
 
   function notify(result: AccountActionResult, okMsg: string) {
-    if (result.success) onResult({ msg: okMsg, color: "green" });
-    else onResult({ msg: result.error, color: "red" });
+    if (result.success) onResult({ msg: okMsg, variant: "success" });
+    else onResult({ msg: result.error, variant: "error" });
   }
 
   function onRoleChange(role: string) {
