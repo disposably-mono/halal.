@@ -3,8 +3,11 @@
 import { useState } from "react";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, ArrowRight, ShieldCheck } from "lucide-react";
 import { SecretInput } from "@/components/ui/secret-input";
+import { Button } from "@/components/ui/button";
 import { verifyAdminCredentials } from "./actions";
+import { getOfficerKeyFailure } from "./login-copy";
 
 export default function AdminLoginPage() {
   const router = useRouter();
@@ -64,32 +67,17 @@ export default function AdminLoginPage() {
 
     if (!credentialCheck.ok) {
       setLoading(false);
-      if (credentialCheck.reason === "primary") {
-        setCredentialsError("Incorrect email or password. Please try again.");
+      const failure = getOfficerKeyFailure(credentialCheck.reason);
+      if (failure.field === "credentials") {
+        setCredentialsError(failure.message);
         setPassword("");
         setOfficerKey("");
-        setStep(1);
-      } else if (credentialCheck.reason === "ownOfficerKey") {
-        setOfficerKeyError(
-          "You cannot use your own officer key. Ask another COMELEC officer to verify.",
-        );
-        setOfficerKey("");
-      } else if (credentialCheck.reason === "noOtherOfficer") {
-        setOfficerKeyError(
-          "Another admin account is required for officer verification.",
-        );
-      } else if (credentialCheck.reason === "rateLimited") {
-        setCredentialsError(
-          "Too many sign-in attempts. Please wait a few minutes and try again.",
-        );
-        setPassword("");
-        setOfficerKey("");
-        setStep(1);
       } else {
-        setOfficerKeyError(
-          "That key does not match another COMELEC officer. Please try again.",
-        );
-        setOfficerKey("");
+        setOfficerKeyError(failure.message);
+        if (credentialCheck.reason !== "noOtherOfficer") setOfficerKey("");
+      }
+      if (failure.shouldResetToCredentials) {
+        setStep(1);
       }
       return;
     }
@@ -119,19 +107,7 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[#0d1225] p-4 font-sans">
-
-      {/* Radial glow */}
-      <div
-        className="pointer-events-none absolute left-1/2 top-0 -translate-x-1/2"
-        style={{
-          width: 600,
-          height: 500,
-          background:
-            "radial-gradient(circle at 50% 30%, rgba(212,168,67,0.08) 0%, transparent 65%)",
-        }}
-      />
-
+    <div className="flex min-h-screen items-center justify-center bg-admin-bg p-4 font-sans">
       <div className="relative w-full max-w-[360px] space-y-5">
 
         {/* ── Wordmark ── */}
@@ -139,7 +115,7 @@ export default function AdminLoginPage() {
           <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
             OLPS COMELEC
           </p>
-          <h1 className="text-[42px] font-semibold leading-none tracking-[-1.5px] text-white/90">
+          <h1 className="text-[42px] font-semibold leading-none tracking-normal text-white/90">
             halal.
           </h1>
           <p className="text-[12px] italic tracking-[0.06em] text-white/60">
@@ -220,13 +196,16 @@ export default function AdminLoginPage() {
                     {credentialsError}
                   </div>
                 )}
-                <button
+                <Button
                   type="submit"
                   disabled={verifying}
-                  className="mt-1 h-10 w-full rounded-lg bg-gold text-[13px] font-semibold text-admin-bg transition-opacity hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-admin-surface disabled:cursor-not-allowed disabled:opacity-50"
+                  variant="adminPrimary"
+                  size="adminMd"
+                  className="mt-1 min-h-11 w-full"
                 >
-                  {verifying ? "Checking…" : "Continue →"}
-                </button>
+                  {verifying ? "Checking..." : "Continue"}
+                  {!verifying && <ArrowRight aria-hidden="true" />}
+                </Button>
               </form>
             ) : (
               <form onSubmit={handleStep2} className="flex flex-col gap-4">
@@ -265,7 +244,7 @@ export default function AdminLoginPage() {
                 )}
 
                 <div className="mt-1 flex gap-2.5">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => {
                       setStep(1);
@@ -274,17 +253,23 @@ export default function AdminLoginPage() {
                       setPassword("");
                       setOfficerKey("");
                     }}
-                    className="h-10 flex-1 rounded-lg border border-white/[0.12] text-[13px] text-white/60 transition-colors hover:border-white/[0.2] hover:bg-white/[0.04] hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/20"
+                    variant="adminGhost"
+                    size="adminMd"
+                    className="min-h-11 flex-1"
                   >
-                    ← Back
-                  </button>
-                  <button
+                    <ArrowLeft aria-hidden="true" />
+                    Back
+                  </Button>
+                  <Button
                     type="submit"
                     disabled={loading}
-                    className="h-10 flex-1 rounded-lg bg-gold text-[13px] font-semibold text-admin-bg transition-opacity hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-admin-surface disabled:opacity-50 disabled:cursor-not-allowed"
+                    variant="adminPrimary"
+                    size="adminMd"
+                    className="min-h-11 flex-1"
                   >
-                    {loading ? "Signing in…" : "Sign In"}
-                  </button>
+                    {loading ? "Signing in..." : "Sign In"}
+                    {!loading && <ShieldCheck aria-hidden="true" />}
+                  </Button>
                 </div>
               </form>
             )}

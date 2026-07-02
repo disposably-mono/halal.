@@ -1,7 +1,9 @@
 import type { AdminRole } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { requireCapability } from "@/lib/server/auth";
+import { PageContainer, PageHeader } from "@/components/admin/ui";
 import { AccountsManager } from "./AccountForms";
+import { getAccountSummary } from "./account-display";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +22,7 @@ export default async function AdminAccountsPage() {
     },
   });
 
-  const superadminCount = admins.filter((a) => a.role === "SUPERADMIN").length;
+  const summary = getAccountSummary(admins);
 
   const accounts = admins.map((a) => ({
     id: a.id,
@@ -32,29 +34,22 @@ export default async function AdminAccountsPage() {
   }));
 
   return (
-    <div className="p-6 flex flex-col gap-[18px]">
-      {/* Header */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-[20px] font-bold tracking-tight text-white/90">
-            Admin Accounts
-          </h1>
-          <p className="text-[12px] text-white/50 mt-[3px]">
-            COMELEC super-admins manage who can operate elections, canvass
-            results, and observe. Each account has its own password and officer
-            key.
-          </p>
-        </div>
+    <PageContainer className="flex flex-col gap-[18px]">
+      <PageHeader
+        title="Admin Accounts"
+        meta="COMELEC super-admins manage who can operate elections, canvass results, and observe. Each account has its own password and officer key."
+        actions={
         <span className="bg-white/[0.04] border border-white/[0.07] text-white/50 rounded-[6px] px-[9px] py-[4px] text-[11px]">
-          {accounts.length} {accounts.length === 1 ? "account" : "accounts"}
+          {summary.totalLabel}
         </span>
-      </div>
+        }
+      />
 
       <AccountsManager
         accounts={accounts}
         currentUserId={session.user?.id ?? ""}
-        superadminCount={superadminCount}
+        superadminCount={summary.superadminCount}
       />
-    </div>
+    </PageContainer>
   );
 }

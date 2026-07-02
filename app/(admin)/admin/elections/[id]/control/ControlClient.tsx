@@ -2,6 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { ArrowLeft, CalendarClock, Lock, Play, RotateCcw, Square, Undo2 } from "lucide-react";
 import {
   openElectionNow,
   closeElectionNow,
@@ -13,7 +14,6 @@ import { archiveElection, restoreElection } from "@/app/(admin)/admin/actions";
 import { canArchive } from "@/lib/domain/election-state";
 import {
   Card,
-  AdminInput,
   StatusPill,
   FlowTrack,
   AdminBadge,
@@ -22,6 +22,11 @@ import {
   ErrorBanner,
   StatCell,
   ConfirmDialog,
+  Breadcrumb,
+  Field,
+  PageContainer,
+  PageHeader,
+  AdminInput,
   Toast,
   useToast,
   type ToastVariant,
@@ -111,25 +116,9 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
   const pct = total > 0 ? Math.round((voted / total) * 100) : 0;
 
   const icons = {
-    open: (
-      <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-        <circle cx="12" cy="12" r="10" />
-        <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
-      </svg>
-    ),
-    close: (
-      <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-        <rect x="6" y="6" width="12" height="12" rx="2" />
-      </svg>
-    ),
-    calendar: (
-      <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-        <rect x="3" y="4" width="18" height="18" rx="2" />
-        <line x1="16" y1="2" x2="16" y2="6" />
-        <line x1="8" y1="2" x2="8" y2="6" />
-        <line x1="3" y1="10" x2="21" y2="10" />
-      </svg>
-    ),
+    open: <Play aria-hidden="true" className="h-[18px] w-[18px]" />,
+    close: <Square aria-hidden="true" className="h-[18px] w-[18px]" />,
+    calendar: <CalendarClock aria-hidden="true" className="h-[18px] w-[18px]" />,
   };
 
   switch (type) {
@@ -271,33 +260,36 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
   };
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-5 px-4 py-6 sm:px-6">
-
-      {/* ── Page header ── */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/40">
-            {DIVISION_LABELS[election.division] ?? election.division}
-          </p>
-          <h1 className="text-[22px] font-semibold tracking-tight text-white/90">
-            {election.name}
-          </h1>
-        </div>
-        <div className="flex shrink-0 items-center gap-2 pt-1">
-          <StatusPill status={status} />
-          <Button
-            onClick={() => router.push("/admin")}
-            variant="adminGhost"
-            size="adminMd"
-          >
-            <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="19" y1="12" x2="5" y2="12" />
-              <polyline points="12 19 5 12 12 5" />
-            </svg>
+    <PageContainer className="flex max-w-4xl flex-col gap-5">
+      <PageHeader
+        eyebrow={DIVISION_LABELS[election.division] ?? election.division}
+        title={election.name}
+        breadcrumb={
+          <Breadcrumb
+            items={[
+              { href: "/admin", label: "Dashboard" },
+              { label: "Control" },
+            ]}
+          />
+        }
+        meta={
+          <div className="flex flex-wrap items-center gap-2">
+            <StatusPill status={status} />
+            {!canLifecycle && !canClose && (
+              <span className="inline-flex items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10px] text-white/50">
+                <Lock aria-hidden="true" className="h-3 w-3" />
+                Read-only
+              </span>
+            )}
+          </div>
+        }
+        actions={
+          <Button onClick={() => router.push("/admin")} variant="adminGhost" size="adminMd">
+            <ArrowLeft aria-hidden="true" />
             Back
           </Button>
-        </div>
-      </div>
+        }
+      />
 
       {/* ── Error ── */}
       {error && <ErrorBanner message={error} />}
@@ -339,11 +331,9 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
               disabled={status !== "SCHEDULED" || isPending}
               variant="adminEmerald"
               size="adminMd"
+              className="min-h-11"
             >
-              <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <circle cx="12" cy="12" r="10" />
-                <polygon points="10 8 16 12 10 16 10 8" fill="currentColor" stroke="none" />
-              </svg>
+              <Play aria-hidden="true" />
               Open Now
             </Button>
           )}
@@ -355,7 +345,9 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
               disabled={isPending}
               variant="adminBlue"
               size="adminMd"
+              className="min-h-11"
             >
+              <CalendarClock aria-hidden="true" />
               Advance to Scheduled
             </Button>
           )}
@@ -370,10 +362,9 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
               disabled={status !== "OPEN" || isPending}
               variant="adminGhost"
               size="adminMd"
+              className="min-h-11"
             >
-              <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <rect x="6" y="6" width="12" height="12" rx="2" />
-              </svg>
+              <Square aria-hidden="true" />
               Close Election
             </Button>
           )}
@@ -384,7 +375,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
             </span>
           )}
 
-          <span className="ml-1 text-[10px] text-white/[0.18]">{contextHint[status]}</span>
+          <span className="text-[10px] text-white/40 md:ml-1">{contextHint[status]}</span>
         </div>
       </Card>
 
@@ -395,33 +386,29 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
             <WarnBanner>
               Overriding times bypasses the scheduler. All changes are logged with your admin credentials and timestamp.
             </WarnBanner>
-            <div className="grid grid-cols-1 gap-2 sm:grid-cols-[1fr_1fr_auto] sm:items-end">
-              <div>
-                <label className="mb-[5px] block text-[10px] text-white/50">
-                  Open date &amp; time
-                </label>
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+              <Field label="Open date & time">
                 <AdminInput
                   type="datetime-local"
                   value={dtOpen}
                   onChange={(e) => setDtOpen(e.target.value)}
                 />
-              </div>
-              <div>
-                <label className="mb-[5px] block text-[10px] text-white/50">
-                  Close date &amp; time
-                </label>
+              </Field>
+              <Field label="Close date & time">
                 <AdminInput
                   type="datetime-local"
                   value={dtClose}
                   onChange={(e) => setDtClose(e.target.value)}
                 />
-              </div>
+              </Field>
               <Button
                 onClick={() => setDlg("reschedule")}
                 disabled={isPending}
                 variant="adminPrimary"
                 size="adminMd"
+                className="min-h-11"
               >
+                <CalendarClock aria-hidden="true" />
                 Save Override
               </Button>
             </div>
@@ -448,7 +435,10 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
                   <div className="mt-1 text-[10px] text-white/40">{fmt(election.certification.createdAt)} by {election.certification.createdBy}</div>
                 </div>
                 {canRecount && (
-                  <Button onClick={() => setDlg("recount")} disabled={isPending || status !== "CLOSED"} variant="adminPrimary" size="adminMd">Initiate Recount</Button>
+                  <Button onClick={() => setDlg("recount")} disabled={isPending || status !== "CLOSED"} variant="adminPrimary" size="adminMd" className="min-h-11">
+                    <RotateCcw aria-hidden="true" />
+                    Initiate Recount
+                  </Button>
                 )}
               </div>
             ) : (
@@ -521,6 +511,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
               Hidden from the active dashboard and public results.
             </p>
             <Button onClick={() => setDlg("restore")} disabled={isPending} variant="adminPrimary" size="adminMd">
+              <Undo2 aria-hidden="true" />
               Restore
             </Button>
           </div>
@@ -537,6 +528,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
               variant="adminGhost"
               size="adminMd"
             >
+              <Lock aria-hidden="true" />
               Archive
             </Button>
           </div>
@@ -564,6 +556,6 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
 
       {/* ── Toast ── */}
       <Toast toast={toast} onDismiss={dismissToast} />
-    </div>
+    </PageContainer>
   );
 }

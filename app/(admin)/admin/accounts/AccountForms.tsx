@@ -11,7 +11,7 @@ import {
   deleteAdmin,
   type AccountActionResult,
 } from "./actions";
-import { AdminInput, AdminSecretInput, Card, ConfirmDialog, Toast, useToast, type ToastInput } from "@/components/admin/ui";
+import { AdminInput, AdminSecretInput, Card, ConfirmDialog, Field, Toast, useToast, type ToastInput } from "@/components/admin/ui";
 import { ThemedSelect } from "@/components/admin/ThemedSelect";
 import { Button } from "@/components/ui/button";
 import { GRANTABLE_ROLES } from "@/lib/auth/permissions";
@@ -174,26 +174,6 @@ function CreateAdminForm({ onResult }: { onResult: (toast: ToastInput) => void }
         )}
       </form>
     </Card>
-  );
-}
-
-function Field({
-  label,
-  hint,
-  children,
-}: {
-  label: string;
-  hint?: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-[5px]">
-      <label className="text-[10px] text-white/50">
-        {label}
-        {hint && <span className="text-white/30"> · {hint}</span>}
-      </label>
-      {children}
-    </div>
   );
 }
 

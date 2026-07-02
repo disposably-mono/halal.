@@ -2,9 +2,12 @@ import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { BarChart3, FileText } from "lucide-react";
+import { Card, EmptyState, PageContainer, PageHeader } from "@/components/admin/ui";
 import { DIVISION_CODES } from "@/lib/ui/division-labels";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
+import { getResultStatusMeta, getTurnoutPercent, orderResultsElections } from "./admin-results-summary";
 
 export default async function AdminResultsPage() {
   const session = await auth();
@@ -18,6 +21,7 @@ export default async function AdminResultsPage() {
       name: true,
       division: true,
       status: true,
+      createdAt: true,
       scheduledClose: true,
       _count: { select: { voters: true } },
       auditKeyEncrypted: true,
@@ -26,25 +30,18 @@ export default async function AdminResultsPage() {
     },
   });
 
-  const closedFirst = [
-    ...elections.filter((e) => e.status === "CLOSED"),
-    ...elections.filter((e) => e.status === "OPEN"),
-  ];
+  const closedFirst = orderResultsElections(elections);
 
   if (closedFirst.length === 0) {
     return (
-      <div className="p-6 flex flex-col gap-[18px]">
-        <PageHeader count={0} />
-        <div className="bg-admin-surface border border-white/[0.07] rounded-[12px] flex flex-col items-center gap-3 py-16 text-center">
-          <div className="w-10 h-10 rounded-[10px] border border-white/[0.07] flex items-center justify-center text-white/60">
-            <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
-            </svg>
-          </div>
-          <div className="text-[13px] font-medium text-white/60">No results yet</div>
-          <div className="text-[11px] text-white/40">Results appear once an election is open or closed.</div>
-        </div>
-      </div>
+      <PageContainer className="flex flex-col gap-[18px]">
+        <ResultsHeader count={0} />
+        <EmptyState
+          icon={<BarChart3 aria-hidden="true" className="h-[18px] w-[18px]" />}
+          title="No results yet"
+          hint="Results appear once an election is open or closed."
+        />
+      </PageContainer>
     );
   }
 
@@ -138,28 +135,22 @@ export default async function AdminResultsPage() {
   );
 
   return (
-    <div className="p-6 flex flex-col gap-[18px]">
-      <PageHeader count={closedFirst.length} />
+    <PageContainer className="flex flex-col gap-[18px]">
+      <ResultsHeader count={closedFirst.length} />
 
       <div className="flex flex-col gap-4">
         {electionData.map((el) => {
-          const pct =
-            el._count.voters > 0
-              ? Math.round((el.votedCount / el._count.voters) * 100)
-              : 0;
-          const isClosed = el.status === "CLOSED";
+          const pct = getTurnoutPercent({ voted: el.votedCount, voters: el._count.voters });
+          const statusMeta = getResultStatusMeta(el.status);
 
           return (
-            <div key={el.id} className="bg-admin-surface border border-white/[0.07] rounded-[12px] overflow-hidden">
+            <Card key={el.id} noPad>
               {/* Election header */}
               <div className="px-4 py-3 border-b border-white/[0.07] flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-[7px] py-[2px] text-[10px] font-semibold flex-shrink-0
-                    ${isClosed
-                      ? "bg-white/[0.05] text-white/60"
-                      : "bg-emerald-400/[0.12] text-emerald-400"}`}>
-                    <span className={`w-1 h-1 rounded-full ${isClosed ? "bg-white/20" : "bg-emerald-400"}`} />
-                    {isClosed ? "Final" : "Live"}
+                  <span className={`inline-flex items-center gap-1 rounded-full px-[7px] py-[2px] text-[10px] font-semibold flex-shrink-0 ${statusMeta.badgeClassName}`}>
+                    <span className={`w-1 h-1 rounded-full ${statusMeta.dotClassName}`} />
+                    {statusMeta.label}
                   </span>
                   <div className="min-w-0">
                     <div className="text-[13px] font-semibold text-white/90 truncate">{el.name}</div>
@@ -175,15 +166,13 @@ export default async function AdminResultsPage() {
                   </div>
                   <div className="w-[48px] h-[4px] bg-white/[0.06] rounded-full overflow-hidden">
                     <div
-                      className={`h-full rounded-full ${isClosed ? "bg-white/30" : "bg-emerald-400"}`}
+                      className={`h-full rounded-full ${statusMeta.barClassName}`}
                       style={{ width: `${pct}%` }}
                     />
                   </div>
-                  <Link
-                    href={`/admin/elections/${el.id}/monitor`}
-                    className="text-[10px] text-gold/70 hover:text-gold transition-colors no-underline"
-                  >
-                    Full tally →
+                  <Link href={`/admin/elections/${el.id}/monitor`} className="inline-flex items-center gap-1 text-[10px] text-gold/70 hover:text-gold transition-colors no-underline">
+                    <FileText aria-hidden="true" className="h-3 w-3" />
+                    Full tally
                   </Link>
                 </div>
               </div>
@@ -218,7 +207,7 @@ export default async function AdminResultsPage() {
                               : pos.draw
                                 ? "bg-sky-400/[0.1] text-sky-400"
                                 : "bg-white/[0.04] text-white/60"}`}>
-                            {pos.winner ? "★" : pos.draw ? "=" : "–"}
+                            {pos.winner ? "*" : pos.draw ? "=" : "-"}
                           </div>
 
                           {/* Content */}
@@ -230,7 +219,7 @@ export default async function AdminResultsPage() {
                               </div>
                             ) : pos.draw ? (
                               <div className="text-[11px] text-sky-400 font-medium mt-[1px]">
-                                TIE — {pos.draw.map((c) => c.fullName).join(" / ")}
+                                TIE - {pos.draw.map((c) => c.fullName).join(" / ")}
                               </div>
                             ) : (
                               <div className="text-[11px] text-white/60 italic mt-[1px]">
@@ -251,23 +240,24 @@ export default async function AdminResultsPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
           );
         })}
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
-function PageHeader({ count }: { count: number }) {
+function ResultsHeader({ count }: { count: number }) {
+  const summary =
+    count > 0
+      ? `${count} election${count > 1 ? "s" : ""} with results · Winners per position`
+      : "No elections with results yet";
+
   return (
-    <div>
-      <h1 className="text-[20px] font-bold tracking-tight text-white/90">Results</h1>
-      <p className="text-[12px] text-white/50 mt-[3px]">
-        {count > 0
-          ? `${count} election${count > 1 ? "s" : ""} with results · Winners per position`
-          : "No elections with results yet"}
-      </p>
-    </div>
+    <PageHeader
+      title="Results"
+      meta={summary}
+    />
   );
 }
