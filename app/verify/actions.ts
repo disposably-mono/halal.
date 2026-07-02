@@ -12,9 +12,9 @@ import {
 /**
  * Result of a receipt verification attempt.
  *
- * `idle` is the initial useActionState value (nothing submitted yet); `closed`
- * means no open election exists so verification is unavailable. All other states
- * mirror the ballot's integrity outcome.
+ * `idle` is the initial client form value (nothing submitted yet); `closed`
+ * means no open election exists so verification is unavailable. All other
+ * states mirror the ballot's integrity outcome.
  */
 export type VerifyState =
   | { status: "idle" }

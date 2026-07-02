@@ -1,3 +1,5 @@
+import { neutralizeSpreadsheetFormula } from "@/lib/domain/csv";
+
 export interface VoterAssignment {
   voterCode: string;
   studentId: string;
@@ -14,7 +16,9 @@ export function buildAssignmentsTsv(
 ): string {
   const header = ["Control Number", "Student ID", "Grade", "Section"].join("\t");
   const rows = voters.map((v) =>
-    [v.voterCode, v.studentId, String(v.gradeLevel), v.section].join("\t"),
+    [v.voterCode, v.studentId, v.gradeLevel, v.section]
+      .map(neutralizeSpreadsheetFormula)
+      .join("\t"),
   );
   return [header, ...rows].join("\n");
 }

@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { useFormState, useFormStatus } from "react-dom";
 import type { AdminRole } from "@prisma/client";
+import { useServerActionForm } from "@/lib/client/use-server-action-form";
 import {
   createAdmin,
   updateAdminRole,
@@ -124,19 +124,19 @@ export function AccountsManager({
 
 // ─── Create form ────────────────────────────────────────────────────────────
 
-function CreateSubmit() {
-  const { pending } = useFormStatus();
+function CreateSubmit({ isPending }: { isPending: boolean }) {
   return (
-    <Button type="submit" disabled={pending} variant="adminPrimary" size="adminMd">
-      {pending ? "Creating…" : "Create account"}
+    <Button type="submit" disabled={isPending} variant="adminPrimary" size="adminMd">
+      {isPending ? "Creating…" : "Create account"}
     </Button>
   );
 }
 
 function CreateAdminForm({ onResult }: { onResult: (t: ToastState) => void }) {
-  const [result, action] = useFormState<AccountActionResult | null, FormData>(
+  const { state: result, isPending, handleSubmit } = useServerActionForm<AccountActionResult | null>(
     createAdmin,
     null,
+    { shouldRefresh: (nextResult) => Boolean(nextResult?.success) },
   );
 
   useEffect(() => {
@@ -145,7 +145,7 @@ function CreateAdminForm({ onResult }: { onResult: (t: ToastState) => void }) {
 
   return (
     <Card title="New account">
-      <form action={action} className="flex flex-col gap-3">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Full name">
             <AdminInput name="name" placeholder="Juan Dela Cruz" required />
@@ -174,7 +174,7 @@ function CreateAdminForm({ onResult }: { onResult: (t: ToastState) => void }) {
           <p className="text-[11px] text-white/40">
             Share the password and officer key with the officer out-of-band.
           </p>
-          <CreateSubmit />
+          <CreateSubmit isPending={isPending} />
         </div>
 
         {result && !result.success && (

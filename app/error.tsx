@@ -5,8 +5,7 @@ import Link from "next/link";
 
 /**
  * Root client error boundary. Catches render/runtime crashes anywhere in the
- * route tree (including client-hook misuse like "useActionState is not a
- * function") and shows a branded, generic screen. The real error is logged to
+ * route tree and shows a branded, generic screen. The real error is logged to
  * the console for operators; it is never rendered to the user.
  */
 export default function Error({

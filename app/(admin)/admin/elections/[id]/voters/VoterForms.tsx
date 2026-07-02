@@ -1,6 +1,6 @@
 "use client";
 
-import { useFormState, useFormStatus } from "react-dom";
+import { useServerActionForm } from "@/lib/client/use-server-action-form";
 import { addVotersFromCSV, addVoterManual } from "./actions";
 import type { CSVImportResult, ManualAddResult } from "./actions";
 import { AdminInput, AdminTextarea } from "@/components/admin/ui";
@@ -20,22 +20,23 @@ function SubmitButton({
   label,
   loadingLabel,
   disabled,
+  isPending,
   variant = "primary",
 }: {
   label: string;
   loadingLabel: string;
   disabled?: boolean;
+  isPending: boolean;
   variant?: "primary" | "ghost";
 }) {
-  const { pending } = useFormStatus();
   return (
     <Button
       type="submit"
-      disabled={pending || disabled}
+      disabled={isPending || disabled}
       variant={variant === "primary" ? "adminPrimary" : "adminGhost"}
       size="adminMd"
     >
-      {pending ? loadingLabel : label}
+      {isPending ? loadingLabel : label}
     </Button>
   );
 }
@@ -43,13 +44,14 @@ function SubmitButton({
 // ─── CSV Upload Form ──────────────────────────────────────────────────────────
 
 export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterFormsProps) {
-  const [result, action] = useFormState<CSVImportResult | null, FormData>(
+  const { state: result, isPending, handleSubmit } = useServerActionForm<CSVImportResult | null>(
     addVotersFromCSV,
-    null
+    null,
+    { shouldRefresh: (nextResult) => Boolean(nextResult && nextResult.added > 0) },
   );
 
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
       <input type="hidden" name="electionId" value={electionId} />
       <input type="hidden" name="schoolYear" value={schoolYear} />
 
@@ -76,7 +78,12 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
         className="resize-none leading-relaxed"
       />
 
-      <SubmitButton label="Import Voters" loadingLabel="Importing…" disabled={isFinalized} />
+      <SubmitButton
+        label="Import Voters"
+        loadingLabel="Importing…"
+        disabled={isFinalized}
+        isPending={isPending}
+      />
 
       {result && (
         <div
@@ -105,14 +112,15 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
 // ─── Manual Add Form ──────────────────────────────────────────────────────────
 
 export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterFormsProps) {
-  const [result, action] = useFormState<ManualAddResult | null, FormData>(
+  const { state: result, isPending, handleSubmit } = useServerActionForm<ManualAddResult | null>(
     addVoterManual,
-    null
+    null,
+    { shouldRefresh: (nextResult) => Boolean(nextResult?.success) },
   );
 
   return (
     <div className="flex flex-col gap-2">
-      <form action={action} className="flex flex-wrap items-end gap-2">
+      <form onSubmit={handleSubmit} className="flex flex-wrap items-end gap-2">
         <input type="hidden" name="electionId" value={electionId} />
         <input type="hidden" name="schoolYear" value={schoolYear} />
 
@@ -146,7 +154,12 @@ export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterForm
           />
         </div>
 
-        <SubmitButton label="+ Add" loadingLabel="Adding…" disabled={isFinalized} />
+        <SubmitButton
+          label="+ Add"
+          loadingLabel="Adding…"
+          disabled={isFinalized}
+          isPending={isPending}
+        />
       </form>
 
       {result && !result.success && (

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useServerActionForm } from "@/lib/client/use-server-action-form";
 import { validateVoterCode, VoterLoginResult } from "../actions";
 
 const ERROR_ICONS: Record<string, string> = {
@@ -11,15 +11,14 @@ const ERROR_ICONS: Record<string, string> = {
   UNKNOWN: "!",
 };
 
-function SubmitButton() {
-  const { pending } = useFormStatus();
+function SubmitButton({ isPending }: { isPending: boolean }) {
   return (
     <button
       type="submit"
-      disabled={pending}
+      disabled={isPending}
       className="w-full bg-gold text-navy font-heading font-bold text-sm tracking-[0.2em] uppercase py-3.5 rounded-sm hover:bg-gold/90 active:bg-gold/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
     >
-      {pending ? (
+      {isPending ? (
         <>
           <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
@@ -35,9 +34,9 @@ function SubmitButton() {
 }
 
 export function VoteForm() {
-  const [state, formAction] = useFormState<VoterLoginResult | null, FormData>(
+  const { state, isPending, handleSubmit } = useServerActionForm<VoterLoginResult | null>(
     validateVoterCode,
-    null
+    null,
   );
 
   const studentIdRef = useRef<HTMLInputElement>(null);
@@ -94,7 +93,7 @@ export function VoteForm() {
       </div>
 
       {/* Form */}
-      <form action={formAction} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
 
         {/* Student ID */}
         <div className="space-y-2">
@@ -171,7 +170,7 @@ export function VoteForm() {
           </div>
         )}
 
-        <SubmitButton />
+        <SubmitButton isPending={isPending} />
       </form>
 
       {/* Format hints */}

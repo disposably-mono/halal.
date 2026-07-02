@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useFormState, useFormStatus } from "react-dom";
+import { useServerActionForm } from "@/lib/client/use-server-action-form";
 import { SecretInput } from "@/components/ui/secret-input";
 import {
   unlockAdminHelp,
@@ -9,7 +9,7 @@ import {
 } from "./actions";
 
 export function AdminHelpGate() {
-  const [state, action] = useFormState<AdminHelpAccessState, FormData>(
+  const { state, isPending, handleSubmit } = useServerActionForm<AdminHelpAccessState>(
     unlockAdminHelp,
     null,
   );
@@ -22,7 +22,7 @@ export function AdminHelpGate() {
           <h2 id="admin-help-title" className="mt-2 font-heading text-lg font-bold text-white/90">Unlock the admin guide</h2>
           <p className="mt-2 text-xs leading-5 text-white/45">Enter any current COMELEC officer key. This only opens the help page and does not sign you into the admin panel.</p>
         </div>
-        <form action={action} className="space-y-4 px-6 py-5">
+        <form onSubmit={handleSubmit} className="space-y-4 px-6 py-5">
           <div className="space-y-2">
             <label htmlFor="help-officer-key" className="text-[10px] uppercase tracking-[0.18em] text-white/45">Officer key</label>
             <SecretInput
@@ -42,7 +42,7 @@ export function AdminHelpGate() {
           {state?.error && <p id="help-key-error" role="alert" className="rounded-lg border border-red-400/20 bg-red-400/[0.08] px-3 py-2 text-xs text-red-300">{state.error}</p>}
           <div className="flex gap-2.5">
             <Link href="/" className="flex h-10 flex-1 items-center justify-center rounded-lg border border-white/10 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/75">Back home</Link>
-            <UnlockButton />
+            <UnlockButton isPending={isPending} />
           </div>
         </form>
       </div>
@@ -50,11 +50,10 @@ export function AdminHelpGate() {
   );
 }
 
-function UnlockButton() {
-  const { pending } = useFormStatus();
+function UnlockButton({ isPending }: { isPending: boolean }) {
   return (
-    <button type="submit" disabled={pending} className="h-10 flex-1 rounded-lg bg-gold text-xs font-bold text-navy-deep transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
-      {pending ? "Checking..." : "Open guide"}
+    <button type="submit" disabled={isPending} className="h-10 flex-1 rounded-lg bg-gold text-xs font-bold text-navy-deep transition-opacity hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50">
+      {isPending ? "Checking..." : "Open guide"}
     </button>
   );
 }
