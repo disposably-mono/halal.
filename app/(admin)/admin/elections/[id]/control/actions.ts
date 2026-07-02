@@ -96,7 +96,8 @@ export async function closeElectionNow(electionId: string): Promise<ActionResult
       adminEmailFromSession(guard.session),
     );
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Failed to certify and close election" };
+    console.error("[closeElectionNow] certification failed:", error);
+    return { success: false, error: "Failed to certify and close election" };
   }
   revalidateAfterTransition(electionId);
   return { success: true };
@@ -166,7 +167,8 @@ export async function initiateRecount(electionId: string): Promise<ActionResult>
       });
     });
   } catch (error) {
-    return { success: false, error: error instanceof Error ? error.message : "Recount failed" };
+    console.error("[initiateRecount] recount failed:", error);
+    return { success: false, error: "Recount failed" };
   }
   revalidateAfterTransition(electionId);
   return { success: true };
