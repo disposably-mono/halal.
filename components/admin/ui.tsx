@@ -1,10 +1,9 @@
 "use client";
 
-import { useFormState } from "react-dom";
-import { useTransition } from "react";
 import type { ComponentProps, ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useServerActionForm } from "@/lib/client/use-server-action-form";
 import { Button, type buttonVariants } from "@/components/ui/button";
 import { SecretInput } from "@/components/ui/secret-input";
 import { cn } from "@/lib/utils";
@@ -523,12 +522,11 @@ export function FinalizeButton({
   label: string;
   hint?: string;
 }) {
-  const [isPending, startTransition] = useTransition();
-  const [state, formAction] = useFormState<FinalizeResult | null, FormData>(action, null);
-
-  const dispatch = (formData: FormData) => {
-    startTransition(() => { formAction(formData); });
-  };
+  const { state, isPending, handleSubmit } = useServerActionForm<FinalizeResult | null>(
+    action,
+    null,
+    { shouldRefresh: (nextState) => Boolean(nextState?.success) },
+  );
 
   return (
     <div className="flex flex-col items-end gap-2">
@@ -538,7 +536,7 @@ export function FinalizeButton({
           <p className="text-[11px] leading-relaxed text-red-300">{state.error}</p>
         </div>
       )}
-      <form action={dispatch} className="flex items-center gap-3">
+      <form onSubmit={handleSubmit} className="flex items-center gap-3">
         <input type="hidden" name="electionId" value={electionId} />
         {hint && <p className="text-[11px] text-white/40">{hint}</p>}
         <Button

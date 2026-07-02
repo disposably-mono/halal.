@@ -14,6 +14,7 @@ import {
 import { CSVUploadForm, ManualAddForm } from "./VoterForms";
 import { finalizeVoters, unfinalizeVoters, removeVoterById } from "./actions";
 import { can } from "@/lib/auth/permissions";
+import { AssignmentsDialog } from "./AssignmentsDialog";
 
 export const dynamic = "force-dynamic";
 
@@ -141,7 +142,10 @@ export default async function VotersPage({ params }: { params: { id: string } })
         <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
           <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
             <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50">Registered Voters</span>
-            <span className="text-[10px] text-white/35">{election._count.voters} total</span>
+            <div className="flex items-center gap-3">
+              <span className="text-[10px] text-white/35">{election._count.voters} total</span>
+              <AssignmentsDialog voters={voters} />
+            </div>
           </div>
           <div className="flex items-center gap-3 border-b border-white/[0.05] bg-white/[0.02] px-4 py-2">
             <span className="w-[100px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/35">Voter Code</span>

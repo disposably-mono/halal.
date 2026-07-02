@@ -14,18 +14,19 @@
 
 const FORMULA_TRIGGERS = new Set(["=", "+", "-", "@", "\t", "\r"]);
 
+export function neutralizeSpreadsheetFormula(value: string | number): string {
+  const cell = String(value);
+  return cell.length > 0 && FORMULA_TRIGGERS.has(cell[0]!) ? `'${cell}` : cell;
+}
+
 export function escapeCsvCell(value: string | number): string {
-  let cell = String(value);
+  const neutralizedCell = neutralizeSpreadsheetFormula(value);
 
-  if (cell.length > 0 && FORMULA_TRIGGERS.has(cell[0]!)) {
-    cell = `'${cell}`;
+  if (/[",\r\n]/.test(neutralizedCell)) {
+    return `"${neutralizedCell.replace(/"/g, '""')}"`;
   }
 
-  if (/[",\r\n]/.test(cell)) {
-    cell = `"${cell.replace(/"/g, '""')}"`;
-  }
-
-  return cell;
+  return neutralizedCell;
 }
 
 export function rowsToCsv(

@@ -59,8 +59,11 @@ export async function GET(req: NextRequest) {
 
     return NextResponse.json({ ok: true, ...summary });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error("[cron] election-transitions error:", message);
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    // Keep the transition-error detail server-side only — it can expose internals.
+    console.error("[cron] election-transitions error:", err);
+    return NextResponse.json(
+      { ok: false, error: "Election transition sweep failed." },
+      { status: 500 },
+    );
   }
 }

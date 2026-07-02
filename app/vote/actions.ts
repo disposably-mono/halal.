@@ -6,6 +6,7 @@ import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { safeParseFormData, VoterLoginSchema } from "@/lib/validation/schemas";
 import { rateLimit, RATE_LIMITS } from "@/lib/server/rate-limit";
+import { notOpenMessage } from "@/lib/domain/voter-login";
 
 export type VoterLoginError =
   | "INVALID_CREDENTIALS"
@@ -18,12 +19,6 @@ export interface VoterLoginResult {
   error: VoterLoginError;
   message: string;
 }
-
-const STATUS_MESSAGES: Record<string, string> = {
-  DRAFT: "This election has not been opened yet.",
-  SCHEDULED: "Voting has not started yet. Check the schedule.",
-  CLOSED: "This election has already closed.",
-};
 
 const INVALID_CREDS: VoterLoginResult = {
   error: "INVALID_CREDENTIALS",
@@ -76,11 +71,26 @@ export async function validateVoterCode(
   }
 
   if (voter.election.status !== "OPEN") {
+    // Nudge (not routing): if this student ALSO has a currently-open, unvoted
+    // election, they may be holding the wrong slip. Read-only; reveals nothing
+    // about which election is open. Degrade to the plain message on any error.
+    let hasOtherOpen = false;
+    try {
+      hasOtherOpen =
+        (await prisma.voter.count({
+          where: {
+            studentId,
+            hasVoted: false,
+            id: { not: voter.id },
+            election: { status: "OPEN", archivedAt: null },
+          },
+        })) > 0;
+    } catch {
+      hasOtherOpen = false;
+    }
     return {
       error: "ELECTION_NOT_OPEN",
-      message:
-        STATUS_MESSAGES[voter.election.status] ??
-        "This election is not currently open.",
+      message: notOpenMessage(voter.election.status, hasOtherOpen),
     };
   }
 

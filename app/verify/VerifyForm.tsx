@@ -1,21 +1,27 @@
 "use client";
 
-import { useActionState } from "react";
+import { useServerActionForm } from "@/lib/client/use-server-action-form";
 import { verifyReceiptAction, type VerifyState } from "./actions";
 
 const INITIAL: VerifyState = { status: "idle" };
 
 /**
- * Receipt-entry form. Submits via a POST server action (`useActionState`) so the
- * one-time `verifiedAt` write never happens on a GET render / prefetch. The code
- * lives in the POST body, not the URL, so it stays out of logs and history.
+ * Receipt-entry form. Submits via a POST server action so the one-time
+ * `verifiedAt` write never happens on a GET render / prefetch. The code lives
+ * in the POST body, not the URL, so it stays out of logs and history.
+ *
+ * Uses an explicit submit handler instead of React's action-state hooks: the
+ * installed React/ReactDOM (18.3.1 stable) do not export those hooks at runtime.
  */
 export function VerifyForm({ defaultCode = "" }: { defaultCode?: string }) {
-  const [state, formAction, pending] = useActionState(verifyReceiptAction, INITIAL);
+  const { state, isPending, handleSubmit } = useServerActionForm(
+    verifyReceiptAction,
+    INITIAL,
+  );
 
   return (
     <>
-      <form action={formAction} className="mt-6 flex flex-col gap-3 sm:flex-row">
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-3 sm:flex-row">
         <input
           name="code"
           defaultValue={defaultCode}
@@ -26,10 +32,10 @@ export function VerifyForm({ defaultCode = "" }: { defaultCode?: string }) {
         />
         <button
           type="submit"
-          disabled={pending}
+          disabled={isPending}
           className="rounded-sm bg-gold px-6 py-3.5 font-heading text-sm font-bold uppercase tracking-[0.2em] text-navy transition-colors hover:bg-gold/90 active:bg-gold/80 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep"
         >
-          {pending ? "Verifying…" : "Verify"}
+          {isPending ? "Verifying…" : "Verify"}
         </button>
       </form>
 
