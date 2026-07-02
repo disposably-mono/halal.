@@ -67,7 +67,7 @@ export async function openElectionNow(electionId: string): Promise<ActionResult>
     return { success: false, error: "Legacy elections are read-only and cannot be opened" };
   }
 
-  const check = canManuallyOpen(election.status);
+  const check = canManuallyOpen(election.status, election.archivedAt);
   if (!check.ok) return { success: false, error: check.reason };
 
   await transitionStatus(
@@ -186,7 +186,7 @@ export async function rescheduleElection(
   const openDate = scheduledOpen ? new Date(scheduledOpen) : null;
   const closeDate = scheduledClose ? new Date(scheduledClose) : null;
 
-  const check = canReschedule(election.status, openDate, closeDate);
+  const check = canReschedule(election.status, openDate, closeDate, election.archivedAt);
   if (!check.ok) return { success: false, error: check.reason };
 
   await prisma.$transaction([
@@ -218,7 +218,7 @@ export async function advanceToScheduled(electionId: string): Promise<ActionResu
   const election = await prisma.election.findUnique({ where: { id: electionId } });
   if (!election) return { success: false, error: "Election not found" };
 
-  const check = canAdvanceToScheduled(election.status, election.scheduledOpen);
+  const check = canAdvanceToScheduled(election.status, election.scheduledOpen, election.archivedAt);
   if (!check.ok) return { success: false, error: check.reason };
 
   await transitionStatus(

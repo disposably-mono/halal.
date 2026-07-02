@@ -26,6 +26,7 @@ export async function applyScheduledTransitions(): Promise<TransitionSummary> {
   const toOpen = await prisma.election.findMany({
     where: {
       status: "SCHEDULED",
+      archivedAt: null,
       candidatesFinalized: true,
       votersFinalized: true,
       auditVersion: { not: null },
@@ -62,6 +63,7 @@ export async function applyScheduledTransitions(): Promise<TransitionSummary> {
   const toClose = await prisma.election.findMany({
     where: {
       status: "OPEN",
+      archivedAt: null,
       scheduledClose: { lte: now },
     },
     select: { id: true },
@@ -78,6 +80,7 @@ export async function applyScheduledTransitions(): Promise<TransitionSummary> {
   const missedWindow = await prisma.election.findMany({
     where: {
       status: "SCHEDULED",
+      archivedAt: null,
       scheduledOpen: { lte: now },
       scheduledClose: { lte: now },
     },

@@ -14,25 +14,31 @@ import {
 
 describe("canManuallyOpen", () => {
   it("allows opening from SCHEDULED", () => {
-    expect(canManuallyOpen("SCHEDULED")).toEqual({ ok: true });
+    expect(canManuallyOpen("SCHEDULED", null)).toEqual({ ok: true });
   });
 
   it("blocks reopening when already OPEN", () => {
-    const r = canManuallyOpen("OPEN");
+    const r = canManuallyOpen("OPEN", null);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toMatch(/already/i);
   });
 
   it("blocks reopening when CLOSED", () => {
-    const r = canManuallyOpen("CLOSED");
+    const r = canManuallyOpen("CLOSED", null);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toMatch(/closed/i);
   });
 
   it("blocks opening directly from DRAFT (must advance to SCHEDULED first)", () => {
-    const r = canManuallyOpen("DRAFT");
+    const r = canManuallyOpen("DRAFT", null);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toMatch(/draft/i);
+  });
+
+  it("blocks opening an archived election", () => {
+    const r = canManuallyOpen("SCHEDULED", new Date());
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toMatch(/restore.*archive/i);
   });
 });
 
@@ -53,29 +59,35 @@ describe("canReschedule", () => {
   const close = new Date("2026-05-09T17:00:00Z");
 
   it("allows valid window in non-CLOSED states", () => {
-    expect(canReschedule("DRAFT", open, close)).toEqual({ ok: true });
-    expect(canReschedule("SCHEDULED", open, close)).toEqual({ ok: true });
-    expect(canReschedule("OPEN", open, close)).toEqual({ ok: true });
+    expect(canReschedule("DRAFT", open, close, null)).toEqual({ ok: true });
+    expect(canReschedule("SCHEDULED", open, close, null)).toEqual({ ok: true });
+    expect(canReschedule("OPEN", open, close, null)).toEqual({ ok: true });
   });
 
   it("blocks reschedule of CLOSED elections", () => {
-    const r = canReschedule("CLOSED", open, close);
+    const r = canReschedule("CLOSED", open, close, null);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toMatch(/closed/i);
   });
 
   it("rejects open >= close", () => {
-    const r = canReschedule("DRAFT", close, open);
+    const r = canReschedule("DRAFT", close, open, null);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toMatch(/before close/i);
   });
 
   it("accepts null close (only open scheduled)", () => {
-    expect(canReschedule("DRAFT", open, null)).toEqual({ ok: true });
+    expect(canReschedule("DRAFT", open, null, null)).toEqual({ ok: true });
   });
 
   it("accepts both null (clearing schedule)", () => {
-    expect(canReschedule("DRAFT", null, null)).toEqual({ ok: true });
+    expect(canReschedule("DRAFT", null, null, null)).toEqual({ ok: true });
+  });
+
+  it("blocks reschedule of an archived election", () => {
+    const r = canReschedule("DRAFT", open, close, new Date());
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toMatch(/restore.*archive/i);
   });
 });
 
@@ -83,19 +95,25 @@ describe("canAdvanceToScheduled", () => {
   const open = new Date("2026-05-09T08:00:00Z");
 
   it("allows DRAFT with scheduledOpen set", () => {
-    expect(canAdvanceToScheduled("DRAFT", open)).toEqual({ ok: true });
+    expect(canAdvanceToScheduled("DRAFT", open, null)).toEqual({ ok: true });
   });
 
   it("blocks DRAFT without scheduledOpen", () => {
-    const r = canAdvanceToScheduled("DRAFT", null);
+    const r = canAdvanceToScheduled("DRAFT", null, null);
     expect(r.ok).toBe(false);
     if (!r.ok) expect(r.reason).toMatch(/scheduled open/i);
   });
 
   it("blocks non-DRAFT statuses", () => {
-    expect(canAdvanceToScheduled("SCHEDULED", open).ok).toBe(false);
-    expect(canAdvanceToScheduled("OPEN", open).ok).toBe(false);
-    expect(canAdvanceToScheduled("CLOSED", open).ok).toBe(false);
+    expect(canAdvanceToScheduled("SCHEDULED", open, null).ok).toBe(false);
+    expect(canAdvanceToScheduled("OPEN", open, null).ok).toBe(false);
+    expect(canAdvanceToScheduled("CLOSED", open, null).ok).toBe(false);
+  });
+
+  it("blocks advancing an archived election", () => {
+    const r = canAdvanceToScheduled("DRAFT", open, new Date());
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toMatch(/restore.*archive/i);
   });
 });
 

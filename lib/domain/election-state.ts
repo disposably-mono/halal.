@@ -5,7 +5,13 @@ export type ValidationResult = { ok: true } | { ok: false; reason: string };
 const ok = (): ValidationResult => ({ ok: true });
 const fail = (reason: string): ValidationResult => ({ ok: false, reason });
 
-export function canManuallyOpen(status: ElectionStatus): ValidationResult {
+const ARCHIVED_REASON = "Restore the election from the archive first";
+
+export function canManuallyOpen(
+  status: ElectionStatus,
+  archivedAt: Date | null,
+): ValidationResult {
+  if (archivedAt) return fail(ARCHIVED_REASON);
   if (status === "OPEN") return fail("Already open");
   if (status === "CLOSED") return fail("Cannot reopen a closed election");
   if (status === "DRAFT") return fail("Cannot open a draft election directly — advance to Scheduled first");
@@ -21,7 +27,9 @@ export function canReschedule(
   status: ElectionStatus,
   scheduledOpen: Date | null,
   scheduledClose: Date | null,
+  archivedAt: Date | null,
 ): ValidationResult {
+  if (archivedAt) return fail(ARCHIVED_REASON);
   if (status === "CLOSED") return fail("Cannot reschedule a closed election");
   if (scheduledOpen && scheduledClose && scheduledOpen >= scheduledClose) {
     return fail("Open time must be before close time");
@@ -32,7 +40,9 @@ export function canReschedule(
 export function canAdvanceToScheduled(
   status: ElectionStatus,
   scheduledOpen: Date | null,
+  archivedAt: Date | null,
 ): ValidationResult {
+  if (archivedAt) return fail(ARCHIVED_REASON);
   if (status !== "DRAFT") return fail("Only DRAFT elections can be advanced to Scheduled");
   if (!scheduledOpen) return fail("Set a scheduled open time first");
   return ok();
