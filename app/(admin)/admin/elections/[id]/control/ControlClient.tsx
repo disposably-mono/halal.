@@ -154,7 +154,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         body: "Every anonymous ballot commitment will be revalidated and the rebuilt tally will be compared with the official closing snapshot. The result is permanent and audited.",
         confirmLabel: "Run Recount",
         confirmVariant: "adminPrimary",
-        iconBg: "bg-amber-400/[0.12] text-amber-400",
+        iconBg: "bg-gold/[0.12] text-gold",
         icon: icons.calendar,
       };
     case "reschedule":
@@ -163,7 +163,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         body: "The open/close times will be updated and the scheduler will use the new values. This will be logged with your credentials.",
         confirmLabel: "Save Override",
         confirmVariant: "adminPrimary",
-        iconBg: "bg-amber-400/[0.12] text-amber-400",
+        iconBg: "bg-gold/[0.12] text-gold",
         icon: icons.calendar,
       };
     case "advance":
@@ -190,7 +190,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         body: "It will return to the active dashboard. This is logged.",
         confirmLabel: "Restore Election",
         confirmVariant: "adminPrimary",
-        iconBg: "bg-amber-400/[0.12] text-amber-400",
+        iconBg: "bg-gold/[0.12] text-gold",
         icon: icons.calendar,
       };
     default:
@@ -432,7 +432,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
 
       <Card
         title="Ballot Integrity & Recounts"
-        meta={election.auditVersion ? <span className="text-[10px] text-emerald-400/70">Verifiable v{election.auditVersion}</span> : <span className="text-[10px] text-amber-400/70">Legacy</span>}
+        meta={election.auditVersion ? <span className="text-[10px] text-emerald-400/70">Verifiable v{election.auditVersion}</span> : <span className="text-[10px] text-gold/70">Legacy</span>}
       >
         {!election.auditVersion ? (
           <WarnBanner>This election predates verifiable ballots. Existing votes remain available, but receipts and cryptographic recounts are not supported.</WarnBanner>
@@ -486,7 +486,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
         ) : (
           <div>
             {[...auditLogs].reverse().map((log) => {
-              const dot = log.toStatus ? (DOT_COLORS[log.toStatus] ?? "bg-amber-400") : "bg-amber-400";
+              const dot = log.toStatus ? (DOT_COLORS[log.toStatus] ?? "bg-gold") : "bg-gold";
               const isAuto = log.adminEmail === "scheduler";
               return (
                 <div key={log.id} className="flex items-start gap-[10px] border-b border-white/[0.04] px-4 py-[9px] last:border-0">

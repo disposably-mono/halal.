@@ -73,7 +73,7 @@ export default async function AdminVotersPage() {
       )}
 
       {totalVoters === 0 && (
-        <div className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] flex flex-col items-center gap-3 py-16 text-center">
+        <div className="bg-admin-surface border border-white/[0.07] rounded-[12px] flex flex-col items-center gap-3 py-16 text-center">
           <div className="text-[13px] font-medium text-white/60">No voters registered yet</div>
           <div className="text-[11px] text-white/40">Upload voters via the election management page.</div>
         </div>
@@ -100,7 +100,7 @@ export default async function AdminVotersPage() {
                 {DIVISION_LABELS[div]}
               </div>
               <div className="flex-1 h-px bg-white/[0.05]" />
-              <div className="text-[10px] text-white/35">
+              <div className="text-[10px] text-white/60">
                 {voters.length} voters · {divVoted} voted ({divPct}%)
               </div>
             </div>
@@ -111,7 +111,7 @@ export default async function AdminVotersPage() {
               const elPct = el.voters.length > 0 ? Math.round((elVoted / el.voters.length) * 100) : 0;
 
               return (
-                <div key={eid} className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] overflow-hidden">
+                <div key={eid} className="bg-admin-surface border border-white/[0.07] rounded-[12px] overflow-hidden">
                   {/* Election header */}
                   <div className="px-4 py-3 border-b border-white/[0.07] flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
@@ -121,7 +121,7 @@ export default async function AdminVotersPage() {
                     <div className="flex items-center gap-3 flex-shrink-0 text-[10px] text-white/50">
                       <span>{el.voters.length} voters · {elVoted} voted ({elPct}%)</span>
                       <Link href={`/admin/elections/${eid}/voters`}
-                        className="text-amber-400 border border-amber-400/20 bg-amber-400/[0.07] rounded-[5px] px-[7px] py-[3px] hover:bg-amber-400/[0.14] transition-all no-underline">
+                        className="text-gold border border-gold/20 bg-gold/[0.07] rounded-[5px] px-[7px] py-[3px] hover:bg-gold/[0.14] transition-all no-underline">
                         Manage →
                       </Link>
                     </div>
@@ -133,7 +133,7 @@ export default async function AdminVotersPage() {
                       <thead>
                         <tr className="border-b border-white/[0.04]">
                           {["Control No.", "Student ID", "Grade", "Section", "Status"].map((h) => (
-                            <th key={h} className="text-left px-4 py-[6px] text-[10px] font-semibold uppercase tracking-[0.06em] text-white/35">
+                            <th key={h} className="text-left px-4 py-[6px] text-[10px] font-semibold uppercase tracking-[0.06em] text-white/60">
                               {h}
                             </th>
                           ))}
@@ -153,7 +153,7 @@ export default async function AdminVotersPage() {
                                   Voted
                                 </span>
                               ) : (
-                                <span className="inline-flex items-center gap-1 text-[10px] text-white/35">
+                                <span className="inline-flex items-center gap-1 text-[10px] text-white/60">
                                   <span className="w-[5px] h-[5px] rounded-full bg-white/15 flex-shrink-0" />
                                   Pending
                                 </span>

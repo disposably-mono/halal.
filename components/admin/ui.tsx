@@ -13,13 +13,13 @@ import type { VariantProps } from "class-variance-authority";
 // Kept module-private — external consumers should use the wrapper components
 // (AdminInput / AdminTextarea), ThemedSelect, or shadcn's <Button> with admin variants.
 
-const CARD = "overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]";
+const CARD = "overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface";
 const CARD_HEADER = "flex items-center justify-between border-b border-white/[0.07] px-4 py-3";
 const CARD_TITLE_CLASS = "text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50";
 const CARD_BODY = "p-4";
 
 const adminInputClass =
-  "bg-white/[0.04] border border-white/[0.10] rounded-[7px] px-[10px] py-[7px] text-[12px] text-white/80 font-mono outline-none transition-colors focus:border-amber-400/50 focus:ring-2 focus:ring-amber-400/10 w-full [color-scheme:dark] disabled:opacity-40 disabled:cursor-not-allowed";
+  "bg-white/[0.04] border border-white/[0.10] rounded-[7px] px-[10px] py-[7px] text-[12px] text-white/80 font-mono outline-none transition-colors focus:border-gold/50 focus:ring-2 focus:ring-gold/10 w-full [color-scheme:dark] disabled:opacity-40 disabled:cursor-not-allowed";
 
 // ─── Admin form primitives ────────────────────────────────────────────────────
 
@@ -69,7 +69,7 @@ export function Card({
 
 export function AdminBadge() {
   return (
-    <span className="rounded-[3px] border border-amber-400/20 bg-amber-400/10 px-[6px] py-[1px] text-[9px] font-semibold text-amber-400">
+    <span className="rounded-[3px] border border-gold/20 bg-gold/10 px-[6px] py-[1px] text-[9px] font-semibold text-gold">
       Admin only
     </span>
   );
@@ -77,7 +77,7 @@ export function AdminBadge() {
 
 export function AutoBadge() {
   return (
-    <span className="rounded-[3px] border border-amber-400/20 bg-amber-400/10 px-[5px] py-[1px] text-[9px] font-semibold text-amber-400">
+    <span className="rounded-[3px] border border-gold/20 bg-gold/10 px-[5px] py-[1px] text-[9px] font-semibold text-gold">
       auto
     </span>
   );
@@ -99,7 +99,7 @@ export function StatusPill({ status }: { status: Status }) {
     DRAFT: "border-white/10 bg-white/[0.05] text-white/60",
     SCHEDULED: "border-blue-400/30 bg-blue-400/[0.08] text-blue-400",
     OPEN: "border-emerald-500/30 bg-emerald-500/[0.08] text-emerald-400",
-    CLOSED: "border-white/10 bg-white/[0.03] text-white/30",
+    CLOSED: "border-white/10 bg-white/[0.03] text-white/60",
   };
   const dotStyles: Record<Status, string> = {
     DRAFT: "bg-white/20",
@@ -133,7 +133,7 @@ export function FlowTrack({ status }: { status: Status }) {
                 {STATUS_LABELS[s]}
               </span>
             ) : (
-              <span className={`px-[9px] py-[3px] text-[10px] font-semibold ${state === "done" ? "text-white/35" : "text-white/10"}`}>
+              <span className={`px-[9px] py-[3px] text-[10px] font-semibold ${state === "done" ? "text-white/60" : "text-white/10"}`}>
                 {STATUS_LABELS[s]}
               </span>
             )}
@@ -197,7 +197,7 @@ export function ElectionSubNav({
   ];
 
   return (
-    <div className="overflow-x-auto border-b border-white/[0.06] bg-[#0f1928]">
+    <div className="overflow-x-auto border-b border-white/[0.06] bg-admin-bg">
       <div className="mx-auto flex h-[42px] min-w-max max-w-7xl items-center gap-1 px-4 sm:px-6" aria-label="Election setup navigation">
         {tabs.map((tab) => {
           const isActive = pathname.startsWith(tab.href);
@@ -205,8 +205,8 @@ export function ElectionSubNav({
             <span className={`flex h-[17px] w-[17px] items-center justify-center rounded-full border text-[9px] font-bold ${tab.done
               ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-400"
               : isActive
-                ? "border-amber-400/40 bg-amber-400/10 text-amber-400"
-                : "border-white/[0.12] text-white/35"
+                ? "border-gold/40 bg-gold/10 text-gold"
+                : "border-white/[0.12] text-white/60"
               }`}>
               {tab.done ? "✓" : tab.step}
             </span>
@@ -216,7 +216,7 @@ export function ElectionSubNav({
             return (
               <span
                 key={tab.label}
-                className="ml-2 flex cursor-not-allowed select-none items-center gap-[5px] border-l border-white/[0.08] px-[12px] py-[5px] text-[11px] text-white/25"
+                className="ml-2 flex cursor-not-allowed select-none items-center gap-[5px] border-l border-white/[0.08] px-[12px] py-[5px] text-[11px] text-white/60"
                 title="Available once the election opens"
               >
                 {marker}
@@ -234,7 +234,7 @@ export function ElectionSubNav({
                 }`}
             >
               {isActive && (
-                <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-amber-400 rounded-t-[2px]" />
+                <span className="absolute bottom-0 left-2 right-2 h-[2px] bg-gold rounded-t-[2px]" />
               )}
               {marker}
               {tab.label}
@@ -285,8 +285,8 @@ export function SetupStepper({
               <div className={`w-[18px] h-[18px] rounded-full flex items-center justify-center flex-shrink-0 text-[9px] font-bold transition-all ${isDone
                 ? "bg-emerald-400/20 border border-emerald-400/40 text-emerald-400"
                 : isCurrent
-                  ? "bg-amber-400/15 border border-amber-400/40 text-amber-400"
-                  : "bg-white/[0.04] border border-white/[0.10] text-white/30"
+                  ? "bg-gold/15 border border-gold/40 text-gold"
+                  : "bg-white/[0.04] border border-white/[0.10] text-white/60"
                 }`}>
                 {isDone ? (
                   <svg style={{ width: 9, height: 9 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
@@ -296,7 +296,7 @@ export function SetupStepper({
                   <span>{i + 1}</span>
                 )}
               </div>
-              <span className={`text-[11px] font-medium ${isDone ? "text-emerald-400/70" : isCurrent ? "text-amber-400/80" : "text-white/30"
+              <span className={`text-[11px] font-medium ${isDone ? "text-emerald-400/70" : isCurrent ? "text-gold/80" : "text-white/60"
                 }`}>
                 {step.label}
               </span>
@@ -320,7 +320,7 @@ export function SetupNextStep({
   label: string;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.05] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-xl border border-gold/20 bg-gold/[0.05] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="text-[12px] font-semibold text-white/80">{title}</p>
         <p className="mt-0.5 text-[10px] text-white/40">{description}</p>
@@ -339,7 +339,7 @@ export function SetupNextStep({
 
 export function WarnBanner({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-start gap-[7px] rounded-[7px] border border-amber-400/[0.18] bg-amber-400/[0.06] px-3 py-[9px] text-[11px] leading-relaxed text-amber-400/80">
+    <div className="flex items-start gap-[7px] rounded-[7px] border border-gold/[0.18] bg-gold/[0.06] px-3 py-[9px] text-[11px] leading-relaxed text-gold/80">
       <svg style={{ width: 12, height: 12, flexShrink: 0, marginTop: 1 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
         <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
@@ -388,10 +388,10 @@ export function FinalizeBanner({
 }) {
   if (locked) {
     return (
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-amber-400/20 bg-amber-400/[0.06] px-4 py-3">
+      <div className="flex items-center justify-between gap-3 rounded-xl border border-gold/20 bg-gold/[0.06] px-4 py-3">
         <div>
-          <p className="text-[12px] font-semibold text-amber-400/90">{lockedText}</p>
-          <p className="mt-0.5 text-[10px] text-amber-400/45">{lockedSub}</p>
+          <p className="text-[12px] font-semibold text-gold/90">{lockedText}</p>
+          <p className="mt-0.5 text-[10px] text-gold/45">{lockedSub}</p>
         </div>
         {unlockAction && electionId && canUnlock && (
           <form action={async (formData: FormData) => {
@@ -436,7 +436,7 @@ export function StatCell({
 }) {
   const valColor =
     accent === "emerald" ? "text-emerald-400" :
-      accent === "amber" ? "text-amber-400" :
+      accent === "amber" ? "text-gold" :
         accent === "blue" ? "text-blue-400" :
           "text-white/90";
 
@@ -446,7 +446,7 @@ export function StatCell({
       <p className={`text-[18px] font-bold leading-none ${valColor} ${mono ? "font-mono text-[13px]" : ""}`}>
         {value}
       </p>
-      {sub && <p className="mt-[5px] text-[9px] text-white/35">{sub}</p>}
+      {sub && <p className="mt-[5px] text-[9px] text-white/60">{sub}</p>}
     </div>
   );
 }
@@ -480,7 +480,7 @@ export function ConfirmDialog({
       className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70"
       onClick={(e) => { if (e.target === e.currentTarget) onCancel(); }}
     >
-      <div className="w-[90%] max-w-[360px] animate-in zoom-in-95 duration-150 rounded-[14px] border border-white/[0.12] bg-[#1e2a47] p-[22px]">
+      <div className="w-[90%] max-w-[360px] animate-in zoom-in-95 duration-150 rounded-[14px] border border-white/[0.12] bg-admin-raised p-[22px]">
         {icon && <div className="mb-3 flex h-[38px] w-[38px] items-center justify-center rounded-[9px]">{icon}</div>}
         <p className="mb-[7px] text-[15px] font-bold text-white/90">{title}</p>
         <p className="mb-[18px] text-[12px] leading-relaxed text-white/60">{body}</p>
@@ -498,9 +498,9 @@ export function ConfirmDialog({
 // ─── Toast ────────────────────────────────────────────────────────────────────
 
 export function Toast({ msg, color }: { msg: string; color: "green" | "red" | "amber" | "blue" }) {
-  const dotColors = { green: "bg-emerald-400", red: "bg-red-400", amber: "bg-amber-400", blue: "bg-blue-400" };
+  const dotColors = { green: "bg-emerald-400", red: "bg-red-400", amber: "bg-gold", blue: "bg-blue-400" };
   return (
-    <div className="fixed bottom-5 right-5 z-[9998] flex animate-in slide-in-from-bottom-4 items-center gap-2 rounded-[10px] border border-white/[0.12] bg-[#1e2a47] px-[14px] py-[10px] text-[12px] text-white/90 shadow-xl duration-200">
+    <div className="fixed bottom-5 right-5 z-[9998] flex animate-in slide-in-from-bottom-4 items-center gap-2 rounded-[10px] border border-white/[0.12] bg-admin-raised px-[14px] py-[10px] text-[12px] text-white/90 shadow-xl duration-200">
       <span className={`h-[6px] w-[6px] shrink-0 rounded-full ${dotColors[color]}`} />
       {msg}
     </div>

@@ -30,7 +30,7 @@ export function ArchivedSection({
   }
 
   return (
-    <div className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] overflow-hidden">
+    <div className="bg-admin-surface border border-white/[0.07] rounded-[12px] overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
@@ -66,7 +66,7 @@ export function ArchivedSection({
                 type="button"
                 onClick={() => handleRestore(e.id)}
                 disabled={isPending}
-                className="text-[10px] text-amber-400 bg-amber-400/[0.08] border border-amber-400/20 rounded-[5px] px-[9px] py-[4px] hover:bg-amber-400/[0.15] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40 transition-all disabled:opacity-40"
+                className="text-[10px] text-gold bg-gold/[0.08] border border-gold/20 rounded-[5px] px-[9px] py-[4px] hover:bg-gold/[0.15] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 transition-all disabled:opacity-40"
               >
                 Restore
               </button>

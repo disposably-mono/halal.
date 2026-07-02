@@ -21,8 +21,8 @@ export function AttnCard({ e }: { e: Election }) {
   };
 
   return (
-    <div className="bg-[#1a2540] border border-white/[0.07] rounded-[11px] p-[14px] flex flex-col gap-[10px]
-      relative overflow-hidden hover:border-white/[0.12] hover:bg-[#1e2a47] transition-all">
+    <div className="bg-admin-surface border border-white/[0.07] rounded-[11px] p-[14px] flex flex-col gap-[10px]
+      relative overflow-hidden hover:border-white/[0.12] hover:bg-admin-raised transition-all">
       <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: topColors[e.status] }} />
 
       {/* Header */}
@@ -39,7 +39,7 @@ export function AttnCard({ e }: { e: Election }) {
         <>
           <div>
             <div className="text-[22px] font-bold tracking-[-0.5px] leading-none">
-              {e.votedCount}<span className="text-[14px] text-white/[0.14] font-normal"> / {e._count.voters}</span>
+              {e.votedCount}<span className="text-[14px] text-white/60 font-normal"> / {e._count.voters}</span>
             </div>
             <div className="text-[10px] text-white/50 mt-[2px]">voters who have voted</div>
           </div>
@@ -78,7 +78,7 @@ export function AttnCard({ e }: { e: Election }) {
       {/* DRAFT */}
       {e.status === "DRAFT" && (
         <>
-          <div className="inline-flex items-center gap-1 bg-amber-400/10 text-amber-400/80 rounded-[5px] px-[6px] py-[3px] text-[10px] font-medium w-fit">
+          <div className="inline-flex items-center gap-1 bg-gold/10 text-gold/80 rounded-[5px] px-[6px] py-[3px] text-[10px] font-medium w-fit">
             <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
               <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
               <line x1="12" y1="9" x2="12" y2="13" />

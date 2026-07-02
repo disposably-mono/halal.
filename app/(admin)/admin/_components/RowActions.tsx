@@ -89,7 +89,7 @@ export function RowActions({
         aria-expanded={open}
         disabled={isPending}
         onClick={() => setOpen((v) => !v)}
-        className="rounded-[5px] border border-white/[0.07] px-[7px] py-[4px] text-white/40 hover:text-white/70 hover:border-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40 transition-all disabled:opacity-40"
+        className="rounded-[5px] border border-white/[0.07] px-[7px] py-[4px] text-white/40 hover:text-white/70 hover:border-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 transition-all disabled:opacity-40"
       >
         <svg style={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="currentColor">
           <circle cx="5" cy="12" r="1.6" />
@@ -104,7 +104,7 @@ export function RowActions({
             ref={menuRef}
             role="menu"
             style={{ position: "fixed", top: coords.top, left: coords.left, width: MENU_WIDTH }}
-            className="z-50 overflow-hidden rounded-[8px] border border-white/[0.10] bg-[#1a2540] py-1 shadow-xl"
+            className="z-50 overflow-hidden rounded-[8px] border border-white/[0.10] bg-admin-surface py-1 shadow-xl"
           >
             <Link role="menuitem" href={`/admin/elections/${e.id}/candidates`} className={itemCls}>
               Candidates

@@ -69,9 +69,9 @@ export default async function CandidatesPage({ params }: { params: { id: string 
   const emptyPositions = positions.filter((p) => p.candidates.length === 0);
 
   return (
-    <div className="min-h-screen bg-[#0b1220] font-sans">
+    <div className="min-h-screen bg-admin-bg font-sans">
       {/* ── Topbar ── */}
-      <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-[#131c2e]">
+      <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-admin-surface">
         <div className="mx-auto flex h-[52px] max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <Link href="/admin" className="text-[11px] text-white/40 transition-colors hover:text-white/60">
@@ -182,24 +182,24 @@ export default async function CandidatesPage({ params }: { params: { id: string 
 
         {/* ── Positions + candidates ── */}
         {positions.length === 0 ? (
-          <div className="rounded-xl border border-white/[0.08] bg-[#1a2540] px-6 py-14 text-center">
+          <div className="rounded-xl border border-white/[0.08] bg-admin-surface px-6 py-14 text-center">
             <p className="text-[13px] text-white/40">
               No positions yet. Use &quot;Seed All Positions&quot; or add them one at a time above.
             </p>
           </div>
         ) : (
-          <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
+          <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
             <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
               <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50">
                 Positions &amp; Candidates
               </span>
               <div className="flex items-center gap-3">
                 {emptyPositions.length > 0 && !isLocked && (
-                  <span className="text-[10px] text-amber-400/70">
+                  <span className="text-[10px] text-gold/70">
                     {emptyPositions.length} position{emptyPositions.length !== 1 ? "s" : ""} need candidates
                   </span>
                 )}
-                <span className="text-[10px] text-white/35">
+                <span className="text-[10px] text-white/60">
                   {positions.length} position{positions.length !== 1 ? "s" : ""} · {totalCandidates} candidate{totalCandidates !== 1 ? "s" : ""}
                 </span>
               </div>
@@ -217,23 +217,23 @@ export default async function CandidatesPage({ params }: { params: { id: string 
                       </span>
                       <div className="flex flex-1 items-center gap-2 min-w-0">
                         <AdminCardTitle>{pos.title}</AdminCardTitle>
-                        <span className="text-[9px] text-white/30">
+                        <span className="text-[9px] text-white/60">
                           Votes: {formatGradeList(pos.eligibleGrades, fullRange)} · Runs: {formatGradeList(parseGrades(pos.candidateGrade), fullRange)}
                         </span>
                       </div>
                       {isEmpty && !isLocked ? (
-                        <span className="shrink-0 rounded-full border border-amber-400/20 bg-amber-400/[0.07] px-[7px] py-[2px] text-[9px] font-semibold text-amber-400/80">
+                        <span className="shrink-0 rounded-full border border-gold/20 bg-gold/[0.07] px-[7px] py-[2px] text-[9px] font-semibold text-gold/80">
                           No candidates
                         </span>
                       ) : (
-                        <span className="shrink-0 text-[10px] text-white/35">
+                        <span className="shrink-0 text-[10px] text-white/60">
                           {pos.candidates.length} candidate{pos.candidates.length !== 1 ? "s" : ""}
                         </span>
                       )}
                     </summary>
                     <div className="border-t border-white/[0.04]">
                       {pos.candidates.length === 0 ? (
-                        <p className="py-4 pl-[52px] pr-4 text-[11px] italic text-white/35">No candidates added yet</p>
+                        <p className="py-4 pl-[52px] pr-4 text-[11px] italic text-white/60">No candidates added yet</p>
                       ) : (
                         <div className="divide-y divide-white/[0.04]">
                           {pos.candidates.map((cand) => (

@@ -86,7 +86,7 @@ export default async function AdminCandidatesPage() {
       </div>
 
       {totalCandidates === 0 && (
-        <div className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] flex flex-col items-center gap-3 py-16 text-center">
+        <div className="bg-admin-surface border border-white/[0.07] rounded-[12px] flex flex-col items-center gap-3 py-16 text-center">
           <div className="text-[13px] font-medium text-white/60">No candidates encoded yet</div>
           <div className="text-[11px] text-white/40">Add candidates via the election candidates page.</div>
         </div>
@@ -108,7 +108,7 @@ export default async function AdminCandidatesPage() {
                 {DIVISION_LABELS[div]}
               </div>
               <div className="flex-1 h-px bg-white/[0.05]" />
-              <div className="text-[10px] text-white/35">
+              <div className="text-[10px] text-white/60">
                 {divCandidates} candidate{divCandidates !== 1 ? "s" : ""} · {positionCount} positions
               </div>
             </div>
@@ -118,7 +118,7 @@ export default async function AdminCandidatesPage() {
               const elCandidates = el.positions.reduce((a, p) => a + p.candidates.length, 0);
 
               return (
-                <div key={eid} className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] overflow-hidden">
+                <div key={eid} className="bg-admin-surface border border-white/[0.07] rounded-[12px] overflow-hidden">
                   {/* Election header */}
                   <div className="px-4 py-3 border-b border-white/[0.07] flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
@@ -128,7 +128,7 @@ export default async function AdminCandidatesPage() {
                     <div className="flex items-center gap-3 flex-shrink-0 text-[10px] text-white/50">
                       <span>{elCandidates} candidate{elCandidates !== 1 ? "s" : ""} · {el.positions.length} positions</span>
                       <Link href={`/admin/elections/${eid}/candidates`}
-                        className="text-amber-400 border border-amber-400/20 bg-amber-400/[0.07] rounded-[5px] px-[7px] py-[3px] hover:bg-amber-400/[0.14] transition-all no-underline">
+                        className="text-gold border border-gold/20 bg-gold/[0.07] rounded-[5px] px-[7px] py-[3px] hover:bg-gold/[0.14] transition-all no-underline">
                         Manage →
                       </Link>
                     </div>
@@ -145,19 +145,19 @@ export default async function AdminCandidatesPage() {
                             <span className="text-[11px] font-semibold text-white/65 uppercase tracking-[0.05em]">
                               {pos.title}
                             </span>
-                            <span className="text-[10px] text-white/35">
+                            <span className="text-[10px] text-white/60">
                               Votes: {formatGradeList(pos.eligibleGrades, full)} · Runs: {formatGradeList(parseGrades(pos.candidateGrade), full)}
                             </span>
                           </div>
 
                           {pos.candidates.length === 0 ? (
-                            <div className="text-[11px] text-white/30 italic pl-1">No candidates encoded</div>
+                            <div className="text-[11px] text-white/60 italic pl-1">No candidates encoded</div>
                           ) : (
                             <div className="flex flex-col gap-[4px]">
                               {pos.candidates.map((c, idx) => (
                                 <div key={c.id}
                                   className="flex items-center gap-3 bg-white/[0.025] hover:bg-white/[0.04] rounded-[6px] px-3 py-[6px] transition-colors">
-                                  <span className="text-[10px] text-white/30 w-4 text-right flex-shrink-0">{idx + 1}</span>
+                                  <span className="text-[10px] text-white/50 w-4 text-right flex-shrink-0">{idx + 1}</span>
                                   <div className="flex-1 text-[12px] font-medium text-white/80 truncate">{c.fullName}</div>
                                   <span className="text-[10px] text-white/40 font-mono flex-shrink-0">
                                     {formatGrade(c.gradeLevel)}

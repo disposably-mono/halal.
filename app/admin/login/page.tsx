@@ -136,19 +136,19 @@ export default function AdminLoginPage() {
 
         {/* ── Wordmark ── */}
         <div className="space-y-1.5 text-center">
-          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-amber-400">
+          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
             OLPS COMELEC
           </p>
           <h1 className="text-[42px] font-semibold leading-none tracking-[-1.5px] text-white/90">
             halal.
           </h1>
-          <p className="text-[12px] italic tracking-[0.06em] text-white/35">
+          <p className="text-[12px] italic tracking-[0.06em] text-white/60">
             VOX POPULI VOX DEI
           </p>
         </div>
 
         {/* ── Card ── */}
-        <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-[#1a2540]">
+        <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-admin-surface">
 
           {/* Card header */}
           <div className="border-b border-white/[0.08] px-6 py-5">
@@ -186,7 +186,7 @@ export default function AdminLoginPage() {
                     autoFocus
                     aria-invalid={hasCredentialsError}
                     aria-describedby={hasCredentialsError ? "admin-credentials-error" : undefined}
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/35 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
+                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/40 outline-none transition-colors focus:border-gold/50 focus:bg-gold/[0.04] focus-visible:ring-2 focus-visible:ring-gold/20"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -208,7 +208,7 @@ export default function AdminLoginPage() {
                     required
                     aria-invalid={hasCredentialsError}
                     aria-describedby={hasCredentialsError ? "admin-credentials-error" : undefined}
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/35 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
+                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/40 outline-none transition-colors focus:border-gold/50 focus:bg-gold/[0.04] focus-visible:ring-2 focus-visible:ring-gold/20"
                   />
                 </div>
                 {credentialsError && (
@@ -223,7 +223,7 @@ export default function AdminLoginPage() {
                 <button
                   type="submit"
                   disabled={verifying}
-                  className="mt-1 h-10 w-full rounded-lg bg-amber-400 text-[13px] font-semibold text-[#0b1220] transition-opacity hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2540] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="mt-1 h-10 w-full rounded-lg bg-gold text-[13px] font-semibold text-admin-bg transition-opacity hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-admin-surface disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   {verifying ? "Checking…" : "Continue →"}
                 </button>
@@ -250,7 +250,7 @@ export default function AdminLoginPage() {
                     autoFocus
                     aria-invalid={hasOfficerKeyError}
                     aria-describedby={hasOfficerKeyError ? "admin-officer-key-error" : undefined}
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/35 outline-none transition-colors focus:border-amber-400/50 focus:bg-amber-400/[0.04] focus-visible:ring-2 focus-visible:ring-amber-400/20"
+                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/40 outline-none transition-colors focus:border-gold/50 focus:bg-gold/[0.04] focus-visible:ring-2 focus-visible:ring-gold/20"
                   />
                 </div>
 
@@ -258,7 +258,7 @@ export default function AdminLoginPage() {
                   <div
                     id="admin-officer-key-error"
                     role="alert"
-                    className="rounded-lg border border-amber-400/20 bg-amber-400/[0.08] px-3 py-2.5 text-[12px] text-amber-300"
+                    className="rounded-lg border border-gold/20 bg-gold/[0.08] px-3 py-2.5 text-[12px] text-gold"
                   >
                     {officerKeyError}
                   </div>
@@ -274,14 +274,14 @@ export default function AdminLoginPage() {
                       setPassword("");
                       setOfficerKey("");
                     }}
-                    className="h-10 flex-1 rounded-lg border border-white/[0.12] text-[13px] text-white/60 transition-colors hover:border-white/[0.2] hover:bg-white/[0.04] hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/20"
+                    className="h-10 flex-1 rounded-lg border border-white/[0.12] text-[13px] text-white/60 transition-colors hover:border-white/[0.2] hover:bg-white/[0.04] hover:text-white/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/20"
                   >
                     ← Back
                   </button>
                   <button
                     type="submit"
                     disabled={loading}
-                    className="h-10 flex-1 rounded-lg bg-amber-400 text-[13px] font-semibold text-[#0b1220] transition-opacity hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#1a2540] disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="h-10 flex-1 rounded-lg bg-gold text-[13px] font-semibold text-admin-bg transition-opacity hover:opacity-90 active:scale-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-admin-surface disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? "Signing in…" : "Sign In"}
                   </button>
@@ -295,13 +295,13 @@ export default function AdminLoginPage() {
         <div className="flex justify-center gap-2">
           <div
             className={`h-[5px] rounded-full transition-all duration-300 ${step === 1
-              ? "w-8 bg-amber-400"
-              : "w-6 bg-amber-400/30"
+              ? "w-8 bg-gold"
+              : "w-6 bg-gold/30"
               }`}
           />
           <div
             className={`h-[5px] rounded-full transition-all duration-300 ${step === 2
-              ? "w-8 bg-amber-400"
+              ? "w-8 bg-gold"
               : "w-6 bg-white/10"
               }`}
           />

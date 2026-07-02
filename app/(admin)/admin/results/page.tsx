@@ -35,8 +35,8 @@ export default async function AdminResultsPage() {
     return (
       <div className="p-6 flex flex-col gap-[18px]">
         <PageHeader count={0} />
-        <div className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] flex flex-col items-center gap-3 py-16 text-center">
-          <div className="w-10 h-10 rounded-[10px] border border-white/[0.07] flex items-center justify-center text-white/30">
+        <div className="bg-admin-surface border border-white/[0.07] rounded-[12px] flex flex-col items-center gap-3 py-16 text-center">
+          <div className="w-10 h-10 rounded-[10px] border border-white/[0.07] flex items-center justify-center text-white/60">
             <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
             </svg>
@@ -150,13 +150,13 @@ export default async function AdminResultsPage() {
           const isClosed = el.status === "CLOSED";
 
           return (
-            <div key={el.id} className="bg-[#1a2540] border border-white/[0.07] rounded-[12px] overflow-hidden">
+            <div key={el.id} className="bg-admin-surface border border-white/[0.07] rounded-[12px] overflow-hidden">
               {/* Election header */}
               <div className="px-4 py-3 border-b border-white/[0.07] flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
                   <span className={`inline-flex items-center gap-1 rounded-full px-[7px] py-[2px] text-[10px] font-semibold flex-shrink-0
                     ${isClosed
-                      ? "bg-white/[0.05] text-white/35"
+                      ? "bg-white/[0.05] text-white/60"
                       : "bg-emerald-400/[0.12] text-emerald-400"}`}>
                     <span className={`w-1 h-1 rounded-full ${isClosed ? "bg-white/20" : "bg-emerald-400"}`} />
                     {isClosed ? "Final" : "Live"}
@@ -181,7 +181,7 @@ export default async function AdminResultsPage() {
                   </div>
                   <Link
                     href={`/admin/elections/${el.id}/monitor`}
-                    className="text-[10px] text-amber-400/70 hover:text-amber-400 transition-colors no-underline"
+                    className="text-[10px] text-gold/70 hover:text-gold transition-colors no-underline"
                   >
                     Full tally →
                   </Link>
@@ -195,7 +195,7 @@ export default async function AdminResultsPage() {
                     Certified results failed cryptographic verification. Results are withheld pending a recount and audit.
                   </div>
                 ) : el.positions.length === 0 ? (
-                  <div className="text-[11px] text-white/35 italic">No positions configured</div>
+                  <div className="text-[11px] text-white/60 italic">No positions configured</div>
                 ) : (
                   <div
                     className="grid gap-[6px]"
@@ -214,10 +214,10 @@ export default async function AdminResultsPage() {
                           {/* Icon */}
                           <div className={`w-[28px] h-[28px] rounded-[6px] flex-shrink-0 flex items-center justify-center text-[11px]
                             ${pos.winner
-                              ? "bg-amber-400/[0.1] text-amber-400"
+                              ? "bg-gold/[0.1] text-gold"
                               : pos.draw
                                 ? "bg-sky-400/[0.1] text-sky-400"
-                                : "bg-white/[0.04] text-white/30"}`}>
+                                : "bg-white/[0.04] text-white/60"}`}>
                             {pos.winner ? "★" : pos.draw ? "=" : "–"}
                           </div>
 
@@ -233,7 +233,7 @@ export default async function AdminResultsPage() {
                                 TIE — {pos.draw.map((c) => c.fullName).join(" / ")}
                               </div>
                             ) : (
-                              <div className="text-[11px] text-white/30 italic mt-[1px]">
+                              <div className="text-[11px] text-white/60 italic mt-[1px]">
                                 {pos.totalVotes === 0 ? "No votes cast yet" : "No candidates"}
                               </div>
                             )}

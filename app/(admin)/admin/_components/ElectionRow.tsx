@@ -17,7 +17,7 @@ export function ElectionRow({
   const p = pct(e.votedCount, e._count.voters);
   const showProg = e.status === "OPEN" || e.status === "CLOSED";
 
-  const amberBtn = "text-[10px] text-amber-400 bg-amber-400/[0.08] border border-amber-400/20 rounded-[5px] px-[7px] py-[3px] hover:bg-amber-400/[0.15] transition-all no-underline";
+  const goldBtn = "text-[10px] text-gold bg-gold/[0.08] border border-gold/20 rounded-[5px] px-[7px] py-[3px] hover:bg-gold/[0.15] transition-all no-underline";
 
   return (
     <div className="flex items-center gap-3 px-[14px] py-[10px] border-b border-white/[0.04] last:border-0 hover:bg-white/[0.025] transition-colors group">
@@ -69,7 +69,7 @@ export function ElectionRow({
 
       {/* Actions — primary Control + overflow menu */}
       <div className="flex items-center gap-1 flex-shrink-0">
-        <Link href={`/admin/elections/${e.id}/control`} className={amberBtn}>⚡ Control</Link>
+        <Link href={`/admin/elections/${e.id}/control`} className={goldBtn}>⚡ Control</Link>
         <RowActions e={e} onToast={onToast} canLifecycle={canLifecycle} />
       </div>
     </div>

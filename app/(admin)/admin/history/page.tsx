@@ -36,7 +36,7 @@ export default async function AdminHistoryPage() {
         </span>
       </div>
 
-      <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
+      <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
         <div className="overflow-x-auto">
           <table className="w-full min-w-[760px] border-collapse text-left">
             <thead>
@@ -58,7 +58,7 @@ export default async function AdminHistoryPage() {
               ))}
               {history.length === 0 && (
                 <tr>
-                  <td colSpan={3} className="px-4 py-12 text-center text-[12px] text-white/35">
+                  <td colSpan={3} className="px-4 py-12 text-center text-[12px] text-white/60">
                     No successful admin sign-ins have been recorded yet.
                   </td>
                 </tr>
@@ -67,7 +67,7 @@ export default async function AdminHistoryPage() {
           </table>
         </div>
       </div>
-      <p className="text-[10px] text-white/25">
+      <p className="text-[10px] text-white/60">
         Times are shown in Philippine Standard Time. The latest 250 sign-ins are displayed.
       </p>
     </div>
@@ -78,7 +78,7 @@ function OfficerCell({ name, email }: { name: string; email: string }) {
   return (
     <td className="px-4 py-3">
       <p className="text-[12px] font-medium text-white/80">{name}</p>
-      <p className="mt-0.5 font-mono text-[10px] text-white/35">{email}</p>
+      <p className="mt-0.5 font-mono text-[10px] text-white/60">{email}</p>
     </td>
   );
 }

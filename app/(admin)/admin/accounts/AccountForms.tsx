@@ -268,7 +268,7 @@ function AccountRow({
       <td className="px-4 py-[10px]">
         <div className="text-[12px] font-medium text-white/85">
           {account.name}
-          {isSelf && <span className="ml-2 text-[9px] text-amber-400/80">you</span>}
+          {isSelf && <span className="ml-2 text-[9px] text-gold/80">you</span>}
         </div>
         <div className="font-mono text-[11px] text-white/45">{account.email}</div>
       </td>
@@ -276,7 +276,7 @@ function AccountRow({
       {/* Role */}
       <td className="px-4 py-[10px]">
         {isSuperadmin ? (
-          <div className="inline-flex items-center gap-[6px] rounded-[7px] border border-amber-400/25 bg-amber-400/[0.07] px-[10px] py-[7px] text-[12px] font-medium text-amber-300/90">
+          <div className="inline-flex items-center gap-[6px] rounded-[7px] border border-gold/25 bg-gold/[0.07] px-[10px] py-[7px] text-[12px] font-medium text-gold/90">
             <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
             </svg>

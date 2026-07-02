@@ -50,9 +50,9 @@ export default async function VotersPage({ params }: { params: { id: string } })
     canManageVoters && election.status !== "OPEN" && election.status !== "CLOSED";
 
   return (
-    <div className="min-h-screen bg-[#0b1220] font-sans">
+    <div className="min-h-screen bg-admin-bg font-sans">
       {/* ── Topbar ── */}
-      <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-[#131c2e]">
+      <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-admin-surface">
         <div className="mx-auto flex h-[52px] max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <Link href="/admin" className="text-[11px] text-white/40 transition-colors hover:text-white/60">
@@ -139,20 +139,20 @@ export default async function VotersPage({ params }: { params: { id: string } })
           </div>
         )}
 
-        <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
+        <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
           <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
             <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50">Registered Voters</span>
             <div className="flex items-center gap-3">
-              <span className="text-[10px] text-white/35">{election._count.voters} total</span>
+              <span className="text-[10px] text-white/60">{election._count.voters} total</span>
               <AssignmentsDialog voters={voters} />
             </div>
           </div>
           <div className="flex items-center gap-3 border-b border-white/[0.05] bg-white/[0.02] px-4 py-2">
-            <span className="w-[100px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/35">Voter Code</span>
-            <span className="flex-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/35">Student ID</span>
-            <span className="w-[60px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/35">Grade</span>
-            <span className="w-[70px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/35">Section</span>
-            <span className="w-[60px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/35">Voted</span>
+            <span className="w-[100px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/60">Voter Code</span>
+            <span className="flex-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/60">Student ID</span>
+            <span className="w-[60px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/60">Grade</span>
+            <span className="w-[70px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/60">Section</span>
+            <span className="w-[60px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/60">Voted</span>
             <span className="w-6 shrink-0" />
           </div>
           {voters.length === 0 ? (
@@ -161,14 +161,14 @@ export default async function VotersPage({ params }: { params: { id: string } })
             <div className="max-h-[420px] overflow-y-auto divide-y divide-white/[0.04]">
               {voters.map((voter) => (
                 <div key={voter.id} className="flex items-center gap-3 px-4 py-[7px] text-[11px]">
-                  <span className="w-[100px] shrink-0 font-mono text-[10px] text-amber-400/80">{voter.voterCode}</span>
+                  <span className="w-[100px] shrink-0 font-mono text-[10px] text-gold/80">{voter.voterCode}</span>
                   <span className="flex-1 font-mono text-white/70">{voter.studentId}</span>
                   <span className="w-[60px] shrink-0 text-white/50">Gr. {voter.gradeLevel}</span>
                   <span className="w-[70px] shrink-0 text-white/50">{voter.section}</span>
                   <span className="w-[60px] shrink-0">
                     {voter.hasVoted
                       ? <span className="text-[10px] font-semibold text-emerald-400">✓ Voted</span>
-                      : <span className="text-[10px] text-white/30">—</span>}
+                      : <span className="text-[10px] text-white/60">—</span>}
                   </span>
                   {canManageVoters && !election.votersFinalized ? (
                     <form action={removeVoterById.bind(null, voter.id, params.id)}>

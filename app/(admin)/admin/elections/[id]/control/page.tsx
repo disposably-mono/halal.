@@ -51,9 +51,9 @@ export default async function ControlPage({ params }: PageProps) {
   });
 
   return (
-    <div className="min-h-screen bg-[#0b1220] font-sans">
+    <div className="min-h-screen bg-admin-bg font-sans">
       {/* ── Topbar ── */}
-      <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-[#131c2e]">
+      <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-admin-surface">
         <div className="mx-auto flex h-[52px] max-w-7xl items-center justify-between px-6">
           <div className="flex items-center gap-2">
             <Link href="/admin" className="text-[11px] text-white/40 transition-colors hover:text-white/60">

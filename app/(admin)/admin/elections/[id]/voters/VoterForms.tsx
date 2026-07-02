@@ -63,7 +63,7 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
           </code>
         </label>
         {isFinalized && (
-          <span className="text-[9px] font-semibold uppercase tracking-wider text-amber-400/80">
+          <span className="text-[9px] font-semibold uppercase tracking-wider text-gold/80">
             Locked
           </span>
         )}
@@ -88,7 +88,7 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
       {result && (
         <div
           className={`rounded-[8px] border px-4 py-3 text-[11px] ${result.rejected > 0 || result.skippedDuplicates > 0
-              ? "border-amber-400/20 bg-amber-400/[0.07]"
+              ? "border-gold/20 bg-gold/[0.07]"
               : "border-emerald-500/20 bg-emerald-500/[0.07]"
             }`}
         >
@@ -96,7 +96,7 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
             <p className="text-emerald-300">✓ {result.added} voters added.</p>
           )}
           {result.reasons.map((reason, i) => (
-            <p key={i} className="mt-0.5 text-amber-300">
+            <p key={i} className="mt-0.5 text-gold">
               ⚠ {reason}
             </p>
           ))}

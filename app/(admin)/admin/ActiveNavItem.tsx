@@ -29,7 +29,7 @@ export function ActiveNavItem({
         }`}
     >
       {isActive && (
-        <span className="absolute left-0 top-1/4 bottom-1/4 w-[2px] bg-amber-400 rounded-r-[2px]" />
+        <span className="absolute left-0 top-1/4 bottom-1/4 w-[2px] bg-gold rounded-r-[2px]" />
       )}
       <span className={isActive ? "opacity-100" : "opacity-70 group-hover:opacity-100"}>
         {icon}

@@ -45,7 +45,7 @@ export default function MonitorClient({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           {!replay.isLive && (
-            <span className="rounded-full border border-amber-400/25 bg-amber-400/[0.07] px-2 py-[3px] font-mono text-[10px] text-amber-400">
+            <span className="rounded-full border border-gold/25 bg-gold/[0.07] px-2 py-[3px] font-mono text-[10px] text-gold">
               Replaying {snapshots[replay.replayIndex!]?.label}
             </span>
           )}
@@ -53,7 +53,7 @@ export default function MonitorClient({
             <a
               href={`/api/elections/${electionId}/results-pdf`}
               download
-              className="inline-flex items-center gap-1.5 rounded-[7px] border border-amber-400/30 bg-amber-400/10 px-3 py-1.5 text-[11px] font-semibold text-amber-400 transition-colors hover:bg-amber-400/20"
+              className="inline-flex items-center gap-1.5 rounded-[7px] border border-gold/30 bg-gold/10 px-3 py-1.5 text-[11px] font-semibold text-gold transition-colors hover:bg-gold/20"
             >
               <svg width="11" height="11" viewBox="0 0 11 11" fill="none">
                 <path d="M5.5 1v6M2.5 7l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -64,7 +64,7 @@ export default function MonitorClient({
           )}
           <StatusPill status={status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} />
           {lastUpdated && replay.isLive && (
-            <p className="font-mono text-[10px] text-white/30">
+            <p className="font-mono text-[10px] text-white/60">
               {lastUpdated.toLocaleTimeString("en-PH", { hour: "2-digit", minute: "2-digit", second: "2-digit" })}
             </p>
           )}
@@ -79,7 +79,7 @@ export default function MonitorClient({
       {/* ── Loading ── */}
       {loading && !displayData && (
         <div className="flex items-center justify-center py-20">
-          <svg className="h-5 w-5 animate-spin text-white/30" viewBox="0 0 24 24" fill="none">
+          <svg className="h-5 w-5 animate-spin text-white/60" viewBox="0 0 24 24" fill="none">
             <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
             <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
           </svg>
@@ -92,7 +92,7 @@ export default function MonitorClient({
           {/* Positions grid */}
           <div>
             {displayData.positions.length === 0 ? (
-              <div className="rounded-xl border border-white/[0.08] bg-[#1a2540] px-6 py-16 text-center">
+              <div className="rounded-xl border border-white/[0.08] bg-admin-surface px-6 py-16 text-center">
                 <p className="text-[13px] text-white/40">No positions found for this election.</p>
               </div>
             ) : (

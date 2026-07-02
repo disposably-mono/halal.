@@ -8,7 +8,7 @@ export function PositionCard({ position }: { position: PositionResult }) {
   const isTie = position.candidates.some((c) => c.isTie);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
+    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
       <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
         <AdminCardTitle as="h3">{position.title}</AdminCardTitle>
         <div className="flex shrink-0 items-center gap-2">
@@ -21,7 +21,7 @@ export function PositionCard({ position }: { position: PositionResult }) {
             {position.totalVotes} vote{position.totalVotes !== 1 ? "s" : ""}
           </span>
           {position.abstentions > 0 && (
-            <span className="rounded-full border border-white/[0.08] px-[7px] py-[2px] text-[9px] text-white/30">
+            <span className="rounded-full border border-white/[0.08] px-[7px] py-[2px] text-[9px] text-white/60">
               {position.abstentions} abstain{position.abstentions !== 1 ? "s" : ""}
             </span>
           )}
@@ -29,7 +29,7 @@ export function PositionCard({ position }: { position: PositionResult }) {
       </div>
       <div className="space-y-1.5 p-3">
         {position.candidates.length === 0 ? (
-          <p className="py-4 text-center text-[11px] italic text-white/35">
+          <p className="py-4 text-center text-[11px] italic text-white/60">
             No candidates
           </p>
         ) : (

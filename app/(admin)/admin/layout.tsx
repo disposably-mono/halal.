@@ -22,15 +22,12 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   }
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ background: "#0b1220" }}>
+    <div className="min-h-screen flex flex-col bg-admin-bg">
       {/* ── Topbar ── */}
-      <nav
-        className="h-[52px] flex items-center justify-between px-5 sticky top-0 z-50 flex-shrink-0"
-        style={{ background: "#131c2e", borderBottom: "1px solid rgba(255,255,255,0.07)" }}
-      >
+      <nav className="h-[52px] flex items-center justify-between px-5 sticky top-0 z-50 flex-shrink-0 border-b border-white/[0.07] bg-admin-surface">
         <div className="flex items-baseline gap-[2px]">
           <span className="text-[17px] font-bold tracking-[-0.6px] text-white/90">
-            halal<span className="text-amber-400">.</span>
+            halal<span className="text-gold">.</span>
           </span>
           <span className="text-[11px] text-white/40 ml-2 font-normal">Admin Panel</span>
         </div>
@@ -42,13 +39,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               day: "numeric",
             })}
           </span>
-          <div
-            className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-amber-400 flex-shrink-0"
-            style={{
-              background: "linear-gradient(135deg, rgba(251,191,36,0.3), rgba(251,191,36,0.1))",
-              border: "1px solid rgba(251,191,36,0.3)",
-            }}
-          >
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-gold flex-shrink-0 border border-gold/30 bg-gradient-to-br from-gold/30 to-gold/10">
             {adminInitial}
           </div>
           <span className="text-[11px] text-white/50">{adminName}</span>
@@ -56,7 +47,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             <button
               type="submit"
               aria-label="Sign out"
-              className="text-[11px] text-white/40 hover:text-white/70 transition-colors cursor-pointer bg-transparent border-0 rounded-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400/40"
+              className="text-[11px] text-white/40 hover:text-white/70 transition-colors cursor-pointer bg-transparent border-0 rounded-[4px] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
             >
               Sign out
             </button>
@@ -67,10 +58,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       {/* ── Body ── */}
       <div className="flex flex-1 overflow-hidden">
         {/* ── Sidebar ── */}
-        <nav
-          className="w-[200px] flex-shrink-0 flex flex-col gap-[2px] py-4 overflow-y-auto"
-          style={{ background: "#131c2e", borderRight: "1px solid rgba(255,255,255,0.07)" }}
-        >
+        <nav className="w-[200px] flex-shrink-0 flex flex-col gap-[2px] py-4 overflow-y-auto border-r border-white/[0.07] bg-admin-surface">
           <NavSection label="Overview" />
           <ActiveNavItem exact href="/admin" label="Dashboard" icon={
             <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -140,7 +128,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
 
 function NavSection({ label }: { label: string }) {
   return (
-    <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/[0.14] px-4 pt-3 pb-1">
+    <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40 px-4 pt-3 pb-1">
       {label}
     </div>
   );

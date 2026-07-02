@@ -47,7 +47,7 @@ export function AssignmentsDialog({
             if (e.target === e.currentTarget) setOpen(false);
           }}
         >
-          <div className="flex max-h-[80vh] w-[90%] max-w-[560px] flex-col rounded-[14px] border border-white/[0.12] bg-[#1e2a47]">
+          <div className="flex max-h-[80vh] w-[90%] max-w-[560px] flex-col rounded-[14px] border border-white/[0.12] bg-admin-raised">
             <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3">
               <p className="text-[13px] font-bold text-white/90">
                 Control Number Assignments
@@ -91,7 +91,7 @@ export function AssignmentsDialog({
                         key={v.voterCode}
                         className="border-t border-white/[0.05]"
                       >
-                        <td className="py-1 pr-4 text-amber-400/80">
+                        <td className="py-1 pr-4 text-gold/80">
                           {v.voterCode}
                         </td>
                         <td className="py-1 pr-4 text-white/70">

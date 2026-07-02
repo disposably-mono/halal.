@@ -54,6 +54,12 @@ const config: Config = {
         dark: "#2A2A2A",
         mid: "#5A5A7A",
 
+        // ── Admin surface tokens (navy-shifted, harmonizes with navy-deep) ──
+        "admin-bg": "#0c0f2e", // page background
+        "admin-surface": "#12163f", // card/panel surface
+        "admin-raised": "#181d4d", // raised/hover surface
+        "admin-overlay": "#1e2456", // overlays, popovers, top layer
+
         // ── Ballot surface tokens ──────────────────────────────────
         "ballot-bg": "#E8E4DB", // aged paper page background
         "ballot-paper": "#F7F4EE", // card/section surface

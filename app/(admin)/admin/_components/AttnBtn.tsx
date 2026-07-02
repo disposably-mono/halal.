@@ -16,7 +16,7 @@ export function AttnBtn({
   const base = "flex-1 py-[5px] text-center text-[10px] rounded-[6px] transition-all no-underline";
   if (primary)
     return (
-      <Link href={href} onClick={(e) => e.stopPropagation()} className={`${base} text-amber-400 bg-amber-400/10 border border-amber-400/20 hover:bg-amber-400/20`}>
+      <Link href={href} onClick={(e) => e.stopPropagation()} className={`${base} text-gold bg-gold/10 border border-gold/20 hover:bg-gold/20`}>
         {label}
       </Link>
     );

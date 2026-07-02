@@ -44,7 +44,7 @@ export function ReplayPanel({
     "flex h-7 w-7 items-center justify-center rounded-[6px] border border-white/10 text-white/60 transition-all hover:border-white/25 hover:text-white/90 disabled:cursor-not-allowed disabled:opacity-20 cursor-pointer";
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-[#1a2540]">
+    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
         <div className="flex items-center gap-2">
@@ -56,7 +56,7 @@ export function ReplayPanel({
             </span>
           )}
         </div>
-        <span className="font-mono text-[10px] text-white/35">
+        <span className="font-mono text-[10px] text-white/60">
           {snapshots.length} snapshot{snapshots.length !== 1 ? "s" : ""}
         </span>
       </div>
@@ -77,7 +77,7 @@ export function ReplayPanel({
         <button
           onClick={isReplaying ? onPause : onPlay}
           className={`flex h-7 w-7 items-center justify-center rounded-[6px] border transition-all cursor-pointer ${isReplaying
-            ? "border-amber-400/40 bg-amber-400/10 text-amber-400"
+            ? "border-gold/40 bg-gold/10 text-gold"
             : "border-white/10 text-white/60 hover:border-white/25 hover:text-white/90"
             }`}
           aria-label={isReplaying ? "Pause replay" : "Play replay"}
@@ -109,7 +109,7 @@ export function ReplayPanel({
         <div className="relative flex-1">
           <div className="h-1 overflow-hidden rounded-full bg-white/[0.08]">
             <div
-              className="h-full rounded-full bg-amber-400/60 transition-all duration-300"
+              className="h-full rounded-full bg-gold/60 transition-all duration-300"
               style={{ width: `${progPct}%` }}
             />
           </div>
@@ -153,11 +153,11 @@ export function ReplayPanel({
               data-active={isActive ? "true" : "false"}
               onClick={() => onJump(i)}
               className={`flex cursor-pointer items-center gap-2 rounded-[7px] border px-2.5 py-1.5 transition-colors ${isActive
-                ? "border-amber-400/15 bg-amber-400/[0.08]"
+                ? "border-gold/15 bg-gold/[0.08]"
                 : "border-transparent hover:bg-white/[0.04]"
                 }`}
             >
-              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isActive ? "bg-amber-400" : "bg-emerald-500/60"}`} />
+              <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isActive ? "bg-gold" : "bg-emerald-500/60"}`} />
               <span className="w-10 shrink-0 font-mono text-[9px] text-white/40">
                 {snap.label}
               </span>
