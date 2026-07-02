@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import Link from "next/link";
 import { LandingFooter } from "@/app/_components/LandingFooter";
 import { LandingNav } from "@/app/_components/LandingNav";
 
@@ -45,6 +46,14 @@ export function PublicHelpShell({
           </div>
         </section>
         {children}
+        <div className="border-t border-white/[0.06] px-6 py-10 text-center">
+          <Link
+            href="/"
+            className="font-body text-xs uppercase tracking-[0.16em] text-white/40 transition-colors hover:text-gold"
+          >
+            ← Back to home
+          </Link>
+        </div>
       </main>
       <LandingFooter />
     </div>

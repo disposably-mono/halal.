@@ -1,8 +1,9 @@
-"use client";
-
-import { Link } from "next-view-transitions";
-import { PUBLIC_PAGE_BACKGROUND } from "../_components/public-page";
-import { LandingFooter } from "../_components/LandingFooter";
+import type { ReactNode } from "react";
+import {
+  HelpSectionHeading,
+  HelpTexturedBand,
+  PublicHelpShell,
+} from "@/app/_components/PublicHelpShell";
 
 const LAST_UPDATED = "1 July 2026";
 
@@ -29,141 +30,131 @@ const COOKIES = [
   },
 ];
 
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="mb-10">
-      <h2 className="mb-3 font-tagline text-xl font-bold text-white">{title}</h2>
-      <div className="font-body text-[0.9rem] leading-[1.8] text-white/60">
-        {children}
-      </div>
-    </section>
-  );
-}
-
 export default function PrivacyClient() {
   return (
-    <div
-      className="min-h-screen font-body text-white"
-      style={PUBLIC_PAGE_BACKGROUND}
+    <PublicHelpShell
+      eyebrow="Our Lady of Peace School"
+      title="Data & Privacy Policy"
+      description="How the OLPS COMELEC HALAL voting system handles student and admin data, cookies, and voter anonymity under the Data Privacy Act (RA 10173)."
     >
-      <main className="mx-auto max-w-3xl px-6 pt-24 pb-16">
-        <div className="mb-10 text-center">
-          <div className="mb-4 flex items-center justify-center gap-4">
-            <div className="h-px w-8 bg-gold opacity-60" />
-            <span className="font-body text-[0.6rem] uppercase tracking-[0.35em] text-gold/70">
-              Our Lady of Peace School
-            </span>
-            <div className="h-px w-8 bg-gold opacity-60" />
+      <div className="px-6 pt-16 pb-2 text-center">
+        <span className="font-mono text-xs uppercase tracking-[0.22em] text-gold/50">
+          Last updated {LAST_UPDATED}
+        </span>
+      </div>
+
+      <section className="px-6 pb-20 pt-10">
+        <div className="mx-auto max-w-5xl">
+          <HelpSectionHeading
+            eyebrow="What We Hold"
+            title="Data we keep, and why"
+            body="The only personal details the system stores, and why a cast ballot can never be traced back to the voter who cast it."
+          />
+          <div className="mt-10 grid gap-5 md:grid-cols-2">
+            <PolicyCard title="What we collect">
+              To run school elections we hold voter control numbers (in the
+              format YYGGSNNN) and COMELEC administrator accounts (email, plus a
+              securely hashed password and officer key). We do not build profiles
+              of voters.
+            </PolicyCard>
+            <PolicyCard title="Your ballot is anonymous">
+              A cast ballot is never linked to the voter who cast it — our
+              records simply have no field connecting the two. This mirrors a
+              physical ballot box: once your vote is in, it cannot be traced back
+              to you. We only record that a control number has voted, to prevent
+              double-voting.
+            </PolicyCard>
           </div>
-          <h1 className="font-tagline text-4xl font-black uppercase tracking-[0.05em]">
-            Data &amp; Privacy Policy
-          </h1>
-          <p className="mt-3 font-body text-xs text-white/40">
-            Last updated {LAST_UPDATED}
-          </p>
         </div>
+      </section>
 
-        <Section title="What we collect">
-          <p>
-            To run school elections we hold voter control numbers (in the format
-            YYGGSNNN) and COMELEC administrator accounts (email, plus a securely
-            hashed password and officer key). We do not build profiles of voters.
-          </p>
-        </Section>
-
-        <Section title="Your ballot is anonymous">
-          <p>
-            A cast ballot is never linked to the voter who cast it — our records
-            simply have no field connecting the two. This mirrors a physical
-            ballot box: once your vote is in, it cannot be traced back to you. We
-            only record that a control number has voted, to prevent double-voting.
-          </p>
-        </Section>
-
-        <Section title="Cookies we use">
-          <p className="mb-4">
-            We use only essential, first-party cookies needed to run voting
-            securely. We do not use analytics, advertising, or third-party
-            tracking cookies.
-          </p>
-          <div className="overflow-hidden rounded-sm border border-white/10">
+      <section className="relative overflow-hidden border-y border-gold/10 px-6 py-20">
+        <HelpTexturedBand />
+        <div className="relative z-10 mx-auto max-w-5xl">
+          <HelpSectionHeading
+            eyebrow="Cookies"
+            title="Cookies we use"
+            body="We use only essential, first-party cookies needed to run voting securely. We do not use analytics, advertising, or third-party tracking cookies."
+          />
+          <div className="mt-10 overflow-hidden rounded-xl border border-white/[0.08]">
             <table className="w-full text-left text-xs">
               <thead className="bg-white/5 text-white/70">
                 <tr>
-                  <th className="px-3 py-2 font-heading uppercase tracking-wide">
+                  <th className="px-4 py-3 font-heading uppercase tracking-wide">
                     Cookie
                   </th>
-                  <th className="px-3 py-2 font-heading uppercase tracking-wide">
+                  <th className="px-4 py-3 font-heading uppercase tracking-wide">
                     Purpose
                   </th>
-                  <th className="px-3 py-2 font-heading uppercase tracking-wide">
+                  <th className="px-4 py-3 font-heading uppercase tracking-wide">
                     Lifetime
                   </th>
                 </tr>
               </thead>
               <tbody>
                 {COOKIES.map((c) => (
-                  <tr key={c.name} className="border-t border-white/5">
-                    <td className="px-3 py-2 font-mono text-gold/80">{c.name}</td>
-                    <td className="px-3 py-2 text-white/60">{c.purpose}</td>
-                    <td className="px-3 py-2 text-white/50">{c.life}</td>
+                  <tr key={c.name} className="border-t border-white/[0.06]">
+                    <td className="px-4 py-3 font-mono text-gold/80">{c.name}</td>
+                    <td className="px-4 py-3 text-white/60">{c.purpose}</td>
+                    <td className="px-4 py-3 text-white/50">{c.life}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
-        </Section>
-
-        <Section title="How we use election data">
-          <p>
-            COMELEC reports turnout and results as part of running the election,
-            the same as it would for a manual election. Any reporting is
-            aggregate only — small groups are not broken out in a way that could
-            reveal how an individual voted, and individual ballots are never
-            linked to voters.
-          </p>
-        </Section>
-
-        <Section title="How long we keep it">
-          <p>
-            Election data is kept for the school year and audit window, then
-            archived and eventually purged in line with COMELEC policy.
-          </p>
-        </Section>
-
-        <Section title="Your rights">
-          <p>
-            Under the Data Privacy Act of 2012 (RA 10173) you may ask to access
-            or correct your information. Student data is processed under the
-            authority of the school. To make a request or raise a concern,
-            contact COMELEC at{" "}
-            <a
-              href="mailto:comelec.club@olps.edu.ph"
-              className="text-gold underline-offset-2 hover:underline"
-            >
-              comelec.club@olps.edu.ph
-            </a>
-            .
-          </p>
-        </Section>
-
-        <div className="pt-2 text-center">
-          <Link
-            href="/"
-            className="font-body text-xs uppercase tracking-[0.16em] text-white/40 transition-colors hover:text-gold"
-          >
-            ← Back to home
-          </Link>
         </div>
-      </main>
+      </section>
 
-      <LandingFooter />
-    </div>
+      <section className="px-6 py-20">
+        <div className="mx-auto max-w-5xl">
+          <HelpSectionHeading
+            eyebrow="Reporting & Rights"
+            title="How data is handled"
+            body="What COMELEC reports, how long records are kept, and the rights you have over your information."
+          />
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            <PolicyCard title="How we use election data">
+              COMELEC reports turnout and results as part of running the
+              election, the same as it would for a manual election. Any reporting
+              is aggregate only — small groups are not broken out in a way that
+              could reveal how an individual voted, and individual ballots are
+              never linked to voters.
+            </PolicyCard>
+            <PolicyCard title="How long we keep it">
+              Election data is kept for the school year and audit window, then
+              archived and eventually purged in line with COMELEC policy.
+            </PolicyCard>
+            <PolicyCard title="Your rights">
+              Under the Data Privacy Act of 2012 (RA 10173) you may ask to access
+              or correct your information. Student data is processed under the
+              authority of the school. To make a request or raise a concern,
+              contact COMELEC at{" "}
+              <a
+                href="mailto:comelec.club@olps.edu.ph"
+                className="text-gold underline-offset-2 hover:underline"
+              >
+                comelec.club@olps.edu.ph
+              </a>
+              .
+            </PolicyCard>
+          </div>
+        </div>
+      </section>
+    </PublicHelpShell>
+  );
+}
+
+function PolicyCard({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  return (
+    <article className="rounded-xl border border-white/[0.08] bg-navy/50 p-6">
+      <h3 className="font-heading text-base font-bold text-white/90">{title}</h3>
+      <p className="mt-3 text-sm leading-6 text-white/50">{children}</p>
+    </article>
   );
 }
