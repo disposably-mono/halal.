@@ -13,7 +13,16 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
+import { timingSafeEqual } from "node:crypto";
 import { applyScheduledTransitions } from "@/lib/election-transitions";
+
+/** Constant-time bearer-token check (length guard + timingSafeEqual). */
+function bearerMatches(authHeader: string | null, secret: string): boolean {
+  if (!authHeader) return false;
+  const submitted = Buffer.from(authHeader);
+  const expected = Buffer.from(`Bearer ${secret}`);
+  return submitted.length === expected.length && timingSafeEqual(submitted, expected);
+}
 
 export const runtime = "nodejs"; // needs Prisma
 export const dynamic = "force-dynamic";
@@ -30,7 +39,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  if (secret && authHeader !== `Bearer ${secret}`) {
+  if (secret && !bearerMatches(authHeader, secret)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
