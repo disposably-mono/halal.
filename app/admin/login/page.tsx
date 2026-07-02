@@ -160,6 +160,7 @@ export default function AdminLoginPage() {
                     }}
                     required
                     autoFocus
+                    autoComplete="username"
                     aria-invalid={hasCredentialsError}
                     aria-describedby={hasCredentialsError ? "admin-credentials-error" : undefined}
                     className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/40 outline-none transition-colors focus:border-gold/50 focus:bg-gold/[0.04] focus-visible:ring-2 focus-visible:ring-gold/20"
@@ -182,6 +183,7 @@ export default function AdminLoginPage() {
                       setCredentialsError("");
                     }}
                     required
+                    autoComplete="current-password"
                     aria-invalid={hasCredentialsError}
                     aria-describedby={hasCredentialsError ? "admin-credentials-error" : undefined}
                     className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/40 outline-none transition-colors focus:border-gold/50 focus:bg-gold/[0.04] focus-visible:ring-2 focus-visible:ring-gold/20"
@@ -227,6 +229,7 @@ export default function AdminLoginPage() {
                     }}
                     required
                     autoFocus
+                    autoComplete="one-time-code"
                     aria-invalid={hasOfficerKeyError}
                     aria-describedby={hasOfficerKeyError ? "admin-officer-key-error" : undefined}
                     className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/40 outline-none transition-colors focus:border-gold/50 focus:bg-gold/[0.04] focus-visible:ring-2 focus-visible:ring-gold/20"

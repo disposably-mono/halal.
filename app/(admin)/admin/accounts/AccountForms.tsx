@@ -140,10 +140,10 @@ function CreateAdminForm({ onResult }: { onResult: (toast: ToastInput) => void }
       <form onSubmit={handleSubmit} className="flex flex-col gap-3">
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <Field label="Full name">
-            <AdminInput name="name" placeholder="Juan Dela Cruz" required />
+            <AdminInput name="name" placeholder="Juan Dela Cruz" required autoComplete="name" />
           </Field>
           <Field label="Email">
-            <AdminInput name="email" type="email" placeholder="name@olps.edu" required />
+            <AdminInput name="email" type="email" placeholder="name@olps.edu" required autoComplete="email" />
           </Field>
           <Field label="Role">
             <ThemedSelect
@@ -155,10 +155,10 @@ function CreateAdminForm({ onResult }: { onResult: (toast: ToastInput) => void }
           </Field>
           <div className="hidden sm:block" />
           <Field label="Password" hint="Min 8 characters">
-            <AdminSecretInput name="password" secretLabel="password" placeholder="••••••••" required />
+            <AdminSecretInput name="password" secretLabel="password" placeholder="••••••••" required autoComplete="new-password" />
           </Field>
           <Field label="Officer key" hint="Min 6 characters — unique per officer">
-            <AdminSecretInput name="officerKey" secretLabel="officer key" placeholder="••••••" required />
+            <AdminSecretInput name="officerKey" secretLabel="officer key" placeholder="••••••" required autoComplete="new-password" />
           </Field>
         </div>
 
@@ -299,6 +299,7 @@ function AccountRow({
               value={secretValue}
               onChange={(e) => setSecretValue(e.target.value)}
               placeholder={secretOpen === "password" ? "New password" : "New officer key"}
+              autoComplete="new-password"
               className="min-w-[180px]"
             />
             <Button

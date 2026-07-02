@@ -54,22 +54,24 @@ export default async function ControlPage({ params }: PageProps) {
     <div className="min-h-screen bg-admin-bg font-sans">
       {/* ── Topbar ── */}
       <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-admin-surface">
-        <div className="mx-auto flex h-[52px] max-w-7xl items-center justify-between px-6">
-          <div className="flex items-center gap-2">
+        <div className="mx-auto flex min-h-[52px] max-w-7xl flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-6 md:py-0">
+          <div className="flex min-w-0 items-center gap-2">
             <Link href="/admin" className="text-[11px] text-white/40 transition-colors hover:text-white/60">
               ← Dashboard
             </Link>
             <span className="text-white/10">/</span>
-            <span className="max-w-[200px] truncate text-[11px] text-white/60">{election.name}</span>
+            <span className="min-w-0 max-w-[180px] truncate text-[11px] text-white/60 sm:max-w-[240px]">{election.name}</span>
             <span className="text-white/10">/</span>
             <span className="text-[11px] text-white/45">Control</span>
           </div>
-          <div className="flex items-center gap-3">
-            <SetupStepper
-              candidatesFinalized={election.candidatesFinalized}
-              votersFinalized={election.votersFinalized}
-              status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"}
-            />
+          <div className="flex items-center gap-3 md:justify-end">
+            <div className="hidden md:block">
+              <SetupStepper
+                candidatesFinalized={election.candidatesFinalized}
+                votersFinalized={election.votersFinalized}
+                status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"}
+              />
+            </div>
             <StatusPill status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} />
           </div>
         </div>

@@ -53,7 +53,6 @@ export default function MonitorClient({
                 updatedAt={lastUpdated}
                 isFetching={isFetching}
                 error={error}
-                onRefresh={refresh}
               />
             </div>
           }

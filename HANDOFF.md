@@ -1,8 +1,8 @@
 # Admin UX Overhaul Handoff
 
 Updated: 2026-07-02
-Branch: `feat/admin-ux-revamp`
-Current base before this handoff update: `ebaf073 fix(admin): seed positions from active roster`
+Branch: `main`
+Current base before this handoff update: `af35516 feat(admin): complete ux overhaul phases`
 
 ## Shipped
 
@@ -21,15 +21,21 @@ Current base before this handoff update: `ebaf073 fix(admin): seed positions fro
 - Phase 6: Login/accounts refresh.
   - Login uses tokenized admin background, lucide buttons, non-negative tracking, and tested safe failure-copy mapping.
   - Accounts uses shared header/field primitives and tested account summary copy.
+- Post-review fixes:
+  - Draft/scheduled monitor deep links redirect back to election control.
+  - Mobile control/monitor topbars use responsive wrapping and hide the desktop setup stepper on compact widths.
+  - Monitor has one manual Refresh control instead of duplicate header/status buttons.
+  - Login/account secret fields include browser autocomplete hints.
+  - Playwright is installed/configured for dedicated `e2e/` specs, with a public smoke test.
 
 ## Verification Run
 
-- `npx tsc --noEmit`
+- `npm run typecheck`
 - `npm run lint`
-- `npm test` - 31 files, 296 tests passed
+- `npm test` - 32 files, 299 tests passed
 - `npm run build`
-
-Playwright/browser tests were not run in this pass.
+- `PLAYWRIGHT_HTML_OPEN=never npx playwright test` - 1 Chromium smoke test passed
+- Authenticated Chromium probe: login/account autocomplete attributes, draft monitor redirect, and mobile control topbar bounds passed.
 
 ## New Tests
 
@@ -37,10 +43,12 @@ Playwright/browser tests were not run in this pass.
 - `tests/admin/results-summary.test.ts`
 - `tests/admin/login-copy.test.ts`
 - `tests/admin/account-display.test.ts`
+- `tests/admin/monitor-access.test.ts`
+- `e2e/public-smoke.spec.ts`
 
 ## Notes For Next Worker
 
-- The root `HANDOFF.md` was missing at the start of this pass, so this file was recreated from the active code state and prior handoff summary.
-- Local branch remains `feat/admin-ux-revamp`; previous shipped commits are already on `origin/main` through `ebaf073`.
+- The root `HANDOFF.md` was previously recreated from active code state and prior handoff summary.
+- Local branch is `main`; phase work is already on `origin/main` through `af35516`.
 - Do not modify `.env` or seed/reset the database without explicit approval.
-- If more visual polish is requested, resume with browser checks or Playwright screenshots; this pass intentionally relied on typecheck/lint/unit/build gates only.
+- If more visual polish is requested, resume with authenticated browser screenshots on desktop and mobile.
