@@ -8,10 +8,10 @@ import { DIVISION_LABELS, fmt, pct, type Election, type ElectionStatus } from ".
 export function AttnCard({ e }: { e: Election }) {
   const p = pct(e.votedCount, e._count.voters);
   const topColors: Record<ElectionStatus, string> = {
-    OPEN: "#34d399",
-    SCHEDULED: "#60a5fa",
-    DRAFT: "rgba(255,255,255,0.15)",
-    CLOSED: "rgba(255,255,255,0.07)",
+    OPEN: "bg-emerald-400",
+    SCHEDULED: "bg-blue-400",
+    DRAFT: "bg-white/15",
+    CLOSED: "bg-white/[0.07]",
   };
   const subtitles: Record<ElectionStatus, string> = {
     OPEN: "Active election",
@@ -23,7 +23,7 @@ export function AttnCard({ e }: { e: Election }) {
   return (
     <div className="bg-admin-surface border border-white/[0.07] rounded-[11px] p-[14px] flex flex-col gap-[10px]
       relative overflow-hidden hover:border-white/[0.12] hover:bg-admin-raised transition-all">
-      <div className="absolute top-0 left-0 right-0 h-[2px]" style={{ background: topColors[e.status] }} />
+      <div className={`absolute left-0 right-0 top-0 h-[2px] ${topColors[e.status]}`} />
 
       {/* Header */}
       <div className="flex items-start justify-between gap-[6px]">

@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { requireCapability } from "@/lib/server/auth";
 import { prisma } from "@/lib/prisma";
-import Link from "next/link";
 import {
   StatusPill,
   FinalizeBanner,
@@ -10,11 +9,15 @@ import {
   ElectionSubNav,
   SetupStepper,
   SetupNextStep,
+  Breadcrumb,
+  PageContainer,
+  PageHeader,
 } from "@/components/admin/ui";
 import { CSVUploadForm, ManualAddForm } from "./VoterForms";
-import { finalizeVoters, unfinalizeVoters, removeVoterById } from "./actions";
+import { finalizeVoters, unfinalizeVoters } from "./actions";
 import { can } from "@/lib/auth/permissions";
 import { AssignmentsDialog } from "./AssignmentsDialog";
+import { VotersTableClient } from "./VotersTableClient";
 
 export const dynamic = "force-dynamic";
 
@@ -50,43 +53,25 @@ export default async function VotersPage({ params }: { params: { id: string } })
   const canUnlock =
     canManageVoters && election.status !== "OPEN" && election.status !== "CLOSED";
 
+  const status = election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED";
+
   return (
-    <div className="min-h-screen bg-admin-bg font-sans">
-      {/* ── Topbar ── */}
-      <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-admin-surface">
-        <div className="mx-auto flex h-[52px] max-w-7xl items-center justify-between px-6">
-          <div className="flex items-center gap-2">
-            <Link href="/admin" className="text-[11px] text-white/40 transition-colors hover:text-white/60">
-              ← Dashboard
-            </Link>
-            <span className="text-white/10">/</span>
-            <span className="max-w-[200px] truncate text-[11px] text-white/60">{election.name}</span>
-            <span className="text-white/10">/</span>
-            <span className="text-[11px] text-white/45">Voters</span>
-          </div>
-          <StatusPill status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} />
-        </div>
-        <ElectionSubNav
-          electionId={election.id}
-          status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"}
-          candidatesFinalized={election.candidatesFinalized}
-          votersFinalized={election.votersFinalized}
+    <>
+      <ElectionSubNav
+        electionId={election.id}
+        status={status}
+        candidatesFinalized={election.candidatesFinalized}
+        votersFinalized={election.votersFinalized}
+      />
+
+      <PageContainer className="max-w-5xl space-y-5">
+        <PageHeader
+          eyebrow={election.name}
+          title="Voter List"
+          breadcrumb={<Breadcrumb items={[{ href: "/admin", label: "Dashboard" }, { label: election.name }, { label: "Voters" }]} />}
+          actions={<StatusPill status={status} />}
+          meta={<SetupStepper candidatesFinalized={election.candidatesFinalized} votersFinalized={election.votersFinalized} status={status} />}
         />
-      </nav>
-
-      <main className="mx-auto max-w-5xl space-y-5 px-4 py-6 sm:px-6">
-
-        <div className="flex items-start justify-between gap-4">
-          <div>
-            <p className="mb-1 text-[10px] uppercase tracking-[0.14em] text-white/40">{election.name}</p>
-            <h1 className="text-[22px] font-semibold tracking-tight text-white/90">Voter List</h1>
-          </div>
-          <SetupStepper
-            candidatesFinalized={election.candidatesFinalized}
-            votersFinalized={election.votersFinalized}
-            status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"}
-          />
-        </div>
 
         <FinalizeBanner
           locked={election.votersFinalized}
@@ -140,50 +125,15 @@ export default async function VotersPage({ params }: { params: { id: string } })
           </div>
         )}
 
-        <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
-          <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50">Registered Voters</span>
-            <div className="flex items-center gap-3">
-              <span className="text-[10px] text-white/60">{election._count.voters} total</span>
-              <AssignmentsDialog voters={voters} />
-            </div>
+        <div className="space-y-2">
+          <div className="flex justify-end">
+            <AssignmentsDialog voters={voters} />
           </div>
-          <div className="flex items-center gap-3 border-b border-white/[0.05] bg-white/[0.02] px-4 py-2">
-            <span className="w-[100px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/60">Voter Code</span>
-            <span className="flex-1 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/60">Student ID</span>
-            <span className="w-[60px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/60">Grade</span>
-            <span className="w-[70px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/60">Section</span>
-            <span className="w-[60px] shrink-0 text-[9px] font-semibold uppercase tracking-[0.08em] text-white/60">Voted</span>
-            <span className="w-6 shrink-0" />
-          </div>
-          {voters.length === 0 ? (
-            <p className="py-10 text-center text-[12px] text-white/40">No voters registered yet.</p>
-          ) : (
-            <div className="max-h-[420px] overflow-y-auto divide-y divide-white/[0.04]">
-              {voters.map((voter) => (
-                <div key={voter.id} className="flex items-center gap-3 px-4 py-[7px] text-[11px]">
-                  <span className="w-[100px] shrink-0 font-mono text-[10px] text-gold/80">{voter.voterCode}</span>
-                  <span className="flex-1 font-mono text-white/70">{voter.studentId}</span>
-                  <span className="w-[60px] shrink-0 text-white/50">Gr. {voter.gradeLevel}</span>
-                  <span className="w-[70px] shrink-0 text-white/50">{voter.section}</span>
-                  <span className="w-[60px] shrink-0">
-                    {voter.hasVoted
-                      ? <span className="text-[10px] font-semibold text-emerald-400">✓ Voted</span>
-                      : <span className="text-[10px] text-white/60">—</span>}
-                  </span>
-                  {canManageVoters && !election.votersFinalized ? (
-                    <form action={removeVoterById.bind(null, voter.id, params.id)}>
-                      <button type="submit" className="flex h-6 w-6 shrink-0 items-center justify-center rounded text-white/[0.14] transition-colors hover:text-red-400" title="Remove voter" aria-label={`Remove voter ${voter.studentId}`}>
-                        ×
-                      </button>
-                    </form>
-                  ) : (
-                    <span className="w-6 shrink-0" />
-                  )}
-                </div>
-              ))}
-            </div>
-          )}
+          <VotersTableClient
+            voters={voters}
+            electionId={params.id}
+            canRemove={canManageVoters && !election.votersFinalized}
+          />
         </div>
 
         {canManageVoters && !election.votersFinalized && (
@@ -194,7 +144,7 @@ export default async function VotersPage({ params }: { params: { id: string } })
             hint={`${election._count.voters} voter${election._count.voters !== 1 ? "s" : ""} registered — lock the list when ready`}
           />
         )}
-      </main>
-    </div>
+      </PageContainer>
+    </>
   );
 }

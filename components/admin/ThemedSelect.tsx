@@ -23,6 +23,9 @@ interface ThemedSelectProps {
   /** Extra classes for the trigger button (width, padding overrides, etc.). */
   className?: string;
   ariaLabel?: string;
+  id?: string;
+  "aria-describedby"?: string;
+  "aria-invalid"?: boolean;
 }
 
 const triggerClass =
@@ -61,6 +64,9 @@ export function ThemedSelect({
   placeholder,
   className,
   ariaLabel,
+  id,
+  "aria-describedby": ariaDescribedBy,
+  "aria-invalid": ariaInvalid,
 }: ThemedSelectProps) {
   return (
     <SelectPrimitive.Root
@@ -71,7 +77,13 @@ export function ThemedSelect({
       required={required}
       disabled={disabled}
     >
-      <SelectPrimitive.Trigger className={cn(triggerClass, className)} aria-label={ariaLabel}>
+      <SelectPrimitive.Trigger
+        id={id}
+        className={cn(triggerClass, className)}
+        aria-label={ariaLabel}
+        aria-describedby={ariaDescribedBy}
+        aria-invalid={ariaInvalid}
+      >
         <SelectPrimitive.Value placeholder={placeholder} />
         <SelectPrimitive.Icon className="text-white/40 transition-colors group-hover:text-white/60">
           <ChevronIcon />

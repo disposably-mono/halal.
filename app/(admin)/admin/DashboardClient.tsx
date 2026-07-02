@@ -1,12 +1,30 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { AttnCard } from "./_components/AttnCard";
-import { ElectionRow } from "./_components/ElectionRow";
 import { ArchivedSection } from "./_components/ArchivedSection";
-import { Toast, useToast, type ToastVariant } from "@/components/admin/ui";
-import { pct, type Election, type ElectionStatus } from "./_components/shared";
+import { RowActions } from "./_components/RowActions";
+import { StatusPill } from "./_components/StatusPill";
+import { DashboardLiveStats } from "./_components/DashboardLiveStats";
+import {
+  DataTable,
+  EmptyState,
+  MetricCard,
+  PageHeader,
+  SearchInput,
+  Toast,
+  useToast,
+  type ToastVariant,
+} from "@/components/admin/ui";
+import {
+  buildDashboardSummary,
+  filterDashboardElections,
+  sortDashboardElections,
+  type DashboardStatusFilter,
+} from "./_components/dashboard-helpers";
+import { DIVISION_LABELS, fmt, pct, type Election, type ElectionStatus } from "./_components/shared";
+import { Button } from "@/components/ui/button";
 
 export default function DashboardClient({
   elections,
@@ -21,110 +39,48 @@ export default function DashboardClient({
   archivedElections: Election[];
   canLifecycle: boolean;
 }) {
-  const [allOpen, setAllOpen] = useState(true);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<DashboardStatusFilter>("ALL");
   const { toast, showToast, dismissToast } = useToast();
 
   function onToast(msg: string, variant: ToastVariant) {
     showToast({ msg, variant });
   }
 
-  const byStatus = (s: ElectionStatus) => elections.filter((e) => e.status === s).length;
-  const openC = byStatus("OPEN");
-  const draftC = byStatus("DRAFT");
-  const scheduledC = byStatus("SCHEDULED");
-  const closedC = byStatus("CLOSED");
-
-  const statusBreakdown = [
-    openC > 0 && `${openC} open`,
-    scheduledC > 0 && `${scheduledC} scheduled`,
-    draftC > 0 && `${draftC} drafted`,
-    closedC > 0 && `${closedC} closed`,
-  ].filter(Boolean).join(" · ");
-
-  const openElections = elections.filter((e) => e.status === "OPEN");
-  const activeNames = openElections.map((e) => e.name).join(", ") || "None active";
-
-  // Live turnout across all currently-open elections (voters who have cast a ballot).
-  const openVoters = openElections.reduce((a, e) => a + e._count.voters, 0);
-  const openVoted = openElections.reduce((a, e) => a + e.votedCount, 0);
-  const activeTurnout = pct(openVoted, openVoters);
-
-  const closedWithVoters = elections.filter((e) => e.status === "CLOSED" && e._count.voters > 0);
-  const avgTurnout = closedWithVoters.length
-    ? Math.round(closedWithVoters.reduce((a, e) => a + pct(e.votedCount, e._count.voters), 0) / closedWithVoters.length)
-    : null;
-
-  // Total ballots cast across every election (each voter votes at most once).
-  const totalBallotsCast = elections.reduce((a, e) => a + e.votedCount, 0);
-
+  const onSearch = useCallback((value: string) => setQuery(value), []);
+  const summary = buildDashboardSummary(elections, uniqueStudentCount, totalRegistrations);
   const attnOrder: ElectionStatus[] = ["OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
   const attnElections = [...elections].sort(
     (a, b) => attnOrder.indexOf(a.status) - attnOrder.indexOf(b.status)
   );
+  const filteredElections = useMemo(
+    () => sortDashboardElections(filterDashboardElections(elections, { query, status: statusFilter })),
+    [elections, query, statusFilter],
+  );
+  const statusOptions: DashboardStatusFilter[] = ["ALL", "OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
 
   return (
     <>
-      {/* Page header */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-[20px] font-bold tracking-tight text-white/90">Elections Dashboard</h1>
-          <p className="text-[12px] text-white/50 mt-[3px]">{elections.length} elections · {openC} active now</p>
-        </div>
-        {canLifecycle && (
-          <Link href="/admin/elections/new"
-            className="inline-flex items-center gap-[5px] rounded-[7px] px-[13px] py-[7px] text-[12px] font-semibold bg-gold text-admin-bg hover:opacity-90 transition-all no-underline">
-            <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            New Election
-          </Link>
+      <PageHeader
+        eyebrow="Admin"
+        title="Elections Dashboard"
+        meta={`${summary.totalElections} elections · ${summary.openCount} active now`}
+        actions={canLifecycle && (
+          <Button asChild variant="adminPrimary" size="adminMd">
+            <Link href="/admin/elections/new">New Election</Link>
+          </Button>
         )}
+      />
+
+      <div className="grid grid-cols-1 gap-[10px] sm:grid-cols-2 xl:grid-cols-4">
+        <MetricCard label="Total Elections" value={summary.totalElections} sub={summary.statusBreakdown || "No elections yet"} accent="gold" />
+        <MetricCard label="Active Now" value={summary.openCount} sub={summary.openCount > 0 ? `${summary.activeNames} · ${summary.activeTurnout}% voted` : "None active"} accent={summary.openCount > 0 ? "emerald" : undefined} />
+        <MetricCard label="Registered Voters" value={summary.uniqueStudentCount.toLocaleString()} sub={summary.uniqueStudentCount === summary.totalRegistrations ? "unique students" : `unique students · ${summary.totalRegistrations.toLocaleString()} registrations`} accent="blue" />
+        <MetricCard label="Avg. Final Turnout" value={summary.avgTurnout !== null ? `${summary.avgTurnout}%` : "—"} sub={`${summary.totalBallotsCast.toLocaleString()} ballots cast${summary.closedCount > 0 ? ` · ${summary.closedCount} closed` : ""}`} accent="gold" />
       </div>
 
-      {/* Stats grid */}
-      <div className="grid grid-cols-4 gap-[10px]">
-        <div className="bg-admin-surface border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gold" />
-          <div className="text-[10px] text-white/50 uppercase tracking-[0.06em] font-medium">Total Elections</div>
-          <div className="text-[26px] font-bold tracking-[-1px] leading-none mt-2 text-white/90">{elections.length}</div>
-          <div className="text-[10px] text-white/40 mt-1 truncate" title={statusBreakdown}>
-            {statusBreakdown || "No elections yet"}
-          </div>
-        </div>
-        <div className="bg-admin-surface border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-emerald-400" />
-          <div className="text-[10px] text-white/50 uppercase tracking-[0.06em] font-medium">Active Now</div>
-          <div className={`text-[26px] font-bold tracking-[-1px] leading-none mt-2 ${openC > 0 ? "text-emerald-400" : "text-white/90"}`}>{openC}</div>
-          <div className="text-[10px] text-white/40 mt-1 truncate" title={activeNames}>
-            {openC > 0 ? `${activeNames} · ${activeTurnout}% voted` : "None active"}
-          </div>
-        </div>
-        <div className="bg-admin-surface border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-blue-400" />
-          <div className="text-[10px] text-white/50 uppercase tracking-[0.06em] font-medium">Registered Voters</div>
-          <div className="text-[26px] font-bold tracking-[-1px] leading-none mt-2 text-white/90">{uniqueStudentCount.toLocaleString()}</div>
-          <div className="text-[10px] text-white/40 mt-1 truncate" title={`${totalRegistrations.toLocaleString()} roster entries across ${elections.length} election${elections.length === 1 ? "" : "s"}`}>
-            {uniqueStudentCount === totalRegistrations
-              ? "unique students"
-              : `unique students · ${totalRegistrations.toLocaleString()} registrations`}
-          </div>
-        </div>
-        <div className="bg-admin-surface border border-white/[0.07] rounded-[10px] px-4 py-[14px] relative overflow-hidden">
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gold/50" />
-          <div className="text-[10px] text-white/50 uppercase tracking-[0.06em] font-medium">Avg. Final Turnout</div>
-          <div className="text-[26px] font-bold tracking-[-1px] leading-none mt-2 text-white/90">
-            {avgTurnout !== null ? `${avgTurnout}%` : "—"}
-          </div>
-          <div className="text-[10px] text-white/40 mt-1 truncate">
-            {totalBallotsCast.toLocaleString()} ballot{totalBallotsCast === 1 ? "" : "s"} cast
-            {closedWithVoters.length > 0
-              ? ` · ${closedWithVoters.length} closed`
-              : ""}
-          </div>
-        </div>
-      </div>
+      <DashboardLiveStats elections={elections} />
 
-      {/* Attention strip */}
       {attnElections.length > 0 && (
         <div>
           <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/40 mb-2">
@@ -136,50 +92,88 @@ export default function DashboardClient({
         </div>
       )}
 
-      {/* Empty state */}
       {elections.length === 0 && (
-        <div className="bg-admin-surface border border-white/[0.07] rounded-[12px] flex flex-col items-center gap-[10px] py-12 text-center">
-          <div className="w-10 h-10 rounded-[10px] border border-white/[0.07] flex items-center justify-center text-white/60">
+        <EmptyState
+          title="No active elections"
+          hint={canLifecycle ? "Create an election or restore one from the archive." : "No elections are currently active."}
+          icon={
             <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" />
               <line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
             </svg>
-          </div>
-          <div className="text-[13px] font-medium text-white/60">No active elections</div>
-          <div className="text-[11px] text-white/40">
-            {canLifecycle
-              ? "Create an election or restore one from the archive"
-              : "No elections are currently active"}
-          </div>
-          {canLifecycle && (
-            <Link href="/admin/elections/new" className="mt-1 text-[11px] text-gold hover:opacity-80 transition-all no-underline">
-              Create election →
-            </Link>
-          )}
-        </div>
+          }
+          action={canLifecycle && <Link href="/admin/elections/new" className="text-[11px] text-gold no-underline transition-all hover:opacity-80">Create election →</Link>}
+        />
       )}
 
-      {/* All Elections table */}
       {elections.length > 0 && (
-        <div className="bg-admin-surface border border-white/[0.07] rounded-[12px] overflow-hidden">
-          <button
-            onClick={() => setAllOpen((v) => !v)}
-            className="flex items-center gap-2 px-[14px] py-[10px] cursor-pointer border-b border-white/[0.07] bg-transparent w-full hover:bg-white/[0.025] transition-colors"
-          >
-            <span className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/50 flex-1 text-left">All Elections</span>
-            <span className="text-[10px] bg-white/[0.06] text-white/50 rounded-full px-[7px] py-[1px]">{elections.length}</span>
-            <svg className={`w-3 h-3 text-white/50 ml-[6px] transition-transform duration-200 ${allOpen ? "rotate-180" : ""}`}
-              viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <polyline points="6 9 12 15 18 9" />
-            </svg>
-          </button>
-          {allOpen && elections.map((e) => (
-            <ElectionRow key={e.id} e={e} onToast={onToast} canLifecycle={canLifecycle} />
-          ))}
+        <div className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface">
+          <div className="flex flex-col gap-3 border-b border-white/[0.07] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/50">All Elections</p>
+              <p className="mt-1 text-[10px] text-white/35">{filteredElections.length} of {elections.length} shown</p>
+            </div>
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+              <SearchInput onSearch={onSearch} placeholder="Search elections" />
+              <div className="flex flex-wrap gap-1">
+                {statusOptions.map((status) => (
+                  <button
+                    key={status}
+                    type="button"
+                    onClick={() => setStatusFilter(status)}
+                    className={`rounded-[6px] border px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] transition-colors ${statusFilter === status ? "border-gold/30 bg-gold/10 text-gold" : "border-white/[0.08] bg-white/[0.03] text-white/45 hover:text-white/70"}`}
+                  >
+                    {status}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+          <DataTable
+            rows={filteredElections}
+            getRowKey={(election) => election.id}
+            mobile="stack"
+            empty={<EmptyState title="No elections match" hint="Try a different search or status filter." />}
+            columns={[
+              {
+                key: "name",
+                header: "Election",
+                priority: 1,
+                render: (election) => (
+                  <div className="min-w-0">
+                    <p className="truncate text-[12px] font-medium text-white/80">{election.name}</p>
+                    <p className="mt-[1px] text-[10px] text-white/40">{DIVISION_LABELS[election.division] ?? election.division}</p>
+                  </div>
+                ),
+              },
+              { key: "status", header: "Status", priority: 1, render: (election) => <StatusPill status={election.status} /> },
+              { key: "voters", header: "Voters", render: (election) => election._count.voters.toLocaleString() },
+              { key: "setup", header: "Setup", render: (election) => `${election._count.positions} pos. · ${election._count.candidates} cand.` },
+              {
+                key: "turnout",
+                header: "Turnout",
+                render: (election) => election.status === "OPEN" || election.status === "CLOSED"
+                  ? `${pct(election.votedCount, election._count.voters)}%`
+                  : "—",
+              },
+              {
+                key: "schedule",
+                header: "Schedule",
+                render: (election) => election.status === "SCHEDULED" && election.scheduledOpen ? fmt(election.scheduledOpen) : "—",
+              },
+            ]}
+            actions={(election) => (
+              <div className="flex items-center justify-end gap-1">
+                <Link href={`/admin/elections/${election.id}/control`} className="rounded-[5px] border border-gold/20 bg-gold/[0.08] px-[7px] py-[5px] text-[10px] text-gold no-underline transition-all hover:bg-gold/[0.15]">
+                  Control
+                </Link>
+                <RowActions e={election} onToast={onToast} canLifecycle={canLifecycle} />
+              </div>
+            )}
+          />
         </div>
       )}
 
-      {/* Archived elections */}
       <ArchivedSection elections={archivedElections} onToast={onToast} canLifecycle={canLifecycle} />
 
       <Toast toast={toast} onDismiss={dismissToast} />
