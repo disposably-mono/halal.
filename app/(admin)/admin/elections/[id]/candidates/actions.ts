@@ -18,6 +18,7 @@ import {
   SeedPositionsSchema,
   safeParseFormData,
 } from "@/lib/validation/schemas";
+import { getSeedablePositionDefinitions } from "./position-seeding";
 
 export type FinalizeResult = {
   success: boolean;
@@ -36,9 +37,16 @@ export async function seedAllPositions(formData: FormData) {
   if (!election) return;
   if (!canEditCandidateRoster(election.status, election.candidatesFinalized).ok) return;
 
-  const positions = DIVISION_POSITIONS[election.division] ?? [];
-  const existingCount = await prisma.position.count({ where: { electionId } });
-  if (existingCount > 0) return;
+  const definitions = DIVISION_POSITIONS[election.division] ?? [];
+  const activePositions = await prisma.position.findMany({
+    where: { electionId, isActive: true },
+    select: { title: true },
+  });
+  const positions = getSeedablePositionDefinitions({
+    definitions,
+    activeTitles: new Set(activePositions.map((position) => position.title)),
+  });
+  if (positions.length === 0) return;
 
   await prisma.$transaction(
     positions.map((p, i) =>
