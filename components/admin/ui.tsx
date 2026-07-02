@@ -5,6 +5,7 @@ export * from "./card";
 export * from "./confirm-dialog";
 export * from "./data-table";
 export * from "./election-setup";
+export * from "./filter-panel";
 export * from "./form-controls";
 export * from "./layout-primitives";
 export * from "./polling-status";

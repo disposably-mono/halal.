@@ -10,6 +10,9 @@ import { DashboardLiveStats } from "./_components/DashboardLiveStats";
 import {
   DataTable,
   EmptyState,
+  FilterGroup,
+  FilterOption,
+  FilterPanel,
   MetricCard,
   PageHeader,
   SearchInput,
@@ -25,6 +28,7 @@ import {
 } from "./_components/dashboard-helpers";
 import { DIVISION_LABELS, fmt, pct, type Election, type ElectionStatus } from "./_components/shared";
 import { Button } from "@/components/ui/button";
+import { ListFilter } from "lucide-react";
 
 export default function DashboardClient({
   elections,
@@ -107,28 +111,29 @@ export default function DashboardClient({
       )}
 
       {elections.length > 0 && (
-        <div className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface">
-          <div className="border-b border-white/[0.07] px-4 py-3">
-            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-              <div>
-                <p className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/50">All Elections</p>
-                <p className="mt-1 text-[10px] text-white/35">{filteredElections.length} of {elections.length} shown</p>
-              </div>
-              <SearchInput onSearch={onSearch} placeholder="Search elections" className="sm:max-w-none lg:w-[360px]" />
-            </div>
-            <div className="mt-3 flex flex-wrap gap-1.5">
+        <>
+          <FilterPanel
+            title="Filter elections"
+            meta={`${filteredElections.length} of ${elections.length} shown`}
+          >
+            <SearchInput onSearch={onSearch} placeholder="Search elections" className="sm:max-w-none" />
+            <FilterGroup
+              icon={<ListFilter aria-hidden="true" className="h-4 w-4" />}
+              label="Election status"
+              value={statusFilter === "ALL" ? "All statuses" : statusFilter}
+            >
               {statusOptions.map((status) => (
-                <button
+                <FilterOption
                   key={status}
-                  type="button"
+                  active={statusFilter === status}
                   onClick={() => setStatusFilter(status)}
-                  className={`rounded-[6px] border px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] transition-colors ${statusFilter === status ? "border-gold/30 bg-gold/10 text-gold" : "border-white/[0.08] bg-white/[0.03] text-white/45 hover:text-white/70"}`}
                 >
-                  {status}
-                </button>
+                  {status === "ALL" ? "All statuses" : status}
+                </FilterOption>
               ))}
-            </div>
-          </div>
+            </FilterGroup>
+          </FilterPanel>
+          <div className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface">
           <DataTable
             rows={filteredElections}
             getRowKey={(election) => election.id}
@@ -171,7 +176,8 @@ export default function DashboardClient({
               </div>
             )}
           />
-        </div>
+          </div>
+        </>
       )}
 
       <ArchivedSection elections={archivedElections} onToast={onToast} canLifecycle={canLifecycle} />

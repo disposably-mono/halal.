@@ -1,9 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useMemo, useState } from "react";
 import {
   EmptyState,
+  FilterGrid,
+  FilterGroup,
+  FilterOption,
+  FilterPanel,
   MetricCard,
   PageHeader,
   SearchInput,
@@ -19,6 +23,7 @@ import {
   type VoterIndexStatus,
   type VoterStatusFilter,
 } from "./voter-index";
+import { Layers, ListFilter, Vote } from "lucide-react";
 
 const STATUS_OPTIONS: VoterStatusFilter[] = ["ALL", "OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
 const VOTE_OPTIONS: VoteStatusFilter[] = ["ALL", "VOTED", "PENDING"];
@@ -41,6 +46,11 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
     () => index.map((group) => ({ value: group.division, label: DIVISION_CODES[group.division] ?? group.label })),
     [index],
   );
+  const divisionLabel = division === "ALL"
+    ? "All divisions"
+    : divisionOptions.find((option) => option.value === division)?.label ?? division;
+  const statusLabel = status === "ALL" ? "All statuses" : status;
+  const voteStatusLabel = voteStatus === "ALL" ? "All voters" : voteStatus;
 
   return (
     <>
@@ -57,41 +67,52 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
         <MetricCard label="Visible" value={visibleSummary.voters.toLocaleString()} sub={`${visibleSummary.pending} pending shown`} accent="blue" />
       </div>
 
-      <div className="rounded-[12px] border border-white/[0.07] bg-admin-surface px-4 py-3">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/50">Voter Index</p>
-            <p className="mt-1 text-[10px] text-white/35">{visibleSummary.elections} election groups matched</p>
-          </div>
-          <SearchInput onSearch={onSearch} placeholder="Search control no., student ID, section" className="sm:max-w-none xl:w-[420px]" />
-        </div>
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          <FilterChip active={division === "ALL"} onClick={() => setDivision("ALL")}>All divisions</FilterChip>
-          {divisionOptions.map((option) => (
-            <FilterChip
-              key={option.value}
-              active={division === option.value}
-              onClick={() => setDivision(option.value)}
-            >
-              {option.label}
-            </FilterChip>
-          ))}
-        </div>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {STATUS_OPTIONS.map((option) => (
-            <FilterChip key={option} active={status === option} onClick={() => setStatus(option)}>
-              {option}
-            </FilterChip>
-          ))}
-        </div>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {VOTE_OPTIONS.map((option) => (
-            <FilterChip key={option} active={voteStatus === option} onClick={() => setVoteStatus(option)}>
-              {option === "ALL" ? "All voters" : option}
-            </FilterChip>
-          ))}
-        </div>
-      </div>
+      <FilterPanel
+        title="Filter voters"
+        meta={`${visibleSummary.elections} election groups matched`}
+      >
+        <SearchInput onSearch={onSearch} placeholder="Search control no., student ID, section" className="sm:max-w-none" />
+        <FilterGrid>
+          <FilterGroup
+            icon={<Layers aria-hidden="true" className="h-4 w-4" />}
+            label="Division"
+            value={divisionLabel}
+          >
+            <FilterOption active={division === "ALL"} onClick={() => setDivision("ALL")}>All divisions</FilterOption>
+            {divisionOptions.map((option) => (
+              <FilterOption
+                key={option.value}
+                active={division === option.value}
+                onClick={() => setDivision(option.value)}
+              >
+                {option.label}
+              </FilterOption>
+            ))}
+          </FilterGroup>
+          <FilterGroup
+            icon={<ListFilter aria-hidden="true" className="h-4 w-4" />}
+            label="Election status"
+            value={statusLabel}
+          >
+            {STATUS_OPTIONS.map((option) => (
+              <FilterOption key={option} active={status === option} onClick={() => setStatus(option)}>
+                {option === "ALL" ? "All statuses" : option}
+              </FilterOption>
+            ))}
+          </FilterGroup>
+          <FilterGroup
+            icon={<Vote aria-hidden="true" className="h-4 w-4" />}
+            label="Vote state"
+            value={voteStatusLabel}
+          >
+            {VOTE_OPTIONS.map((option) => (
+              <FilterOption key={option} active={voteStatus === option} onClick={() => setVoteStatus(option)}>
+                {option === "ALL" ? "All voters" : option}
+              </FilterOption>
+            ))}
+          </FilterGroup>
+        </FilterGrid>
+      </FilterPanel>
 
       {totalSummary.voters === 0 ? (
         <EmptyState title="No voters registered yet" hint="Upload voters from an election's Voters page." />
@@ -100,8 +121,8 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
       ) : (
         <div className="space-y-4">
           {filtered.map((divisionGroup) => (
-            <details key={divisionGroup.division} open className="group">
-              <summary className="flex cursor-pointer list-none items-center gap-3 py-1">
+            <details key={divisionGroup.division} className="group/division overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface/70">
+              <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
                   {divisionGroup.label}
                 </span>
@@ -109,11 +130,14 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
                 <span className="text-[10px] text-white/55">
                   {divisionGroup.voterCount} voters · {divisionGroup.votedCount} voted
                 </span>
-                <span className="text-[12px] text-white/35 transition-transform group-open:rotate-90">›</span>
+                <span className="hidden rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10px] text-white/40 sm:inline">
+                  Click to expand
+                </span>
+                <span className="text-[12px] text-gold transition-transform group-open/division:rotate-90">›</span>
               </summary>
-              <div className="mt-2 grid gap-3">
+              <div className="grid gap-3 border-t border-white/[0.06] p-3">
                 {divisionGroup.elections.map((election) => (
-                  <details key={election.id} open className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface">
+                  <details key={election.id} className="group/election overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <StatusDot status={election.status} />
@@ -121,9 +145,13 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
                       </div>
                       <div className="flex shrink-0 items-center gap-3 text-[10px] text-white/50">
                         <span>{election.voterCount} voters · {turnout(election.votedCount, election.voterCount)}%</span>
+                        <span className="hidden rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-white/40 lg:inline">
+                          Click to expand
+                        </span>
                         <Link href={`/admin/elections/${election.id}/voters`} className="rounded-[5px] border border-gold/20 bg-gold/[0.07] px-[7px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]">
                           Manage
                         </Link>
+                        <span className="text-[12px] text-gold transition-transform group-open/election:rotate-90">›</span>
                       </div>
                     </summary>
                     <VoterRows voters={election.voters} />
@@ -179,18 +207,6 @@ function VoteBadge({ hasVoted }: { hasVoted: boolean }) {
       <span className="h-[5px] w-[5px] rounded-full bg-white/15" />
       Pending
     </span>
-  );
-}
-
-function FilterChip({ active, onClick, children }: { active: boolean; onClick: () => void; children: ReactNode }) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-[6px] border px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] transition-colors ${active ? "border-gold/30 bg-gold/10 text-gold" : "border-white/[0.08] bg-white/[0.03] text-white/45 hover:text-white/70"}`}
-    >
-      {children}
-    </button>
   );
 }
 

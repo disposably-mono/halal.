@@ -28,9 +28,10 @@ Current base before this handoff update: `af35516 feat(admin): complete ux overh
   - Login/account secret fields include browser autocomplete hints.
   - Playwright is installed/configured for dedicated `e2e/` specs, with a public smoke test.
 - Root admin index polish:
-  - Dashboard election table controls now use a two-row toolbar so search and status chips do not crowd the top-right corner.
-  - `/admin/candidates` is now a searchable/filterable candidate index with division/status chips and collapsible division/election groups.
-  - `/admin/voters` is now a searchable/filterable voter index with division/status/vote-state chips, numbered rows, and collapsible division/election groups.
+  - Dashboard election table controls now use a dedicated dark/gold filter panel so search and status controls do not crowd the top-right corner.
+  - `/admin/candidates` is now a searchable/filterable candidate index with boxed division/status controls and collapsible division/election groups.
+  - `/admin/voters` is now a searchable/filterable voter index with boxed division/status/vote-state controls, numbered rows, and collapsible division/election groups.
+  - Candidate/voter index groups load collapsed by default and show visible "Click to expand" hints.
   - Playwright dev server uses fixed port `3100` to avoid Next dev auto-port drift during e2e runs.
 
 ## Verification Run
@@ -40,7 +41,7 @@ Current base before this handoff update: `af35516 feat(admin): complete ux overh
 - `npm test` - 34 files, 305 tests passed
 - `npm run build`
 - `PLAYWRIGHT_HTML_OPEN=never npx playwright test` - 1 Chromium smoke test passed
-- Authenticated Chromium probe: login/account autocomplete attributes, draft monitor redirect, and mobile control topbar bounds passed.
+- Authenticated Chromium probes: login/account autocomplete, draft monitor redirect, mobile control topbar bounds, filter panels, collapsed-by-default groups, expand hints, and desktop/mobile overflow passed.
 
 ## New Tests
 

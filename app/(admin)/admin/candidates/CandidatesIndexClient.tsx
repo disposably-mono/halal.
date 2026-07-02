@@ -4,6 +4,10 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import {
   EmptyState,
+  FilterGrid,
+  FilterGroup,
+  FilterOption,
+  FilterPanel,
   MetricCard,
   PageHeader,
   SearchInput,
@@ -19,6 +23,7 @@ import {
   type CandidateIndexPosition,
   type CandidateStatusFilter,
 } from "./candidate-index";
+import { Layers, ListFilter } from "lucide-react";
 
 const STATUS_OPTIONS: CandidateStatusFilter[] = ["ALL", "OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
 
@@ -39,6 +44,10 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
     () => index.map((group) => ({ value: group.division, label: DIVISION_CODES[group.division] ?? group.label })),
     [index],
   );
+  const divisionLabel = division === "ALL"
+    ? "All divisions"
+    : divisionOptions.find((option) => option.value === division)?.label ?? division;
+  const statusLabel = status === "ALL" ? "All statuses" : status;
 
   return (
     <>
@@ -55,34 +64,41 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
         <MetricCard label="Open Filters" value={activeFilterCount({ query, status, division }).toString()} sub="search, status, division" />
       </div>
 
-      <div className="rounded-[12px] border border-white/[0.07] bg-admin-surface px-4 py-3">
-        <div className="flex flex-col gap-3 xl:flex-row xl:items-end xl:justify-between">
-          <div className="min-w-0">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/50">Candidate Index</p>
-            <p className="mt-1 text-[10px] text-white/35">{visibleSummary.positions} positions matched</p>
-          </div>
-          <SearchInput onSearch={onSearch} placeholder="Search candidate, position, election" className="sm:max-w-none xl:w-[420px]" />
-        </div>
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          <FilterChip active={division === "ALL"} onClick={() => setDivision("ALL")}>All divisions</FilterChip>
-          {divisionOptions.map((option) => (
-            <FilterChip
-              key={option.value}
-              active={division === option.value}
-              onClick={() => setDivision(option.value)}
-            >
-              {option.label}
-            </FilterChip>
-          ))}
-        </div>
-        <div className="mt-2 flex flex-wrap gap-1.5">
-          {STATUS_OPTIONS.map((option) => (
-            <FilterChip key={option} active={status === option} onClick={() => setStatus(option)}>
-              {option}
-            </FilterChip>
-          ))}
-        </div>
-      </div>
+      <FilterPanel
+        title="Filter candidates"
+        meta={`${visibleSummary.positions} positions matched`}
+      >
+        <SearchInput onSearch={onSearch} placeholder="Search candidate, position, election" className="sm:max-w-none" />
+        <FilterGrid>
+          <FilterGroup
+            icon={<Layers aria-hidden="true" className="h-4 w-4" />}
+            label="Division"
+            value={divisionLabel}
+          >
+            <FilterOption active={division === "ALL"} onClick={() => setDivision("ALL")}>All divisions</FilterOption>
+            {divisionOptions.map((option) => (
+              <FilterOption
+                key={option.value}
+                active={division === option.value}
+                onClick={() => setDivision(option.value)}
+              >
+                {option.label}
+              </FilterOption>
+            ))}
+          </FilterGroup>
+          <FilterGroup
+            icon={<ListFilter aria-hidden="true" className="h-4 w-4" />}
+            label="Election status"
+            value={statusLabel}
+          >
+            {STATUS_OPTIONS.map((option) => (
+              <FilterOption key={option} active={status === option} onClick={() => setStatus(option)}>
+                {option === "ALL" ? "All statuses" : option}
+              </FilterOption>
+            ))}
+          </FilterGroup>
+        </FilterGrid>
+      </FilterPanel>
 
       {totalSummary.candidates === 0 ? (
         <EmptyState title="No candidates encoded yet" hint="Add candidates from an election's Candidates page." />
@@ -91,8 +107,8 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
       ) : (
         <div className="space-y-4">
           {filtered.map((divisionGroup) => (
-            <details key={divisionGroup.division} open className="group">
-              <summary className="flex cursor-pointer list-none items-center gap-3 py-1">
+            <details key={divisionGroup.division} className="group/division overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface/70">
+              <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3">
                 <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
                   {divisionGroup.label}
                 </span>
@@ -100,11 +116,14 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
                 <span className="text-[10px] text-white/55">
                   {divisionGroup.totalCandidates} candidates · {divisionGroup.positionCount} positions
                 </span>
-                <span className="text-[12px] text-white/35 transition-transform group-open:rotate-90">›</span>
+                <span className="hidden rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10px] text-white/40 sm:inline">
+                  Click to expand
+                </span>
+                <span className="text-[12px] text-gold transition-transform group-open/division:rotate-90">›</span>
               </summary>
-              <div className="mt-2 grid gap-3">
+              <div className="grid gap-3 border-t border-white/[0.06] p-3">
                 {divisionGroup.elections.map((election) => (
-                  <details key={election.id} open className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface">
+                  <details key={election.id} className="group/election overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <StatusDot status={election.status} />
@@ -112,9 +131,13 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
                       </div>
                       <div className="flex shrink-0 items-center gap-3 text-[10px] text-white/50">
                         <span>{election.totalCandidates} cand. · {election.positionCount} pos.</span>
+                        <span className="hidden rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-white/40 lg:inline">
+                          Click to expand
+                        </span>
                         <Link href={`/admin/elections/${election.id}/candidates`} className="rounded-[5px] border border-gold/20 bg-gold/[0.07] px-[7px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]">
                           Manage
                         </Link>
+                        <span className="text-[12px] text-gold transition-transform group-open/election:rotate-90">›</span>
                       </div>
                     </summary>
                     <div className="divide-y divide-white/[0.04]">
@@ -158,26 +181,6 @@ function PositionBlock({ position }: { position: CandidateIndexPosition }) {
         </div>
       )}
     </section>
-  );
-}
-
-function FilterChip({
-  active,
-  onClick,
-  children,
-}: {
-  active: boolean;
-  onClick: () => void;
-  children: React.ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className={`rounded-[6px] border px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] transition-colors ${active ? "border-gold/30 bg-gold/10 text-gold" : "border-white/[0.08] bg-white/[0.03] text-white/45 hover:text-white/70"}`}
-    >
-      {children}
-    </button>
   );
 }
 
