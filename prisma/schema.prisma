@@ -101,6 +101,8 @@ model Vote {
   ballot      Ballot?    @relation(fields: [ballotId], references: [id], onDelete: Cascade)
 
   @@index([ballotId])
+  // Results tally filters votes by electionId on every poll — index to avoid a seq scan.
+  @@index([electionId])
 }
 
 model Ballot {
