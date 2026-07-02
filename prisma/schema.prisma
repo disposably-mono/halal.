@@ -40,6 +40,7 @@ model Election {
   votes               Vote[]
   voters              Voter[]
   candidates  Candidate[]
+  monitorSnapshots    MonitorSnapshot[]
 }
 
 model Position {
@@ -159,6 +160,24 @@ model AdminUser {
   lastLogin    DateTime?
   createdAt    DateTime  @default(now())
   officerKey   String
+}
+
+// Persisted live-monitor tally snapshots. `bucket` is the 30s time-bucket
+// (Math.floor(epochMs / POLL_INTERVAL)) that the payload was captured in; the
+// unique constraint on (electionId, bucket) is what dedupes concurrent writes
+// from multiple admin devices polling the same election at once. `payload` is
+// exactly the anonymous aggregate JSON already returned by the results API
+// (candidate vote counts, abstentions, turnout) — never voter-identifying data.
+model MonitorSnapshot {
+  id         String   @id @default(cuid())
+  electionId String
+  bucket     Int
+  capturedAt DateTime @default(now())
+  payload    Json
+  election   Election @relation(fields: [electionId], references: [id], onDelete: Cascade)
+
+  @@unique([electionId, bucket])
+  @@index([electionId, capturedAt])
 }
 
 model AdminLoginHistory {

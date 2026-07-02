@@ -5,6 +5,8 @@ import { permissionErrorMessage } from "@/lib/auth/permissions";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
 import { cached } from "@/lib/server/ttl-cache";
+import { recordSnapshot } from "@/lib/server/monitor-snapshots";
+import type { ResultsPayload } from "@/app/(admin)/admin/elections/[id]/monitor/_components/monitor-shared";
 
 export const dynamic = "force-dynamic";
 
@@ -167,7 +169,7 @@ export async function GET(
       })
     : livePositionResults;
 
-  return NextResponse.json({
+  const responsePayload = {
     electionId: id,
     status: election.status,
     name: election.name,
@@ -185,7 +187,23 @@ export async function GET(
       certifiedSnapshotHash: election.certification?.snapshotHash ?? null,
     },
     integrityFailure: false,
-  });
+  };
+
+  // Persist the live monitor tally so the admin replay timeline survives a
+  // refresh and is identical across devices. Only for admin requests against
+  // a live, OPEN election — never for public responses, embargoed responses,
+  // or CLOSED/certified snapshots (those aren't the "live tally" this powers).
+  // `recordSnapshot` never throws; a failed write must not break this response.
+  // `abstentions` is only `number | undefined` in the response's inferred
+  // type because the public branch omits it — under `isAdminRequest` it is
+  // always populated (see `livePositionResults`/`certified` mapping above),
+  // so the cast to `ResultsPayload` (which requires `abstentions: number`) is
+  // safe here.
+  if (isAdminRequest && election.status === "OPEN") {
+    await recordSnapshot(id, responsePayload as unknown as ResultsPayload);
+  }
+
+  return NextResponse.json(responsePayload);
 }
 
 /**
