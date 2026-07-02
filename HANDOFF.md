@@ -27,12 +27,17 @@ Current base before this handoff update: `af35516 feat(admin): complete ux overh
   - Monitor has one manual Refresh control instead of duplicate header/status buttons.
   - Login/account secret fields include browser autocomplete hints.
   - Playwright is installed/configured for dedicated `e2e/` specs, with a public smoke test.
+- Root admin index polish:
+  - Dashboard election table controls now use a two-row toolbar so search and status chips do not crowd the top-right corner.
+  - `/admin/candidates` is now a searchable/filterable candidate index with division/status chips and collapsible division/election groups.
+  - `/admin/voters` is now a searchable/filterable voter index with division/status/vote-state chips, numbered rows, and collapsible division/election groups.
+  - Playwright dev server uses fixed port `3100` to avoid Next dev auto-port drift during e2e runs.
 
 ## Verification Run
 
 - `npm run typecheck`
 - `npm run lint`
-- `npm test` - 32 files, 299 tests passed
+- `npm test` - 34 files, 305 tests passed
 - `npm run build`
 - `PLAYWRIGHT_HTML_OPEN=never npx playwright test` - 1 Chromium smoke test passed
 - Authenticated Chromium probe: login/account autocomplete attributes, draft monitor redirect, and mobile control topbar bounds passed.
@@ -45,6 +50,8 @@ Current base before this handoff update: `af35516 feat(admin): complete ux overh
 - `tests/admin/account-display.test.ts`
 - `tests/admin/monitor-access.test.ts`
 - `e2e/public-smoke.spec.ts`
+- `tests/admin/candidate-index.test.ts`
+- `tests/admin/voter-index.test.ts`
 
 ## Notes For Next Worker
 

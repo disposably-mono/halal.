@@ -108,25 +108,25 @@ export default function DashboardClient({
 
       {elections.length > 0 && (
         <div className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface">
-          <div className="flex flex-col gap-3 border-b border-white/[0.07] px-4 py-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/50">All Elections</p>
-              <p className="mt-1 text-[10px] text-white/35">{filteredElections.length} of {elections.length} shown</p>
-            </div>
-            <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-              <SearchInput onSearch={onSearch} placeholder="Search elections" />
-              <div className="flex flex-wrap gap-1">
-                {statusOptions.map((status) => (
-                  <button
-                    key={status}
-                    type="button"
-                    onClick={() => setStatusFilter(status)}
-                    className={`rounded-[6px] border px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] transition-colors ${statusFilter === status ? "border-gold/30 bg-gold/10 text-gold" : "border-white/[0.08] bg-white/[0.03] text-white/45 hover:text-white/70"}`}
-                  >
-                    {status}
-                  </button>
-                ))}
+          <div className="border-b border-white/[0.07] px-4 py-3">
+            <div className="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/50">All Elections</p>
+                <p className="mt-1 text-[10px] text-white/35">{filteredElections.length} of {elections.length} shown</p>
               </div>
+              <SearchInput onSearch={onSearch} placeholder="Search elections" className="sm:max-w-none lg:w-[360px]" />
+            </div>
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {statusOptions.map((status) => (
+                <button
+                  key={status}
+                  type="button"
+                  onClick={() => setStatusFilter(status)}
+                  className={`rounded-[6px] border px-2.5 py-2 text-[10px] font-semibold uppercase tracking-[0.06em] transition-colors ${statusFilter === status ? "border-gold/30 bg-gold/10 text-gold" : "border-white/[0.08] bg-white/[0.03] text-white/45 hover:text-white/70"}`}
+                >
+                  {status}
+                </button>
+              ))}
             </div>
           </div>
           <DataTable
