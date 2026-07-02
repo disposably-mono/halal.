@@ -26,17 +26,41 @@ export type Capability =
   | "candidates:manage"
   | "results:export"
   | "recounts:run"
-  | "admin:view";
+  | "admin:view"
+  | "elections:view"
+  | "voters:view"
+  | "candidates:view"
+  | "results:view"
+  | "history:view";
 
 export const ROLE_CAPABILITIES: Record<AdminRole, readonly Capability[]> = {
-  SUPERADMIN: ["accounts:manage", "admin:view"],
-  CANVASSER: ["election:close", "results:export", "recounts:run", "admin:view"],
+  SUPERADMIN: [
+    "accounts:manage",
+    "admin:view",
+    "elections:view",
+    "voters:view",
+    "candidates:view",
+    "results:view",
+    "history:view",
+  ],
+  CANVASSER: [
+    "election:close",
+    "results:export",
+    "recounts:run",
+    "admin:view",
+    "elections:view",
+    "results:view",
+  ],
   COMMISSIONER: [
     "election:lifecycle",
     "voters:manage",
     "voters:export",
     "candidates:manage",
     "admin:view",
+    "elections:view",
+    "voters:view",
+    "candidates:view",
+    "results:view",
   ],
   OFFICER: ["admin:view"],
 };
@@ -114,6 +138,11 @@ export const CAPABILITY_DENIED_MESSAGES: Record<Capability, string> = {
   "results:export": "Only the Canvassing Head can export official results.",
   "recounts:run": "Only the Canvassing Head can initiate a recount.",
   "admin:view": "You don't have access to that page.",
+  "elections:view": "You don't have access to that page.",
+  "voters:view": "You don't have access to that page.",
+  "candidates:view": "You don't have access to that page.",
+  "results:view": "You don't have access to that page.",
+  "history:view": "You don't have access to that page.",
 };
 
 /**

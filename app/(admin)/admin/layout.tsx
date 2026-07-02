@@ -11,7 +11,8 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const role = session.user?.role;
   const canManageAccounts = can(role, "accounts:manage");
   const canCreateElection = can(role, "election:lifecycle");
-  const canManageVoters = can(role, "voters:manage");
+  const canViewVoters = can(role, "voters:view");
+  const canViewHistory = can(role, "history:view");
 
   const adminName = session.user?.name ?? "Admin";
   const adminInitial = adminName[0]?.toUpperCase() ?? "A";
@@ -84,7 +85,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
               <line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" />
             </svg>
           } />
-          {canManageVoters && (
+          {canViewVoters && (
             <ActiveNavItem href="/admin/voters" label="Voters" icon={
               <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
@@ -98,21 +99,25 @@ export default async function AdminLayout({ children }: { children: ReactNode })
             </svg>
           } />
 
-          {canManageAccounts && (
+          {(canManageAccounts || canViewHistory) && (
             <>
               <NavSection label="Administration" />
-              <ActiveNavItem href="/admin/accounts" label="Accounts" icon={
-                <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
-                  <line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
-                </svg>
-              } />
-              <ActiveNavItem href="/admin/history" label="History" icon={
-                <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" />
-                  <path d="M3 3v5h5" /><path d="M12 7v5l3 2" />
-                </svg>
-              } />
+              {canManageAccounts && (
+                <ActiveNavItem href="/admin/accounts" label="Accounts" icon={
+                  <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" />
+                    <line x1="19" y1="8" x2="19" y2="14" /><line x1="22" y1="11" x2="16" y2="11" />
+                  </svg>
+                } />
+              )}
+              {canViewHistory && (
+                <ActiveNavItem href="/admin/history" label="History" icon={
+                  <svg className="w-[14px] h-[14px]" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M3 12a9 9 0 109-9 9.75 9.75 0 00-6.74 2.74L3 8" />
+                    <path d="M3 3v5h5" /><path d="M12 7v5l3 2" />
+                  </svg>
+                } />
+              )}
             </>
           )}
         </nav>

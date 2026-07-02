@@ -13,7 +13,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PH", {
 });
 
 export default async function AdminHistoryPage() {
-  await requireCapability("accounts:manage");
+  await requireCapability("history:view");
 
   const history = await prisma.adminLoginHistory.findMany({
     orderBy: { createdAt: "desc" },

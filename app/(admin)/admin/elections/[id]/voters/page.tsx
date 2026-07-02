@@ -21,9 +21,10 @@ export const dynamic = "force-dynamic";
 const SCHOOL_YEAR = new Date().getFullYear();
 
 export default async function VotersPage({ params }: { params: { id: string } }) {
-  // Control numbers shown below are live voting credentials, so viewing — not
-  // just editing — requires voters:manage. Other roles are bounced to the dashboard.
-  const session = await requireCapability("voters:manage");
+  // Control numbers shown below are live voting credentials, so reading requires
+  // voters:view (Commissioner + oversight roles). Mutation controls below are
+  // separately gated on voters:manage. Other roles are bounced to the dashboard.
+  const session = await requireCapability("voters:view");
 
   const canManageVoters = can(session.user?.role, "voters:manage");
 

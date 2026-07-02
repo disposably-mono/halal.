@@ -24,12 +24,71 @@ const ALL_CAPABILITIES: Capability[] = [
   "results:export",
   "recounts:run",
   "admin:view",
+  "elections:view",
+  "voters:view",
+  "candidates:view",
+  "results:view",
+  "history:view",
+];
+
+const ALL_MANAGE_CAPABILITIES: Capability[] = [
+  "accounts:manage",
+  "election:lifecycle",
+  "election:close",
+  "voters:manage",
+  "voters:export",
+  "candidates:manage",
+  "results:export",
+  "recounts:run",
+];
+
+const ALL_VIEW_CAPABILITIES: Capability[] = [
+  "elections:view",
+  "voters:view",
+  "candidates:view",
+  "results:view",
+  "history:view",
 ];
 
 // The authoritative separation-of-duties matrix. Mirrors the product decision:
-// COMELEC manages accounts only; Canvasser owns results; Commissioner runs
-// setup; Officer observes.
+// COMELEC (SUPERADMIN) has oversight — it can VIEW every admin page but can only
+// EDIT admin accounts. Canvasser owns results; Commissioner runs setup; Officer
+// observes (dashboard + live monitor only).
 const EXPECTED: Record<AdminRole, Capability[]> = {
+  SUPERADMIN: [
+    "accounts:manage",
+    "admin:view",
+    "elections:view",
+    "voters:view",
+    "candidates:view",
+    "results:view",
+    "history:view",
+  ],
+  CANVASSER: [
+    "election:close",
+    "results:export",
+    "recounts:run",
+    "admin:view",
+    "elections:view",
+    "results:view",
+  ],
+  COMMISSIONER: [
+    "election:lifecycle",
+    "voters:manage",
+    "voters:export",
+    "candidates:manage",
+    "admin:view",
+    "elections:view",
+    "voters:view",
+    "candidates:view",
+    "results:view",
+  ],
+  OFFICER: ["admin:view"],
+};
+
+// The pre-Phase-A matrix (before read/view capabilities existed). Used to prove
+// no role lost anything it could already do — this phase is additive-only.
+const PREVIOUSLY_HELD_MANAGE_CAPS: Record<AdminRole, Capability[]> = {
   SUPERADMIN: ["accounts:manage", "admin:view"],
   CANVASSER: ["election:close", "results:export", "recounts:run", "admin:view"],
   COMMISSIONER: [
@@ -66,15 +125,82 @@ describe("separation of duties invariants", () => {
     expect(ROLES.filter((r) => can(r, "recounts:run"))).toEqual(["CANVASSER"]);
   });
 
-  test("SUPERADMIN cannot run elections", () => {
+  test("SUPERADMIN cannot run elections (retains oversight-only, not manage)", () => {
     expect(can("SUPERADMIN", "election:lifecycle")).toBe(false);
     expect(can("SUPERADMIN", "election:close")).toBe(false);
     expect(can("SUPERADMIN", "voters:manage")).toBe(false);
     expect(can("SUPERADMIN", "candidates:manage")).toBe(false);
+    expect(can("SUPERADMIN", "voters:export")).toBe(false);
+    expect(can("SUPERADMIN", "results:export")).toBe(false);
+    expect(can("SUPERADMIN", "recounts:run")).toBe(false);
   });
 
   test("every role can view the admin panel", () => {
     for (const role of ROLES) expect(can(role, "admin:view")).toBe(true);
+  });
+});
+
+describe("SUPERADMIN oversight (Phase A)", () => {
+  test("SUPERADMIN has every *:view capability", () => {
+    for (const cap of ALL_VIEW_CAPABILITIES) {
+      expect(can("SUPERADMIN", cap)).toBe(true);
+    }
+  });
+
+  test("SUPERADMIN has no *:manage capability other than accounts:manage", () => {
+    const otherManageCaps = ALL_MANAGE_CAPABILITIES.filter((c) => c !== "accounts:manage");
+    for (const cap of otherManageCaps) {
+      expect(can("SUPERADMIN", cap)).toBe(false);
+    }
+  });
+
+  test("SUPERADMIN still has accounts:manage and admin:view", () => {
+    expect(can("SUPERADMIN", "accounts:manage")).toBe(true);
+    expect(can("SUPERADMIN", "admin:view")).toBe(true);
+  });
+
+  test("SUPERADMIN capability set is exactly the view caps plus accounts:manage/admin:view", () => {
+    const caps = capabilitiesFor("SUPERADMIN");
+    expect(caps.size).toBe(ALL_VIEW_CAPABILITIES.length + 2);
+    for (const cap of ALL_VIEW_CAPABILITIES) expect(caps.has(cap)).toBe(true);
+    expect(caps.has("accounts:manage")).toBe(true);
+    expect(caps.has("admin:view")).toBe(true);
+  });
+});
+
+describe("no role lost a previously-held capability (Phase A is additive-only)", () => {
+  for (const role of ROLES) {
+    test(`${role} retains every capability it had before Phase A`, () => {
+      for (const cap of PREVIOUSLY_HELD_MANAGE_CAPS[role]) {
+        expect(can(role, cap)).toBe(true);
+      }
+    });
+  }
+});
+
+describe("view capabilities granted to managing roles (keep current access)", () => {
+  test("COMMISSIONER gains elections/voters/candidates/results view", () => {
+    expect(can("COMMISSIONER", "elections:view")).toBe(true);
+    expect(can("COMMISSIONER", "voters:view")).toBe(true);
+    expect(can("COMMISSIONER", "candidates:view")).toBe(true);
+    expect(can("COMMISSIONER", "results:view")).toBe(true);
+    expect(can("COMMISSIONER", "history:view")).toBe(false);
+  });
+
+  test("CANVASSER gains elections/results view", () => {
+    expect(can("CANVASSER", "elections:view")).toBe(true);
+    expect(can("CANVASSER", "results:view")).toBe(true);
+    expect(can("CANVASSER", "voters:view")).toBe(false);
+    expect(can("CANVASSER", "candidates:view")).toBe(false);
+    expect(can("CANVASSER", "history:view")).toBe(false);
+  });
+
+  test("OFFICER is unchanged: no new view capabilities", () => {
+    for (const cap of ALL_VIEW_CAPABILITIES) {
+      expect(can("OFFICER", cap)).toBe(false);
+    }
+    expect(capabilitiesFor("OFFICER").size).toBe(1);
+    expect(can("OFFICER", "admin:view")).toBe(true);
   });
 });
 
@@ -159,6 +285,13 @@ describe("permission messages (no silent failures)", () => {
     expect(deniedMessage("election:close")).toBe(
       CAPABILITY_DENIED_MESSAGES["election:close"],
     );
+  });
+
+  test("deniedMessage resolves the new view capabilities to generic access copy", () => {
+    for (const cap of ALL_VIEW_CAPABILITIES) {
+      expect(deniedMessage(cap)).toBe(CAPABILITY_DENIED_MESSAGES[cap]);
+      expect(deniedMessage(cap)).toBe("You don't have access to that page.");
+    }
   });
 
   test("deniedMessage falls back for the legacy sentinel / unknown values", () => {

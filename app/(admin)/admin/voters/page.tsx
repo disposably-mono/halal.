@@ -5,9 +5,10 @@ import { DIVISION_LABELS, DIVISION_ORDER } from "@/lib/ui/division-labels";
 import { requireCapability } from "@/lib/server/auth";
 
 export default async function AdminVotersPage() {
-  // Control numbers are live voting credentials — restrict to roster managers
-  // (Commissioner). Other roles are bounced to the dashboard with an explanation.
-  await requireCapability("voters:manage");
+  // Control numbers are live voting credentials — restrict reading to roles that
+  // can see the roster (Commissioner + oversight). Other roles are bounced to
+  // the dashboard with an explanation.
+  await requireCapability("voters:view");
 
   // All voters with their election info
   const allVoters = await prisma.voter.findMany({
