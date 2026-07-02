@@ -20,6 +20,7 @@ export type CandidateIndexPosition = {
     name: string;
     division: string;
     status: CandidateIndexStatus;
+    archivedAt?: Date | string | null;
   };
   candidates: CandidateIndexCandidate[];
 };
@@ -52,6 +53,8 @@ export function buildCandidateIndex(positions: readonly CandidateIndexPosition[]
   const byDivision = new Map<string, Map<string, CandidateElectionGroup>>();
 
   for (const position of positions) {
+    if (position.election.archivedAt) continue;
+
     const division = position.election.division;
     const electionId = position.election.id;
     const electionMap = byDivision.get(division) ?? new Map<string, CandidateElectionGroup>();

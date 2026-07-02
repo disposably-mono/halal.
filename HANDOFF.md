@@ -1,8 +1,8 @@
 # Admin UX Overhaul Handoff
 
-Updated: 2026-07-02
+Updated: 2026-07-03
 Branch: `main`
-Current base before this handoff update: `af35516 feat(admin): complete ux overhaul phases`
+Current base before this handoff update: `065e47b style(admin): refine filter panels`
 
 ## Shipped
 
@@ -33,12 +33,19 @@ Current base before this handoff update: `af35516 feat(admin): complete ux overh
   - `/admin/voters` is now a searchable/filterable voter index with boxed division/status/vote-state controls, numbered rows, and collapsible division/election groups.
   - Candidate/voter index groups load collapsed by default and show visible "Click to expand" hints.
   - Playwright dev server uses fixed port `3100` to avoid Next dev auto-port drift during e2e runs.
+- Admin shell and archive polish:
+  - Desktop admin navigation is frozen while page content scrolls independently.
+  - Admin pages now get a subtle route/content transition, with motion-reduction respected.
+  - Archived elections are hidden from the root candidate and voter indexes.
+- Receipt verification update:
+  - A valid one-time receipt verification now shows the recorded choices for that receipt, including abstentions.
+  - Verification copy now warns that receipt codes should be kept private because they can reveal that receipt's recorded choices.
 
 ## Verification Run
 
 - `npm run typecheck`
 - `npm run lint`
-- `npm test` - 34 files, 305 tests passed
+- `npm test` - 35 files, 306 tests passed
 - `npm run build`
 - `PLAYWRIGHT_HTML_OPEN=never npx playwright test` - 1 Chromium smoke test passed
 - Authenticated Chromium probes: login/account autocomplete, draft monitor redirect, mobile control topbar bounds, filter panels, collapsed-by-default groups, expand hints, and desktop/mobile overflow passed.
@@ -53,10 +60,11 @@ Current base before this handoff update: `af35516 feat(admin): complete ux overh
 - `e2e/public-smoke.spec.ts`
 - `tests/admin/candidate-index.test.ts`
 - `tests/admin/voter-index.test.ts`
+- `tests/auth/receipt-selections.test.ts`
 
 ## Notes For Next Worker
 
 - The root `HANDOFF.md` was previously recreated from active code state and prior handoff summary.
-- Local branch is `main`; phase work is already on `origin/main` through `af35516`.
+- Local branch is `main`; phase work is already on `origin/main` through `065e47b`.
 - Do not modify `.env` or seed/reset the database without explicit approval.
 - If more visual polish is requested, resume with authenticated browser screenshots on desktop and mobile.

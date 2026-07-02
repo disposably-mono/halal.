@@ -37,6 +37,22 @@ const voters: VoterIndexRow[] = [
     division: "SHS",
     election: { id: "election-shs", name: "SHS Elections", division: "SHS", status: "DRAFT" },
   },
+  {
+    id: "voter-archived",
+    studentId: "2026-004",
+    voterCode: "OLD-001",
+    gradeLevel: 12,
+    section: "Archive",
+    hasVoted: true,
+    division: "HC",
+    election: {
+      id: "election-archived",
+      name: "Archived Election",
+      division: "HC",
+      status: "CLOSED",
+      archivedAt: "2026-07-01T00:00:00.000Z",
+    },
+  },
 ];
 
 describe("voter index helpers", () => {
@@ -47,6 +63,7 @@ describe("voter index helpers", () => {
     expect(groups[1]?.elections[0]?.voters).toHaveLength(2);
     expect(groups[1]?.elections[0]?.votedCount).toBe(1);
     expect(groups[1]?.elections[0]?.voters[0]).not.toBe(voters[0]);
+    expect(groups.flatMap((group) => group.elections).map((election) => election.id)).not.toContain("election-archived");
   });
 
   test("filters by division, status, vote state, and query", () => {

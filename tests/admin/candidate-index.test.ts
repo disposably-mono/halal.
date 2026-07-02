@@ -26,6 +26,20 @@ const positions: CandidateIndexPosition[] = [
     election: { id: "election-house", name: "House Elections", division: "HC", status: "OPEN" },
     candidates: [{ id: "candidate-cam", fullName: "Cam Cruz", gradeLevel: 12 }],
   },
+  {
+    id: "pos-archived",
+    title: "Archived Secretary",
+    eligibleGrades: [11, 12],
+    candidateGrade: "12",
+    election: {
+      id: "election-archived",
+      name: "Archived Election",
+      division: "HC",
+      status: "CLOSED",
+      archivedAt: "2026-07-01T00:00:00.000Z",
+    },
+    candidates: [{ id: "candidate-old", fullName: "Old Candidate", gradeLevel: 12 }],
+  },
 ];
 
 describe("candidate index helpers", () => {
@@ -36,6 +50,7 @@ describe("candidate index helpers", () => {
     expect(groups[0]?.elections[0]?.totalCandidates).toBe(2);
     expect(groups[1]?.elections[0]?.positions[0]?.title).toBe("House Prefect");
     expect(groups[0]?.elections[0]?.positions[0]).not.toBe(positions[0]);
+    expect(groups.flatMap((group) => group.elections).map((election) => election.id)).not.toContain("election-archived");
   });
 
   test("filters by status, division, and candidate query", () => {

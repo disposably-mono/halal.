@@ -18,6 +18,7 @@ export type VoterIndexRow = {
     name: string;
     division: string;
     status: VoterIndexStatus;
+    archivedAt?: Date | string | null;
   };
 };
 
@@ -50,6 +51,8 @@ export function buildVoterIndex(voters: readonly VoterIndexRow[]): VoterDivision
   const byDivision = new Map<string, Map<string, VoterElectionGroup>>();
 
   for (const voter of voters) {
+    if (voter.election.archivedAt) continue;
+
     const division = voter.division;
     const electionId = voter.election.id;
     const electionMap = byDivision.get(division) ?? new Map<string, VoterElectionGroup>();

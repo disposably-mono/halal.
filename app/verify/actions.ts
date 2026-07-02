@@ -8,6 +8,7 @@ import {
   normalizeReceiptCode,
   verifyBallotCommitment,
 } from "@/lib/domain/ballot-audit";
+import { toVerifiedSelections, type VerifiedSelection } from "./verification-selections";
 
 /**
  * Result of a receipt verification attempt.
@@ -23,7 +24,7 @@ export type VerifyState =
   | { status: "already_verified" }
   // `fingerprint` is already display-formatted server-side, so the client (which
   // must not import the node:crypto-backed ballot-audit module) can render it as-is.
-  | { status: "valid"; electionName: string; fingerprint: string }
+  | { status: "valid"; electionName: string; fingerprint: string; selections: VerifiedSelection[] }
   | { status: "compromised"; electionName: string; fingerprint: string };
 
 /** True when at least one open, non-archived election exists (the gate for verification). */
@@ -68,7 +69,17 @@ export async function verifyReceiptAction(
       election: {
         select: { name: true, auditKeyEncrypted: true, auditFingerprint: true },
       },
-      votes: { select: { electionId: true, positionId: true, candidateId: true, isAbstain: true } },
+      votes: {
+        select: {
+          electionId: true,
+          positionId: true,
+          candidateId: true,
+          isAbstain: true,
+          position: { select: { title: true } },
+          candidate: { select: { fullName: true, gradeLevel: true } },
+        },
+        orderBy: { position: { order: "asc" } },
+      },
     },
   });
 
@@ -101,8 +112,17 @@ export async function verifyReceiptAction(
       });
     }
 
+    if (outcome === "valid") {
+      return {
+        status: "valid",
+        electionName: ballot.election.name,
+        fingerprint: formatFingerprint(ballot.election.auditFingerprint),
+        selections: toVerifiedSelections(ballot.votes),
+      };
+    }
+
     return {
-      status: outcome,
+      status: "compromised",
       electionName: ballot.election.name,
       fingerprint: formatFingerprint(ballot.election.auditFingerprint),
     };

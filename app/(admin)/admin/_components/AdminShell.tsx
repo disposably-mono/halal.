@@ -113,7 +113,7 @@ export function AdminShell({
       </a>
 
       {/* Topbar */}
-      <nav className="h-14 flex items-center justify-between px-4 sm:px-5 sticky top-0 z-50 flex-shrink-0 border-b border-white/[0.07] bg-admin-surface">
+      <nav className="h-14 flex items-center justify-between px-4 sm:px-5 sticky top-0 z-50 flex-shrink-0 border-b border-white/[0.07] bg-admin-surface/95 backdrop-blur transition-colors">
         <div className="flex items-center gap-2">
           <button
             ref={hamburgerRef}
@@ -158,9 +158,9 @@ export function AdminShell({
       </nav>
 
       {/* Body */}
-      <div className="flex flex-1 overflow-hidden relative">
+      <div className="relative flex flex-1 overflow-hidden lg:h-[calc(100vh-3.5rem)]">
         {/* Desktop sidebar (lg+) */}
-        <nav className="hidden lg:flex w-[220px] flex-shrink-0 flex-col gap-[2px] py-4 overflow-y-auto border-r border-white/[0.07] bg-admin-surface">
+        <nav className="hidden lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)] w-[220px] flex-shrink-0 flex-col gap-[2px] overflow-y-auto border-r border-white/[0.07] bg-admin-surface py-4 transition-colors">
           {navContent}
         </nav>
 
@@ -186,8 +186,10 @@ export function AdminShell({
         )}
 
         {/* Page content */}
-        <main id="admin-main" className="flex-1 overflow-auto min-w-0">
-          {children}
+        <main id="admin-main" className="min-w-0 flex-1 overflow-auto scroll-smooth lg:h-[calc(100vh-3.5rem)]">
+          <div key={pathname} className="min-h-full animate-in fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
+            {children}
+          </div>
         </main>
       </div>
     </div>

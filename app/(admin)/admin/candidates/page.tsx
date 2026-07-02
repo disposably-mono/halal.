@@ -9,7 +9,7 @@ export default async function AdminCandidatesPage() {
   if (!session) redirect("/admin/login");
 
   const positions = await prisma.position.findMany({
-    where: { isActive: true },
+    where: { isActive: true, election: { archivedAt: null } },
     orderBy: { order: "asc" },
     select: {
       id: true,
@@ -17,7 +17,7 @@ export default async function AdminCandidatesPage() {
       eligibleGrades: true,
       candidateGrade: true,
       election: {
-        select: { id: true, name: true, division: true, status: true },
+        select: { id: true, name: true, division: true, status: true, archivedAt: true },
       },
       candidates: {
         orderBy: { fullName: "asc" },

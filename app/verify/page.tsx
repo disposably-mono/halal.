@@ -42,7 +42,7 @@ export default async function VerifyPage() {
             Verify Ballot Receipt
           </h1>
           <p className="font-body text-sm leading-6 text-white/55">
-            Enter the code printed after voting. Verification confirms that the anonymous ballot remains included and unchanged; it never reveals voter choices. Each receipt can only be verified once.
+            Enter the code printed after voting. Verification confirms that the anonymous ballot remains included and unchanged, then shows the recorded selections for that receipt. Each receipt can only be verified once.
           </p>
 
           {/* Gold rule */}

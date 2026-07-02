@@ -7,6 +7,7 @@ export default async function AdminVotersPage() {
   await requireCapability("voters:view");
 
   const voters = await prisma.voter.findMany({
+    where: { election: { archivedAt: null } },
     orderBy: [{ gradeLevel: "asc" }, { section: "asc" }, { voterCode: "asc" }],
     select: {
       id: true,
@@ -17,7 +18,7 @@ export default async function AdminVotersPage() {
       hasVoted: true,
       division: true,
       election: {
-        select: { id: true, name: true, division: true, status: true },
+        select: { id: true, name: true, division: true, status: true, archivedAt: true },
       },
     },
   });

@@ -43,6 +43,22 @@ export function VerifyForm({ defaultCode = "" }: { defaultCode?: string }) {
         <section className="mt-6 rounded-sm border border-emerald-400/30 bg-emerald-400/[0.07] p-5" role="status">
           <h2 className="font-heading text-sm uppercase tracking-[0.15em] text-emerald-300">Ballot included and unchanged</h2>
           <p className="mt-2 font-body text-sm text-white/65">{state.electionName}</p>
+          <div className="mt-4 divide-y divide-white/10 rounded-sm border border-white/10 bg-navy/40">
+            {state.selections.map((selection) => (
+              <div key={selection.positionId} className="grid gap-1 px-3 py-3 sm:grid-cols-[1fr_1.2fr] sm:items-center">
+                <p className="font-heading text-[10px] uppercase tracking-[0.14em] text-white/45">
+                  {selection.positionTitle}
+                </p>
+                <div className="min-w-0">
+                  <p className="truncate font-body text-sm font-semibold text-white/85">{selection.choiceLabel}</p>
+                  <p className="mt-0.5 font-body text-[11px] text-white/40">{selection.detail}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 font-body text-[11px] leading-5 text-white/45">
+            Keep receipt codes private. Anyone with the code can view this receipt&apos;s recorded choices during its one-time verification.
+          </p>
           <p className="mt-3 break-all font-mono text-[10px] text-white/40">Audit fingerprint: {state.fingerprint}</p>
         </section>
       )}
