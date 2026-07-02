@@ -141,9 +141,25 @@ export async function GET(
       .map((v) => [v.candidateId, v._count.candidateId] as [string, number])
   );
 
-  const totalVoted = await prisma.voter.count({
+  // Voted-voter turnout grouped by grade, so each position's abstention baseline
+  // can be the turnout *eligible for that position* — not the whole electorate.
+  // (JHS per-grade governor positions only appear on one grade's ballot, so
+  // counting the rest of the school as abstainers over-counts abstentions.)
+  const votedByGrade = await prisma.voter.groupBy({
+    by: ["gradeLevel"],
     where: { electionId, hasVoted: true },
+    _count: { _all: true },
   });
+  const votedGradeCounts = new Map<number, number>(
+    votedByGrade.map((g) => [g.gradeLevel, g._count._all] as [number, number]),
+  );
+  const totalVoted = votedByGrade.reduce((s, g) => s + g._count._all, 0);
+  // Eligible turnout = voted voters whose grade is on this position's ballot. An
+  // empty eligibleGrades means "no grade filter" → the whole voted electorate.
+  const eligibleTurnoutFor = (eligibleGrades: number[]): number =>
+    eligibleGrades.length === 0
+      ? totalVoted
+      : eligibleGrades.reduce((s, grade) => s + (votedGradeCounts.get(grade) ?? 0), 0);
 
   // Build the shape expected by ResultsPDF
   const legacyResultPositions: ResultPosition[] = positions.map((pos) => {
@@ -161,7 +177,7 @@ export async function GET(
       (s, c) => s + c.votes,
       0
     );
-    const abstentions = Math.max(0, totalVoted - totalVotesForPosition);
+    const abstentions = Math.max(0, eligibleTurnoutFor(pos.eligibleGrades) - totalVotesForPosition);
 
     return {
       id: pos.id,
