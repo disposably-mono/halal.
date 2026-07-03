@@ -141,13 +141,19 @@ describe("nextStatusForReschedule", () => {
 
 describe("canFinalizeUnlock", () => {
   it("allows unlock from DRAFT or SCHEDULED", () => {
-    expect(canFinalizeUnlock("DRAFT")).toEqual({ ok: true });
-    expect(canFinalizeUnlock("SCHEDULED")).toEqual({ ok: true });
+    expect(canFinalizeUnlock("DRAFT", null)).toEqual({ ok: true });
+    expect(canFinalizeUnlock("SCHEDULED", null)).toEqual({ ok: true });
   });
 
   it("blocks unlock once OPEN or CLOSED", () => {
-    expect(canFinalizeUnlock("OPEN").ok).toBe(false);
-    expect(canFinalizeUnlock("CLOSED").ok).toBe(false);
+    expect(canFinalizeUnlock("OPEN", null).ok).toBe(false);
+    expect(canFinalizeUnlock("CLOSED", null).ok).toBe(false);
+  });
+
+  it("blocks unlock on an archived election even when status would otherwise allow it", () => {
+    const r = canFinalizeUnlock("DRAFT", new Date());
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toMatch(/restore.*archive/i);
   });
 });
 

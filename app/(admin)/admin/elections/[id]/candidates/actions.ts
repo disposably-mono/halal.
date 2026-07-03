@@ -295,11 +295,11 @@ export async function unfinalizeCandidates(
 
   const election = await prisma.election.findUnique({
     where: { id: electionId },
-    select: { status: true },
+    select: { status: true, archivedAt: true },
   });
   if (!election) return { success: false, error: "Election not found." };
 
-  const guard = canFinalizeUnlock(election.status);
+  const guard = canFinalizeUnlock(election.status, election.archivedAt);
   if (!guard.ok) {
     return {
       success: false,

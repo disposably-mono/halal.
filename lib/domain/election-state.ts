@@ -59,7 +59,11 @@ export function nextStatusForReschedule(
   return scheduledOpen ? "SCHEDULED" : "DRAFT";
 }
 
-export function canFinalizeUnlock(status: ElectionStatus): ValidationResult {
+export function canFinalizeUnlock(
+  status: ElectionStatus,
+  archivedAt: Date | null,
+): ValidationResult {
+  if (archivedAt) return fail(ARCHIVED_REASON);
   if (status === "OPEN" || status === "CLOSED") {
     return fail("Cannot unlock while the election is Open or Closed.");
   }
