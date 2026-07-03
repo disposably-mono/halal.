@@ -44,6 +44,9 @@ model Election {
   voters              Voter[]
   candidates  Candidate[]
   monitorSnapshots    MonitorSnapshot[]
+
+  // Homepage loads active elections ordered by scheduled open time.
+  @@index([archivedAt, scheduledOpen])
 }
 
 model Position {
@@ -73,6 +76,7 @@ model Candidate {
   election    Election  @relation(fields: [electionId], references: [id], onDelete: Cascade)
 
   @@index([positionId])
+  @@index([positionId, fullName])
   @@index([electionId])
 }
 

@@ -1,7 +1,4 @@
-"use client";
-
 import { Link } from "next-view-transitions";
-import { useEffect, useState } from "react";
 import { LandingFooter } from "../_components/LandingFooter";
 
 /* ─────────────────────────────────────────────
@@ -190,12 +187,6 @@ function GoldRule() {
 // ── Main Component ──────────────────────────────────────────────
 
 export default function AboutCreatorClient() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 50);
-    return () => clearTimeout(t);
-  }, []);
-
   return (
     <div
       className="min-h-screen font-body text-white overflow-x-hidden"
@@ -258,12 +249,7 @@ export default function AboutCreatorClient() {
         </div>
         <HeroRibbons />
 
-        {/* Fade-in content */}
-        <div
-          className={`relative z-10 flex flex-col items-center text-center max-w-2xl w-full transition-all duration-700 ${
-            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-          }`}
-        >
+        <div className="relative z-10 flex flex-col items-center text-center max-w-2xl w-full">
           {/* Photo placeholder */}
           <div className="relative mb-8">
             <div
@@ -348,22 +334,12 @@ export default function AboutCreatorClient() {
               href={s.href}
               target={s.id !== "email" ? "_blank" : undefined}
               rel={s.id !== "email" ? "noopener noreferrer" : undefined}
-              className="flex items-center gap-3 no-underline transition-all duration-200 hover:-translate-y-0.5"
+              className="flex items-center gap-3 no-underline border border-gold/20 bg-navy/30 transition-all duration-200 hover:-translate-y-0.5 hover:border-gold/50 hover:bg-navy/60"
               style={{
                 padding: "0.875rem 1.5rem",
-                border: "1px solid rgba(245,192,0,0.2)",
-                background: "rgba(27,31,94,0.3)",
                 borderRadius: "2px",
                 minWidth: "200px",
                 color: "#ffffff",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(245,192,0,0.5)";
-                (e.currentTarget as HTMLAnchorElement).style.background = "rgba(27,31,94,0.6)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(245,192,0,0.2)";
-                (e.currentTarget as HTMLAnchorElement).style.background = "rgba(27,31,94,0.3)";
               }}
               aria-label={`${s.platform}: ${s.handle}`}
             >
@@ -409,29 +385,15 @@ export default function AboutCreatorClient() {
           {HIGHLIGHTS.map((h) => (
             <div
               key={h.num}
-              className="relative overflow-hidden group transition-all duration-[250ms]"
+              className="relative overflow-hidden group border border-white/[0.07] transition-all duration-[250ms] hover:border-gold/20"
               style={{
                 padding: "1.75rem 1.5rem",
-                border: "1px solid rgba(255,255,255,0.07)",
                 background: "rgba(27,31,94,0.2)",
                 borderRadius: "2px",
               }}
-              onMouseEnter={(e) => {
-                const el = e.currentTarget as HTMLDivElement;
-                el.style.borderColor = "rgba(245,192,0,0.22)";
-                const accent = el.querySelector(".card-accent") as HTMLElement | null;
-                if (accent) accent.style.opacity = "0.6";
-              }}
-              onMouseLeave={(e) => {
-                const el = e.currentTarget as HTMLDivElement;
-                el.style.borderColor = "rgba(255,255,255,0.07)";
-                const accent = el.querySelector(".card-accent") as HTMLElement | null;
-                if (accent) accent.style.opacity = "0";
-              }}
             >
               <div
-                className="card-accent absolute left-0 top-3 bottom-3 w-0.5 rounded-full transition-opacity duration-[250ms]"
-                style={{ background: "#F5C000", opacity: 0 }}
+                className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-gold opacity-0 transition-opacity duration-[250ms] group-hover:opacity-60"
               />
               <p className="font-mono text-[0.65rem] mb-2" style={{ color: "rgba(245,192,0,0.45)" }}>
                 {h.num}

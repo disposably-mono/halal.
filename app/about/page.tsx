@@ -1,7 +1,4 @@
-"use client";
-
 import { Link } from "next-view-transitions";
-import { useEffect, useState } from "react";
 import { LandingFooter } from "../_components/LandingFooter";
 
 /* ─────────────────────────────────────────────
@@ -218,12 +215,6 @@ function GoldRule() {
 // ── Main Component ──────────────────────────────────────────────
 
 export default function AboutComelecClient() {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 50);
-    return () => clearTimeout(t);
-  }, []);
-
   return (
     <div
       className="min-h-screen font-body text-white overflow-x-hidden"
@@ -286,11 +277,7 @@ export default function AboutComelecClient() {
         </div>
         <HeroRibbons />
 
-        {/* Fade-in content */}
-        <div
-          className={`relative z-10 text-center max-w-[680px] transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-            }`}
-        >
+        <div className="relative z-10 text-center max-w-[680px]">
           <HeroLogoPlaceholder />
 
           <div className="flex items-center justify-center gap-4 mb-3">
@@ -357,18 +344,11 @@ export default function AboutComelecClient() {
           {MVV.map((card) => (
             <div
               key={card.key}
-              className="relative overflow-hidden transition-all duration-300"
+              className="relative overflow-hidden border border-white/[0.07] transition-colors duration-300 hover:border-gold/20"
               style={{
                 padding: "2.5rem 2rem",
-                border: "1px solid rgba(255,255,255,0.07)",
                 background: "rgba(27,31,94,0.22)",
                 borderRadius: "2px",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(245,192,0,0.22)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(255,255,255,0.07)";
               }}
             >
               {/* Top accent bar */}
@@ -422,18 +402,11 @@ export default function AboutComelecClient() {
           {PRINCIPLES.map((p) => (
             <div
               key={p.num}
-              className="text-center transition-all duration-[250ms] hover:-translate-y-1"
+              className="text-center border border-gold/10 transition-all duration-[250ms] hover:-translate-y-1 hover:border-gold/30"
               style={{
                 padding: "1.75rem 1.25rem",
-                border: "1px solid rgba(245,192,0,0.1)",
                 background: "rgba(13,15,43,0.6)",
                 borderRadius: "2px",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(245,192,0,0.32)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLDivElement).style.borderColor = "rgba(245,192,0,0.1)";
               }}
             >
               <p
@@ -543,18 +516,10 @@ export default function AboutComelecClient() {
             {/* Email */}
             <a
               href="mailto:comelec.club@olps.edu.ph"
-              className="inline-flex items-center gap-3 no-underline font-body font-semibold text-[0.75rem] tracking-[0.1em] uppercase transition-all duration-200"
+              className="inline-flex items-center gap-3 no-underline font-body font-semibold text-[0.75rem] tracking-[0.1em] uppercase bg-gold text-navy transition-all duration-200 hover:bg-gold/85"
               style={{
                 padding: "0.875rem 1.75rem",
-                background: "#F5C000",
-                color: "#0d0f2b",
                 borderRadius: "2px",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.background = "rgba(245,192,0,0.85)";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.background = "#F5C000";
               }}
               aria-label="Email OLPS COMELEC at comelec.club@olps.edu.ph"
             >
@@ -570,20 +535,10 @@ export default function AboutComelecClient() {
               href="https://www.facebook.com/comelec.olps"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 no-underline font-body font-semibold text-[0.75rem] tracking-[0.1em] uppercase transition-all duration-200"
+              className="inline-flex items-center gap-3 no-underline font-body font-semibold text-[0.75rem] tracking-[0.1em] uppercase border border-gold/30 text-white/70 transition-all duration-200 hover:border-gold/60 hover:text-white"
               style={{
                 padding: "0.875rem 1.75rem",
-                border: "1px solid rgba(245,192,0,0.28)",
-                color: "rgba(255,255,255,0.7)",
                 borderRadius: "2px",
-              }}
-              onMouseEnter={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(245,192,0,0.6)";
-                (e.currentTarget as HTMLAnchorElement).style.color = "#ffffff";
-              }}
-              onMouseLeave={(e) => {
-                (e.currentTarget as HTMLAnchorElement).style.borderColor = "rgba(245,192,0,0.28)";
-                (e.currentTarget as HTMLAnchorElement).style.color = "rgba(255,255,255,0.7)";
               }}
               aria-label="OLPS COMELEC on Facebook"
             >

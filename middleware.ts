@@ -1,16 +1,13 @@
-import NextAuth from "next-auth";
-import type { Session } from "next-auth";
-import { authConfig } from "@/auth.config";
 import { NextRequest, NextResponse } from "next/server";
 import { VOTER_COOKIE, getSecret } from "@/lib/voter-session";
-import { jwtVerify } from "jose";
+import { jwtVerify } from "jose/jwt/verify";
 import { can } from "@/lib/auth/permissions";
+import { getEdgeAdminRole } from "@/lib/auth/edge-session";
 
-const { auth } = NextAuth(authConfig);
-
-export default auth(async function middleware(req: NextRequest & { auth: Session | null }) {
+export default async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
-  const isLoggedIn = !!req.auth;
+  const adminRole = await getEdgeAdminRole(req);
+  const isLoggedIn = adminRole !== null;
 
   // Login page: redirect to /admin if already authenticated
   if (pathname === "/admin/login") {
@@ -29,7 +26,7 @@ export default auth(async function middleware(req: NextRequest & { auth: Session
     // this is an early redirect so other roles never reach the screen.
     if (
       pathname.startsWith("/admin/accounts") &&
-      !can(req.auth?.user?.role, "accounts:manage")
+      !can(adminRole, "accounts:manage")
     ) {
       return NextResponse.redirect(
         new URL("/admin?denied=accounts:manage", req.url),
@@ -59,8 +56,8 @@ export default auth(async function middleware(req: NextRequest & { auth: Session
   }
 
   return NextResponse.next();
-});
+}
 
 export const config = {
-  matcher: ["/((?!api|_next/static|_next/image|favicon.ico).*)"],
+  matcher: ["/admin/:path*", "/vote/ballot/:path*", "/vote/confirmed"],
 };
