@@ -28,7 +28,8 @@ import {
 
 export const dynamic = "force-dynamic";
 
-export default async function CandidatesPage({ params }: { params: { id: string } }) {
+export default async function CandidatesPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   // Candidate rosters are read here, so viewing requires candidates:view
   // (Commissioner + oversight roles). Mutation controls below are separately
   // gated on candidates:manage. Other roles are bounced to the dashboard.

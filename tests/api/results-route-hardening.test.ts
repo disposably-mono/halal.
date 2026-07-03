@@ -43,7 +43,7 @@ describe("/api/results/[id] hardening", () => {
     prismaMock.election.findUnique.mockRejectedValue(new Error("db timeout"));
 
     const response = await GET(new NextRequest("http://localhost/api/results/e1"), {
-      params: { id: "e1" },
+      params: Promise.resolve({ id: "e1" }),
     });
 
     expect(response.status).toBe(500);

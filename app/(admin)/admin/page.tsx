@@ -6,11 +6,12 @@ import DashboardClient from "./DashboardClient";
 import PermissionNotice from "./PermissionNotice";
 import { PageContainer } from "@/components/admin/ui";
 
-export default async function AdminDashboard({
-  searchParams,
-}: {
-  searchParams: { denied?: string | string[] };
-}) {
+export default async function AdminDashboard(
+  props: {
+    searchParams: Promise<{ denied?: string | string[] }>;
+  }
+) {
+  const searchParams = await props.searchParams;
   const session = await auth();
   if (!session) redirect("/admin/login");
   const canLifecycle = can(session.user?.role, "election:lifecycle");

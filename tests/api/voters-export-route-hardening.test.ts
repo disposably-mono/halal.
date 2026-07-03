@@ -41,7 +41,7 @@ describe("/api/elections/[id]/voters/export hardening", () => {
     });
 
     const response = await GET(new Request("http://localhost/api/elections/e1/voters/export"), {
-      params: { id: "e1" },
+      params: Promise.resolve({ id: "e1" }),
     });
 
     expect(response.status).toBe(403);
@@ -58,7 +58,7 @@ describe("/api/elections/[id]/voters/export hardening", () => {
     prismaMock.voter.findMany.mockRejectedValue(new Error("database unavailable"));
 
     const response = await GET(new Request("http://localhost/api/elections/e1/voters/export"), {
-      params: { id: "e1" },
+      params: Promise.resolve({ id: "e1" }),
     });
 
     expect(response.status).toBe(500);
