@@ -7,6 +7,7 @@ export async function closeElectionWithCertification(
   electionId: string,
   actor: string,
   allowedStatuses: Array<"OPEN" | "SCHEDULED"> = ["OPEN"],
+  auditActionOverride?: string,
 ): Promise<{ legacy: boolean }> {
   return prisma.$transaction(async (tx) => {
     await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
@@ -48,7 +49,11 @@ export async function closeElectionWithCertification(
     await tx.auditLog.create({
       data: {
         electionId,
-        action: legacy ? "Closed legacy election without certification" : "Closed election and froze official certified tally",
+        action:
+          auditActionOverride ??
+          (legacy
+            ? "Closed legacy election without certification"
+            : "Closed election and froze official certified tally"),
         toStatus: "CLOSED",
         adminEmail: actor,
       },

@@ -88,7 +88,12 @@ export async function applyScheduledTransitions(): Promise<TransitionSummary> {
   });
 
   for (const election of missedWindow) {
-    await closeElectionWithCertification(election.id, "scheduler", ["SCHEDULED"]);
+    await closeElectionWithCertification(
+      election.id,
+      "scheduler",
+      ["SCHEDULED"],
+      "Closed without opening — scheduled window missed during downtime",
+    );
   }
 
   return {
