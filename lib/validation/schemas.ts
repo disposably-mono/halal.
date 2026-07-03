@@ -123,7 +123,9 @@ export const AddVoterManualSchema = z.object({
 // ─── Admin account management ───────────────────────────────────────────────
 
 const Password = z.string().min(8, "Password must be at least 8 characters.");
-const OfficerKey = z.string().min(6, "Officer key must be at least 6 characters.");
+// The officer key is the sole factor guarding /admin-help and co-signs admin
+// login (2FA), so it needs meaningfully more entropy than a 6-char minimum.
+const OfficerKey = z.string().min(12, "Officer key must be at least 12 characters.");
 const Email = z.string().trim().toLowerCase().email();
 
 export const CreateAdminSchema = z.object({
