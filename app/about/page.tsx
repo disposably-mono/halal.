@@ -18,7 +18,7 @@ const MVV = [
     accent: "#F5C000", // gold
     label: "Who We Are",
     heading: "Organization Description",
-    body: "The OLPS Commission on Elections is one of the organizations present in Our Lady of Peace School, at the forefront of managing the different elections that happen within the school and of educating and promoting civic responsibility to students. The primary goal of this organization is to mold capable students who are aware of democratic principles such as integrity, transparency, and accountability. In addition, this organization presents these capable students situations in which they can uphold fair and just elections in OLPS that help prepare students for their future roles as citizens in a democratic society.",
+    body: "The OLPS Commission on Elections manages school elections at Our Lady of Peace School and helps students understand civic responsibility. COMELEC trains student commissioners to uphold integrity, transparency, and accountability while conducting fair elections for the OLPS community.",
     icon: (
       <svg viewBox="0 0 40 40" fill="none" className="w-10 h-10 opacity-70" aria-hidden="true">
         <circle cx="20" cy="20" r="16" stroke="#F5C000" strokeWidth="1.5" />
@@ -31,8 +31,8 @@ const MVV = [
     key: "vision",
     accent: "#6b1a1a", // maroon
     label: "Vision",
-    heading: "A Community Rooted in Democracy",
-    body: "The OLPS Commission on Elections envisions a school community where every student embraces the values of democratic participation with integrity and conviction. We aspire to cultivate a culture where transparency and accountability are not merely observed during elections but are woven into the very fabric of student life. Ultimately, we seek to form principled and empowered citizens who carry these democratic principles beyond the walls of Our Lady of Peace School, ready to contribute meaningfully to society.",
+    heading: "A Fair School Election Culture",
+    body: "The OLPS Commission on Elections envisions a school community where students take part in elections with integrity. We aim to make transparency and accountability part of how student elections are prepared, conducted, and reviewed. Through this work, COMELEC helps students practice responsible citizenship inside and beyond Our Lady of Peace School.",
     icon: (
       <svg viewBox="0 0 40 40" fill="none" className="w-10 h-10 opacity-70" aria-hidden="true">
         <path d="M20 6 L34 28 H6 Z" stroke="#F5C000" strokeWidth="1.5" fill="none" />
@@ -46,7 +46,7 @@ const MVV = [
     accent: "#1b1f5e", // navy
     label: "Mission",
     heading: "Upholding Free, Honest & Orderly Elections",
-    body: "The OLPS Commission on Elections exists to uphold free, honest, and orderly elections within Our Lady of Peace School. We are committed to forming our commissioners into responsible, capable, and adaptable student leaders who excel in their duties and serve with knowledge and integrity. To the student body, we pledge to serve truthfully and with transparency, ensuring that every voice is heard and accurately reflected in the electoral process. Together with the wider school community, we strive to cultivate an environment where active citizenship becomes the norm, uniting everyone in the shared pursuit of civil leadership and democratic excellence.",
+    body: "The OLPS Commission on Elections upholds free, honest, and orderly elections within Our Lady of Peace School. We train commissioners to serve with responsibility, knowledge, and integrity. For the student body, we work to keep elections transparent, accurate, and worthy of trust.",
     icon: (
       <svg viewBox="0 0 40 40" fill="none" className="w-10 h-10 opacity-70" aria-hidden="true">
         <rect x="8" y="8" width="24" height="28" rx="2" stroke="#F5C000" strokeWidth="1.5" />
@@ -75,8 +75,8 @@ const MILESTONES = [
   },
   {
     year: "S.Y. 25–26",
-    title: "Continued Growth & Improvement",
-    desc: "Building on its inaugural year of independence, COMELEC refined its processes, expanded its digital capabilities, and deepened its commitment to civic education and transparent electoral governance.",
+    title: "Improved Election Processes",
+    desc: "After its first year as an independent organization, COMELEC improved its election procedures, used more digital tools, and continued its civic education work.",
     highlight: false,
   },
   {
@@ -331,10 +331,9 @@ export default function AboutComelecClient() {
             className="font-body text-[0.875rem] leading-[1.85]"
             style={{ color: "rgba(255,255,255,0.5)" }}
           >
-            The OLPS Commission on Elections stands as the independent electoral body of
-            Our Lady of Peace School — at the forefront of managing elections, promoting
-            civic responsibility, and preparing every student for their role as citizens
-            of a democratic society.
+            The OLPS Commission on Elections is the independent electoral body of Our Lady of
+            Peace School. It manages school elections and helps students practice civic
+            responsibility.
           </p>
         </div>
       </section>

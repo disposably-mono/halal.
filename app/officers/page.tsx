@@ -390,7 +390,7 @@ export default function OfficersPage() {
             className="font-body text-[0.8rem] leading-relaxed mb-10"
             style={{ color: "rgba(255,255,255,0.4)" }}
           >
-            Meet the team behind it all.
+            Meet the OLPS COMELEC officers.
           </p>
 
           {/* School year tabs — inline in hero */}
@@ -434,7 +434,7 @@ export default function OfficersPage() {
       <LandingFooter
         eyebrow="Member Applications"
         title="Interested in serving with COMELEC?"
-        description="Contact Sir Amadeo Maniba to inquire about member application details, requirements, and available opportunities."
+        description="Contact Sir Amadeo Maniba to ask about member applications and requirements."
         signal="Applications still open"
       />
     </div>

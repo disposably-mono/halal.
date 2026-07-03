@@ -33,7 +33,7 @@ export default async function ResultsPage() {
       >
         <PublicEmptyState
           title="No Results Yet"
-          message="Public tallies will appear here once elections are created and ready for viewing."
+          message="Public tallies will appear here once COMELEC releases an election for viewing."
         />
       </div>
     );

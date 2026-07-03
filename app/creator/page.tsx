@@ -97,12 +97,12 @@ const HIGHLIGHTS = [
   {
     num: "03",
     title: "Design Consistency",
-    desc: "Unified the website's visual language to align with existing COMELEC branding — colors, typography, and layout system.",
+    desc: "Aligned the site with existing COMELEC branding, including its colors, type, and page layouts.",
   },
   {
     num: "04",
     title: "System Integration",
-    desc: "Built around and integrated with existing internal systems already in use by COMELEC, ensuring seamless continuity.",
+    desc: "Built to work with the internal systems COMELEC was already using.",
   },
   {
     num: "05",
@@ -322,14 +322,11 @@ export default function AboutCreatorClient() {
             className="font-body text-[0.9rem] leading-[1.85] mt-8 max-w-[540px]"
             style={{ color: "rgba(255,255,255,0.6)" }}
           >
-            An alumni of Our Lady of Peace School passionate about civic technology and
-            transparent governance. I built and designed this platform to uphold the principle
-            of{" "}
+            I am an OLPS alumnus who built and designed this platform for COMELEC. The goal was
+            simple: support fair, accessible school elections while honoring{" "}
             <em className="font-tagline" style={{ color: "rgba(255,255,255,0.75)" }}>
               Vox Populi Vox Dei
-            </em>{" "}
-            — the voice of the people is the voice of God. This system serves every student&apos;s
-            right to a fair, accessible, and dignified electoral process.
+            </em>, the voice of the people is the voice of God.
           </p>
         </div>
       </section>

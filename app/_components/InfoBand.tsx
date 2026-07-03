@@ -19,8 +19,7 @@ export function InfoBand({ target }: { target: CountdownTarget }) {
           </p>
           <p className="font-heading font-bold text-white text-lg">{target.electionName}</p>
           <p className="font-body text-mid/[0.55] text-sm leading-6 mt-2 max-w-xl">
-            Keep an eye on this schedule for official voting windows, status changes, and
-            division updates from OLPS COMELEC.
+            Check this schedule for official voting times and division updates from OLPS COMELEC.
           </p>
         </div>
         {target.status === "OPEN" && (
