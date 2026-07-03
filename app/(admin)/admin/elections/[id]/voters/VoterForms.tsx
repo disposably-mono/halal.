@@ -44,7 +44,7 @@ function SubmitButton({
 // ─── CSV Upload Form ──────────────────────────────────────────────────────────
 
 export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterFormsProps) {
-  const { state: result, isPending, handleSubmit } = useServerActionForm<CSVImportResult | null>(
+  const { state: result, isPending, submitError, handleSubmit } = useServerActionForm<CSVImportResult | null>(
     addVotersFromCSV,
     null,
     { shouldRefresh: (nextResult) => Boolean(nextResult && nextResult.added > 0) },
@@ -110,6 +110,10 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
           )}
         </div>
       )}
+
+      {submitError && (
+        <p role="alert" className="text-[11px] text-red-400">✗ {submitError}</p>
+      )}
     </form>
   );
 }
@@ -117,7 +121,7 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
 // ─── Manual Add Form ──────────────────────────────────────────────────────────
 
 export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterFormsProps) {
-  const { state: result, isPending, handleSubmit } = useServerActionForm<ManualAddResult | null>(
+  const { state: result, isPending, submitError, handleSubmit } = useServerActionForm<ManualAddResult | null>(
     addVoterManual,
     null,
     { shouldRefresh: (nextResult) => Boolean(nextResult?.success) },
@@ -172,6 +176,9 @@ export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterForm
       )}
       {result?.success && (
         <p className="text-[11px] text-emerald-400">✓ Voter added successfully.</p>
+      )}
+      {submitError && (
+        <p role="alert" className="text-[11px] text-red-400">✗ {submitError}</p>
       )}
     </div>
   );

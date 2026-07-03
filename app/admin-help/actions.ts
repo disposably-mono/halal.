@@ -17,7 +17,7 @@ export async function unlockAdminHelp(
   formData: FormData,
 ): Promise<AdminHelpAccessState> {
   const officerKey = formData.get("officerKey");
-  if (typeof officerKey !== "string" || officerKey.length < 6) {
+  if (typeof officerKey !== "string" || officerKey.length < 8) {
     return { error: "Enter a valid officer key." };
   }
 

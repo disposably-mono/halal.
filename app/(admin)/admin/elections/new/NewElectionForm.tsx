@@ -16,7 +16,7 @@ import {
 } from "./form-state";
 
 export function NewElectionForm() {
-  const { state, isPending, handleSubmit } = useServerActionForm<CreateElectionFormState>(
+  const { state, isPending, submitError, handleSubmit } = useServerActionForm<CreateElectionFormState>(
     createElection,
     INITIAL_CREATE_ELECTION_STATE,
   );
@@ -78,6 +78,10 @@ export function NewElectionForm() {
         </div>
 
         <div className="h-px bg-white/[0.06]" />
+
+        {submitError && (
+          <p className="text-sm text-red-400" role="alert">{submitError}</p>
+        )}
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button asChild variant="adminGhost" size="adminMd">

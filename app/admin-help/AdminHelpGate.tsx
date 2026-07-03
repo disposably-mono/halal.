@@ -30,7 +30,7 @@ export function AdminHelpGate() {
               name="officerKey"
               secretLabel="officer key"
               required
-              minLength={6}
+              minLength={8}
               autoFocus
               autoComplete="off"
               aria-invalid={Boolean(state?.error)}

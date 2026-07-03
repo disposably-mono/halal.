@@ -14,7 +14,7 @@ const INITIAL: VerifyState = { status: "idle" };
  * installed React/ReactDOM (18.3.1 stable) do not export those hooks at runtime.
  */
 export function VerifyForm({ defaultCode = "" }: { defaultCode?: string }) {
-  const { state, isPending, handleSubmit } = useServerActionForm(
+  const { state, isPending, submitError, handleSubmit } = useServerActionForm(
     verifyReceiptAction,
     INITIAL,
   );
@@ -38,6 +38,10 @@ export function VerifyForm({ defaultCode = "" }: { defaultCode?: string }) {
           {isPending ? "Verifying…" : "Verify"}
         </button>
       </form>
+
+      {submitError && (
+        <p className="mt-4 font-body text-sm text-red-300" role="alert">{submitError}</p>
+      )}
 
       {state.status === "valid" && (
         <section className="mt-6 rounded-sm border border-emerald-400/30 bg-emerald-400/[0.07] p-5" role="status">

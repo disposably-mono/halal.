@@ -34,7 +34,7 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
 }
 
 export function VoteForm() {
-  const { state, isPending, handleSubmit } = useServerActionForm<VoterLoginResult | null>(
+  const { state, isPending, submitError, handleSubmit } = useServerActionForm<VoterLoginResult | null>(
     validateVoterCode,
     null,
   );
@@ -168,6 +168,10 @@ export function VoteForm() {
             </span>
             <p className="font-body text-xs leading-relaxed">{state.message}</p>
           </div>
+        )}
+
+        {submitError && (
+          <p role="alert" className="font-body text-xs text-red-300">{submitError}</p>
         )}
 
         <SubmitButton isPending={isPending} />
