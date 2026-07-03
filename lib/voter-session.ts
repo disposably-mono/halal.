@@ -10,7 +10,7 @@ export interface VoterSession {
   division: string;
 }
 
-function getSecret() {
+export function getSecret() {
   const secret = process.env.NEXTAUTH_SECRET;
   if (!secret) throw new Error("NEXTAUTH_SECRET is not set");
   return new TextEncoder().encode(secret);
