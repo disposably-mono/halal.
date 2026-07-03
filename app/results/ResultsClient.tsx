@@ -28,8 +28,10 @@ export default function ResultsClient({
 
   const currentElection = elections[currentIndex];
 
-  const fetchResults = useCallback(async () => {
-    if (!currentElection) return;
+  // Returns the fetched election status (or null on a failed/non-OK request) so
+  // the poll loop can decide whether there's any point polling again.
+  const fetchResults = useCallback(async (): Promise<string | null> => {
+    if (!currentElection) return null;
     try {
       const res = await fetch(`/api/results/${currentElection.id}`, {
         cache: "no-store",
@@ -57,22 +59,41 @@ export default function ResultsClient({
         } else {
           commit();
         }
+        return json.status;
       }
+      return null;
     } catch {
       // Silently fail — keep showing last data
+      return null;
     } finally {
       setLoading(false);
     }
   }, [currentElection]);
 
-  // Fetch on election change + poll. The previous tally stays on screen while
-  // the next election loads so the crossfade has something to animate from;
-  // the full-screen loader only appears on the very first load (data == null).
+  // Fetch on election change, then poll — but stop once the election is CLOSED.
+  // A closed election's tally is frozen and certified; it never changes again,
+  // so continuing to poll identical results forever is pure waste. While the
+  // election is still embargoed/pre-close we keep polling so the page flips to
+  // results the moment it closes. A failed poll (null) keeps polling to retry.
+  // The previous tally stays on screen while the next election loads so the
+  // crossfade has something to animate from; the full-screen loader only
+  // appears on the very first load (data == null).
   useEffect(() => {
     setLoading(true);
-    fetchResults();
-    const interval = setInterval(fetchResults, POLL_INTERVAL);
-    return () => clearInterval(interval);
+    let cancelled = false;
+    let timer: ReturnType<typeof setTimeout> | null = null;
+
+    const tick = async () => {
+      const status = await fetchResults();
+      if (cancelled || status === "CLOSED") return;
+      timer = setTimeout(tick, POLL_INTERVAL);
+    };
+    void tick();
+
+    return () => {
+      cancelled = true;
+      if (timer) clearTimeout(timer);
+    };
   }, [fetchResults]);
 
   const divisionLabel = data ? DIVISION_LABELS[data.division] ?? data.division : "";
