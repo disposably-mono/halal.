@@ -9,6 +9,7 @@ import {
   hashReceiptCode,
 } from "@/lib/domain/ballot-audit";
 import { scheduleMonitorRefresh } from "@/lib/server/monitor-broadcast";
+import { withSpan } from "@/lib/server/otel";
 
 /**
  * Core ballot-casting logic, extracted from the `submitBallot` server action so
@@ -99,52 +100,57 @@ export async function castVerifiedBallot(params: {
   let ballotId: string | null = null;
 
   try {
-    await prisma.$transaction(async (tx) => {
-      await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${voter.electionId} FOR SHARE`;
-      const election = await tx.election.findUnique({
-        where: { id: voter.electionId },
-        select: { status: true, auditKeyEncrypted: true, auditVersion: true },
-      });
-      if (!election || election.status !== "OPEN") throw new ElectionClosedError();
-      if (!election.auditKeyEncrypted || !election.auditVersion) throw new LegacyElectionError();
+    await withSpan(
+      "ballot.cast_transaction",
+      { "election.id": voter.electionId },
+      () =>
+        prisma.$transaction(async (tx) => {
+          await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${voter.electionId} FOR SHARE`;
+          const election = await tx.election.findUnique({
+            where: { id: voter.electionId },
+            select: { status: true, auditKeyEncrypted: true, auditVersion: true },
+          });
+          if (!election || election.status !== "OPEN") throw new ElectionClosedError();
+          if (!election.auditKeyEncrypted || !election.auditVersion) throw new LegacyElectionError();
 
-      const updated = await tx.voter.updateMany({
-        where: {
-          id: params.voterId,
-          electionId: voter.electionId,
-          hasVoted: false,
-        },
-        data: { hasVoted: true, votedAt: votedAtBucket },
-      });
+          const updated = await tx.voter.updateMany({
+            where: {
+              id: params.voterId,
+              electionId: voter.electionId,
+              hasVoted: false,
+            },
+            data: { hasVoted: true, votedAt: votedAtBucket },
+          });
 
-      if (updated.count !== 1) {
-        throw new AlreadyVotedError();
-      }
+          if (updated.count !== 1) {
+            throw new AlreadyVotedError();
+          }
 
-      const commitment = createBallotCommitment(
-        decryptAuditKey(election.auditKeyEncrypted),
-        voter.electionId,
-        nonce,
-        receiptHash,
-        voteData.map((vote) => ({
-          positionId: vote.positionId,
-          candidateId: vote.isAbstain ? null : vote.candidateId,
-        })),
-      );
-      const ballot = await tx.ballot.create({
-        data: {
-          electionId: voter.electionId,
-          receiptHash,
-          nonce,
-          commitment,
-          version: election.auditVersion,
-          castAt: now,
-          votes: { create: voteData },
-        },
-        select: { id: true },
-      });
-      ballotId = ballot.id;
-    });
+          const commitment = createBallotCommitment(
+            decryptAuditKey(election.auditKeyEncrypted),
+            voter.electionId,
+            nonce,
+            receiptHash,
+            voteData.map((vote) => ({
+              positionId: vote.positionId,
+              candidateId: vote.isAbstain ? null : vote.candidateId,
+            })),
+          );
+          const ballot = await tx.ballot.create({
+            data: {
+              electionId: voter.electionId,
+              receiptHash,
+              nonce,
+              commitment,
+              version: election.auditVersion,
+              castAt: now,
+              votes: { create: voteData },
+            },
+            select: { id: true },
+          });
+          ballotId = ballot.id;
+        }),
+    );
 
     if (!ballotId) throw new Error("Ballot was not created");
 

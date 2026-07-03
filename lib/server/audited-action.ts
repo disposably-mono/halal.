@@ -12,6 +12,7 @@ import type { Session } from "next-auth";
 import { prisma } from "@/lib/prisma";
 import { requireCapabilityOrError } from "@/lib/server/auth";
 import { permissionErrorMessage, type Capability } from "@/lib/auth/permissions";
+import { withSpan } from "@/lib/server/otel";
 
 /** Throw inside `run` for expected validation failures — the message is surfaced verbatim. */
 export class TransitionValidationError extends Error {}
@@ -43,9 +44,14 @@ export function auditedAction<Args extends unknown[]>(
     if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
 
     try {
-      await prisma.$transaction(
-        (tx) => opts.run(tx, guard.session, ...args),
-        opts.isolationLevel ? { isolationLevel: opts.isolationLevel } : undefined,
+      await withSpan(
+        `admin_action.${opts.name}`,
+        { "admin.role": guard.session.user?.role ?? "unknown" },
+        () =>
+          prisma.$transaction(
+            (tx) => opts.run(tx, guard.session, ...args),
+            opts.isolationLevel ? { isolationLevel: opts.isolationLevel } : undefined,
+          ),
       );
     } catch (error) {
       if (error instanceof TransitionValidationError) {

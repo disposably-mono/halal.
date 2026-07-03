@@ -15,6 +15,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { buildVoteMap, computePositionTally } from "@/lib/domain/tally";
+import { withSpan } from "@/lib/server/otel";
 import type {
   PositionResult,
   ResultsPayload,
@@ -42,47 +43,49 @@ export interface ResultsAggregate {
 export async function computeResultsAggregate(
   id: string,
 ): Promise<ResultsAggregate> {
-  const [positions, voteCounts, abstentionCounts, totalVoters, votedCount] =
-    await Promise.all([
-      prisma.position.findMany({
-        where: { electionId: id, isActive: true },
-        include: {
-          candidates: {
-            select: { id: true, fullName: true, gradeLevel: true },
-            orderBy: { fullName: "asc" },
+  return withSpan("results.compute_aggregate", { "election.id": id }, async () => {
+    const [positions, voteCounts, abstentionCounts, totalVoters, votedCount] =
+      await Promise.all([
+        prisma.position.findMany({
+          where: { electionId: id, isActive: true },
+          include: {
+            candidates: {
+              select: { id: true, fullName: true, gradeLevel: true },
+              orderBy: { fullName: "asc" },
+            },
           },
-        },
-        orderBy: { order: "asc" },
-      }),
-      prisma.vote.groupBy({
-        by: ["candidateId"],
-        where: { electionId: id },
-        _count: { candidateId: true },
-      }),
-      // isAbstain is always true iff candidateId is null (enforced at write
-      // time — see lib/domain/ballot.ts), so grouping on candidateId: null
-      // per position is exactly the abstention count.
-      prisma.vote.groupBy({
-        by: ["positionId"],
-        where: { electionId: id, candidateId: null },
-        _count: { _all: true },
-      }),
-      prisma.voter.count({ where: { electionId: id } }),
-      prisma.voter.count({ where: { electionId: id, hasVoted: true } }),
-    ]);
+          orderBy: { order: "asc" },
+        }),
+        prisma.vote.groupBy({
+          by: ["candidateId"],
+          where: { electionId: id },
+          _count: { candidateId: true },
+        }),
+        // isAbstain is always true iff candidateId is null (enforced at write
+        // time — see lib/domain/ballot.ts), so grouping on candidateId: null
+        // per position is exactly the abstention count.
+        prisma.vote.groupBy({
+          by: ["positionId"],
+          where: { electionId: id, candidateId: null },
+          _count: { _all: true },
+        }),
+        prisma.voter.count({ where: { electionId: id } }),
+        prisma.voter.count({ where: { electionId: id, hasVoted: true } }),
+      ]);
 
-  const candidateVoteCounts = buildVoteMap(voteCounts);
-  const positionAbstentions = new Map<string, number>(
-    abstentionCounts.map((a) => [a.positionId, a._count._all] as [string, number]),
-  );
+    const candidateVoteCounts = buildVoteMap(voteCounts);
+    const positionAbstentions = new Map<string, number>(
+      abstentionCounts.map((a) => [a.positionId, a._count._all] as [string, number]),
+    );
 
-  return {
-    positions,
-    candidateVoteCounts,
-    positionAbstentions,
-    totalVoters,
-    votedCount,
-  };
+    return {
+      positions,
+      candidateVoteCounts,
+      positionAbstentions,
+      totalVoters,
+      votedCount,
+    };
+  });
 }
 
 /**
@@ -151,37 +154,45 @@ export function buildTurnout(voted: number, total: number) {
 export async function computeAdminMonitorPayload(
   electionId: string,
 ): Promise<ResultsPayload | null> {
-  const election = await prisma.election.findUnique({
-    where: { id: electionId },
-    select: {
-      id: true,
-      name: true,
-      division: true,
-      status: true,
-      auditFingerprint: true,
-      auditVersion: true,
+  return withSpan(
+    "monitor.compute_payload",
+    { "election.id": electionId },
+    async (span) => {
+      const election = await prisma.election.findUnique({
+        where: { id: electionId },
+        select: {
+          id: true,
+          name: true,
+          division: true,
+          status: true,
+          auditFingerprint: true,
+          auditVersion: true,
+        },
+      });
+      if (!election) return null;
+
+      const aggregate = await computeResultsAggregate(electionId);
+      span.setAttribute("turnout.voted", aggregate.votedCount);
+      span.setAttribute("turnout.total", aggregate.totalVoters);
+      const positions = buildLivePositions(aggregate, { includeAbstentions: true });
+
+      const payload = {
+        electionId: election.id,
+        status: election.status,
+        name: election.name,
+        division: election.division,
+        embargoed: false,
+        positions,
+        turnout: buildTurnout(aggregate.votedCount, aggregate.totalVoters),
+        audit: {
+          receiptVerificationSupported: election.auditVersion !== null,
+          fingerprint: election.auditFingerprint,
+          certifiedSnapshotHash: null,
+        },
+        integrityFailure: false,
+      };
+
+      return payload as unknown as ResultsPayload;
     },
-  });
-  if (!election) return null;
-
-  const aggregate = await computeResultsAggregate(electionId);
-  const positions = buildLivePositions(aggregate, { includeAbstentions: true });
-
-  const payload = {
-    electionId: election.id,
-    status: election.status,
-    name: election.name,
-    division: election.division,
-    embargoed: false,
-    positions,
-    turnout: buildTurnout(aggregate.votedCount, aggregate.totalVoters),
-    audit: {
-      receiptVerificationSupported: election.auditVersion !== null,
-      fingerprint: election.auditFingerprint,
-      certifiedSnapshotHash: null,
-    },
-    integrityFailure: false,
-  };
-
-  return payload as unknown as ResultsPayload;
+  );
 }

@@ -22,6 +22,7 @@
 import { computeAdminMonitorPayload } from "@/lib/server/results-aggregate";
 import { recordSnapshot } from "@/lib/server/monitor-snapshots";
 import { publish } from "@/lib/server/monitor-hub";
+import { withSpan } from "@/lib/server/otel";
 
 interface RefreshState {
   running: boolean;
@@ -39,21 +40,27 @@ const refreshStates: Map<string, RefreshState> =
   (globalForBroadcast.__monitorRefresh = new Map());
 
 async function computeAndBroadcast(electionId: string): Promise<void> {
-  const payload = await withTimeout(
-    computeAdminMonitorPayload(electionId),
-    MONITOR_COMPUTE_TIMEOUT_MS,
-    `monitor compute timed out for election ${electionId}`,
+  return withSpan(
+    "monitor.compute_and_broadcast",
+    { "election.id": electionId },
+    async () => {
+      const payload = await withTimeout(
+        computeAdminMonitorPayload(electionId),
+        MONITOR_COMPUTE_TIMEOUT_MS,
+        `monitor compute timed out for election ${electionId}`,
+      );
+      if (!payload) return; // election was deleted mid-flight
+      // Persist first (bucket-deduped, bounded history), then broadcast. Snapshot
+      // persistence is best-effort: if it fails, log it with election context and
+      // keep the live frame flowing so voting/admin actions stay non-fatal.
+      try {
+        await recordSnapshot(electionId, payload);
+      } catch (error) {
+        console.error(`monitor-broadcast: snapshot failed for election ${electionId}`, error);
+      }
+      publish(electionId, payload);
+    },
   );
-  if (!payload) return; // election was deleted mid-flight
-  // Persist first (bucket-deduped, bounded history), then broadcast. Snapshot
-  // persistence is best-effort: if it fails, log it with election context and
-  // keep the live frame flowing so voting/admin actions stay non-fatal.
-  try {
-    await recordSnapshot(electionId, payload);
-  } catch (error) {
-    console.error(`monitor-broadcast: snapshot failed for election ${electionId}`, error);
-  }
-  publish(electionId, payload);
 }
 
 /**
@@ -62,31 +69,43 @@ async function computeAndBroadcast(electionId: string): Promise<void> {
  * never rejects.
  */
 export async function scheduleMonitorRefresh(electionId: string): Promise<void> {
+  // Read the pre-mutation state up front: withSpan needs its attributes
+  // synchronously (before the wrapped body runs), and whether this call had
+  // to coalesce behind an in-flight compute is exactly `state.running` as it
+  // stood before we touch it below.
   const state = refreshStates.get(electionId) ?? { running: false, pending: false };
-  refreshStates.set(electionId, state);
+  const recomputeQueued = state.running;
 
-  if (state.running) {
-    // A compute is already in flight — fold this trigger into a single trailing
-    // recompute so late votes are reflected without stacking scans.
-    state.pending = true;
-    return;
-  }
+  return withSpan(
+    "monitor.schedule_refresh",
+    { "election.id": electionId, "monitor.recompute_queued": recomputeQueued },
+    async () => {
+      refreshStates.set(electionId, state);
 
-  state.running = true;
-  try {
-    do {
-      state.pending = false;
-      try {
-        await computeAndBroadcast(electionId);
-      } catch (error) {
-        // Never propagate into the caller's request path.
-        console.error(`monitor-broadcast: refresh failed for election ${electionId}`, error);
+      if (state.running) {
+        // A compute is already in flight — fold this trigger into a single trailing
+        // recompute so late votes are reflected without stacking scans.
+        state.pending = true;
+        return;
       }
-    } while (state.pending);
-  } finally {
-    state.running = false;
-    if (!state.pending) refreshStates.delete(electionId);
-  }
+
+      state.running = true;
+      try {
+        do {
+          state.pending = false;
+          try {
+            await computeAndBroadcast(electionId);
+          } catch (error) {
+            // Never propagate into the caller's request path.
+            console.error(`monitor-broadcast: refresh failed for election ${electionId}`, error);
+          }
+        } while (state.pending);
+      } finally {
+        state.running = false;
+        if (!state.pending) refreshStates.delete(electionId);
+      }
+    },
+  );
 }
 
 async function withTimeout<T>(

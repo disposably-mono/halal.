@@ -17,6 +17,7 @@ vi.mock("@/lib/server/auth", () => ({
 
 vi.mock("@/lib/server/ttl-cache", () => ({
   cached: vi.fn(),
+  peek: vi.fn(),
 }));
 
 vi.mock("@/lib/server/results-aggregate", () => ({
