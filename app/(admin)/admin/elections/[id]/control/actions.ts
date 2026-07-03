@@ -197,7 +197,7 @@ export async function rescheduleElection(
       data: {
         scheduledOpen: openDate,
         scheduledClose: closeDate,
-        status: nextStatusForReschedule(openDate),
+        status: nextStatusForReschedule(election.status, openDate),
       },
     }),
     prisma.auditLog.create({

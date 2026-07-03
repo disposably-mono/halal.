@@ -48,7 +48,14 @@ export function canAdvanceToScheduled(
   return ok();
 }
 
-export function nextStatusForReschedule(scheduledOpen: Date | null): ElectionStatus {
+export function nextStatusForReschedule(
+  status: ElectionStatus,
+  scheduledOpen: Date | null,
+): ElectionStatus {
+  // A live election stays OPEN when its window is merely extended/trimmed —
+  // only the timestamps change. Recomputing from scratch here would silently
+  // knock voters out mid-election until the cron re-opens it.
+  if (status === "OPEN") return "OPEN";
   return scheduledOpen ? "SCHEDULED" : "DRAFT";
 }
 
