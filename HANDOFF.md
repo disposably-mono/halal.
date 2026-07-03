@@ -1,555 +1,243 @@
-# Handoff: Next.js 16 Migration Status
+# Handoff: Project Status & Future Improvements
 
 Updated: 2026-07-03
-Branch: `chore/cache-components-evaluation`
-Base: `main` at merge commit `0353db7`
+Branch: `main` at `851a6f0`
 
-This file is the working handoff for the staged Next.js migration. Stages 1 through 3 have
-all merged to `main`. Stage 4 was evaluated and declined; see section 9 for findings.
-
-Migration status:
-
-1. Baseline and Stage 1: complete. Next.js 14 -> 15 and React 19 merged through PR #9.
-2. Stage 2: complete. Next.js 15 -> 16, proxy convention, ESLint CLI, Node engine floor,
-   and Turbopack build verification merged to `main` through PR #10.
-3. Stage 3: complete. Post-merge doc cleanup, audit re-check, and branch cleanup merged
-   to `main` through PR #11.
-4. Stage 4: evaluated and declined on 2026-07-03. Cache Components broke 18 of 31 routes
-   and offered no measurable benefit for this app's traffic profile; see section 9 for the
-   full writeup. Not merged to `main`.
-
-The Next.js migration is now complete. Revisit Stage 4 only if a future need for genuine
-public static/ISR content emerges.
+This file is the working handoff for the project. The staged Next.js 14 → 16 migration
+(sections 8–9) and the 2026-07-03 security-hardening pass (section 1) are **complete and
+merged to `main`**. The active content of this handoff is the future-improvements roadmap
+in sections 4–6.
 
 ---
 
-## 1. Why This Migration Exists
+## 1. Current State
 
-The original driver was stale Next.js 14 production advisories that required a framework
-major upgrade. The app has now moved through Next.js 15 and this branch moves it to
-Next.js 16.2.10 without changing the database schema.
-
-This is not a database migration. Do not modify `.env`, seed data, reset a database, or touch
-real voter data for this work unless the user explicitly approves it.
-
-The migration is worth doing, but it must be deliberate:
-
-- Authentication, officer-key unlock, ballot submission, receipt verification, audit logs,
-  result embargoes, CSV export, PDF export, and cron transitions are all load-bearing.
-- The app relies on a header-sanitizing reverse proxy because rate limiting trusts
-  `x-forwarded-for`.
-- `proxy.ts` protects admin and ballot routes and must be re-tested carefully in review.
-
----
-
-## 2. Sources To Re-Check Before Starting
-
-Re-read these at execution time because Next.js 16, React 19, codemods, and package peers can
-change between handoffs:
-
-- Next.js 15 upgrade guide:
-  `https://nextjs.org/docs/app/guides/upgrading/version-15`
-- Next.js 16 upgrade guide:
-  `https://nextjs.org/docs/app/guides/upgrading/version-16`
-- Next.js Cache Components migration guide:
-  `https://nextjs.org/docs/app/guides/migrating-to-cache-components`
-- Next.js Turbopack reference:
-  `https://nextjs.org/docs/app/api-reference/turbopack`
-- React 19 upgrade guide:
-  `https://react.dev/blog/2024/04/25/react-19-upgrade-guide`
-
-Verified notes as of 2026-07-03:
-
-- The current official Next docs list Next.js 16.2.10 as latest.
-- Next.js 15 raises React to 19 and introduces async request-time APIs with temporary sync
-  compatibility.
-- Next.js 16 removes the sync compatibility for request-time APIs.
-- Next.js 16 requires Node.js `>=20.9.0` and TypeScript `>=5.1.0`.
-- Next.js 16 uses Turbopack by default for `next dev` and `next build`.
-- Next.js 16 removes `next lint`; use ESLint directly.
-- Next.js 16 deprecates the `middleware.ts` convention in favor of `proxy.ts`; the codemod
-  can perform this rename.
-- Cache Components require Next.js 16 and should be a separate follow-up, not part of the
-  framework upgrade PR.
+- **Stack:** Next.js 16.2.10 (App Router, Turbopack), React 19.2.7, Auth.js v5 beta,
+  Prisma 7 + PostgreSQL 16, Vitest (55 files / 400 tests, 80% coverage gate), Playwright.
+- **Framework migration:** complete. Next 14 → 15 → 16 merged via PRs #9–#11; Cache
+  Components evaluated and declined (section 9).
+- **Security posture:** a full security/optimization/resilience review was run on
+  2026-07-03 and all 10 findings were fixed and pushed (`4071ad2..851a6f0`, nine atomic
+  commits). Highlights now live on `main`:
+  - Admin sessions are revocable: 8h `maxAge`, and the JWT callback re-checks the DB at
+    most once per 60s per token (`lib/auth/token-refresh.ts`) — deleted accounts are
+    invalidated, role changes propagate.
+  - Account management is audited: `AdminAccountLog` model (migration
+    `20260703121016_add_admin_account_log`), written atomically inside every mutation in
+    `app/(admin)/admin/accounts/actions.ts`, surfaced on the admin history page.
+  - Rate limiter hardened (blocked live buckets can no longer be evicted by a key flood),
+    admin login throttled per-email in addition to per-IP, receipt verification
+    length-capped and per-IP limited, SSE monitor connections capped (100),
+    HSTS header added, Postgres bound to `127.0.0.1` in `docker-compose.yml`.
+- **Dependencies:** `npm audit` reports 5 moderate advisories, all upstream (Next's
+  bundled `postcss`; `@hono/node-server` under Prisma dev tooling). Do not run
+  `npm audit fix --force` — it installs breaking downgrades. Re-check after each Next /
+  Prisma patch release.
 
 ---
 
-## 3. Current Repo Inventory
+## 2. Standing Operational Constraints
 
-Migration-relevant files after Stage 2:
+These are deliberate design decisions, not bugs. Every future improvement must respect
+them or explicitly replace them:
 
-```text
-package.json
-package-lock.json
-next.config.mjs
-eslint.config.mjs
-proxy.ts
-tsconfig.json
-app/**/*
-lib/**/*
-tests/**/*
-```
-
-Current package state:
-
-| Package | Current | Migration note |
-| --- | --- | --- |
-| `next` | `16.2.10` | Stage 2 upgrade complete. |
-| `react`, `react-dom` | `19.2.7` | React 19 upgrade complete. |
-| `eslint`, `eslint-config-next` | `9.39.4`, `16.2.10` | ESLint CLI migration complete via `eslint.config.mjs`. |
-| `next-auth` | `^5.0.0-beta.30` | Confirm current Auth.js beta compatibility with React 19 and Next 16 before upgrading. |
-| `@auth/prisma-adapter` | `^2.11.1` | Check peer range with the selected Auth.js release. |
-| `@react-pdf/renderer` | `^4.3.2` | Verify React 19 peer support; retest results PDF route. |
-| `radix-ui` | `^1.4.3` | Verify React 19 peer support. |
-| `lucide-react` | `^1.7.0` | Verify React 19 peer support. |
-| `prisma`, `@prisma/client` | `^7.6.0` | Low framework risk; do not change schema for this migration. |
-| `typescript` | `^5` | Meets Next 16's `>=5.1.0` floor. |
-| `@types/node` | `^20` | Compatible with the Next 16 Node floor. |
-| `engines.node` | `>=20.9.0` | Added for Next 16 runtime support. |
-
-Current scripts:
-
-```json
-{
-  "dev": "next dev",
-  "build": "next build",
-  "start": "next start",
-  "lint": "eslint .",
-  "typecheck": "tsc --noEmit",
-  "test": "vitest run",
-  "test:e2e": "playwright test",
-  "test:coverage": "vitest run --coverage"
-}
-```
-
-`next lint` is no longer used. `eslint.config.mjs` extends Next core-web-vitals and
-TypeScript configs, ignores generated output, and keeps the new
-`react-hooks/set-state-in-effect` rule off to avoid unrelated UI refactors in the framework
-upgrade branch.
+1. **Single-instance deployment.** The rate limiter (`lib/server/rate-limit.ts`), TTL
+   cache (`lib/server/ttl-cache.ts`), monitor hub (`lib/server/monitor-hub.ts`),
+   broadcast coalescing (`lib/server/monitor-broadcast.ts`), and SSE connection counter
+   (`lib/server/sse-connections.ts`) all hold state in one Node process's memory. Do not
+   scale horizontally or run rolling deploys during voting until section 4 lands.
+2. **Header-sanitizing reverse proxy is a hard deployment requirement.** Per-IP rate
+   limits trust `x-forwarded-for`. The per-email admin-login throttle softens the blast
+   radius if the proxy is missing, but does not remove the requirement.
+3. **Vote anonymity is structural.** `Vote` has no voter FK; `votedAt` is bucketed to the
+   hour. Nothing (including telemetry — see section 6) may reintroduce a linkage between
+   a voter identity and ballot contents.
+4. **Archive is orthogonal to status.** Filter on `archivedAt`; never add an `ARCHIVED`
+   status.
 
 ---
 
-## 4. Async Request API Checklist
+## 3. Future Improvements — Overview
 
-Complete as of Stage 2. `cookies()` and `headers()` are awaited in:
+| # | Improvement | Driver | Size | Risk |
+| --- | --- | --- | --- | --- |
+| 4 | Multi-instance: Postgres LISTEN/NOTIFY monitor bus | Horizontal scaling / zero-downtime deploys | Medium | Medium |
+| 5 | Extract audit logging into a shared wrapper | Consistency; audit writes are spread across actions | Small–Medium | Low |
+| 6 | OpenTelemetry traces | Production debuggability | Medium | Low (privacy caveats) |
 
-- `lib/voter-session.ts`
-- `lib/ballot-confirmation.ts`
-- `lib/admin-help-access.ts`
-- `lib/server/rate-limit.ts`
-- `app/vote/actions.ts`
-- `app/admin-help/actions.ts`
-- `app/api/ballot-confirmation/route.ts`
+Each item is independently shippable. Recommended order: 5 → 6 → 4 (the wrapper cleans up
+the code OTel will instrument; the multi-instance bus is only needed when a second
+instance is actually planned).
 
-The Stage 1 synchronous `params` / `searchParams` call sites were migrated to Promise-based
-access:
+---
 
-```text
-app/(admin)/admin/page.tsx                                  searchParams.denied
-app/(admin)/admin/elections/[id]/candidates/page.tsx        params.id
-app/(admin)/admin/elections/[id]/control/page.tsx           params.id
-app/(admin)/admin/elections/[id]/monitor/page.tsx           params.id
-app/(admin)/admin/elections/[id]/voters/page.tsx            params.id
-app/api/results/[id]/route.ts                               params.id
-app/api/elections/[id]/monitor/stream/route.ts              params.id
-app/api/elections/[id]/monitor-snapshots/route.ts           params.id
-app/api/elections/[id]/results-pdf/route.ts                 params.id
-app/api/elections/[id]/voters/export/route.ts               params.id
-```
+## 4. Multi-Instance: Swap the In-Process Hub for Postgres LISTEN/NOTIFY
 
-The expected pattern is now:
+**The constraint:** `lib/server/monitor-hub.ts` is an **in-process** pub/sub — a Map of
+subscribers living in one Node process's memory. That is correct for the current
+**single Docker container** deployment (same assumption as the rate limiter and TTL
+cache).
+
+**Where it breaks:** if you ever run **two or more app instances** behind a load
+balancer, the model silently degrades. A voter's ballot commits on instance A → A
+computes and broadcasts → but an admin whose SSE connection landed on instance B is
+subscribed to *B's* hub, which never heard about it. Admins would only see updates from
+votes that happened to hit their own instance. No error, just stale monitors — the
+nastiest kind of bug.
+
+**The fix — Postgres LISTEN/NOTIFY,** which turns the database into the shared message
+bus every instance already connects to:
+
+- On a state change, instead of only calling the local hub, also
+  `NOTIFY monitor_channel, '<electionId>'` (a one-line `$executeRaw` in
+  `lib/server/monitor-broadcast.ts`, next to the existing `publish()` call).
+- Each app instance holds **one dedicated pg connection** running
+  `LISTEN monitor_channel`. When *any* instance notifies, *every* instance's listener
+  fires, recomputes (or receives) the frame, and pushes to its own locally-connected SSE
+  subscribers.
+
+### Implementation notes
+
+- **Dedicated connection, not the pool.** `LISTEN` must run on a long-lived
+  `pg.Client`, not the Prisma adapter's `pg.Pool` (pooled connections are recycled and
+  the listener dies silently). Create it lazily in a new `lib/server/monitor-bus.ts`,
+  park it on `globalThis` (same HMR pattern as `monitor-hub.ts`), and reconnect with
+  backoff on `error`/`end` — a dropped listener must self-heal, and a reconnect should
+  trigger one catch-up recompute per election with live subscribers.
+- **Payload = electionId only.** `NOTIFY` payloads are capped at ~8000 bytes and monitor
+  frames are far larger, so each instance recomputes on receipt. The existing
+  per-election coalescing in `scheduleMonitorRefresh` already collapses bursts; route the
+  listener callback through it so N instances × M votes never stampede the DB.
+- **Snapshot writes stay safe.** `recordSnapshot`'s `(electionId, bucket)` unique
+  constraint already dedupes concurrent writers, so multiple instances persisting the
+  same 30s bucket collapse to one row — no changes needed.
+- **Callers don't change.** Keep the `publish`/`subscribe` surface of `monitor-hub.ts`
+  intact; `monitor-broadcast.ts` gains the NOTIFY, `monitor-bus.ts` bridges NOTIFY →
+  `scheduleMonitorRefresh` → local `publish`. Guard against double-compute on the
+  originating instance (it already computed before notifying — e.g. skip self-notifies
+  via a per-instance UUID in the payload: `'<electionId>:<instanceId>'`).
+
+### Explicit scope limits
+
+LISTEN/NOTIFY fixes **only the monitor bus**. True multi-instance also needs:
+
+- Rate limiting moved to a shared store (Redis, or a Postgres counter table) — otherwise
+  limits multiply by instance count and the per-email login throttle weakens.
+- The TTL cache is merely suboptimal multi-instance (N single-flights instead of 1) —
+  acceptable to leave.
+- The SSE connection cap becomes per-instance — acceptable (document it).
+
+Ship the whole set behind one decision gate: do not run a second instance until the rate
+limiter is shared, even if the monitor bus is done.
+
+### Testing
+
+- Unit: bus reconnect/backoff logic with a mocked client; self-notify skip.
+- Integration (needs `DATABASE_URL_TEST`): two Node processes, ballot cast via
+  `lib/server/cast-ballot.ts` in process A, assert process B's subscriber receives a
+  frame.
+- Manual: two `next start` instances on different ports against one DB, admin monitor
+  open on B, vote through A.
+
+---
+
+## 5. Extract Audit Logging Into a Shared Wrapper
+
+**The problem:** audit writes are hand-rolled inside each server action, spread across:
+
+- `app/(admin)/admin/elections/[id]/control/actions.ts` — `auditLog.create` in four
+  lifecycle actions (open, reschedule, advance, recount).
+- `lib/server/close-election.ts` and `lib/election-transitions.ts` — close/scheduler
+  entries.
+- `app/(admin)/admin/actions.ts` — archive/restore entries.
+- `app/(admin)/admin/accounts/actions.ts` — five `AdminAccountLog` writes (added
+  2026-07-03).
+
+Every author must remember the guard → validate → transaction → mutate → **log** →
+revalidate sequence by hand; a forgotten log line is invisible until an incident needs
+the trail.
+
+**The shape of the fix:** Next.js server actions have no true middleware layer
+(`proxy.ts` runs on the Edge runtime and cannot touch Prisma), so "middleware" here means
+a **higher-order wrapper**, not HTTP middleware. Add `lib/server/audited-action.ts`:
 
 ```ts
-type PageProps = {
-  params: Promise<{ id: string }>;
-};
-
-export default async function ControlPage({ params }: PageProps) {
-  const { id } = await params;
-  // Use id instead of params.id below.
-}
+export function auditedAction<Args, Result>(opts: {
+  capability: Capability;
+  audit: (args, session, outcome) => AuditEntry | AdminAccountEntry | null;
+  run: (tx, args, session) => Promise<Result>;
+}): (args: Args) => Promise<Result>
 ```
 
-For route handlers, use the same pattern:
+- The wrapper owns: capability guard (`requireCapabilityOrError`), the
+  `prisma.$transaction`, writing the audit row **in the same transaction** as the
+  mutation (the invariant the accounts actions already establish — keep it), and the
+  standard `{ success, error }` result mapping including `TransitionValidationError`
+  passthrough.
+- The per-action `audit` builder stays pure and unit-testable — the pattern already
+  exists in `app/(admin)/admin/accounts/account-log.ts`; generalize it rather than
+  inventing a new one.
+- **Migrate incrementally**: one actions file per PR, behavior-identical, with the
+  existing tests as the safety net. Do not change audit strings — the history UI and any
+  operator muscle memory depend on them.
+- Row locks (`SELECT ... FOR UPDATE`) and status re-checks inside transactions are
+  load-bearing (double-fired cron, concurrent admins). The wrapper must make them easy to
+  keep, not hide them.
 
-```ts
-export async function GET(
-  req: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const { id } = await params;
-}
-```
-
-Do not leave any `UnsafeUnwrapped*` temporary sync casts behind. Next.js 16 removes that
-compatibility path.
+**Non-goals:** do not unify `AuditLog` (election-scoped) and `AdminAccountLog`
+(account-scoped) into one table — they were deliberately separated because the account
+log must survive election cascade-deletes and account deletion.
 
 ---
 
-## 5. Stage 0: Pre-Flight Baseline
+## 6. Add OpenTelemetry Traces
 
-Branch:
+**The driver:** production issues (slow tallies on election day, a wedged monitor
+refresh, pool exhaustion) are currently debugged from `console.error` lines and the
+custom slow-query log in `lib/prisma.ts`. Distributed traces make the request →
+server-action → transaction → broadcast chain visible.
 
-```bash
-git switch main
-git pull --rebase
-git switch -c chore/next-migration-preflight
-```
+### Adoption path
 
-Run and record the current baseline:
+1. **Bootstrap:** add `instrumentation.ts` at the repo root (first-class in Next 16) and
+   register via `@vercel/otel` (works self-hosted; exports OTLP) or the raw
+   `@opentelemetry/sdk-node` if more control is needed. Export to any OTLP collector
+   (Grafana Tempo / Jaeger in a compose sidecar for local use); configure endpoint +
+   sampling via env, default **off** when `OTEL_EXPORTER_OTLP_ENDPOINT` is unset so dev
+   and CI stay unaffected.
+2. **Prisma spans:** enable Prisma tracing (`@prisma/instrumentation`) so each query
+   becomes a child span. This supersedes the ad-hoc `SLOW_QUERY_MS` logger in
+   `lib/prisma.ts` eventually — keep both until the trace pipeline is trusted, then
+   remove the custom logger.
+3. **Custom spans on the paths that matter** (thin `startActiveSpan` wrappers; if
+   section 5's `auditedAction` wrapper exists, instrument it once and every admin action
+   gets a span for free):
+   - `castVerifiedBallot` (the transaction, with `election.id` only),
+   - `computeResultsAggregate` / `computeAdminMonitorPayload`,
+   - `scheduleMonitorRefresh` (queue-wait vs compute time),
+   - cron sweep (`applyScheduledTransitions`),
+   - results route cache hit/miss.
 
-```bash
-node --version
-npm --version
-npm ci
-npx next info
-npm audit --omit=dev
-npm run typecheck
-npm run lint
-npm test
-npm run test:coverage
-npm run build
-PLAYWRIGHT_HTML_OPEN=never npm run test:e2e
-```
+### Privacy constraints (non-negotiable, see section 2.3)
 
-Expected result:
+Span attributes and events must **never** contain: `voterCode` / control numbers,
+`studentId`, receipt codes or hashes, officer keys, password material, or per-candidate
+selections tied to a request. Allowed: election IDs, position IDs, aggregate counts,
+durations, admin **role** (not email) on admin-action spans. Add a unit-testable
+attribute-allowlist helper rather than relying on reviewer vigilance, and document the
+rule in the instrumentation module header.
 
-- All checks pass on `main` before package upgrades begin.
-- The audit output is saved in the PR description or commit notes for comparison.
-- Any failing baseline check is fixed or documented before moving to Next 15.
+### Definition of done
 
-Pre-flight package checks:
-
-```bash
-npm view next version
-npm view next@15 version
-npm view next@16 version
-npm view react version
-npm view react-dom version
-npm view next-auth version peerDependencies
-npm view @auth/prisma-adapter version peerDependencies
-npm view @react-pdf/renderer version peerDependencies
-npm view radix-ui version peerDependencies
-npm view lucide-react version peerDependencies
-```
-
-If peer ranges conflict, pick compatible package versions deliberately. Do not use
-`--force` or `--legacy-peer-deps` as the default path.
-
-Pre-flight code searches:
-
-```bash
-rg -n "cookies\\(|headers\\(|draftMode\\(|params|searchParams" app lib
-rg -n "useFormState|ReactDOM.render|findDOMNode|defaultProps|propTypes|forwardRef" app lib tests
-rg -n "next lint|eslint|serverRuntimeConfig|publicRuntimeConfig|next/config|middleware|proxy" .
-rg -n "next/image|<Image" app
-```
-
-Use these results to update this file if the checklist has drifted.
-
-Commit only documentation or baseline fixes in Stage 0:
-
-```bash
-git add HANDOFF.md
-git commit -m "docs: plan next 16 migration"
-```
+- Traces visible end-to-end for: a ballot cast (action → transaction → monitor refresh →
+  snapshot write), a results poll (cache hit and miss), and a cron sweep.
+- Zero PII in spans, enforced by the allowlist helper + a test.
+- Overhead measured: no visible latency change on the ballot path with sampling at
+  production settings.
 
 ---
 
-## 6. Stage 1: Next.js 14 -> 15 And React 19
-
-Branch:
-
-```bash
-git switch main
-git pull --rebase
-git switch -c chore/next-15-upgrade
-```
-
-Recommended command path:
-
-```bash
-npx @next/codemod@canary upgrade 15
-npx codemod@latest react/19/migration-recipe
-npx @next/codemod@canary next-async-request-api .
-npm install
-```
-
-Manual fallback if the upgrade codemod cannot target 15 cleanly:
-
-```bash
-npm install next@15 react@19 react-dom@19 eslint-config-next@15
-npm install --save-dev @types/react@19 @types/react-dom@19
-npx @next/codemod@canary next-async-request-api .
-```
-
-Required hand checks after codemods:
-
-- `package.json`: `next`, `react`, `react-dom`, `eslint-config-next`,
-  `@types/react`, and `@types/react-dom` are on the intended major versions.
-- `package-lock.json`: no unexpected package downgrades.
-- The 10 files in Section 4 use async `params` / `searchParams`.
-- No `UnsafeUnwrappedCookies`, `UnsafeUnwrappedHeaders`, or `UnsafeUnwrappedDraftMode`
-  imports remain.
-- No React 19 codemod leftovers remain.
-- Auth.js still reads sessions correctly in `proxy.ts`.
-- Server actions still return the same user-facing errors.
-- `app/api/elections/[id]/results-pdf/route.ts` still renders a PDF under React 19.
-- `app/api/elections/[id]/monitor/stream/route.ts` still streams admin monitor updates.
-
-Useful verification commands during Stage 1:
-
-```bash
-rg -n "UnsafeUnwrapped|cookies\\(\\)\\.|headers\\(\\)\\.|draftMode\\(\\)\\." app lib
-rg -n "params: \\{ id: string \\}|searchParams: \\{" app
-npm run typecheck
-npm run lint
-npm test
-npm run build
-PLAYWRIGHT_HTML_OPEN=never npm run test:e2e
-npm audit --omit=dev
-```
-
-Manual smoke required before merging Stage 1:
-
-- Admin login with password and officer key.
-- Failed admin login and wrong officer key copy.
-- SUPERADMIN-only `/admin/accounts` guard.
-- Voter control-number validation.
-- Grade-filtered ballot rendering.
-- Ballot review and submission.
-- Double-vote prevention.
-- Confirmation page and receipt verification.
-- Public results hidden before election close.
-- Admin monitor live updates.
-- Results PDF generation for a closed election.
-- Voter CSV export.
-- `/api/cron/transition-elections` with valid and invalid bearer token.
-- `/admin-help` unlock with existing officer-key policy.
-
-Rollback:
-
-- Because this is branch-isolated, do not revert `main`.
-- If the upgrade is blocked, leave notes in the PR and abandon the branch.
-
-Merge gate:
-
-- Typecheck, lint, unit tests, coverage, build, E2E, audit, and manual smoke are recorded.
-- Code review has no CRITICAL or HIGH findings.
-- Security review is completed because auth, middleware, user input, and export routes are
-  in scope.
-
----
-
-## 7. Stage 2: Next.js 15 -> 16
-
-Status: implemented on `chore/next-16-upgrade`.
-
-Commands used:
-
-```bash
-npx @next/codemod@canary upgrade latest --yes
-npx @next/codemod@canary next-lint-to-eslint-cli . --force
-npm install --save-dev eslint@9.39.4
-```
-
-Implemented changes:
-
-- Upgraded `next` to `16.2.10`.
-- Kept React at `19.2.7`.
-- Renamed `middleware.ts` to `proxy.ts`; the exported function is `proxy`.
-- Preserved proxy matcher coverage for `/admin/:path*`, `/vote/ballot/:path*`, and
-  `/vote/confirmed`.
-- Replaced `next lint` with `eslint .`.
-- Added `eslint.config.mjs` and removed `.eslintrc.json`.
-- Pinned `engines.node` to `>=20.9.0`.
-- Kept `next build` on the default Next 16 Turbopack path; no webpack fallback is used.
-- Accepted Next 16's `tsconfig.json` changes: `jsx: "react-jsx"` and
-  `.next/dev/types/**/*.ts` in `include`.
-- Updated the `jose` import hardening test to read `proxy.ts`.
-
-Verification recorded on 2026-07-03:
-
-```bash
-npm run typecheck                           # pass
-npm run lint                                # pass, 8 warnings
-npm test                                    # pass, 50 files / 371 tests
-npm run test:coverage                       # pass, branches 82.24%
-npm run build                               # pass, Next.js 16.2.10 (Turbopack)
-PLAYWRIGHT_HTML_OPEN=never npm run test:e2e # pass, 1 Chromium smoke test
-npm audit --omit=dev                        # fails with 5 moderate advisories
-```
-
-Audit status:
-
-- `npm audit --omit=dev` still reports 5 moderate vulnerabilities.
-- Remaining advisories are through `@hono/node-server` under Prisma dev tooling and
-  Next's bundled `postcss`.
-- `npm audit fix --force` would install breaking/downgrade versions, so do not run it
-  blindly.
-
-Known warnings:
-
-- `npm run lint` exits 0 but reports existing warnings in load scripts, one test mock, and
-  NextAuth type augmentation.
-- Playwright passes but the dev server logs a Next 16 `allowedDevOrigins` warning for
-  `127.0.0.1` HMR access.
-
-Manual smoke still recommended before merge:
-
-Run the same manual smoke list from Stage 1. Pay extra attention to:
-
-- Admin middleware/proxy redirects.
-- Ballot cookie redirects.
-- Admin monitor stream.
-- PDF generation under Turbopack build output.
-- Production start after build:
-
-```bash
-npm run build
-npm run start
-```
-
-Rollback:
-
-- Branch-isolated. Do not revert `main`.
-- No database changes were made.
-
-Merge gate:
-
-- Typecheck, lint, unit tests, coverage, build, E2E, audit, and manual smoke are recorded.
-- Code review should focus on `proxy.ts`, ESLint config, package versions, and the audit
-  decision.
-- Security review should focus on route protection and user input paths.
-
----
-
-## 8. Stage 3: Post-Next-16 Stabilization
-
-Branch:
-
-```bash
-git switch main
-git pull --rebase
-git switch -c chore/next-16-stabilization
-```
-
-Tasks:
-
-- Re-run `npm audit --omit=dev` and record the new production vulnerability count.
-- Remove any temporary webpack fallback if Turbopack is fixed.
-- Remove any obsolete React 18 or Next 14 comments/workarounds.
-- Update docs that mention the old stack:
-  - `README.md`
-  - `CLAUDE.md`
-  - `AGENTS.md`, if present
-  - this `HANDOFF.md`
-- Re-run the full verification gate on `main`.
-- Delete merged upgrade branches or stale worktrees.
-
-Verification:
-
-```bash
-npm run typecheck
-npm run lint
-npm test
-npm run test:coverage
-npm run build
-PLAYWRIGHT_HTML_OPEN=never npm run test:e2e
-npm audit --omit=dev
-```
-
----
-
-## 9. Stage 4: Optional Cache Components Evaluation
-
-Do not include this in the Next 16 upgrade PR. Cache Components change rendering and caching
-semantics, so treat them as a separate feature migration after the app is already stable on
-Next 16.
-
-Branch:
-
-```bash
-git switch main
-git pull --rebase
-git switch -c chore/cache-components-evaluation
-```
-
-First pass:
-
-```bash
-rg -n "export const dynamic|export const revalidate|fetchCache|unstable_cache|cacheLife|cacheTag|use cache" app lib
-```
-
-Expected current hotspots:
-
-- Many pages use `export const dynamic = "force-dynamic"`.
-- Results polling uses the custom TTL/single-flight cache in `lib/server/ttl-cache.ts`.
-- Election results and admin monitor behavior are correctness-sensitive.
-
-Evaluation steps:
-
-1. Read the current Cache Components guide.
-2. Enable `cacheComponents: true` only on the evaluation branch.
-3. Remove route segment configs one area at a time.
-4. Let development/build errors identify uncached dynamic data.
-5. Add `use cache`, `cacheLife`, `cacheTag`, or `<Suspense>` only where the guide and app
-   behavior require it.
-6. Do not cache voter-specific, admin-specific, receipt, auth, or election-control data
-   unless the data ownership and invalidation rules are explicit.
-7. Run all automated checks and the full manual smoke suite.
-
-Non-goals:
-
-- Do not rewrite the app's data model.
-- Do not replace the custom results TTL cache unless a separate design proves it is safer.
-- Do not change public election copy as part of the caching migration.
-
-Decision gate:
-
-- If Cache Components add complexity without measurable benefit, close the branch with notes.
-- If they improve build/runtime behavior safely, open a separate PR with a narrow scope and a
-  detailed test plan.
-
-### Evaluation outcome (2026-07-03): declined
-
-Evaluated on `chore/cache-components-evaluation` (branch not merged; experimental changes were
-discarded, not committed). Per the current
-[Cache Components migration guide](https://nextjs.org/docs/app/guides/migrating-to-cache-components)
-(fetched 2026-07-03, Next.js 16.2.10):
-
-- Enabling `cacheComponents: true` and removing all `dynamic`/`runtime` route segment configs
-  (19 files) surfaced build failures on **18 of 31 routes (58%)** — the homepage, every voter
-  page (`/vote`, `/vote/ballot`, `/vote/confirmed`), `/verify`, and every admin page. Each
-  failure is `next build` correctly identifying that the page reads a voter/admin session
-  cookie, queries live election status, or calls `new Date()` before establishing request-bound
-  data access — i.e., exactly the behavior these pages are supposed to have. This is not a
-  backlog of bugs to fix; it is nearly the entire application surface.
-- Fixing this properly would require wrapping session/cookie reads in `<Suspense>` across almost
-  every page, auditing 14+ call sites of `new Date()` reachable from Server Components, rewriting
-  every route handler's error handling (Cache Components makes `GET` handlers bail out of
-  prerendering by *throwing*, which existing `try/catch` blocks — e.g. in the results-PDF and
-  voters-export routes — would silently swallow), and validating the long-lived SSE monitor
-  stream (`/api/elections/[id]/monitor/stream`) against a caching model whose docs do not
-  address streaming `Response` objects at all.
-- The migration guide also documents that dropdowns, popovers, and dialogs now persist state
-  across navigations by default (React `Activity`) instead of unmounting. That directly touches
-  this app's portalled admin `RowActions` menu and the ballot review flow, both already
-  documented as fragile in `CLAUDE.md`, and would need explicit re-testing.
-- Expected benefit is minimal: there is no meaningful public, high-traffic static content here
-  to benefit from partial prerendering. The results page already has a bespoke TTL/single-flight
-  cache (`lib/server/ttl-cache.ts`) that this evaluation's non-goals correctly said not to touch,
-  and the admin monitor is inherently live (SSE) and must never serve stale data.
-
-Given the app's security- and correctness-sensitive nature (anonymous voting, results embargo,
-capability-gated admin access), the risk of a subtle staleness bug outweighs any caching benefit
-at this app's traffic scale. **Recommendation: do not adopt Cache Components.** Revisit only if
-a future need for genuine public static/ISR content emerges, or if a later Next.js release
-narrows the blocking-route/`new Date()` constraints for auth-gated apps.
-
----
-
-## 10. Verification Gate For Every Migration PR
+## 7. Verification Gate (Reusable, for Every PR From This Handoff)
 
 Automated:
 
@@ -563,79 +251,59 @@ PLAYWRIGHT_HTML_OPEN=never npm run test:e2e
 npm audit --omit=dev
 ```
 
-Manual:
+Manual smoke (full list — run all of it for auth/infra changes, the relevant subset
+otherwise):
 
-- Admin login succeeds with password plus officer key.
-- Admin login fails with user-friendly copy for invalid credentials.
-- Officer-key rule still requires a different admin where applicable.
-- SUPERADMIN-only pages redirect or deny correctly.
-- Voter control-number validation works.
-- Ballot shows the correct grade-filtered choices.
-- Abstention flow still works.
-- Ballot review and submit still work.
-- Double-vote prevention still blocks repeat submission.
-- Confirmation page displays receipt information.
-- Receipt verification works once and then reports already verified.
-- Public results stay hidden until the election is closed.
-- Admin monitor shows live totals and replay snapshots.
-- Results PDF renders.
-- Voter CSV export downloads.
-- Cron transition route opens/closes elections with valid bearer auth only.
-- `/admin-help` unlock still works with existing officer-key policy.
-- The app behaves behind the expected reverse proxy or tunnel host.
+- Admin login succeeds with password plus officer key; fails with friendly copy;
+  officer-key rule still requires a different admin.
+- SUPERADMIN-only pages redirect or deny correctly; role demotion takes effect within
+  ~60s (token refresh).
+- Account mutations appear in the history page's Account changes section.
+- Voter control-number validation; grade-filtered ballot; abstention flow; review and
+  submit; double-vote prevention; confirmation page with receipt.
+- Receipt verification works once, then reports already verified; rate-limit copy shows
+  after hammering.
+- Public results hidden until CLOSED; admin monitor live updates over SSE (and replay
+  snapshots survive a refresh).
+- Results PDF renders; voter CSV export downloads.
+- `/api/cron/transition-elections` with valid and invalid bearer token.
+- `/admin-help` unlock with existing officer-key policy.
+- App behaves behind the expected reverse proxy or tunnel host.
 
-Review:
-
-- Run code review after each code-changing stage.
-- Run security review for Stage 1, Stage 2, and any Cache Components PR.
-- Block on CRITICAL findings.
-- Fix HIGH findings before merge.
-- Document MEDIUM and LOW findings in the PR.
+Review: run code review after each code-changing stage; security review for anything
+touching auth, voting, exports, or telemetry. Block on CRITICAL, fix HIGH before merge,
+document MEDIUM/LOW in the PR.
 
 ---
 
-## 11. Risk Register
+## 8. Archive: Next.js 16 Migration (Complete)
 
-| Risk | Likelihood | Impact | Mitigation |
-| --- | --- | --- | --- |
-| Missed async `params` or `searchParams` usage | Medium | Build/runtime failure on Next 16 | Use codemod, Section 4 checklist, `rg`, and typecheck. |
-| Auth.js beta peer or proxy behavior changes | Medium | Admin/voter lockout | Check package peers first; smoke login and ballot redirects on every stage. |
-| `proxy.ts` route protection regression | Medium | Protected routes exposed or over-blocked | Verify matcher and redirect behavior manually. |
-| React 19 peer breakage in UI/PDF libraries | Medium | UI or PDF rendering failure | Check peer ranges; test PDF and key pages before merge. |
-| ESLint CLI config drift | Medium | CI/lint failure | Keep `eslint.config.mjs` and `package.json` lint script in sync. |
-| Turbopack production build exposes bundling issue | Medium | Build failure or runtime issue | Prefer fixing for Turbopack; use `--webpack` only as documented temporary fallback. |
-| Image optimizer behavior changes | Low | Broken local images | Re-check `next/image` usage and configure `images.localPatterns` only if needed. |
-| Cache Components over-caches sensitive data | Medium | Privacy/security issue | Keep Cache Components as separate stage; do not cache auth/voter/admin-specific data. |
-| Rushed dependency `--force` creates hidden peer conflicts | Medium | Hard-to-debug runtime failures | Resolve peers intentionally; avoid `--force` and `--legacy-peer-deps`. |
+Kept for the record; details live in git history and PRs #9–#11.
 
----
+- **Stage 1** (PR #9): Next 14 → 15, React 19, async request APIs (`params`,
+  `searchParams`, `cookies()`, `headers()` all Promise-based; no `UnsafeUnwrapped*`
+  casts remain).
+- **Stage 2** (PR #10): Next 15 → 16.2.10. `middleware.ts` → `proxy.ts` (exported
+  function `proxy`; matcher covers `/admin/:path*`, `/vote/ballot/:path*`,
+  `/vote/confirmed`). `next lint` → ESLint CLI with `eslint.config.mjs`. Turbopack for
+  dev and build (no webpack fallback). `engines.node >=20.9.0`.
+- **Stage 3** (PR #11): doc cleanup, audit re-check, branch cleanup.
+- Do not run forced major framework upgrades in the future without repeating this staged
+  approach (baseline → codemods → hand checks → full gate → manual smoke per stage).
 
-## 12. Current Project State
+## 9. Archive: Cache Components Evaluation (Declined 2026-07-03)
 
-The app is a Next.js 16.2 App Router project for school elections. It includes:
+Evaluated on `chore/cache-components-evaluation` (never merged). Enabling
+`cacheComponents: true` surfaced build failures on **18 of 31 routes (58%)** — each one
+`next build` correctly identifying that the page reads session cookies, live election
+status, or `new Date()` before request-bound data access, i.e. exactly the behavior these
+pages are supposed to have. Fixing it would mean `<Suspense>`-wrapping nearly every page,
+auditing 14+ `new Date()` call sites, rewriting route-handler error handling (Cache
+Components signal bail-out by *throwing*, which existing `try/catch` blocks would
+swallow), and validating the SSE stream against a caching model whose docs don't address
+streaming responses. Benefit is minimal: no meaningful public static content exists; the
+results page already has a bespoke TTL/single-flight cache; the monitor is inherently
+live.
 
-- Public landing, about, officers, creator, privacy, voter help, admin help, vote, verify,
-  and results pages.
-- Admin dashboard, accounts, candidates, voters, election control, live monitor, history,
-  results, and login flows.
-- Auth.js v5 beta with Prisma adapter.
-- Prisma 7 and PostgreSQL 16.
-- Vitest and Playwright test coverage.
-- Security-sensitive rate limiting, receipt verification, audit logging, and cron election
-  transitions.
-
-Migration-adjacent shipped work before this handoff:
-
-- Election lifecycle fixes around open/reschedule behavior.
-- Atomic receipt-verification burn.
-- Admin capability guards.
-- Monitor polling cleanup.
-- Unified tally logic in `lib/domain/tally.ts`.
-- Missing FK indexes migration.
-- Officer-key policy cleanup.
-- Framework major upgrade work (Next.js 15 -> 16) merged to `main` through PR #10;
-  residual audit advisories remain documented in Stage 2.
-
-Stage 3 stabilization is in progress on `chore/next-16-stabilization`: re-checking
-`npm audit`, updating docs that referenced the pre-migration stack, and cleaning up
-merged upgrade branches.
+**Decision: do not adopt Cache Components.** Revisit only if genuine public static/ISR
+content emerges, or a later Next.js release narrows the constraints for auth-gated apps.
