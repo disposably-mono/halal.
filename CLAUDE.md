@@ -2,6 +2,9 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+For shared coding-agent standards, also read `AGENTS.md`. For current project handoff
+and the staged Next.js 16 migration plan, read `HANDOFF.md`.
+
 ## Common Development Commands
 
 ### Database Setup
@@ -9,7 +12,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Start the database (PostgreSQL 16)
 docker compose up -d
 
-# Seed the database (creates default admin user)
+# Seed the database (creates paired bootstrap admin accounts)
 npx prisma db seed
 ```
 
@@ -75,11 +78,13 @@ See your local `.env` (or `.env.example` for the variable names):
 
 ## Architecture Overview
 
-**Stack:** Next.js 14 (App Router) + TypeScript + Prisma + PostgreSQL
+**Stack:** Next.js 14.2 (App Router) + React 18 + TypeScript + Prisma 7 + PostgreSQL 16.
+The staged Next.js 16 migration is planned in `HANDOFF.md`; do not run forced major
+upgrades directly on `main`.
 
 **System Architecture:**
 ```
-Next.js 14 (Full Stack)
+Next.js 14.2 (Full Stack)
 ├── App Router (Frontend UI + Server Actions)
 ├── Authentication (NextAuth.js with 2FA)
 ├── Prisma 7 ORM
@@ -95,7 +100,7 @@ Next.js 14 (Full Stack)
 - **Server Actions:** Used for admin mutations (no separate REST API)
 - **Anonymity:** `Vote` model has no `Voter` foreign key (DB-level privacy)
 
-### Next.js 14 App Router Structure
+### App Router Structure
 The admin panel lives in a `(admin)` route group so it gets its own chrome
 (`app/(admin)/admin/layout.tsx`) without affecting public routes. Most client
 pages are decomposed into colocated `_components/` directories plus a thin
@@ -187,13 +192,10 @@ app/
 
 ## Project Status
 
-```
-Phase 1  ██████████  Complete (Foundation & Scaffold)
-Phase 2  ██████████  Complete (Admin Panel)
-Phase 3  ██████████  Complete (Voter-Facing Pages)
-Phase 4  ████████░░  Implemented (Polling Results + Monitor; SSE not used)
-Phase 5  ██████░░░░  In Progress (Deployment Hardening)
-```
+The admin UX overhaul, receipt verification, election monitoring, archive flows,
+permission guards, and audit-oriented results work are shipped on `main`. The main
+forward-looking engineering item is the staged Next.js 14 to 16 migration in
+`HANDOFF.md`.
 
 ## Key Features to Understand
 
@@ -351,22 +353,25 @@ DRAFT → SCHEDULED → OPEN → CLOSED
 
 ## Testing
 
-**Stack:** Vitest 4 + v8 coverage. Test env is `node` (no jsdom — current tests are pure-function domain tests only).
+**Stack:** Vitest 4 + v8 coverage for unit/integration checks, plus Playwright for E2E smoke tests.
 
 ```bash
 npm test              # one-shot run
 npm run test:watch    # watch mode
 npm run test:coverage # coverage report (HTML in ./coverage/)
+npm run test:e2e      # Playwright end-to-end tests
 ```
 
-**What's covered:** `lib/domain/*` and `lib/elections/constants.ts`. Threshold enforced at 80% via `vitest.config.ts`.
+**What's covered:** domain rules, auth helpers, admin helpers, server utilities, UI helpers,
+and selected admin/voter workflows. Thresholds are enforced at 80% via `vitest.config.ts`;
+the current suite is 36 files / 320 tests.
 
-**Not covered yet:**
-- Server actions (`app/**/actions.ts`) — would need a test DB + Prisma harness
-- React components / pages — would need `@testing-library/react` + jsdom
-- E2E flows — would need Playwright + a running dev server
+**Coverage gaps to respect:**
+- Server actions with real Prisma writes still need a dedicated test database harness.
+- React component tests are limited; broad UI confidence comes from Playwright smoke tests and manual browser checks.
+- Add focused tests when changing election lifecycle, permissions, receipt verification, tallying, rate limits, or auth.
 
-When adding integration or E2E tests later, use a separate `DATABASE_URL_TEST` and run `npx prisma migrate deploy` against it.
+When adding DB-backed integration or E2E tests, use a separate `DATABASE_URL_TEST` and run `npx prisma migrate deploy` against it.
 
 ## Environment Configuration
 
@@ -409,7 +414,7 @@ Volume: halal_pgdata (persists between restarts)
 ### Production Considerations
 - **Build:** `npm run build` outputs `.next/` static assets
 - **Start:** `npm start` runs `next start` (production server)
-- **Node:** Requires Node.js 18+ (Next.js 14 requirement)
+- **Node:** Use Node.js 20.19 or newer for this project. Next.js 16 will require the runtime floor documented in `HANDOFF.md`.
 - **Port:** Configurable via `PORT` env (default: 3000)
 - **Database:** Managed PostgreSQL (configure `DATABASE_URL`)
 - **Migrations:** Run `npx prisma migrate deploy` in production after deploy

@@ -76,14 +76,14 @@ Operational logs identify officers performing administrative actions. They do no
 
 | Layer | Technology |
 | --- | --- |
-| Framework | Next.js 14 with the App Router |
+| Framework | Next.js 14.2 with the App Router; staged Next.js 16 migration is tracked in `HANDOFF.md` |
 | Language | TypeScript |
 | Database | PostgreSQL 16 |
 | ORM | Prisma 7 |
 | Authentication | Auth.js / NextAuth |
 | Interface | React, Tailwind CSS, and shadcn/ui |
 | Validation | Zod |
-| Testing | Vitest |
+| Testing | Vitest, v8 coverage, and Playwright |
 | PDF generation | React PDF |
 
 ## Local Development
@@ -145,7 +145,7 @@ The seed requires two accounts with different emails and Officer Keys. This is i
 | `DATABASE_URL` | PostgreSQL connection string used by Prisma |
 | `DB_USER`, `DB_PASSWORD`, `DB_NAME` | Credentials used by the local Docker database |
 | `NEXTAUTH_SECRET` | Secret used to sign authentication and voter-session tokens |
-| `NEXTAUTH_URL` | Public application URL used by Auth.js |
+| `NEXTAUTH_URL` | Optional fixed public URL for Auth.js; leave unset when using `trustHost` for localhost plus tunnels |
 | `ELECTION_AUDIT_MASTER_KEY` | Base64-encoded 32-byte key used to encrypt election audit keys |
 | `SEED_ADMIN_*` | Bootstrap Super-admin credentials |
 | `SEED_SECOND_ADMIN_*` | Bootstrap verification Officer credentials |
@@ -172,6 +172,8 @@ Back up `ELECTION_AUDIT_MASTER_KEY` before creating elections. Changing or losin
 | `npm run lint` | Run ESLint |
 | `npm test` | Run the test suite once |
 | `npm run test:watch` | Run tests in watch mode |
+| `npm run test:coverage` | Run Vitest with coverage |
+| `npm run test:e2e` | Run Playwright end-to-end tests |
 | `npx prisma studio` | Inspect the local database |
 
 ## Project Layout
@@ -181,15 +183,23 @@ app/
   (admin)/admin/       Protected dashboard and election operations
   admin/login/         Two-officer admin sign-in
   vote/                Voter access, ballot, and confirmation
+  verify/              Receipt verification
   results/             Public final results
   voter-help/          Public voting guide
   admin-help/          Officer-key-protected administration guide
   api/                 Auth, exports, results, and scheduler endpoints
 components/            Shared public and administration UI
+e2e/                   Playwright smoke tests
 lib/                   Domain rules, authentication, validation, and utilities
 prisma/                Database schema, migrations, and seed
-tests/                 Authentication and election-domain tests
+tests/                 Unit and integration tests
 ```
+
+## Maintainer Docs
+
+- `AGENTS.md` defines the shared coding, testing, review, and security rules for coding agents.
+- `CLAUDE.md` gives Claude Code a repository-specific architecture and workflow map.
+- `HANDOFF.md` tracks the current project handoff and the staged Next.js 16 migration plan.
 
 ## Security Notes
 
@@ -207,6 +217,8 @@ tests/                 Authentication and election-domain tests
 ## Project Status
 
 halal. is under active development for OLPS COMELEC operations. Election procedures, role assignments, deployment controls, and data-retention practices should still be reviewed by the authorized school election body before production use.
+
+The main forward-looking engineering item is the staged Next.js 14 to 16 migration described in `HANDOFF.md`. Do not run forced major upgrades directly on `main`.
 
 ---
 
