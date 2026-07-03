@@ -5,7 +5,8 @@ import { permissionErrorMessage } from "@/lib/auth/permissions";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
 import { computePositionTally } from "@/lib/domain/tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
-import { cached } from "@/lib/server/ttl-cache";
+import { cached, peek } from "@/lib/server/ttl-cache";
+import { withSpan } from "@/lib/server/otel";
 import {
   computeResultsAggregate,
   buildLivePositions,
@@ -125,10 +126,16 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
     // The live tally is the expensive, frequently-polled path. Only compute it
     // when we are NOT serving a certified snapshot, and route it through a
     // single-flight micro-cache so concurrent pollers share one vote scan.
+    const resultsAggCacheKey = `results-agg:${id}`;
     const aggregate = certified
       ? null
-      : await cached(`results-agg:${id}`, RESULTS_CACHE_TTL_MS, () =>
-          computeResultsAggregate(id),
+      : await withSpan(
+          "results.get_aggregate",
+          { "election.id": id, "cache.hit": peek(resultsAggCacheKey) },
+          () =>
+            cached(resultsAggCacheKey, RESULTS_CACHE_TTL_MS, () =>
+              computeResultsAggregate(id),
+            ),
         );
 
     // buildLivePositions gates the admin-only abstentions figure: for a public

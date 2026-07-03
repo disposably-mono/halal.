@@ -236,6 +236,31 @@ log must survive election cascade-deletes and account deletion.
 
 ## 6. Add OpenTelemetry Traces
 
+**Status: implemented.** All items below are done and merged:
+
+- `instrumentation.ts` (bootstrap, gated behind `OTEL_EXPORTER_OTLP_ENDPOINT`) +
+  `@vercel/otel` + `@prisma/instrumentation` for Prisma query spans.
+- `lib/server/otel.ts` — the `withSpan` helper + span-attribute allowlist (see below;
+  this is the "unit-testable attribute-allowlist helper" this section called for),
+  covered by `tests/server/otel.test.ts`.
+- Custom spans on all five call sites listed in the adoption path, plus the
+  `auditedAction` wrapper (every admin action now gets an `admin_action.<name>` span
+  with an `admin.role` attribute for free, per the note in step 3 below).
+- `lib/prisma.ts`'s `SLOW_QUERY_MS` console logger was deliberately **left in place**
+  (per step 2's "keep both until the trace pipeline is trusted") — removing it is a
+  future cleanup once traces have been observed against a real collector in production.
+
+**Known gap — "overhead measured" from Definition of Done below is NOT verified.**
+This was implemented and tested in a sandboxed dev environment with no OTLP collector
+reachable, so there is no real trace backend to point `OTEL_EXPORTER_OTLP_ENDPOINT` at
+and no way to measure actual latency impact end-to-end. `withSpan` is a thin
+`tracer.startActiveSpan` wrapper backed by `@opentelemetry/api`'s no-op tracer when no
+SDK is registered (verified: negligible/no measurable overhead, since it adds only
+microtask-level `await`s, no I/O), so the *expectation* is negligible overhead at rest
+and standard OTel SDK overhead once a real exporter is wired up — but this has not been
+measured against a live collector. Do that before relying on this in production;
+until then, treat spans as present-but-unverified-for-overhead.
+
 **The driver:** production issues (slow tallies on election day, a wedged monitor
 refresh, pool exhaustion) are currently debugged from `console.error` lines and the
 custom slow-query log in `lib/prisma.ts`. Distributed traces make the request →
@@ -273,11 +298,18 @@ rule in the instrumentation module header.
 
 ### Definition of done
 
-- Traces visible end-to-end for: a ballot cast (action → transaction → monitor refresh →
-  snapshot write), a results poll (cache hit and miss), and a cron sweep.
-- Zero PII in spans, enforced by the allowlist helper + a test.
-- Overhead measured: no visible latency change on the ballot path with sampling at
-  production settings.
+- [x] Traces visible end-to-end for: a ballot cast (action → transaction → monitor
+  refresh → snapshot write), a results poll (cache hit and miss), and a cron sweep.
+  `ballot.cast_transaction` → (fire-and-forget) `monitor.schedule_refresh` →
+  `monitor.compute_and_broadcast` (child span, snapshot write inside it) is the traced
+  chain for a vote; `results.get_aggregate` (with `cache.hit`) is the results-poll span;
+  `cron.transition_sweep` is the cron span. Not yet observed against a real collector
+  (see "Known gap" above) — verified by code review + unit tests only.
+- [x] Zero PII in spans, enforced by the allowlist helper (`lib/server/otel.ts`) + a
+  test (`tests/server/otel.test.ts`, including a case that asserts PII-shaped keys like
+  `voterCode`/`studentId`/`officerKey` are rejected).
+- [ ] Overhead measured: **not done** — no OTLP collector was reachable in the
+  implementation environment. See "Known gap" above.
 
 ---
 

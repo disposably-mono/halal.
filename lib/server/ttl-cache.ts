@@ -64,6 +64,15 @@ export function invalidate(key: string): void {
   store.delete(key);
 }
 
+/**
+ * True when `key` currently has a fresh (unexpired) entry — a cache hit if
+ * `cached()` were called now. Does not touch in-flight state.
+ */
+export function peek(key: string, now: () => number = Date.now): boolean {
+  const hit = store.get(key);
+  return !!hit && hit.expiresAt > now();
+}
+
 /** Test-only: clear all cached state between cases. */
 export function __resetCache(): void {
   store.clear();
