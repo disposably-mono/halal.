@@ -8,19 +8,29 @@ import {
   normalizeReceiptCode,
   verifyBallotCommitment,
 } from "@/lib/domain/ballot-audit";
+import { clientIp, rateLimit, RATE_LIMITS } from "@/lib/server/rate-limit";
 import { toVerifiedSelections, type VerifiedSelection } from "./verification-selections";
+
+// Reject absurdly long input before it ever reaches normalizeReceiptCode's
+// regex replace — the real code is a fixed-width 32-char value, so anything
+// past a generous margin is either a mistake or an attempt to burn CPU on a
+// multi-MB string.
+const MAX_RAW_CODE_LENGTH = 64;
 
 /**
  * Result of a receipt verification attempt.
  *
  * `idle` is the initial client form value (nothing submitted yet); `closed`
- * means no open election exists so verification is unavailable. All other
- * states mirror the ballot's integrity outcome.
+ * means no open election exists so verification is unavailable; `rate_limited`
+ * means this IP hit the (generous) per-IP throttle in `RATE_LIMITS.receiptVerify`
+ * — see that constant for why it stays loose. All other states mirror the
+ * ballot's integrity outcome.
  */
 export type VerifyState =
   | { status: "idle" }
   | { status: "closed" }
   | { status: "invalid" }
+  | { status: "rate_limited" }
   | { status: "already_verified" }
   // `fingerprint` is already display-formatted server-side, so the client (which
   // must not import the node:crypto-backed ballot-audit module) can render it as-is.
@@ -45,14 +55,27 @@ export async function verifyReceiptAction(
   _previous: VerifyState,
   formData: FormData,
 ): Promise<VerifyState> {
+  const rawCode = formData.get("code");
+  if (typeof rawCode !== "string") return { status: "invalid" };
+
+  // Reject oversized input before it ever reaches normalizeReceiptCode's regex
+  // replace — an unauthenticated caller could otherwise post a multi-MB string
+  // and burn CPU on every attempt.
+  if (rawCode.length > MAX_RAW_CODE_LENGTH) return { status: "invalid" };
+
+  // Throttle per-IP before any DB work runs. This action is unauthenticated
+  // and has no per-account identity to key on instead, so IP is the only
+  // option — see RATE_LIMITS.receiptVerify for why the limit stays generous.
+  const ip = await clientIp();
+  if (!rateLimit(`receipt-verify:${ip}`, RATE_LIMITS.receiptVerify).ok) {
+    return { status: "rate_limited" };
+  }
+
   // Re-check the gate at write time: verification is available under the same
   // rule as casting a vote — at least one open election must exist.
   if (!(await hasOpenElection())) {
     return { status: "closed" };
   }
-
-  const rawCode = formData.get("code");
-  if (typeof rawCode !== "string") return { status: "invalid" };
 
   const normalized = normalizeReceiptCode(rawCode);
   if (normalized.length !== 32) return { status: "invalid" };

@@ -72,6 +72,12 @@ export function VerifyForm({ defaultCode = "" }: { defaultCode?: string }) {
           <p className="mt-2 font-body text-sm text-white/55">This receipt code has already been used for verification. Each code can only be verified once.</p>
         </section>
       )}
+      {state.status === "rate_limited" && (
+        <section className="mt-6 rounded-sm border border-gold/30 bg-gold/[0.07] p-5" role="alert">
+          <h2 className="font-heading text-sm uppercase tracking-[0.15em] text-gold/90">Too many attempts</h2>
+          <p className="mt-2 font-body text-sm text-white/55">Please wait a few minutes and try again.</p>
+        </section>
+      )}
       {state.status === "invalid" && (
         <section className="mt-6 rounded-sm border border-red-400/30 bg-red-400/[0.07] p-5" role="alert">
           <h2 className="font-heading text-sm uppercase tracking-[0.15em] text-red-300">Receipt not found</h2>
