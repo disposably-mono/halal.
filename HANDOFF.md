@@ -1,18 +1,19 @@
 # Handoff: Next.js 16 Migration Status
 
 Updated: 2026-07-03
-Branch: `chore/next-16-upgrade`
-Base: `main` at merge commit `60cf257`
+Branch: `chore/next-16-stabilization`
+Base: `main` at merge commit `9df154e`
 
-This file is the working handoff for the staged Next.js migration. Stage 1 has merged, and
-Stage 2 has been implemented on `chore/next-16-upgrade`.
+This file is the working handoff for the staged Next.js migration. Stage 1 and Stage 2
+have both merged to `main`. Stage 3 stabilization is in progress on this branch.
 
 Migration status:
 
 1. Baseline and Stage 1: complete. Next.js 14 -> 15 and React 19 merged through PR #9.
-2. Stage 2: implemented on this branch. Next.js 15 -> 16, proxy convention, ESLint CLI,
-   Node engine floor, and Turbopack build verification are done.
-3. Stage 3: still run after this branch is reviewed and merged to `main`.
+2. Stage 2: complete. Next.js 15 -> 16, proxy convention, ESLint CLI, Node engine floor,
+   and Turbopack build verification merged to `main` through PR #10.
+3. Stage 3: in progress on `chore/next-16-stabilization` (post-merge doc cleanup,
+   audit re-check, branch cleanup).
 4. Stage 4: optional Cache Components evaluation remains separate.
 
 Do not fold optional Cache Components work into this branch.
@@ -593,8 +594,9 @@ Migration-adjacent shipped work before this handoff:
 - Unified tally logic in `lib/domain/tally.ts`.
 - Missing FK indexes migration.
 - Officer-key policy cleanup.
-- Framework major upgrade work is implemented on `chore/next-16-upgrade`; residual audit
-  advisories remain documented in Stage 2.
+- Framework major upgrade work (Next.js 15 -> 16) merged to `main` through PR #10;
+  residual audit advisories remain documented in Stage 2.
 
-The next worker should review this branch, run the manual smoke checks, then merge it and
-continue with Stage 3 stabilization on `main`.
+Stage 3 stabilization is in progress on `chore/next-16-stabilization`: re-checking
+`npm audit`, updating docs that referenced the pre-migration stack, and cleaning up
+merged upgrade branches.

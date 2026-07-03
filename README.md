@@ -76,7 +76,7 @@ Operational logs identify officers performing administrative actions. They do no
 
 | Layer | Technology |
 | --- | --- |
-| Framework | Next.js 14.2 with the App Router; staged Next.js 16 migration is tracked in `HANDOFF.md` |
+| Framework | Next.js 16.2 with the App Router (migrated from 14.2 via the staged plan in `HANDOFF.md`) |
 | Language | TypeScript |
 | Database | PostgreSQL 16 |
 | ORM | Prisma 7 |
@@ -90,7 +90,7 @@ Operational logs identify officers performing administrative actions. They do no
 
 ### Prerequisites
 
-- Node.js 20.19 or newer
+- Node.js >=20.9.0 (Next.js 16's runtime floor)
 - npm
 - Docker with Docker Compose, or an existing PostgreSQL database
 
@@ -226,7 +226,7 @@ OLPS names, logos, branding, election data, voter data, exports, and school-spec
 
 halal. is under active development for OLPS COMELEC operations. Election procedures, role assignments, deployment controls, and data-retention practices should still be reviewed by the authorized school election body before production use.
 
-The main forward-looking engineering item is the staged Next.js 14 to 16 migration described in `HANDOFF.md`. Do not run forced major upgrades directly on `main`.
+The Next.js 14 to 16 migration described in `HANDOFF.md` is complete on `main`. Do not run forced major framework upgrades without going through the same staged approach.
 
 ---
 
