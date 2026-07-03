@@ -3,17 +3,22 @@ import { prisma } from "@/lib/prisma";
 import { requireCapabilityOrError } from "@/lib/server/auth";
 import { permissionErrorMessage } from "@/lib/auth/permissions";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
-import { buildVoteMap, computePositionTally } from "@/lib/domain/tally";
+import { computePositionTally } from "@/lib/domain/tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
 import { cached } from "@/lib/server/ttl-cache";
-import { recordSnapshot } from "@/lib/server/monitor-snapshots";
-import type { ResultsPayload } from "@/app/(admin)/admin/elections/[id]/monitor/_components/monitor-shared";
+import {
+  computeResultsAggregate,
+  buildLivePositions,
+} from "@/lib/server/results-aggregate";
 
 export const dynamic = "force-dynamic";
 
-// Short micro-cache for the live tally. Both the public results page and the
-// admin monitor poll every 30s, so a 3s window is invisible to users yet
-// collapses a burst of concurrent pollers into one vote scan (single-flight).
+// Short micro-cache for the live tally. The public results page still polls
+// every 30s, and the admin monitor issues a read on manual refresh, so a 3s
+// window is invisible to users yet collapses a burst of concurrent readers into
+// one vote scan (single-flight). This endpoint is READ-ONLY — it never writes a
+// snapshot; snapshot history is owned by the server-side write path
+// (lib/server/monitor-broadcast.ts), so observing results never mutates the DB.
 const RESULTS_CACHE_TTL_MS = 3000;
 
 export async function GET(
@@ -120,44 +125,11 @@ export async function GET(
         computeResultsAggregate(id),
       );
 
-  const livePositionResults = (aggregate?.positions ?? []).map((pos) => {
-    const abstentions = aggregate!.positionAbstentions.get(pos.id) ?? 0;
-    const totalVotesCast = pos.candidates.reduce(
-      (sum, c) => sum + (aggregate!.candidateVoteCounts.get(c.id) ?? 0),
-      0,
-    );
-    // Feed the already-known abstentions + votes-cast back in as "voters who
-    // voted" so computePositionTally's abstentions math reproduces the exact
-    // same abstentions figure — we still get isWinner/isTie from one place.
-    const tally = computePositionTally(
-      pos.candidates,
-      aggregate!.candidateVoteCounts,
-      abstentions + totalVotesCast,
-    );
-
-    const candidates = tally.candidates
-      .map((c) => ({
-        id: c.id,
-        fullName: c.fullName,
-        // Position candidates are always selected with gradeLevel, so this is
-        // never actually undefined — CandidateInput just allows it to be
-        // optional for callers (like the PDF route) that don't have it.
-        gradeLevel: c.gradeLevel!,
-        votes: c.votes,
-        isWinner: c.isWinner,
-        isTie: c.isTie,
-      }))
-      .sort((a, b) => b.votes - a.votes);
-
-    return {
-      id: pos.id,
-      title: pos.title,
-      order: pos.order,
-      candidates,
-      abstentions: isAdminRequest ? tally.abstentions : undefined,
-      totalVotes: tally.totalVotesCast,
-    };
-  });
+  // buildLivePositions gates the admin-only abstentions figure: for a public
+  // request it leaves the field undefined, so JSON serialisation omits it.
+  const livePositionResults = aggregate
+    ? buildLivePositions(aggregate, { includeAbstentions: isAdminRequest })
+    : [];
 
   const positionResults = certified
     ? certified.positions.map((position) => {
@@ -212,63 +184,8 @@ export async function GET(
     integrityFailure: false,
   };
 
-  // Persist the live monitor tally so the admin replay timeline survives a
-  // refresh and is identical across devices. Only for admin requests against
-  // a live, OPEN election — never for public responses, embargoed responses,
-  // or CLOSED/certified snapshots (those aren't the "live tally" this powers).
-  // `recordSnapshot` never throws; a failed write must not break this response.
-  // `abstentions` is only `number | undefined` in the response's inferred
-  // type because the public branch omits it — under `isAdminRequest` it is
-  // always populated (see `livePositionResults`/`certified` mapping above),
-  // so the cast to `ResultsPayload` (which requires `abstentions: number`) is
-  // safe here.
-  if (isAdminRequest && election.status === "OPEN") {
-    await recordSnapshot(id, responsePayload as unknown as ResultsPayload);
-  }
-
+  // Read-only: no snapshot is written here. Snapshot history is produced by the
+  // server on election-state changes (lib/server/monitor-broadcast.ts), so
+  // observing results — public or admin — never mutates the database.
   return NextResponse.json(responsePayload);
-}
-
-/**
- * The expensive live-tally aggregate: positions + candidates, the full vote
- * scan reduced into per-candidate and per-position-abstention counts, and
- * turnout. Kept as a standalone producer so it can be wrapped by the cache and
- * shared across admin and public callers (the per-request view layer decides
- * whether to expose abstentions).
- */
-async function computeResultsAggregate(id: string) {
-  const [positions, voteCounts, abstentionCounts, totalVoters, votedCount] = await Promise.all([
-    prisma.position.findMany({
-      where: { electionId: id, isActive: true },
-      include: {
-        candidates: {
-          select: { id: true, fullName: true, gradeLevel: true },
-          orderBy: { fullName: "asc" },
-        },
-      },
-      orderBy: { order: "asc" },
-    }),
-    prisma.vote.groupBy({
-      by: ["candidateId"],
-      where: { electionId: id },
-      _count: { candidateId: true },
-    }),
-    // isAbstain is always true iff candidateId is null (enforced at write
-    // time — see lib/domain/ballot.ts), so grouping on candidateId: null
-    // per position is exactly the abstention count.
-    prisma.vote.groupBy({
-      by: ["positionId"],
-      where: { electionId: id, candidateId: null },
-      _count: { _all: true },
-    }),
-    prisma.voter.count({ where: { electionId: id } }),
-    prisma.voter.count({ where: { electionId: id, hasVoted: true } }),
-  ]);
-
-  const candidateVoteCounts = buildVoteMap(voteCounts);
-  const positionAbstentions = new Map<string, number>(
-    abstentionCounts.map((a) => [a.positionId, a._count._all] as [string, number]),
-  );
-
-  return { positions, candidateVoteCounts, positionAbstentions, totalVoters, votedCount };
 }

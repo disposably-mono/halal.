@@ -8,6 +8,7 @@ import {
   generateReceiptCode,
   hashReceiptCode,
 } from "@/lib/domain/ballot-audit";
+import { scheduleMonitorRefresh } from "@/lib/server/monitor-broadcast";
 
 /**
  * Core ballot-casting logic, extracted from the `submitBallot` server action so
@@ -146,6 +147,13 @@ export async function castVerifiedBallot(params: {
     });
 
     if (!ballotId) throw new Error("Ballot was not created");
+
+    // The ballot committed — this is the canonical election-state change. Fire
+    // the monitor recompute + broadcast without awaiting it: the voter's
+    // confirmation must not wait on (or be failed by) monitor work, and
+    // scheduleMonitorRefresh never throws.
+    void scheduleMonitorRefresh(voter.electionId);
+
     return { success: true, ballotId, receiptCode };
   } catch (error) {
     if (error instanceof AlreadyVotedError) {

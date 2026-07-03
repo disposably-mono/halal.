@@ -92,7 +92,11 @@ Next.js 14.2 (Full Stack)
 ```
 
 ### Key Technical Decisions
-- **Live updates:** Admin monitor and public results poll `/api/results/[id]`
+- **Live updates:** The admin monitor subscribes once to a server push stream
+  (`GET /api/elections/[id]/monitor/stream`, Server-Sent Events) — no polling.
+  The public results page still polls `/api/results/[id]` every 30s. Both read
+  paths are side-effect free; snapshot history is written only by the server on
+  election-state changes (see **Server-owned live monitor** below).
 - **Auth:** NextAuth.js Credentials provider with bcrypt + officer key (2FA)
 - **Database:** Prisma 7 with PostgreSQL adapter (`@prisma/adapter-pg`)
 - **UI:** Tailwind CSS + shadcn/ui (Radix Nova style)
@@ -222,7 +226,7 @@ Enter Code → Validate → Generate Ballot → Select → Review → Submit
 - ❌ No explicit abstain button (cleaner UX)
 - ⛔ Results embargo during voting (prevents influence)
 - 🔐 2FA admin auth (shared + personal accountability)
-- 📡 Polling-based live admin monitor and public final results
+- 📡 Push-based live admin monitor (SSE); polling public final results
 
 ## Important Code Locations
 
@@ -240,6 +244,29 @@ Enter Code → Validate → Generate Ballot → Select → Review → Submit
 - `lib/prisma.ts` - Global PrismaClient singleton with PostgreSQL adapter
 - `prisma.config.ts` - Prisma config for TypeScript
 - `lib/api/results-types.ts` - Shared wire types for the results API
+
+### Server-owned live monitor
+The server — not the browser — owns live tally state and history. A vote commit
+or lifecycle transition is the only thing that produces a new frame:
+- `lib/server/results-aggregate.ts` - The single "compute once" primitive
+  (`computeResultsAggregate` pushes counting into the DB via `groupBy`/`count`;
+  `computeAdminMonitorPayload` builds the full admin frame). Shared by the
+  read route and the broadcaster so a tally is shaped in exactly one place.
+- `lib/server/monitor-broadcast.ts` - `scheduleMonitorRefresh(electionId)`:
+  computes the frame once, persists a bucketed snapshot, and broadcasts. Coalesces
+  vote bursts (one compute in flight per election + one trailing recompute) so N
+  votes never trigger N concurrent scans. Fire-and-forget; never throws.
+- `lib/server/monitor-hub.ts` - In-process pub/sub + latest-frame cache. Fans one
+  computed frame out to every connected SSE stream. Single-process scope (matches
+  the Docker deployment); swap for Redis/LISTEN-NOTIFY to go multi-instance.
+- `lib/server/monitor-snapshots.ts` - Bounded replay-timeline persistence
+  (one row per 30s bucket; server-written only).
+- `app/api/elections/[id]/monitor/stream/route.ts` - SSE endpoint. Sends an
+  initial frame on connect (so idle elections still render), then pushes on every
+  broadcast. Read-only; auth via the session cookie.
+- Callers that trigger a refresh: `lib/server/cast-ballot.ts` (ballot commit),
+  `app/(admin)/admin/elections/[id]/control/actions.ts` (open/close), and
+  `app/api/cron/transition-elections/route.ts` (scheduled open/close).
 
 ### Domain Logic (pure, unit-tested — `tests/domain/`)
 - `lib/domain/election-state.ts` - Status-transition + archive/restore guards (`canArchive`, `canRestore`, …)
@@ -430,9 +457,11 @@ Volume: halal_pgdata (persists between restarts)
 - Confirmation page: "Your vote has been cast"
 
 ### Implemented Results Flow
-- `/api/results/[id]` powers public final results and admin live monitor
+- `/api/results/[id]` powers public final results (read-only, micro-cached)
 - Public results are embargoed until the election is `CLOSED`
-- Admin monitor polls for turnout, position tallies, momentum, and replay data
+- Admin monitor streams turnout, position tallies, momentum, and replay data
+  over SSE (`/api/elections/[id]/monitor/stream`); the tally is computed once on
+  the server per state change and fanned out to every connected admin
 - Official results PDF export is available for closed elections
 - Scheduled open/close transitions run through the cron endpoint
 

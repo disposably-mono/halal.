@@ -16,6 +16,7 @@ import {
   revalidateElectionControl,
 } from "@/lib/server/revalidate";
 import { closeElectionWithCertification } from "@/lib/server/close-election";
+import { scheduleMonitorRefresh } from "@/lib/server/monitor-broadcast";
 import { loadAuditSnapshot } from "@/lib/server/election-audit";
 import {
   hashSnapshot,
@@ -82,6 +83,8 @@ export async function openElectionNow(electionId: string): Promise<ActionResult>
     console.error("[openElectionNow] transition failed:", error);
     return { success: false, error: "Failed to open election" };
   }
+  // Broadcast the new lifecycle state so open monitors flip live (OPEN frame).
+  void scheduleMonitorRefresh(electionId);
   revalidateAfterTransition(electionId);
   return { success: true };
 }
@@ -105,6 +108,8 @@ export async function closeElectionNow(electionId: string): Promise<ActionResult
     console.error("[closeElectionNow] certification failed:", error);
     return { success: false, error: "Failed to certify and close election" };
   }
+  // Broadcast the CLOSED frame so any monitor still open reflects the freeze.
+  void scheduleMonitorRefresh(electionId);
   revalidateAfterTransition(electionId);
   return { success: true };
 }

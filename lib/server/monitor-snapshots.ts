@@ -1,18 +1,19 @@
 /**
  * Persistence layer for the admin live-monitor replay timeline.
  *
- * The admin monitor polls `GET /api/results/[id]?admin=1` every `POLL_INTERVAL`
- * (30s) and used to keep an in-memory ring buffer of the last 60 responses —
- * lost on refresh, and different per device. This module persists the same
- * anonymous aggregate payload (candidate vote counts, abstention counts,
- * turnout — never voter-identifying data) so the replay timeline survives a
- * reload and is identical across every admin device.
+ * History is SERVER-OWNED: the only writer is `lib/server/monitor-broadcast.ts`,
+ * driven by election-state changes (a ballot commit, a lifecycle transition) —
+ * never by a browser observing results. This module persists the same anonymous
+ * aggregate payload (candidate vote counts, abstention counts, turnout — never
+ * voter-identifying data) that the live frame carries, so the replay timeline
+ * survives a reload and is identical across every admin device.
  *
- * Design: one row per 30s "bucket" per election. `bucket` is derived purely
- * from wall-clock time (`bucketFor`), so multiple devices polling around the
- * same moment compute the same bucket and collide on the
- * `(electionId, bucket)` unique constraint — the DB itself dedupes concurrent
- * writes; the loser of the race is swallowed as a no-op here.
+ * Design: one row per 30s "bucket" per election, so a busy election's history
+ * stays bounded (a coarse sampled timeline) no matter how many votes land. The
+ * `(electionId, bucket)` unique constraint dedupes: the first commit in a bucket
+ * writes the row; later commits in the same bucket collide (P2002) and are
+ * swallowed as a no-op. The live frame between samples is still delivered in
+ * real time over SSE — only the persisted history is coarsened.
  *
  * Pure helpers (`bucketFor`, `pruneCutoffIndex`) are exported and unit-tested;
  * the DB-touching functions are kept thin wrappers around them so there is
@@ -59,11 +60,11 @@ export function pruneCutoffIndex(
 }
 
 /**
- * Records one monitor snapshot for `electionId`. No-ops silently when another
- * device already wrote this bucket (P2002 unique violation on
- * `(electionId, bucket)`), and never throws into the caller's request path —
- * any other error is logged and swallowed so a failed snapshot write can
- * never turn into a 500 on the results endpoint.
+ * Records one monitor snapshot for `electionId`. No-ops silently when this
+ * bucket was already written (P2002 unique violation on `(electionId, bucket)`
+ * — the expected "another vote already sampled this 30s window" case), and
+ * never throws into the caller's path — any other error is logged and swallowed
+ * so a failed snapshot write can never break a ballot commit or a broadcast.
  */
 export async function recordSnapshot(
   electionId: string,
@@ -86,8 +87,8 @@ export async function recordSnapshot(
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
     ) {
-      // Another device already recorded this bucket — expected under
-      // concurrent polling, not an error.
+      // This 30s bucket was already sampled by an earlier commit — expected
+      // under a stream of votes, not an error.
       return;
     }
     // A snapshot write must never break the results response.
