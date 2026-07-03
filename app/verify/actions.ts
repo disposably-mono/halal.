@@ -106,13 +106,17 @@ export async function verifyReceiptAction(
     const outcome = valid && structurallyValid ? "valid" : "compromised";
 
     if (outcome === "valid") {
-      await prisma.ballot.update({
-        where: { receiptHash },
+      // Atomic one-time burn: only the request that actually flips
+      // verifiedAt from null wins "first verification". Two concurrent
+      // verifications of the same receipt must not both report success.
+      const burned = await prisma.ballot.updateMany({
+        where: { receiptHash, verifiedAt: null },
         data: { verifiedAt: new Date() },
       });
-    }
+      if (burned.count === 0) {
+        return { status: "already_verified" };
+      }
 
-    if (outcome === "valid") {
       return {
         status: "valid",
         electionName: ballot.election.name,
