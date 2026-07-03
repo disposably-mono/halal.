@@ -201,6 +201,14 @@ tests/                 Unit and integration tests
 - `CLAUDE.md` gives Claude Code a repository-specific architecture and workflow map.
 - `HANDOFF.md` tracks the current project handoff and the staged Next.js 16 migration plan.
 
+## License
+
+This repository is not currently licensed for public reuse. All rights are reserved by Mikel Taopa.
+
+Our Lady of Peace School, OLPS COMELEC, and authorized school personnel may use, deploy, and modify this software for official OLPS election and school operations with the author's permission.
+
+OLPS names, logos, branding, election data, voter data, exports, and school-specific content are not licensed for reuse. See `LICENSE` for the full notice.
+
 ## Security Notes
 
 - Passwords and Officer Keys are hashed with bcrypt.
