@@ -2,11 +2,46 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Card } from "@/components/admin/ui";
+import { CLIENT_REQUEST_TIMEOUT_MS, createTimeoutController } from "@/lib/client/request-timeout";
 import { snapshotsToTurnoutTrend, type DashboardElection } from "./dashboard-helpers";
 import type { SnapshotResponse, TurnoutTrendPoint } from "./dashboard-live-stats";
 import { pct } from "./shared";
 
 const DASHBOARD_POLL_MS = 30_000;
+
+type TrendLoadResult = {
+  id: string;
+  points: TurnoutTrendPoint[];
+  error: string | null;
+};
+
+async function loadElectionTrend(election: DashboardElection): Promise<TrendLoadResult> {
+  const { controller, clearTimeout } = createTimeoutController(CLIENT_REQUEST_TIMEOUT_MS);
+
+  try {
+    const response = await fetch(`/api/elections/${election.id}/monitor-snapshots`, {
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    if (!response.ok) {
+      return {
+        id: election.id,
+        points: [],
+        error: "Live turnout data is temporarily unavailable.",
+      };
+    }
+    const body = (await response.json()) as SnapshotResponse;
+    return { id: election.id, points: snapshotsToTurnoutTrend(body.snapshots), error: null };
+  } catch {
+    return {
+      id: election.id,
+      points: [],
+      error: "Live turnout data is temporarily unavailable.",
+    };
+  } finally {
+    clearTimeout();
+  }
+}
 
 export function DashboardLiveStats({ elections }: { elections: DashboardElection[] }) {
   const openElections = useMemo(
@@ -14,29 +49,24 @@ export function DashboardLiveStats({ elections }: { elections: DashboardElection
     [elections],
   );
   const [trends, setTrends] = useState<Record<string, TurnoutTrendPoint[]>>({});
+  const [trendErrors, setTrendErrors] = useState<Record<string, string | null>>({});
 
   const refresh = useCallback(async () => {
     if (openElections.length === 0) {
       setTrends({});
+      setTrendErrors({});
       return;
     }
 
-    const entries = await Promise.all(
-      openElections.map(async (election) => {
-        try {
-          const response = await fetch(`/api/elections/${election.id}/monitor-snapshots`, {
-            cache: "no-store",
-          });
-          if (!response.ok) return [election.id, []] as const;
-          const body = await response.json() as SnapshotResponse;
-          return [election.id, snapshotsToTurnoutTrend(body.snapshots)] as const;
-        } catch {
-          return [election.id, []] as const;
-        }
-      }),
-    );
+    const entries = await Promise.all(openElections.map(loadElectionTrend));
 
-    setTrends(Object.fromEntries(entries));
+    setTrends((previous) => {
+      const nextTrends = Object.fromEntries(
+        entries.map((entry) => [entry.id, entry.error ? previous[entry.id] ?? [] : entry.points] as const),
+      );
+      return nextTrends;
+    });
+    setTrendErrors(Object.fromEntries(entries.map((entry) => [entry.id, entry.error] as const)));
   }, [openElections]);
 
   useEffect(() => {
@@ -52,6 +82,7 @@ export function DashboardLiveStats({ elections }: { elections: DashboardElection
       <div className="grid gap-3 md:grid-cols-2">
         {openElections.map((election) => {
           const trend = trends[election.id] ?? [];
+          const trendError = trendErrors[election.id];
           const latest = trend.at(-1);
           const currentPct = latest?.pct ?? pct(election.votedCount, election._count.voters);
           const currentVoted = latest?.voted ?? election.votedCount;
@@ -65,10 +96,15 @@ export function DashboardLiveStats({ elections }: { elections: DashboardElection
                   <p className="mt-0.5 text-[10px] text-white/45">
                     {currentVoted.toLocaleString()} of {total.toLocaleString()} voted
                   </p>
+                  {trendError && (
+                    <p className="mt-0.5 text-[10px] text-amber-300/80">{trendError}</p>
+                  )}
                 </div>
-                <p className="font-mono text-[18px] font-bold text-emerald-400">{currentPct}%</p>
+                <p className={`font-mono text-[18px] font-bold ${trendError ? "text-amber-300" : "text-emerald-400"}`}>
+                  {currentPct}%
+                </p>
               </div>
-              <Sparkline points={trend} fallbackPct={currentPct} />
+              <Sparkline points={trend} fallbackPct={currentPct} isStale={Boolean(trendError)} />
             </div>
           );
         })}
@@ -80,9 +116,11 @@ export function DashboardLiveStats({ elections }: { elections: DashboardElection
 function Sparkline({
   points,
   fallbackPct,
+  isStale,
 }: {
   points: TurnoutTrendPoint[];
   fallbackPct: number;
+  isStale: boolean;
 }) {
   const bars = points.length > 0 ? points : [{ label: "Now", pct: fallbackPct, voted: 0, total: 0 }];
 
@@ -92,7 +130,7 @@ function Sparkline({
         <div
           key={`${point.label}-${index}`}
           title={`${point.label}: ${point.pct}%`}
-          className="min-w-0 flex-1 rounded-t-[3px] bg-emerald-400/70"
+          className={`min-w-0 flex-1 rounded-t-[3px] ${isStale ? "bg-amber-300/70" : "bg-emerald-400/70"}`}
           style={{ height: `${Math.max(8, point.pct)}%` }}
         />
       ))}

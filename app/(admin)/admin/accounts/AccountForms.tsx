@@ -205,36 +205,51 @@ function AccountRow({
     else onResult({ msg: result.error, variant: "error" });
   }
 
+  function runRowAction(
+    action: () => Promise<AccountActionResult>,
+    successMessage: string,
+    onSuccess?: () => void,
+  ) {
+    startTransition(() => {
+      void (async () => {
+        try {
+          const result = await action();
+          notify(result, successMessage);
+          if (result.success) onSuccess?.();
+        } catch (error) {
+          onResult({
+            msg: error instanceof Error ? error.message : "Could not update account. Try again.",
+            variant: "error",
+          });
+        }
+      })();
+    });
+  }
+
   function onRoleChange(role: string) {
     if (role === account.role) return;
-    startTransition(async () => {
-      notify(await updateAdminRole(account.id, role), "Role updated.");
-    });
+    runRowAction(() => updateAdminRole(account.id, role), "Role updated.");
   }
 
   function submitSecret() {
     const kind = secretOpen;
     if (!kind) return;
     const value = secretValue;
-    startTransition(async () => {
-      const result =
+    runRowAction(
+      () =>
         kind === "password"
-          ? await resetAdminPassword(account.id, value)
-          : await resetAdminOfficerKey(account.id, value);
-      notify(result, kind === "password" ? "Password reset." : "Officer key reset.");
-      if (result.success) {
+          ? resetAdminPassword(account.id, value)
+          : resetAdminOfficerKey(account.id, value),
+      kind === "password" ? "Password reset." : "Officer key reset.",
+      () => {
         setSecretOpen(null);
         setSecretValue("");
-      }
-    });
+      },
+    );
   }
 
   function onDelete() {
-    startTransition(async () => {
-      const result = await deleteAdmin(account.id);
-      notify(result, "Account deleted.");
-      if (result.success) setConfirmDelete(false);
-    });
+    runRowAction(() => deleteAdmin(account.id), "Account deleted.", () => setConfirmDelete(false));
   }
 
   return (

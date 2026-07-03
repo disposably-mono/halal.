@@ -21,31 +21,42 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           return null;
         }
 
-        const result = await checkAdminCredentials(
-          credentials.email as string,
-          credentials.password as string,
-          credentials.officerKey as string,
-        );
+        let result: Awaited<ReturnType<typeof checkAdminCredentials>>;
+        try {
+          result = await checkAdminCredentials(
+            credentials.email as string,
+            credentials.password as string,
+            credentials.officerKey as string,
+          );
+        } catch (error) {
+          console.error("Admin sign-in credential check failed.", error);
+          return null;
+        }
         if (!result.ok || !result.verifier) return null;
 
         const loggedInAt = new Date();
-        await prisma.$transaction([
-          prisma.adminUser.update({
-            where: { id: result.admin.id },
-            data: { lastLogin: loggedInAt },
-          }),
-          prisma.adminLoginHistory.create({
-            data: {
-              officerId: result.admin.id,
-              officerName: result.admin.name,
-              officerEmail: result.admin.email,
-              verifierId: result.verifier.id,
-              verifierName: result.verifier.name,
-              verifierEmail: result.verifier.email,
-              createdAt: loggedInAt,
-            },
-          }),
-        ]);
+        try {
+          await prisma.$transaction([
+            prisma.adminUser.update({
+              where: { id: result.admin.id },
+              data: { lastLogin: loggedInAt },
+            }),
+            prisma.adminLoginHistory.create({
+              data: {
+                officerId: result.admin.id,
+                officerName: result.admin.name,
+                officerEmail: result.admin.email,
+                verifierId: result.verifier.id,
+                verifierName: result.verifier.name,
+                verifierEmail: result.verifier.email,
+                createdAt: loggedInAt,
+              },
+            }),
+          ]);
+        } catch (error) {
+          console.error("Admin sign-in history write failed.", error);
+          return null;
+        }
 
         return {
           id: result.admin.id,

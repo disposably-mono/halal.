@@ -1,6 +1,6 @@
 import { encode } from "@auth/core/jwt";
 import { NextRequest } from "next/server";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { getEdgeAdminRole } from "@/lib/auth/edge-session";
 
 const ORIGINAL_AUTH_SECRET = process.env.AUTH_SECRET;
@@ -29,6 +29,26 @@ describe("edge admin session reader", () => {
     });
 
     expect(await getEdgeAdminRole(req)).toBe("SUPERADMIN");
+  });
+
+  it("logs a configuration failure when the session secret is missing", async () => {
+    const token = await encode({
+      token: { id: "admin-1", role: "SUPERADMIN" },
+      secret: TEST_SECRET,
+      salt: "authjs.session-token",
+    });
+    const req = new NextRequest("https://example.test/admin", {
+      headers: { cookie: `authjs.session-token=${token}` },
+    });
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    process.env.AUTH_SECRET = "";
+    process.env.NEXTAUTH_SECRET = "";
+
+    expect(await getEdgeAdminRole(req)).toBeNull();
+    expect(spy).toHaveBeenCalled();
+
+    spy.mockRestore();
   });
 });
 

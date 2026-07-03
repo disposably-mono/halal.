@@ -35,8 +35,10 @@ function positiveIntEnv(name: string, fallback: number): number {
 function createPrismaClient() {
   const adapter = new PrismaPg({
     connectionString: process.env.DATABASE_URL!,
-    // Concurrent-voting bursts must fail fast instead of queueing forever —
-    // pg's defaults are max: 10 and connectionTimeoutMillis: 0 (wait forever).
+    // Concurrent-voting bursts must fail fast instead of queueing forever.
+    // Keep this pool size below the Postgres instance's shared max_connections:
+    // every app replica gets its own pool, so total connections scale with
+    // replica count. Lower DB_POOL_MAX in deployment config if needed.
     max: positiveIntEnv("DB_POOL_MAX", 40),
     idleTimeoutMillis: positiveIntEnv("DB_POOL_IDLE_TIMEOUT_MS", 30_000),
     connectionTimeoutMillis: positiveIntEnv("DB_POOL_CONNECTION_TIMEOUT_MS", 10_000),

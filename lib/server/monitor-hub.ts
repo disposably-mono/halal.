@@ -69,7 +69,7 @@ export function publish(electionId: string, payload: ResultsPayload): void {
     try {
       cb(payload);
     } catch (error) {
-      console.error("monitor-hub: subscriber threw", error);
+      console.error(`monitor-hub: subscriber threw for election ${electionId}`, error);
     }
   }
 }

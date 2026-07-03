@@ -35,7 +35,8 @@ export async function getEdgeAdminRole(req: NextRequest): Promise<string | null>
     const payload = await decryptAuthToken(sessionCookie.value, sessionCookie.name);
     if (!isActiveJwtPayload(payload)) return null;
     return normalizeRole(payload);
-  } catch {
+  } catch (error) {
+    console.error("edge-session: failed to read admin role", error);
     return null;
   }
 }

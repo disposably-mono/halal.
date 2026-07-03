@@ -34,6 +34,11 @@ import { addVotersFromCSV } from "@/app/(admin)/admin/elections/[id]/voters/acti
 import { revalidateElectionVoters } from "@/lib/server/revalidate";
 
 const CSV_TEXT = ["studentId,gradeLevel,section", "2026-0001,11,A", "2026-0002,11,A"].join("\n");
+const MULTI_COHORT_CSV_TEXT = [
+  "studentId,gradeLevel,section",
+  "2026-0101,11,A",
+  "2026-0102,12,B",
+].join("\n");
 
 function buildFormData() {
   const formData = new FormData();
@@ -104,5 +109,39 @@ describe("addVotersFromCSV collision handling", () => {
     prismaMock.voter.createMany.mockRejectedValue(new Error("connection reset"));
 
     await expect(addVotersFromCSV(null, buildFormData())).rejects.toThrow("connection reset");
+  });
+
+  it("only loads control numbers for the cohorts present in the CSV", async () => {
+    prismaMock.voter.findMany.mockImplementation(async (args) => {
+      if ("electionId" in (args.where ?? {})) return [];
+      return [{ voterCode: "2611A001" }, { voterCode: "2612B001" }];
+    });
+    prismaMock.voter.createMany.mockResolvedValue({ count: 2 });
+    const formData = new FormData();
+    formData.set("electionId", "e1");
+    formData.set("csvText", MULTI_COHORT_CSV_TEXT);
+    formData.set("schoolYear", "2026");
+
+    await addVotersFromCSV(null, formData);
+
+    expect(prismaMock.voter.findMany).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({
+        where: { electionId: "e1" },
+        select: { studentId: true },
+      }),
+    );
+    expect(prismaMock.voter.findMany).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({
+        where: {
+          OR: [
+            { gradeLevel: 11, section: "A" },
+            { gradeLevel: 12, section: "B" },
+          ],
+        },
+        select: { voterCode: true },
+      }),
+    );
   });
 });

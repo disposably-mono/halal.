@@ -28,6 +28,11 @@ export type CSVImportResult = {
 export type ManualAddResult = { success: boolean; error?: string };
 export type FinalizeResult = { success: boolean; error?: string };
 
+type ImportCohort = {
+  gradeLevel: number;
+  section: string;
+};
+
 export async function addVotersFromCSV(
   _prevState: CSVImportResult | null,
   formData: FormData,
@@ -56,21 +61,20 @@ export async function addVotersFromCSV(
     };
   }
 
-  // O(n) by design: control-number uniqueness is enforced globally, so we load
-  // every existing voterCode into a Set for collision checks during import. This
-  // scans the whole Voter table per import; at school scale (a few thousand rows
-  // across all elections) that's a cheap single query and an accepted tradeoff
-  // versus a per-row existence check.
-  const [existingForElection, allCodes] = await Promise.all([
+  // Load only the grade/section cohorts present in this CSV. The control-number
+  // prefix is still checked in memory, but the query stays bounded and can use
+  // the existing `(gradeLevel, section)` index instead of scanning every voter.
+  const importCohorts = collectImportCohorts(csvText);
+  const [existingForElection, existingVoterCodes] = await Promise.all([
     prisma.voter.findMany({ where: { electionId }, select: { studentId: true } }),
-    prisma.voter.findMany({ select: { voterCode: true } }),
+    loadExistingVoterCodes(importCohorts),
   ]);
 
   const result = parseVotersCSV(csvText, {
     division: election.division,
     schoolYear,
     existingStudentIds: new Set(existingForElection.map((v) => v.studentId)),
-    existingVoterCodes: new Set(allCodes.map((v) => v.voterCode)),
+    existingVoterCodes,
   });
 
   let createdCount = result.toCreate.length;
@@ -280,4 +284,43 @@ export async function removeVoterById(voterId: string, electionId: string) {
 
   await prisma.voter.deleteMany({ where: { id: voterId, electionId } });
   revalidateElectionVoters(electionId);
+}
+
+function collectImportCohorts(csvText: string): ImportCohort[] {
+  const seen = new Set<string>();
+  const cohorts: ImportCohort[] = [];
+  const lines = csvText.trim().split("\n").slice(1);
+
+  for (const line of lines) {
+    if (!line.trim()) continue;
+    const [, gradeLevelRaw, sectionRaw] = line
+      .split(",")
+      .map((column) => column.trim().replace(/^"|"$/g, ""));
+    const gradeLevel = Number.parseInt(gradeLevelRaw, 10);
+    const section = sectionRaw?.toUpperCase();
+    if (!Number.isFinite(gradeLevel) || !section) continue;
+
+    const key = `${gradeLevel}:${section}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    cohorts.push({ gradeLevel, section });
+  }
+
+  return cohorts;
+}
+
+async function loadExistingVoterCodes(cohorts: readonly ImportCohort[]): Promise<Set<string>> {
+  if (cohorts.length === 0) return new Set();
+
+  const rows = await prisma.voter.findMany({
+    where: {
+      OR: cohorts.map((cohort) => ({
+        gradeLevel: cohort.gradeLevel,
+        section: cohort.section,
+      })),
+    },
+    select: { voterCode: true },
+  });
+
+  return new Set(rows.map((row) => row.voterCode));
 }

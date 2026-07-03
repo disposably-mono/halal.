@@ -11,4 +11,8 @@ describe("database performance indexes", () => {
   it("indexes position candidate lists by name for admin candidate pages", () => {
     expect(SCHEMA).toContain("@@index([positionId, fullName])");
   });
+
+  it("indexes vote tallies by position for results groupBy queries", () => {
+    expect(SCHEMA).toMatch(/model Vote \{[\s\S]*?@@index\(\[positionId\]\)/);
+  });
 });

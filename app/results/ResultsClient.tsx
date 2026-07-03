@@ -10,6 +10,7 @@ import { ElectionSummary } from "./_components/ElectionSummary";
 import { HoldingState } from "./_components/HoldingState";
 import { PositionCard } from "./_components/PositionCard";
 import { TurnoutBadge } from "./_components/TurnoutBadge";
+import { CLIENT_REQUEST_TIMEOUT_MS, createTimeoutController } from "@/lib/client/request-timeout";
 import { DIVISION_LABELS, POLL_INTERVAL, type ElectionMeta, type ResultsPayload } from "./_components/results-shared";
 
 export default function ResultsClient({
@@ -25,50 +26,57 @@ export default function ResultsClient({
   // Which election the visible tally belongs to, so we only animate when the
   // viewer actually swaps elections (not on routine background poll refreshes).
   const displayedElectionIdRef = useRef<string | null>(null);
+  const requestIdRef = useRef(0);
 
   const currentElection = elections[currentIndex];
 
   // Returns the fetched election status (or null on a failed/non-OK request) so
   // the poll loop can decide whether there's any point polling again.
-  const fetchResults = useCallback(async (): Promise<string | null> => {
-    if (!currentElection) return null;
+  const fetchResults = useCallback(async (election: ElectionMeta, requestId: number): Promise<string | null> => {
+    const { controller, clearTimeout } = createTimeoutController(CLIENT_REQUEST_TIMEOUT_MS);
     try {
-      const res = await fetch(`/api/results/${currentElection.id}`, {
+      const res = await fetch(`/api/results/${election.id}`, {
         cache: "no-store",
+        signal: controller.signal,
       });
-      if (res.ok) {
-        const json: ResultsPayload = await res.json();
-        const isElectionSwap =
-          displayedElectionIdRef.current !== null &&
-          displayedElectionIdRef.current !== json.electionId;
-
-        const commit = () => {
-          setData(json);
-          setLastUpdated(new Date());
-          displayedElectionIdRef.current = json.electionId;
-        };
-
-        const doc = document as Document & {
-          startViewTransition?: (cb: () => void) => void;
-        };
-
-        if (isElectionSwap && typeof doc.startViewTransition === "function") {
-          // Crossfade the old tally into the new one. flushSync forces the
-          // DOM swap to land inside the View Transition snapshot.
-          doc.startViewTransition(() => flushSync(commit));
-        } else {
-          commit();
-        }
-        return json.status;
+      if (!res.ok || requestId !== requestIdRef.current) {
+        return null;
       }
-      return null;
+      const json: ResultsPayload = await res.json();
+      if (requestId !== requestIdRef.current) return null;
+
+      const isElectionSwap =
+        displayedElectionIdRef.current !== null &&
+        displayedElectionIdRef.current !== json.electionId;
+
+      const commit = () => {
+        setData(json);
+        setLastUpdated(new Date());
+        displayedElectionIdRef.current = json.electionId;
+      };
+
+      const doc = document as Document & {
+        startViewTransition?: (cb: () => void) => void;
+      };
+
+      if (isElectionSwap && typeof doc.startViewTransition === "function") {
+        // Crossfade the old tally into the new one. flushSync forces the
+        // DOM swap to land inside the View Transition snapshot.
+        doc.startViewTransition(() => flushSync(commit));
+      } else {
+        commit();
+      }
+      return json.status;
     } catch {
       // Silently fail — keep showing last data
       return null;
     } finally {
-      setLoading(false);
+      clearTimeout();
+      if (requestId === requestIdRef.current) {
+        setLoading(false);
+      }
     }
-  }, [currentElection]);
+  }, []);
 
   // Fetch on election change, then poll — but stop once the election is CLOSED.
   // A closed election's tally is frozen and certified; it never changes again,
@@ -79,22 +87,29 @@ export default function ResultsClient({
   // crossfade has something to animate from; the full-screen loader only
   // appears on the very first load (data == null).
   useEffect(() => {
+    if (!currentElection) {
+      setLoading(false);
+      return;
+    }
+
     setLoading(true);
     let cancelled = false;
     let timer: ReturnType<typeof setTimeout> | null = null;
+    const requestId = ++requestIdRef.current;
 
     const tick = async () => {
-      const status = await fetchResults();
-      if (cancelled || status === "CLOSED") return;
+      const status = await fetchResults(currentElection, requestId);
+      if (cancelled || requestId !== requestIdRef.current || status === "CLOSED") return;
       timer = setTimeout(tick, POLL_INTERVAL);
     };
     void tick();
 
     return () => {
       cancelled = true;
+      requestIdRef.current += 1;
       if (timer) clearTimeout(timer);
     };
-  }, [fetchResults]);
+  }, [currentElection, fetchResults]);
 
   const divisionLabel = data ? DIVISION_LABELS[data.division] ?? data.division : "";
   const candidateCount =

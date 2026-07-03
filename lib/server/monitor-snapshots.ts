@@ -12,8 +12,9 @@
  * stays bounded (a coarse sampled timeline) no matter how many votes land. The
  * `(electionId, bucket)` unique constraint dedupes: the first commit in a bucket
  * writes the row; later commits in the same bucket collide (P2002) and are
- * swallowed as a no-op. The live frame between samples is still delivered in
- * real time over SSE — only the persisted history is coarsened.
+ * swallowed as a no-op. Unexpected DB failures bubble so the caller can log
+ * them with election context, but the live frame between samples is still
+ * delivered in real time over SSE — only the persisted history is coarsened.
  *
  * Pure helpers (`bucketFor`, `pruneCutoffIndex`) are exported and unit-tested;
  * the DB-touching functions are kept thin wrappers around them so there is
@@ -62,9 +63,9 @@ export function pruneCutoffIndex(
 /**
  * Records one monitor snapshot for `electionId`. No-ops silently when this
  * bucket was already written (P2002 unique violation on `(electionId, bucket)`
- * — the expected "another vote already sampled this 30s window" case), and
- * never throws into the caller's path — any other error is logged and swallowed
- * so a failed snapshot write can never break a ballot commit or a broadcast.
+ * — the expected "another vote already sampled this 30s window" case). Any
+ * other DB error is rethrown so the monitor broadcaster can log it with the
+ * relevant election id while still keeping the live frame path non-fatal.
  */
 export async function recordSnapshot(
   electionId: string,
@@ -91,9 +92,7 @@ export async function recordSnapshot(
       // under a stream of votes, not an error.
       return;
     }
-    // A snapshot write must never break the results response.
-    console.error("monitor-snapshots: failed to record snapshot", error);
-    return;
+    throw error;
   }
 
   if (bucket % PRUNE_EVERY_N_BUCKETS === 0) {
@@ -123,7 +122,7 @@ async function pruneOldSnapshots(electionId: string): Promise<void> {
       where: { electionId, capturedAt: { lt: new Date(cutoff) } },
     });
   } catch (error) {
-    console.error("monitor-snapshots: failed to prune old snapshots", error);
+    console.error(`monitor-snapshots: failed to prune old snapshots for election ${electionId}`, error);
   }
 }
 

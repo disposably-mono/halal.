@@ -23,6 +23,11 @@ export async function verifyAdminCredentials(
     return { ok: false, reason: "rateLimited" };
   }
 
-  const result = await checkAdminCredentials(email, password, officerKey);
-  return result.ok ? { ok: true } : result;
+  try {
+    const result = await checkAdminCredentials(email, password, officerKey);
+    return result.ok ? { ok: true } : result;
+  } catch (error) {
+    console.error("Admin login credential check failed.", error);
+    throw new Error("Unable to verify credentials right now. Please try again.");
+  }
 }

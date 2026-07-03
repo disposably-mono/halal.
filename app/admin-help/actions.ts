@@ -45,9 +45,13 @@ export async function unlockAdminHelp(
 
   let valid = false;
   for (const officer of officers) {
-    if (await bcrypt.compare(officerKey, officer.officerKey)) {
-      valid = true;
-      break;
+    try {
+      if (await bcrypt.compare(officerKey, officer.officerKey)) {
+        valid = true;
+        break;
+      }
+    } catch (error) {
+      console.error("Officer key comparison failed while unlocking admin help.", error);
     }
   }
 

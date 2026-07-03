@@ -24,6 +24,13 @@ import { DIVISION_CODES } from "@/lib/ui/division-labels";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+function unexpectedPdfErrorResponse() {
+  return NextResponse.json(
+    { error: "Failed to generate PDF." },
+    { status: 500 },
+  );
+}
+
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatDate(date: Date): string {
@@ -59,157 +66,157 @@ export async function GET(
   _req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  // ── Auth ──────────────────────────────────────────────────────────────────
-  // Results export is the Canvassing Head's domain.
-  const guard = await requireCapabilityOrError("results:export");
-  if (!guard.ok) {
-    return NextResponse.json(
-      { error: permissionErrorMessage(guard.error) },
-      { status: guard.error === "Forbidden" ? 403 : 401 },
-    );
-  }
-
-  const { id: electionId } = params;
-
-  // ── Fetch election ────────────────────────────────────────────────────────
-  const election = await prisma.election.findUnique({
-    where: { id: electionId },
-    select: {
-      id: true,
-      name: true,
-      division: true,
-      status: true,
-      updatedAt: true,
-      _count: { select: { voters: true } },
-      certification: { select: { snapshot: true } },
-      auditKeyEncrypted: true,
-      auditVersion: true,
-    },
-  });
-
-  if (!election) {
-    return NextResponse.json({ error: "Election not found." }, { status: 404 });
-  }
-
-  if (election.status !== "CLOSED") {
-    return NextResponse.json(
-      { error: "PDF export is only available for closed elections." },
-      { status: 400 }
-    );
-  }
-
-  if (election.auditVersion !== null) {
-    const certification = await prisma.electionCertification.findUnique({
-      where: { electionId },
-      select: { snapshot: true, snapshotHash: true, signature: true },
-    });
-    if (!certification || !election.auditKeyEncrypted || !verifyStoredCertification({
-      encryptedKey: election.auditKeyEncrypted,
-      snapshot: certification.snapshot,
-      snapshotHash: certification.snapshotHash,
-      signature: certification.signature,
-    })) {
+  try {
+    // ── Auth ──────────────────────────────────────────────────────────────────
+    // Results export is the Canvassing Head's domain.
+    const guard = await requireCapabilityOrError("results:export");
+    if (!guard.ok) {
       return NextResponse.json(
-        { error: "The official result certification failed integrity verification." },
-        { status: 409 },
+        { error: permissionErrorMessage(guard.error) },
+        { status: guard.error === "Forbidden" ? 403 : 401 },
       );
     }
-  }
 
-  // ── Fetch positions with candidates and vote counts ───────────────────────
-  const positions = await prisma.position.findMany({
-    where: { electionId, isActive: true },
-    orderBy: { order: "asc" },
-    include: {
-      candidates: {
-        orderBy: { fullName: "asc" },
-        select: { id: true, fullName: true },
+    const { id: electionId } = params;
+
+    // ── Fetch election ────────────────────────────────────────────────────────
+    const election = await prisma.election.findUnique({
+      where: { id: electionId },
+      select: {
+        id: true,
+        name: true,
+        division: true,
+        status: true,
+        updatedAt: true,
+        _count: { select: { voters: true } },
+        certification: { select: { snapshot: true } },
+        auditKeyEncrypted: true,
+        auditVersion: true,
       },
-    },
-  });
+    });
 
-  // Fetch vote tallies in a single query
-  const voteCounts = await prisma.vote.groupBy({
-    by: ["candidateId"],
-    where: { electionId },
-    _count: { candidateId: true },
-  });
+    if (!election) {
+      return NextResponse.json({ error: "Election not found." }, { status: 404 });
+    }
 
-  const voteMap = buildVoteMap(voteCounts);
+    if (election.status !== "CLOSED") {
+      return NextResponse.json(
+        { error: "PDF export is only available for closed elections." },
+        { status: 400 }
+      );
+    }
 
-  // Voted-voter turnout grouped by grade, so each position's abstention baseline
-  // can be the turnout *eligible for that position* — not the whole electorate.
-  // (JHS per-grade governor positions only appear on one grade's ballot, so
-  // counting the rest of the school as abstainers over-counts abstentions.)
-  const votedByGrade = await prisma.voter.groupBy({
-    by: ["gradeLevel"],
-    where: { electionId, hasVoted: true },
-    _count: { _all: true },
-  });
-  const votedGradeCounts = new Map<number, number>(
-    votedByGrade.map((g) => [g.gradeLevel, g._count._all] as [number, number]),
-  );
-  const totalVoted = votedByGrade.reduce((s, g) => s + g._count._all, 0);
-  // Eligible turnout = voted voters whose grade is on this position's ballot. An
-  // empty eligibleGrades means "no grade filter" → the whole voted electorate.
-  const eligibleTurnoutFor = (eligibleGrades: number[]): number =>
-    eligibleGrades.length === 0
-      ? totalVoted
-      : eligibleGrades.reduce((s, grade) => s + (votedGradeCounts.get(grade) ?? 0), 0);
-
-  // Build the shape expected by ResultsPDF
-  const legacyResultPositions: ResultPosition[] = positions.map((pos) => {
-    // eligibleTurnoutFor(...) is exactly the "voters who voted" figure
-    // computePositionTally expects — its abstentions math (max(0, voters -
-    // votesCast)) reproduces the same formula this route used inline before.
-    const tally = computePositionTally(pos.candidates, voteMap, eligibleTurnoutFor(pos.eligibleGrades));
-
-    return {
-      id: pos.id,
-      title: pos.title,
-      totalVoters: election._count.voters,
-      abstentions: tally.abstentions,
-      candidates: tally.candidates.map((c) => ({
-        id: c.id,
-        fullName: c.fullName,
-        votes: c.votes,
-        isWinner: c.isWinner,
-        isTie: c.isTie,
-      })),
-    };
-  });
-  const certified = election.certification?.snapshot as unknown as AuditSnapshot | undefined;
-  const resultPositions: ResultPosition[] = certified
-    ? certified.positions.map((position) => {
-        const positionVoteMap = new Map(position.candidates.map((c) => [c.id, c.votes] as [string, number]));
-        const totalVotesForPosition = position.candidates.reduce((sum, c) => sum + c.votes, 0);
-        // Same reconstruction trick as the legacy branch above: the certified
-        // snapshot's abstentions figure is authoritative, so feed it back in
-        // to keep the shared tally's math consistent with it while still
-        // sourcing isWinner/isTie from one place.
-        const tally = computePositionTally(
-          position.candidates,
-          positionVoteMap,
-          position.abstentions + totalVotesForPosition,
+    if (election.auditVersion !== null) {
+      const certification = await prisma.electionCertification.findUnique({
+        where: { electionId },
+        select: { snapshot: true, snapshotHash: true, signature: true },
+      });
+      if (!certification || !election.auditKeyEncrypted || !verifyStoredCertification({
+        encryptedKey: election.auditKeyEncrypted,
+        snapshot: certification.snapshot,
+        snapshotHash: certification.snapshotHash,
+        signature: certification.signature,
+      })) {
+        return NextResponse.json(
+          { error: "The official result certification failed integrity verification." },
+          { status: 409 },
         );
-        return {
-          id: position.id,
-          title: position.title,
-          totalVoters: certified.turnout.total,
-          abstentions: position.abstentions,
-          candidates: tally.candidates.map((c) => ({
-            id: c.id,
-            fullName: c.fullName,
-            votes: c.votes,
-            isWinner: c.isWinner,
-            isTie: c.isTie,
-          })),
-        };
-      })
-    : legacyResultPositions;
+      }
+    }
 
-  // ── Render PDF ────────────────────────────────────────────────────────────
-  try {
+    // ── Fetch positions with candidates and vote counts ───────────────────────
+    const positions = await prisma.position.findMany({
+      where: { electionId, isActive: true },
+      orderBy: { order: "asc" },
+      include: {
+        candidates: {
+          orderBy: { fullName: "asc" },
+          select: { id: true, fullName: true },
+        },
+      },
+    });
+
+    // Fetch vote tallies in a single query
+    const voteCounts = await prisma.vote.groupBy({
+      by: ["candidateId"],
+      where: { electionId },
+      _count: { candidateId: true },
+    });
+
+    const voteMap = buildVoteMap(voteCounts);
+
+    // Voted-voter turnout grouped by grade, so each position's abstention baseline
+    // can be the turnout *eligible for that position* — not the whole electorate.
+    // (JHS per-grade governor positions only appear on one grade's ballot, so
+    // counting the rest of the school as abstainers over-counts abstentions.)
+    const votedByGrade = await prisma.voter.groupBy({
+      by: ["gradeLevel"],
+      where: { electionId, hasVoted: true },
+      _count: { _all: true },
+    });
+    const votedGradeCounts = new Map<number, number>(
+      votedByGrade.map((g) => [g.gradeLevel, g._count._all] as [number, number]),
+    );
+    const totalVoted = votedByGrade.reduce((s, g) => s + g._count._all, 0);
+    // Eligible turnout = voted voters whose grade is on this position's ballot. An
+    // empty eligibleGrades means "no grade filter" → the whole voted electorate.
+    const eligibleTurnoutFor = (eligibleGrades: number[]): number =>
+      eligibleGrades.length === 0
+        ? totalVoted
+        : eligibleGrades.reduce((s, grade) => s + (votedGradeCounts.get(grade) ?? 0), 0);
+
+    // Build the shape expected by ResultsPDF
+    const legacyResultPositions: ResultPosition[] = positions.map((pos) => {
+      // eligibleTurnoutFor(...) is exactly the "voters who voted" figure
+      // computePositionTally expects — its abstentions math (max(0, voters -
+      // votesCast)) reproduces the same formula this route used inline before.
+      const tally = computePositionTally(pos.candidates, voteMap, eligibleTurnoutFor(pos.eligibleGrades));
+
+      return {
+        id: pos.id,
+        title: pos.title,
+        totalVoters: election._count.voters,
+        abstentions: tally.abstentions,
+        candidates: tally.candidates.map((c) => ({
+          id: c.id,
+          fullName: c.fullName,
+          votes: c.votes,
+          isWinner: c.isWinner,
+          isTie: c.isTie,
+        })),
+      };
+    });
+    const certified = election.certification?.snapshot as unknown as AuditSnapshot | undefined;
+    const resultPositions: ResultPosition[] = certified
+      ? certified.positions.map((position) => {
+          const positionVoteMap = new Map(position.candidates.map((c) => [c.id, c.votes] as [string, number]));
+          const totalVotesForPosition = position.candidates.reduce((sum, c) => sum + c.votes, 0);
+          // Same reconstruction trick as the legacy branch above: the certified
+          // snapshot's abstentions figure is authoritative, so feed it back in
+          // to keep the shared tally's math consistent with it while still
+          // sourcing isWinner/isTie from one place.
+          const tally = computePositionTally(
+            position.candidates,
+            positionVoteMap,
+            position.abstentions + totalVotesForPosition,
+          );
+          return {
+            id: position.id,
+            title: position.title,
+            totalVoters: certified.turnout.total,
+            abstentions: position.abstentions,
+            candidates: tally.candidates.map((c) => ({
+              id: c.id,
+              fullName: c.fullName,
+              votes: c.votes,
+              isWinner: c.isWinner,
+              isTie: c.isTie,
+            })),
+          };
+        })
+      : legacyResultPositions;
+
+    // ── Render PDF ────────────────────────────────────────────────────────────
     const now = new Date();
 
     // Fix: cast through unknown to satisfy @react-pdf/renderer's ReactElement expectation
@@ -239,12 +246,7 @@ export async function GET(
       },
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    // Keep the render detail server-side only — it can expose internals/paths.
-    console.error("[results-pdf] render error:", message);
-    return NextResponse.json(
-      { error: "Failed to generate PDF." },
-      { status: 500 }
-    );
+    console.error("[results-pdf] unexpected error", err);
+    return unexpectedPdfErrorResponse();
   }
 }

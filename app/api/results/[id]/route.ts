@@ -21,171 +21,183 @@ export const dynamic = "force-dynamic";
 // (lib/server/monitor-broadcast.ts), so observing results never mutates the DB.
 const RESULTS_CACHE_TTL_MS = 3000;
 
+function unexpectedResultsErrorResponse() {
+  return NextResponse.json(
+    { error: "Failed to load results." },
+    { status: 500 },
+  );
+}
+
 export async function GET(
   req: NextRequest,
   { params }: { params: { id: string } }
 ) {
-  const { id } = params;
-  const isAdminRequest = req.nextUrl.searchParams.get("admin") === "1";
+  try {
+    const { id } = params;
+    const isAdminRequest = req.nextUrl.searchParams.get("admin") === "1";
 
-  // Verify admin access if requesting admin (live/embargoed) data
-  if (isAdminRequest) {
-    const guard = await requireCapabilityOrError("admin:view");
-    if (!guard.ok) {
-      return NextResponse.json(
-        { error: permissionErrorMessage(guard.error) },
-        { status: guard.error === "Forbidden" ? 403 : 401 },
-      );
+    // Verify admin access if requesting admin (live/embargoed) data
+    if (isAdminRequest) {
+      const guard = await requireCapabilityOrError("admin:view");
+      if (!guard.ok) {
+        return NextResponse.json(
+          { error: permissionErrorMessage(guard.error) },
+          { status: guard.error === "Forbidden" ? 403 : 401 },
+        );
+      }
     }
-  }
 
-  const election = await prisma.election.findUnique({
-    where: { id },
-    select: {
-      id: true,
-      name: true,
-      division: true,
-      status: true,
-      scheduledOpen: true,
-      scheduledClose: true,
-      archivedAt: true,
-      auditFingerprint: true,
-      auditVersion: true,
-      auditKeyEncrypted: true,
-      certification: { select: { snapshot: true, snapshotHash: true, signature: true } },
-    },
-  });
-
-  if (!election) {
-    return NextResponse.json({ error: "Election not found" }, { status: 404 });
-  }
-
-  // Archived elections are retired from public results (admins retain access)
-  if (!isAdminRequest && election.archivedAt !== null) {
-    return NextResponse.json({ error: "Election not found" }, { status: 404 });
-  }
-
-  // Public embargo — only return results if CLOSED or admin
-  if (!isAdminRequest && election.status !== "CLOSED") {
-    return NextResponse.json({
-      electionId: id,
-      status: election.status,
-      name: election.name,
-      division: election.division,
-      embargoed: true,
-      positions: [],
-      turnout: null,
-      audit: {
-        receiptVerificationSupported: election.auditVersion !== null,
-        fingerprint: election.auditFingerprint,
-        certifiedSnapshotHash: null,
+    const election = await prisma.election.findUnique({
+      where: { id },
+      select: {
+        id: true,
+        name: true,
+        division: true,
+        status: true,
+        scheduledOpen: true,
+        scheduledClose: true,
+        archivedAt: true,
+        auditFingerprint: true,
+        auditVersion: true,
+        auditKeyEncrypted: true,
+        certification: { select: { snapshot: true, snapshotHash: true, signature: true } },
       },
     });
-  }
 
-  const certificationValid = !!(
-    election.certification &&
-    election.auditKeyEncrypted &&
-    verifyStoredCertification({
-      encryptedKey: election.auditKeyEncrypted,
-      snapshot: election.certification.snapshot,
-      snapshotHash: election.certification.snapshotHash,
-      signature: election.certification.signature,
-    })
-  );
-  if (election.status === "CLOSED" && election.auditVersion !== null && !certificationValid) {
-    return NextResponse.json({
+    if (!election) {
+      return NextResponse.json({ error: "Election not found" }, { status: 404 });
+    }
+
+    // Archived elections are retired from public results (admins retain access)
+    if (!isAdminRequest && election.archivedAt !== null) {
+      return NextResponse.json({ error: "Election not found" }, { status: 404 });
+    }
+
+    // Public embargo — only return results if CLOSED or admin
+    if (!isAdminRequest && election.status !== "CLOSED") {
+      return NextResponse.json({
+        electionId: id,
+        status: election.status,
+        name: election.name,
+        division: election.division,
+        embargoed: true,
+        positions: [],
+        turnout: null,
+        audit: {
+          receiptVerificationSupported: election.auditVersion !== null,
+          fingerprint: election.auditFingerprint,
+          certifiedSnapshotHash: null,
+        },
+      });
+    }
+
+    const certificationValid = !!(
+      election.certification &&
+      election.auditKeyEncrypted &&
+      verifyStoredCertification({
+        encryptedKey: election.auditKeyEncrypted,
+        snapshot: election.certification.snapshot,
+        snapshotHash: election.certification.snapshotHash,
+        signature: election.certification.signature,
+      })
+    );
+    if (election.status === "CLOSED" && election.auditVersion !== null && !certificationValid) {
+      return NextResponse.json({
+        electionId: id,
+        status: election.status,
+        name: election.name,
+        division: election.division,
+        embargoed: false,
+        integrityFailure: true,
+        positions: [],
+        turnout: null,
+        audit: {
+          receiptVerificationSupported: true,
+          fingerprint: election.auditFingerprint,
+          certifiedSnapshotHash: election.certification?.snapshotHash ?? null,
+        },
+      });
+    }
+
+    const certified =
+      election.status === "CLOSED" && election.certification && certificationValid
+        ? (election.certification.snapshot as unknown as AuditSnapshot)
+        : null;
+
+    // The live tally is the expensive, frequently-polled path. Only compute it
+    // when we are NOT serving a certified snapshot, and route it through a
+    // single-flight micro-cache so concurrent pollers share one vote scan.
+    const aggregate = certified
+      ? null
+      : await cached(`results-agg:${id}`, RESULTS_CACHE_TTL_MS, () =>
+          computeResultsAggregate(id),
+        );
+
+    // buildLivePositions gates the admin-only abstentions figure: for a public
+    // request it leaves the field undefined, so JSON serialisation omits it.
+    const livePositionResults = aggregate
+      ? buildLivePositions(aggregate, { includeAbstentions: isAdminRequest })
+      : [];
+
+    const positionResults = certified
+      ? certified.positions.map((position) => {
+          const voteMap = new Map(position.candidates.map((c) => [c.id, c.votes] as [string, number]));
+          const totalVotesCast = position.candidates.reduce((sum, c) => sum + c.votes, 0);
+          // Same reconstruction trick as the live branch above: the certified
+          // snapshot's abstentions figure is authoritative, so we feed it back
+          // in to keep computePositionTally's output consistent with it while
+          // still sourcing isWinner/isTie from the shared module.
+          const tally = computePositionTally(
+            position.candidates,
+            voteMap,
+            position.abstentions + totalVotesCast,
+          );
+          return {
+            id: position.id,
+            title: position.title,
+            order: position.order,
+            candidates: tally.candidates
+              .map((c) => ({
+                id: c.id,
+                fullName: c.fullName,
+                gradeLevel: c.gradeLevel!,
+                votes: c.votes,
+                isWinner: c.isWinner,
+                isTie: c.isTie,
+              }))
+              .sort((a, b) => b.votes - a.votes),
+            abstentions: isAdminRequest ? position.abstentions : undefined,
+            totalVotes: totalVotesCast,
+          };
+        })
+      : livePositionResults;
+
+    const responsePayload = {
       electionId: id,
       status: election.status,
       name: election.name,
       division: election.division,
       embargoed: false,
-      integrityFailure: true,
-      positions: [],
-      turnout: null,
+      positions: positionResults,
+      turnout: (() => {
+        const voted = certified?.turnout.voted ?? aggregate?.votedCount ?? 0;
+        const total = certified?.turnout.total ?? aggregate?.totalVoters ?? 0;
+        return { voted, total, pct: total > 0 ? Math.round((voted / total) * 100) : 0 };
+      })(),
       audit: {
-        receiptVerificationSupported: true,
+        receiptVerificationSupported: election.auditVersion !== null,
         fingerprint: election.auditFingerprint,
         certifiedSnapshotHash: election.certification?.snapshotHash ?? null,
       },
-    });
+      integrityFailure: false,
+    };
+
+    // Read-only: no snapshot is written here. Snapshot history is produced by the
+    // server on election-state changes (lib/server/monitor-broadcast.ts), so
+    // observing results — public or admin — never mutates the database.
+    return NextResponse.json(responsePayload);
+  } catch (error) {
+    console.error("[results-route] unexpected error", error);
+    return unexpectedResultsErrorResponse();
   }
-
-  const certified =
-    election.status === "CLOSED" && election.certification && certificationValid
-      ? (election.certification.snapshot as unknown as AuditSnapshot)
-      : null;
-
-  // The live tally is the expensive, frequently-polled path. Only compute it
-  // when we are NOT serving a certified snapshot, and route it through a
-  // single-flight micro-cache so concurrent pollers share one vote scan.
-  const aggregate = certified
-    ? null
-    : await cached(`results-agg:${id}`, RESULTS_CACHE_TTL_MS, () =>
-        computeResultsAggregate(id),
-      );
-
-  // buildLivePositions gates the admin-only abstentions figure: for a public
-  // request it leaves the field undefined, so JSON serialisation omits it.
-  const livePositionResults = aggregate
-    ? buildLivePositions(aggregate, { includeAbstentions: isAdminRequest })
-    : [];
-
-  const positionResults = certified
-    ? certified.positions.map((position) => {
-        const voteMap = new Map(position.candidates.map((c) => [c.id, c.votes] as [string, number]));
-        const totalVotesCast = position.candidates.reduce((sum, c) => sum + c.votes, 0);
-        // Same reconstruction trick as the live branch above: the certified
-        // snapshot's abstentions figure is authoritative, so we feed it back
-        // in to keep computePositionTally's output consistent with it while
-        // still sourcing isWinner/isTie from the shared module.
-        const tally = computePositionTally(
-          position.candidates,
-          voteMap,
-          position.abstentions + totalVotesCast,
-        );
-        return {
-          id: position.id,
-          title: position.title,
-          order: position.order,
-          candidates: tally.candidates
-            .map((c) => ({
-              id: c.id,
-              fullName: c.fullName,
-              gradeLevel: c.gradeLevel!,
-              votes: c.votes,
-              isWinner: c.isWinner,
-              isTie: c.isTie,
-            }))
-            .sort((a, b) => b.votes - a.votes),
-          abstentions: isAdminRequest ? position.abstentions : undefined,
-          totalVotes: totalVotesCast,
-        };
-      })
-    : livePositionResults;
-
-  const responsePayload = {
-    electionId: id,
-    status: election.status,
-    name: election.name,
-    division: election.division,
-    embargoed: false,
-    positions: positionResults,
-    turnout: (() => {
-      const voted = certified?.turnout.voted ?? aggregate?.votedCount ?? 0;
-      const total = certified?.turnout.total ?? aggregate?.totalVoters ?? 0;
-      return { voted, total, pct: total > 0 ? Math.round((voted / total) * 100) : 0 };
-    })(),
-    audit: {
-      receiptVerificationSupported: election.auditVersion !== null,
-      fingerprint: election.auditFingerprint,
-      certifiedSnapshotHash: election.certification?.snapshotHash ?? null,
-    },
-    integrityFailure: false,
-  };
-
-  // Read-only: no snapshot is written here. Snapshot history is produced by the
-  // server on election-state changes (lib/server/monitor-broadcast.ts), so
-  // observing results — public or admin — never mutates the database.
-  return NextResponse.json(responsePayload);
 }

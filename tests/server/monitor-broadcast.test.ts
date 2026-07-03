@@ -8,17 +8,19 @@ const computeMock = vi.fn(async (): Promise<ResultsPayload> => {
   await new Promise<void>((resolve) => computeGates.push(resolve));
   return { electionId: "e", status: "OPEN", positions: [], turnout: null } as ResultsPayload;
 });
-const recordMock = vi.fn(async (..._args: unknown[]) => {});
-const publishMock = vi.fn((..._args: unknown[]) => {});
+const monitorMocks = vi.hoisted(() => ({
+  recordMock: vi.fn(async () => {}),
+  publishMock: vi.fn(() => {}),
+}));
 
 vi.mock("@/lib/server/results-aggregate", () => ({
   computeAdminMonitorPayload: () => computeMock(),
 }));
 vi.mock("@/lib/server/monitor-snapshots", () => ({
-  recordSnapshot: (...args: unknown[]) => recordMock(...args),
+  recordSnapshot: monitorMocks.recordMock,
 }));
 vi.mock("@/lib/server/monitor-hub", () => ({
-  publish: (...args: unknown[]) => publishMock(...args),
+  publish: monitorMocks.publishMock,
 }));
 
 import { scheduleMonitorRefresh } from "@/lib/server/monitor-broadcast";
@@ -32,8 +34,8 @@ const freshId = () => `bc-test-${seq++}`;
 beforeEach(() => {
   computeGates.length = 0;
   computeMock.mockClear();
-  recordMock.mockClear();
-  publishMock.mockClear();
+  monitorMocks.recordMock.mockClear();
+  monitorMocks.publishMock.mockClear();
 });
 
 afterEach(() => {
@@ -61,23 +63,23 @@ describe("scheduleMonitorRefresh coalescing", () => {
     computeGates[0](); // finish compute #1 → publishes, then trailing recompute
     await flush();
     expect(computeMock).toHaveBeenCalledTimes(2);
-    expect(publishMock).toHaveBeenCalledTimes(1);
+    expect(monitorMocks.publishMock).toHaveBeenCalledTimes(1);
 
     computeGates[1](); // finish compute #2 → no pending left
     await done;
     expect(computeMock).toHaveBeenCalledTimes(2);
-    expect(publishMock).toHaveBeenCalledTimes(2);
+    expect(monitorMocks.publishMock).toHaveBeenCalledTimes(2);
     // Persist-then-broadcast ordering, once per completed compute.
-    expect(recordMock).toHaveBeenCalledTimes(2);
+    expect(monitorMocks.recordMock).toHaveBeenCalledTimes(2);
   });
 
   it("persists a snapshot before broadcasting each frame", async () => {
     const id = freshId();
     const order: string[] = [];
-    recordMock.mockImplementationOnce(async () => {
+    monitorMocks.recordMock.mockImplementationOnce(async () => {
       order.push("record");
     });
-    publishMock.mockImplementationOnce(() => {
+    monitorMocks.publishMock.mockImplementationOnce(() => {
       order.push("publish");
     });
 
@@ -97,7 +99,30 @@ describe("scheduleMonitorRefresh coalescing", () => {
     });
 
     await expect(scheduleMonitorRefresh(id)).resolves.toBeUndefined();
-    expect(publishMock).not.toHaveBeenCalled();
+    expect(monitorMocks.publishMock).not.toHaveBeenCalled();
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining("monitor-broadcast: refresh failed"),
+      expect.any(Error),
+    );
+    spy.mockRestore();
+  });
+
+  it("keeps publishing when snapshot persistence fails", async () => {
+    const id = freshId();
+    const spy = vi.spyOn(console, "error").mockImplementation(() => {});
+    monitorMocks.recordMock.mockRejectedValueOnce(new Error("snapshot write failed"));
+
+    const done = scheduleMonitorRefresh(id);
+    await flush();
+    computeGates[0]();
+    await expect(done).resolves.toBeUndefined();
+
+    expect(monitorMocks.recordMock).toHaveBeenCalledTimes(1);
+    expect(monitorMocks.publishMock).toHaveBeenCalledTimes(1);
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringContaining("monitor-broadcast: snapshot failed"),
+      expect.any(Error),
+    );
     spy.mockRestore();
   });
 });

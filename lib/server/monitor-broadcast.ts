@@ -28,6 +28,8 @@ interface RefreshState {
   pending: boolean;
 }
 
+const MONITOR_COMPUTE_TIMEOUT_MS = 15_000;
+
 const globalForBroadcast = globalThis as unknown as {
   __monitorRefresh?: Map<string, RefreshState>;
 };
@@ -37,12 +39,20 @@ const refreshStates: Map<string, RefreshState> =
   (globalForBroadcast.__monitorRefresh = new Map());
 
 async function computeAndBroadcast(electionId: string): Promise<void> {
-  const payload = await computeAdminMonitorPayload(electionId);
+  const payload = await withTimeout(
+    computeAdminMonitorPayload(electionId),
+    MONITOR_COMPUTE_TIMEOUT_MS,
+    `monitor compute timed out for election ${electionId}`,
+  );
   if (!payload) return; // election was deleted mid-flight
-  // Persist first (bucket-deduped, bounded history), then broadcast. A failed
-  // snapshot write is swallowed inside recordSnapshot and must not block the
-  // live broadcast that connected admins are waiting on.
-  await recordSnapshot(electionId, payload);
+  // Persist first (bucket-deduped, bounded history), then broadcast. Snapshot
+  // persistence is best-effort: if it fails, log it with election context and
+  // keep the live frame flowing so voting/admin actions stay non-fatal.
+  try {
+    await recordSnapshot(electionId, payload);
+  } catch (error) {
+    console.error(`monitor-broadcast: snapshot failed for election ${electionId}`, error);
+  }
   publish(electionId, payload);
 }
 
@@ -70,11 +80,28 @@ export async function scheduleMonitorRefresh(electionId: string): Promise<void> 
         await computeAndBroadcast(electionId);
       } catch (error) {
         // Never propagate into the caller's request path.
-        console.error("monitor-broadcast: refresh failed", error);
+        console.error(`monitor-broadcast: refresh failed for election ${electionId}`, error);
       }
     } while (state.pending);
   } finally {
     state.running = false;
     if (!state.pending) refreshStates.delete(electionId);
+  }
+}
+
+async function withTimeout<T>(
+  promise: Promise<T>,
+  timeoutMs: number,
+  errorMessage: string,
+): Promise<T> {
+  let timeoutId: ReturnType<typeof setTimeout> | null = null;
+  const timeout = new Promise<T>((_resolve, reject) => {
+    timeoutId = setTimeout(() => reject(new Error(errorMessage)), timeoutMs);
+  });
+
+  try {
+    return await Promise.race([promise, timeout]);
+  } finally {
+    if (timeoutId !== null) clearTimeout(timeoutId);
   }
 }
