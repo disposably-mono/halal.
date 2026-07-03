@@ -21,7 +21,7 @@ export function TurnoutCard({
 
   return (
     <Card title="Voter Turnout" meta={<span className="text-[10px] text-white/40">{turnout.voted} / {turnout.total}</span>}>
-      <div className="mb-2 h-[3px] overflow-hidden rounded-full bg-white/[0.06]">
+      <div className="mb-2 h-[3px] overflow-hidden rounded-full bg-white/6">
         <div
           className="h-full rounded-full bg-emerald-500 transition-all duration-700"
           style={{ width: `${displayPct}%` }}

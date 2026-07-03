@@ -56,7 +56,7 @@ export default function VoterHelpPage() {
             />
           </div>
 
-          <div className="mt-6 rounded-xl border border-gold/20 bg-gold/[0.05] p-5">
+          <div className="mt-6 rounded-xl border border-gold/20 bg-gold/5 p-5">
             <p className="font-heading text-sm font-bold uppercase tracking-[0.12em] text-gold">Why both are required</p>
             <p className="mt-2 text-sm leading-6 text-white/55">
               The Student ID identifies the registered student, while the Control Number authorizes that student&apos;s one ballot for a specific election. Voter records only track whether a ballot was used. Candidate choices are stored separately, so the website cannot connect a submitted vote back to a Student ID.
@@ -75,7 +75,7 @@ export default function VoterHelpPage() {
           />
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map(([number, title, body]) => (
-              <article key={number} className="rounded-xl border border-white/[0.08] bg-navy/50 p-5">
+              <article key={number} className="rounded-xl border border-white/8 bg-navy/50 p-5">
                 <span className="font-mono text-xs text-gold/60">{number}</span>
                 <h3 className="mt-4 font-heading text-base font-bold text-white/90">{title}</h3>
                 <p className="mt-2 text-xs leading-5 text-white/45">{body}</p>
@@ -107,7 +107,7 @@ export default function VoterHelpPage() {
             </Question>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/[0.08] bg-white/[0.025] p-5">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/8 bg-white/2.5 p-5">
             <div>
               <h3 className="font-heading font-bold text-white/90">Have your voter slip ready?</h3>
               <p className="mt-1 text-xs text-white/45">Continue when your division&apos;s election is open.</p>
@@ -134,11 +134,11 @@ function CredentialCard({
   points: string[];
 }) {
   return (
-    <article className="rounded-xl border border-white/[0.08] bg-navy/50 p-6">
+    <article className="rounded-xl border border-white/8 bg-navy/50 p-6">
       <p className="text-[10px] uppercase tracking-[0.25em] text-gold/60">{label}</p>
-      <div className="mt-4 rounded-lg border border-white/[0.08] bg-[#090c20] px-4 py-3 font-mono text-xl tracking-[0.16em] text-white/85">{example}</div>
+      <div className="mt-4 rounded-lg border border-white/8 bg-[#090c20] px-4 py-3 font-mono text-xl tracking-[0.16em] text-white/85">{example}</div>
       <p className="mt-5 text-sm leading-6 text-white/50">{body}</p>
-      <ul className="mt-4 space-y-2 border-t border-white/[0.06] pt-4">
+      <ul className="mt-4 space-y-2 border-t border-white/6 pt-4">
         {points.map((point) => (
           <li key={point} className="flex gap-2 text-xs leading-5 text-white/40">
             <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold/60" />
@@ -152,7 +152,7 @@ function CredentialCard({
 
 function Question({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <article className="rounded-xl border border-white/[0.08] bg-navy/45 p-5">
+    <article className="rounded-xl border border-white/8 bg-navy/45 p-5">
       <h3 className="font-heading font-bold text-white/85">{title}</h3>
       <p className="mt-2 text-xs leading-5 text-white/45">{children}</p>
     </article>

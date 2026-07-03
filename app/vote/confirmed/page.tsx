@@ -33,7 +33,7 @@ export default async function ConfirmedPage() {
             <p className="font-body text-white/60 text-sm leading-relaxed mb-6 print:text-black/70">
               This is how your anonymous ballot was recorded. Review it now, then retain the receipt code; it cannot be recovered later.
             </p>
-            <div className="text-left border border-white/15 bg-white/[0.04] rounded-sm mb-5 print:border-black/30">
+            <div className="text-left border border-white/15 bg-white/4 rounded-sm mb-5 print:border-black/30">
               <div className="px-5 py-4 border-b border-white/10 print:border-black/20">
                 <div className="text-[10px] uppercase tracking-[0.2em] text-white/40 print:text-black/50">Election</div>
                 <div className="text-white/90 mt-1 print:text-black">{ballot.election.name}</div>
@@ -45,9 +45,9 @@ export default async function ConfirmedPage() {
                 </div>
               ))}
             </div>
-            <div className="border border-gold/30 bg-gold/[0.05] px-5 py-5 mb-6 print:border-black">
+            <div className="border border-gold/30 bg-gold/5 px-5 py-5 mb-6 print:border-black">
               <div className="text-[10px] uppercase tracking-[0.24em] text-gold/60 mb-2 print:text-black/60">Verification Receipt</div>
-              <div className="font-mono text-lg sm:text-xl tracking-[0.1em] text-gold break-all print:text-black">{confirmation.receiptCode}</div>
+              <div className="font-mono text-lg sm:text-xl tracking-widest text-gold break-all print:text-black">{confirmation.receiptCode}</div>
               <div className="mt-3 text-[9px] text-white/35 break-all print:text-black/50">Audit fingerprint: {ballot.election.auditFingerprint}</div>
             </div>
             <ReceiptActions />

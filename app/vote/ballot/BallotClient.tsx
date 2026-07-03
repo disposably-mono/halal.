@@ -116,7 +116,7 @@ export default function BallotClient({
 
             {/* Instruction strip */}
             <div className="flex items-start gap-[10px] border border-navy bg-ballot-inst px-[13px] py-[9px] mb-4">
-              <span className="font-ballot-mono text-[10px] tracking-[0.2em] uppercase font-bold text-navy/65 whitespace-nowrap mt-[1px]">
+              <span className="font-ballot-mono text-[10px] tracking-[0.2em] uppercase font-bold text-navy/65 whitespace-nowrap mt-px">
                 Instr.
               </span>
               <p className="font-ballot-mono text-[11px] leading-[1.55] tracking-[0.04em] text-navy/58">

@@ -124,10 +124,10 @@ export default function AdminLoginPage() {
         </div>
 
         {/* ── Card ── */}
-        <div className="overflow-hidden rounded-2xl border border-white/[0.08] bg-admin-surface">
+        <div className="overflow-hidden rounded-2xl border border-white/8 bg-admin-surface">
 
           {/* Card header */}
-          <div className="border-b border-white/[0.08] px-6 py-5">
+          <div className="border-b border-white/8 px-6 py-5">
             <h2 className="text-[14px] font-semibold text-white/90">
               {step === 1 ? "Admin Sign In" : "Officer Verification"}
             </h2>
@@ -163,7 +163,7 @@ export default function AdminLoginPage() {
                     autoComplete="username"
                     aria-invalid={hasCredentialsError}
                     aria-describedby={hasCredentialsError ? "admin-credentials-error" : undefined}
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/40 outline-none transition-colors focus:border-gold/50 focus:bg-gold/[0.04] focus-visible:ring-2 focus-visible:ring-gold/20"
+                    className="h-10 rounded-lg border border-white/8 bg-white/5 px-3 text-[13px] text-white/90 placeholder:text-white/40 outline-hidden transition-colors focus:border-gold/50 focus:bg-gold/4 focus-visible:ring-2 focus-visible:ring-gold/20"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
@@ -186,14 +186,14 @@ export default function AdminLoginPage() {
                     autoComplete="current-password"
                     aria-invalid={hasCredentialsError}
                     aria-describedby={hasCredentialsError ? "admin-credentials-error" : undefined}
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 text-[13px] text-white/90 placeholder:text-white/40 outline-none transition-colors focus:border-gold/50 focus:bg-gold/[0.04] focus-visible:ring-2 focus-visible:ring-gold/20"
+                    className="h-10 rounded-lg border border-white/8 bg-white/5 px-3 text-[13px] text-white/90 placeholder:text-white/40 outline-hidden transition-colors focus:border-gold/50 focus:bg-gold/4 focus-visible:ring-2 focus-visible:ring-gold/20"
                   />
                 </div>
                 {credentialsError && (
                   <div
                     id="admin-credentials-error"
                     role="alert"
-                    className="rounded-lg border border-red-500/20 bg-red-500/[0.10] px-3 py-2.5 text-[12px] text-red-400"
+                    className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2.5 text-[12px] text-red-400"
                   >
                     {credentialsError}
                   </div>
@@ -232,7 +232,7 @@ export default function AdminLoginPage() {
                     autoComplete="one-time-code"
                     aria-invalid={hasOfficerKeyError}
                     aria-describedby={hasOfficerKeyError ? "admin-officer-key-error" : undefined}
-                    className="h-10 rounded-lg border border-white/[0.08] bg-white/[0.05] px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/40 outline-none transition-colors focus:border-gold/50 focus:bg-gold/[0.04] focus-visible:ring-2 focus-visible:ring-gold/20"
+                    className="h-10 rounded-lg border border-white/8 bg-white/5 px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/40 outline-hidden transition-colors focus:border-gold/50 focus:bg-gold/4 focus-visible:ring-2 focus-visible:ring-gold/20"
                   />
                 </div>
 
@@ -240,7 +240,7 @@ export default function AdminLoginPage() {
                   <div
                     id="admin-officer-key-error"
                     role="alert"
-                    className="rounded-lg border border-gold/20 bg-gold/[0.08] px-3 py-2.5 text-[12px] text-gold"
+                    className="rounded-lg border border-gold/20 bg-gold/8 px-3 py-2.5 text-[12px] text-gold"
                   >
                     {officerKeyError}
                   </div>

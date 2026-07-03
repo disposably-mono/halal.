@@ -69,7 +69,7 @@ export function RowActions({
 
   const archiveCheck = canArchive(e.status, e.archivedAt);
   const itemCls =
-    "block w-full text-left px-3 py-[7px] text-[11px] text-white/70 hover:bg-white/[0.06] focus-visible:bg-white/[0.06] focus-visible:outline-none no-underline";
+    "block w-full text-left px-3 py-[7px] text-[11px] text-white/70 hover:bg-white/6 focus-visible:bg-white/6 focus-visible:outline-hidden no-underline";
 
   function handleArchive() {
     setOpen(false);
@@ -90,7 +90,7 @@ export function RowActions({
         aria-expanded={open}
         disabled={isPending}
         onClick={() => setOpen((v) => !v)}
-        className="rounded-[5px] border border-white/[0.07] px-[7px] py-[4px] text-white/40 hover:text-white/70 hover:border-white/[0.12] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 transition-all disabled:opacity-40"
+        className="rounded-[5px] border border-white/[0.07] px-[7px] py-[4px] text-white/40 hover:text-white/70 hover:border-white/12 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/40 transition-all disabled:opacity-40"
       >
         <svg style={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="currentColor">
           <circle cx="5" cy="12" r="1.6" />
@@ -105,7 +105,7 @@ export function RowActions({
             ref={menuRef}
             role="menu"
             style={{ position: "fixed", top: coords.top, left: coords.left, width: MENU_WIDTH }}
-            className="z-50 origin-top-right animate-dropdown-in overflow-hidden rounded-[8px] border border-white/[0.10] bg-admin-surface py-1 shadow-xl"
+            className="z-50 origin-top-right animate-dropdown-in overflow-hidden rounded-[8px] border border-white/10 bg-admin-surface py-1 shadow-xl"
           >
             <Link role="menuitem" href={`/admin/elections/${e.id}/candidates`} className={itemCls}>
               Candidates
@@ -123,7 +123,7 @@ export function RowActions({
             </Link>
             {canLifecycle && (
               <>
-                <div className="my-1 border-t border-white/[0.06]" />
+                <div className="my-1 border-t border-white/6" />
                 <button
                   type="button"
                   role="menuitem"

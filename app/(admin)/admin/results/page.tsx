@@ -148,7 +148,7 @@ export default async function AdminResultsPage() {
               {/* Election header */}
               <div className="px-4 py-3 border-b border-white/[0.07] flex items-center justify-between gap-3">
                 <div className="flex items-center gap-3 min-w-0">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-[7px] py-[2px] text-[10px] font-semibold flex-shrink-0 ${statusMeta.badgeClassName}`}>
+                  <span className={`inline-flex items-center gap-1 rounded-full px-[7px] py-[2px] text-[10px] font-semibold shrink-0 ${statusMeta.badgeClassName}`}>
                     <span className={`w-1 h-1 rounded-full ${statusMeta.dotClassName}`} />
                     {statusMeta.label}
                   </span>
@@ -159,12 +159,12 @@ export default async function AdminResultsPage() {
                 </div>
 
                 {/* Turnout */}
-                <div className="flex items-center gap-3 flex-shrink-0">
+                <div className="flex items-center gap-3 shrink-0">
                   <div className="text-right">
                     <div className="text-[13px] font-bold text-white/80">{pct}%</div>
                     <div className="text-[10px] text-white/40">{el.votedCount} / {el._count.voters} voters</div>
                   </div>
-                  <div className="w-[48px] h-[4px] bg-white/[0.06] rounded-full overflow-hidden">
+                  <div className="w-[48px] h-[4px] bg-white/6 rounded-full overflow-hidden">
                     <div
                       className={`h-full rounded-full ${statusMeta.barClassName}`}
                       style={{ width: `${pct}%` }}
@@ -180,7 +180,7 @@ export default async function AdminResultsPage() {
               {/* Winners grid */}
               <div className="p-4">
                 {el.integrityFailure ? (
-                  <div className="rounded-[8px] border border-red-400/25 bg-red-400/[0.05] px-4 py-3 text-[11px] text-red-300">
+                  <div className="rounded-[8px] border border-red-400/25 bg-red-400/5 px-4 py-3 text-[11px] text-red-300">
                     Certified results failed cryptographic verification. Results are withheld pending a recount and audit.
                   </div>
                 ) : el.positions.length === 0 ? (
@@ -197,16 +197,16 @@ export default async function AdminResultsPage() {
                           key={pos.id}
                           className={`flex items-center gap-3 rounded-[8px] px-3 py-[8px] border
                             ${hasResult
-                              ? "bg-white/[0.025] border-white/[0.06]"
-                              : "bg-transparent border-white/[0.04]"}`}
+                              ? "bg-white/2.5 border-white/6"
+                              : "bg-transparent border-white/4"}`}
                         >
                           {/* Icon */}
-                          <div className={`w-[28px] h-[28px] rounded-[6px] flex-shrink-0 flex items-center justify-center text-[11px]
+                          <div className={`w-[28px] h-[28px] rounded-[6px] shrink-0 flex items-center justify-center text-[11px]
                             ${pos.winner
-                              ? "bg-gold/[0.1] text-gold"
+                              ? "bg-gold/10 text-gold"
                               : pos.draw
-                                ? "bg-sky-400/[0.1] text-sky-400"
-                                : "bg-white/[0.04] text-white/60"}`}>
+                                ? "bg-sky-400/10 text-sky-400"
+                                : "bg-white/4 text-white/60"}`}>
                             {pos.winner ? "*" : pos.draw ? "=" : "-"}
                           </div>
 
@@ -214,15 +214,15 @@ export default async function AdminResultsPage() {
                           <div className="min-w-0 flex-1">
                             <div className="text-[10px] text-white/40 truncate">{pos.title}</div>
                             {pos.winner ? (
-                              <div className="text-[12px] font-semibold text-white/85 truncate mt-[1px]">
+                              <div className="text-[12px] font-semibold text-white/85 truncate mt-px">
                                 {pos.winner.fullName}
                               </div>
                             ) : pos.draw ? (
-                              <div className="text-[11px] text-sky-400 font-medium mt-[1px]">
+                              <div className="text-[11px] text-sky-400 font-medium mt-px">
                                 TIE - {pos.draw.map((c) => c.fullName).join(" / ")}
                               </div>
                             ) : (
-                              <div className="text-[11px] text-white/60 italic mt-[1px]">
+                              <div className="text-[11px] text-white/60 italic mt-px">
                                 {pos.totalVotes === 0 ? "No votes cast yet" : "No candidates"}
                               </div>
                             )}
@@ -230,7 +230,7 @@ export default async function AdminResultsPage() {
 
                           {/* Winner vote count */}
                           {(pos.winner || pos.draw) && pos.winnerVotes > 0 && (
-                            <div className="text-[10px] text-white/40 flex-shrink-0 font-mono">
+                            <div className="text-[10px] text-white/40 shrink-0 font-mono">
                               {pos.winnerVotes}v
                             </div>
                           )}

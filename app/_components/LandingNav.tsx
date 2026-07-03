@@ -44,7 +44,7 @@ export function LandingNav() {
             )}
             <Link
               href={link.href}
-              className="font-body text-[0.65rem] tracking-[0.2em] uppercase text-white/[0.45] transition-colors duration-200 hover:text-gold"
+              className="font-body text-[0.65rem] tracking-[0.2em] uppercase text-white/45 transition-colors duration-200 hover:text-gold"
             >
               {link.label}
             </Link>

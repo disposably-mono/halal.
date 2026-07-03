@@ -89,7 +89,7 @@ export function DashboardLiveStats({ elections }: { elections: DashboardElection
           const total = latest?.total ?? election._count.voters;
 
           return (
-            <div key={election.id} className="rounded-[8px] border border-white/[0.07] bg-white/[0.03] p-3">
+            <div key={election.id} className="rounded-[8px] border border-white/[0.07] bg-white/3 p-3">
               <div className="flex items-start justify-between gap-3">
                 <div className="min-w-0">
                   <p className="truncate text-[12px] font-semibold text-white/85">{election.name}</p>

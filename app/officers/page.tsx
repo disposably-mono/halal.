@@ -174,15 +174,15 @@ function OfficerCard({ officer, past = false, year }: { officer: Officer; past?:
   return (
     <div
       className={`relative flex flex-col border rounded-sm overflow-hidden transition-all duration-300 group
-        ${isFeatured ? "border-gold/30 bg-navy/50" : "border-white/[0.08] bg-navy/25 hover:border-gold/20"}
+        ${isFeatured ? "border-gold/30 bg-navy/50" : "border-white/8 bg-navy/25 hover:border-gold/20"}
         ${past ? "opacity-80 hover:opacity-100" : ""}
       `}
     >
       {/* Top accent bar */}
-      <div className="h-[3px] flex-shrink-0" style={{ background: accentColor }} />
+      <div className="h-[3px] shrink-0" style={{ background: accentColor }} />
 
       {/* Photo area — 4:5 aspect ratio */}
-      <div className="relative w-full flex-shrink-0" style={{ aspectRatio: "4/5" }}>
+      <div className="relative w-full shrink-0" style={{ aspectRatio: "4/5" }}>
         {officer.photo ? (
           <Image src={officer.photo} alt={officer.name} fill className="object-cover object-top" />
         ) : (
@@ -219,7 +219,7 @@ function OfficerCard({ officer, past = false, year }: { officer: Officer; past?:
         )}
 
         {!officer.photo && (
-          <div className="absolute top-2 right-2 border border-gold/20 bg-gold/[0.08] rounded-sm px-1.5 py-0.5">
+          <div className="absolute top-2 right-2 border border-gold/20 bg-gold/8 rounded-sm px-1.5 py-0.5">
             <span className="font-body text-[8px] tracking-[0.15em] uppercase text-gold/50">Pubmat</span>
           </div>
         )}
@@ -235,7 +235,7 @@ function OfficerCard({ officer, past = false, year }: { officer: Officer; past?:
       {/* Info */}
       <div className="p-3 flex flex-col gap-1 flex-1">
         {isFeatured && (
-          <div className="inline-flex items-center self-start border border-gold/20 bg-gold/[0.08] rounded-sm px-1.5 py-0.5 mb-0.5">
+          <div className="inline-flex items-center self-start border border-gold/20 bg-gold/8 rounded-sm px-1.5 py-0.5 mb-0.5">
             <span className="font-body text-[8px] tracking-[0.2em] uppercase text-gold/70">
               {officer.role}
             </span>
@@ -339,7 +339,7 @@ export default function OfficersPage() {
               <Link
                 href={link.href}
                 className={`font-body text-[0.65rem] tracking-[0.2em] uppercase transition-colors duration-200 no-underline ${
-                  link.active ? "text-gold" : "text-white/[0.45] hover:text-gold"
+                  link.active ? "text-gold" : "text-white/45 hover:text-gold"
                 }`}
               >
                 {link.label}
@@ -365,7 +365,7 @@ export default function OfficersPage() {
           <Eyebrow label="OLPS COMELEC" />
 
           <h1
-            className="font-tagline font-bold leading-none tracking-[0.05em] uppercase text-white"
+            className="font-tagline font-bold leading-none tracking-wider uppercase text-white"
             style={{ fontSize: "clamp(3rem, 9vw, 5.5rem)" }}
           >
             Officers
@@ -396,7 +396,7 @@ export default function OfficersPage() {
                   setActiveTab(tab.key);
                   gridRef.current?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className={`px-4 sm:px-6 py-2 font-body text-[0.6rem] sm:text-[0.65rem] tracking-[0.2em] uppercase transition-all duration-200 outline-none cursor-pointer ${i > 0 ? "border-l" : "border-none"}`}
+                className={`px-4 sm:px-6 py-2 font-body text-[0.6rem] sm:text-[0.65rem] tracking-[0.2em] uppercase transition-all duration-200 outline-hidden cursor-pointer ${i > 0 ? "border-l" : "border-none"}`}
                 style={{
                   borderColor: "rgba(245,192,0,0.2)",
                   background: activeTab === tab.key ? "#F5C000" : "transparent",

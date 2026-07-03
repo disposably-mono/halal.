@@ -27,7 +27,7 @@ export function Toast({
   const style = styles[resolved.variant];
 
   return (
-    <div role={style.role} className={`fixed bottom-5 right-5 z-[9998] flex max-w-[calc(100vw-2.5rem)] animate-in items-center gap-2 rounded-[10px] border ${style.border} bg-admin-raised px-[14px] py-[10px] text-[12px] text-white/90 shadow-xl duration-200 slide-in-from-bottom-4`}>
+    <div role={style.role} className={`fixed bottom-5 right-5 z-9998 flex max-w-[calc(100vw-2.5rem)] animate-in items-center gap-2 rounded-[10px] border ${style.border} bg-admin-raised px-[14px] py-[10px] text-[12px] text-white/90 shadow-xl duration-200 slide-in-from-bottom-4`}>
       <span className={`h-[6px] w-[6px] shrink-0 rounded-full ${style.dot}`} />
       <span className="min-w-0">{resolved.msg}</span>
       {onDismiss && (
@@ -35,7 +35,7 @@ export function Toast({
           type="button"
           aria-label="Dismiss notification"
           onClick={onDismiss}
-          className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] text-white/55 transition-colors hover:text-white/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
+          className="-mr-2 flex h-11 w-11 shrink-0 items-center justify-center rounded-[8px] text-white/55 transition-colors hover:text-white/90 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/40"
         >
           ×
         </button>

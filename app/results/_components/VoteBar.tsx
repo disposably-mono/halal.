@@ -31,16 +31,16 @@ export function VoteBar({
           ? "border-gold/40 bg-navy/60"
           : isTie
             ? "border-sky-400/30 bg-navy/40"
-            : "border-white/[0.08] bg-navy/25"}`}
+            : "border-white/8 bg-navy/25"}`}
     >
       {/* Animated fill */}
       <div
         className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out
           ${isLeader && !isTie
-            ? "bg-gold/[0.15]"
+            ? "bg-gold/15"
             : isTie
               ? "bg-sky-400/[0.07]"
-              : "bg-white/[0.04]"}`}
+              : "bg-white/4"}`}
         style={{ width: `${displayPct}%` }}
       />
 

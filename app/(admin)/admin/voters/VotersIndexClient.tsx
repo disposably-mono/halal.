@@ -126,16 +126,16 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
                 <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
                   {divisionGroup.label}
                 </span>
-                <span className="h-px flex-1 bg-white/[0.05]" />
+                <span className="h-px flex-1 bg-white/5" />
                 <span className="text-[10px] text-white/55">
                   {divisionGroup.voterCount} voters · {divisionGroup.votedCount} voted
                 </span>
-                <span className="hidden rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10px] text-white/40 sm:inline">
+                <span className="hidden rounded-full border border-white/8 bg-white/3 px-2 py-1 text-[10px] text-white/40 sm:inline">
                   Click to expand
                 </span>
                 <span className="text-[12px] text-gold transition-transform group-open/division:rotate-90">›</span>
               </summary>
-              <div className="grid gap-3 border-t border-white/[0.06] p-3">
+              <div className="grid gap-3 border-t border-white/6 p-3">
                 {divisionGroup.elections.map((election) => (
                   <details key={election.id} className="group/election overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
@@ -145,7 +145,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
                       </div>
                       <div className="flex shrink-0 items-center gap-3 text-[10px] text-white/50">
                         <span>{election.voterCount} voters · {turnout(election.votedCount, election.voterCount)}%</span>
-                        <span className="hidden rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-white/40 lg:inline">
+                        <span className="hidden rounded-full border border-white/8 bg-white/3 px-2 py-1 text-white/40 lg:inline">
                           Click to expand
                         </span>
                         <Link href={`/admin/elections/${election.id}/voters`} className="rounded-[5px] border border-gold/20 bg-gold/[0.07] px-[7px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]">
@@ -171,7 +171,7 @@ function VoterRows({ voters }: { voters: VoterIndexRow[] }) {
     <div className="overflow-x-auto">
       <table className="w-full">
         <thead>
-          <tr className="border-b border-white/[0.04]">
+          <tr className="border-b border-white/4">
             {["#", "Control No.", "Student ID", "Grade", "Section", "Status"].map((heading) => (
               <th key={heading} className="px-4 py-[7px] text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-white/35">
                 {heading}
@@ -181,7 +181,7 @@ function VoterRows({ voters }: { voters: VoterIndexRow[] }) {
         </thead>
         <tbody>
           {voters.map((voter, index) => (
-            <tr key={voter.id} className="border-b border-white/[0.03] last:border-0 hover:bg-white/[0.02]">
+            <tr key={voter.id} className="border-b border-white/3 last:border-0 hover:bg-white/2">
               <td className="px-4 py-[8px] font-mono text-[10px] text-white/35">{index + 1}</td>
               <td className="px-4 py-[8px] font-mono text-[11px] font-medium text-white/70">{voter.voterCode}</td>
               <td className="px-4 py-[8px] font-mono text-[11px] text-white/55">{voter.studentId}</td>

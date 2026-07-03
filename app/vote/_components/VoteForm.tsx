@@ -16,7 +16,7 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
     <button
       type="submit"
       disabled={isPending}
-      className="w-full bg-gold text-navy font-heading font-bold text-sm tracking-[0.2em] uppercase py-3.5 rounded-sm hover:bg-gold/90 active:bg-gold/80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      className="w-full bg-gold text-navy font-heading font-bold text-sm tracking-[0.2em] uppercase py-3.5 rounded-sm hover:bg-gold/90 active:bg-gold/80 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
     >
       {isPending ? (
         <>
@@ -117,7 +117,7 @@ export function VoteForm() {
             placeholder="0000-0000"
             aria-invalid={hasError}
             aria-describedby={fieldDescriptionId}
-            className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] outline-none transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25 ${errorBorderClass}`}
+            className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] outline-hidden transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25 ${errorBorderClass}`}
           />
         </div>
 
@@ -142,7 +142,7 @@ export function VoteForm() {
             placeholder="e.g. 2611A001"
             aria-invalid={hasError}
             aria-describedby={fieldDescriptionId}
-            className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] uppercase outline-none transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25 ${errorBorderClass}`}
+            className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] uppercase outline-hidden transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25 ${errorBorderClass}`}
           />
         </div>
 
@@ -159,8 +159,8 @@ export function VoteForm() {
             className={`flex items-start gap-2.5 rounded-sm border px-3.5 py-3 ${state.error === "ALREADY_VOTED"
                 ? "border-maroon/40 bg-maroon/10 text-red-300"
                 : state.error === "ELECTION_NOT_OPEN"
-                  ? "border-gold/30 bg-gold/[0.08] text-gold/80"
-                  : "border-red-500/30 bg-red-500/[0.08] text-red-300"
+                  ? "border-gold/30 bg-gold/8 text-gold/80"
+                  : "border-red-500/30 bg-red-500/8 text-red-300"
               }`}
           >
             <span className="font-mono text-sm mt-0.5 opacity-70 shrink-0">

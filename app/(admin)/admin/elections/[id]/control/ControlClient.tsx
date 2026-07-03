@@ -128,7 +128,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         body: "This will immediately open the election for voting, overriding the scheduled open time. This action is irreversible and will be logged.",
         confirmLabel: "Open Election",
         confirmVariant: "adminEmerald",
-        iconBg: "bg-emerald-400/[0.12] text-emerald-400",
+        iconBg: "bg-emerald-400/12 text-emerald-400",
         icon: icons.open,
       };
     case "close":
@@ -137,7 +137,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         body: `This will immediately stop all voting. ${voted} of ${total} voters (${pct}%) have voted so far. This cannot be undone.`,
         confirmLabel: "Close Election",
         confirmVariant: "adminDestructive",
-        iconBg: "bg-red-400/[0.12] text-red-400",
+        iconBg: "bg-red-400/12 text-red-400",
         icon: icons.close,
       };
     case "recount":
@@ -146,7 +146,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         body: "Every anonymous ballot commitment will be revalidated and the rebuilt tally will be compared with the official closing snapshot. The result is permanent and audited.",
         confirmLabel: "Run Recount",
         confirmVariant: "adminPrimary",
-        iconBg: "bg-gold/[0.12] text-gold",
+        iconBg: "bg-gold/12 text-gold",
         icon: icons.calendar,
       };
     case "reschedule":
@@ -155,7 +155,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         body: "The open/close times will be updated and the scheduler will use the new values. This will be logged with your credentials.",
         confirmLabel: "Save Override",
         confirmVariant: "adminPrimary",
-        iconBg: "bg-gold/[0.12] text-gold",
+        iconBg: "bg-gold/12 text-gold",
         icon: icons.calendar,
       };
     case "advance":
@@ -164,7 +164,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         body: "This will mark the election as Scheduled, enabling the auto-open scheduler. You can still override times or open manually.",
         confirmLabel: "Advance to Scheduled",
         confirmVariant: "adminBlue",
-        iconBg: "bg-blue-400/[0.12] text-blue-400",
+        iconBg: "bg-blue-400/12 text-blue-400",
         icon: icons.calendar,
       };
     case "archive":
@@ -173,7 +173,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         body: "It will be hidden from the active dashboard and from public results. You can restore it anytime. This is logged.",
         confirmLabel: "Archive Election",
         confirmVariant: "adminDestructive",
-        iconBg: "bg-white/[0.06] text-white/60",
+        iconBg: "bg-white/6 text-white/60",
         icon: icons.close,
       };
     case "restore":
@@ -182,7 +182,7 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
         body: "It will return to the active dashboard. This is logged.",
         confirmLabel: "Restore Election",
         confirmVariant: "adminPrimary",
-        iconBg: "bg-gold/[0.12] text-gold",
+        iconBg: "bg-gold/12 text-gold",
         icon: icons.calendar,
       };
     default:
@@ -276,7 +276,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
           <div className="flex flex-wrap items-center gap-2">
             <StatusPill status={status} />
             {!canLifecycle && !canClose && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10px] text-white/50">
+              <span className="inline-flex items-center gap-1 rounded-full border border-white/8 bg-white/3 px-2 py-1 text-[10px] text-white/50">
                 <Lock aria-hidden="true" className="h-3 w-3" />
                 Read-only
               </span>
@@ -304,13 +304,13 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
           <StatCell label="Scheduled Open" value={fmt(election.scheduledOpen)} mono />
           <StatCell label="Scheduled Close" value={fmt(election.scheduledClose)} mono />
           <StatCell label="Registered Voters" value={voters.toString()} />
-          <div className="rounded-[8px] border border-white/[0.07] bg-white/[0.03] px-[13px] py-[10px]">
+          <div className="rounded-[8px] border border-white/[0.07] bg-white/3 px-[13px] py-[10px]">
             <p className="mb-[5px] text-[9px] uppercase tracking-[0.12em] text-white/40">Turnout</p>
             <p className="text-[13px] font-semibold text-white/80">
               {voted}{" "}
               <span className="text-[11px] font-normal text-white/45">/ {voters} ({pct}%)</span>
             </p>
-            <div className="mt-[6px] h-[3px] overflow-hidden rounded-full bg-white/[0.06]">
+            <div className="mt-[6px] h-[3px] overflow-hidden rounded-full bg-white/6">
               <div
                 className="h-full rounded-full bg-emerald-400 transition-all"
                 style={{ width: `${pct}%` }}
@@ -424,7 +424,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
           <WarnBanner>This election predates verifiable ballots. Existing votes remain available, but receipts and cryptographic recounts are not supported.</WarnBanner>
         ) : (
           <div className="flex flex-col gap-4">
-            <div className="rounded-[8px] border border-white/[0.07] bg-white/[0.025] p-3">
+            <div className="rounded-[8px] border border-white/[0.07] bg-white/2.5 p-3">
               <div className="text-[9px] uppercase tracking-[0.14em] text-white/35">Public audit fingerprint</div>
               <div className="mt-1 break-all font-mono text-[10px] text-white/60">{election.auditFingerprint}</div>
             </div>
@@ -451,7 +451,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
                   {election.recounts.map((recount) => {
                     const discrepancies = Array.isArray(recount.discrepancies) ? recount.discrepancies.filter((item): item is string => typeof item === "string") : [];
                     return (
-                      <div key={recount.id} className={`rounded-[7px] border px-3 py-2 ${recount.matchesOfficial ? "border-emerald-400/15 bg-emerald-400/[0.04]" : "border-red-400/25 bg-red-400/[0.05]"}`}>
+                      <div key={recount.id} className={`rounded-[7px] border px-3 py-2 ${recount.matchesOfficial ? "border-emerald-400/15 bg-emerald-400/4" : "border-red-400/25 bg-red-400/5"}`}>
                         <div className="flex justify-between gap-3 text-[11px]">
                           <span className={recount.matchesOfficial ? "text-emerald-300" : "text-red-300"}>{recount.matchesOfficial ? "Matched official tally" : "Integrity discrepancy"}</span>
                           <span className="text-white/35">{fmt(recount.createdAt)}</span>
@@ -478,7 +478,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
               const dot = log.toStatus ? (DOT_COLORS[log.toStatus] ?? "bg-gold") : "bg-gold";
               const isAuto = log.adminEmail === "scheduler";
               return (
-                <div key={log.id} className="flex items-start gap-[10px] border-b border-white/[0.04] px-4 py-[9px] last:border-0">
+                <div key={log.id} className="flex items-start gap-[10px] border-b border-white/4 px-4 py-[9px] last:border-0">
                   <span className={`mt-[4px] h-[7px] w-[7px] shrink-0 rounded-full ${dot}`} />
                   <div>
                     <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/70">

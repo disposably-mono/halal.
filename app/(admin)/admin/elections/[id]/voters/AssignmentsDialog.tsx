@@ -35,20 +35,20 @@ export function AssignmentsDialog({
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="rounded-md border border-white/[0.12] bg-white/[0.04] px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/70 transition-colors hover:bg-white/[0.08] hover:text-white/90"
+        className="rounded-md border border-white/12 bg-white/4 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-[0.08em] text-white/70 transition-colors hover:bg-white/8 hover:text-white/90"
       >
         Copy Assignments
       </button>
 
       {open && (
         <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/70 p-4"
+          className="fixed inset-0 z-9999 flex items-center justify-center bg-black/70 p-4"
           onClick={(e) => {
             if (e.target === e.currentTarget) setOpen(false);
           }}
         >
-          <div className="flex max-h-[80vh] w-[90%] max-w-[560px] flex-col rounded-[14px] border border-white/[0.12] bg-admin-raised">
-            <div className="flex items-center justify-between border-b border-white/[0.08] px-5 py-3">
+          <div className="flex max-h-[80vh] w-[90%] max-w-[560px] flex-col rounded-[14px] border border-white/12 bg-admin-raised">
+            <div className="flex items-center justify-between border-b border-white/8 px-5 py-3">
               <p className="text-[13px] font-bold text-white/90">
                 Control Number Assignments
               </p>
@@ -89,7 +89,7 @@ export function AssignmentsDialog({
                     {voters.map((v) => (
                       <tr
                         key={v.voterCode}
-                        className="border-t border-white/[0.05]"
+                        className="border-t border-white/5"
                       >
                         <td className="py-1 pr-4 text-gold/80">
                           {v.voterCode}
@@ -108,7 +108,7 @@ export function AssignmentsDialog({
               )}
             </div>
 
-            <div className="flex items-center justify-end gap-2 border-t border-white/[0.08] px-5 py-3">
+            <div className="flex items-center justify-end gap-2 border-t border-white/8 px-5 py-3">
               <Button
                 onClick={handleCopy}
                 disabled={voters.length === 0}

@@ -81,7 +81,7 @@ export function AccountsManager({
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-white/[0.06]">
+              <tr className="border-b border-white/6">
                 {["Account", "Role", "Last login", "Actions"].map((h) => (
                   <th
                     key={h}
@@ -253,7 +253,7 @@ function AccountRow({
   }
 
   return (
-    <tr className="border-b border-white/[0.03] last:border-0 align-top">
+    <tr className="border-b border-white/3 last:border-0 align-top">
       {/* Account */}
       <td className="px-4 py-[10px]">
         <div className="text-[12px] font-medium text-white/85">
@@ -370,8 +370,8 @@ function RowButton({
     "rounded-[5px] border px-[8px] py-[3px] text-[10px] transition-all disabled:opacity-40 disabled:cursor-not-allowed";
   const tones =
     tone === "danger"
-      ? "border-red-400/20 bg-red-400/[0.06] text-red-300 hover:bg-red-400/[0.12]"
-      : "border-white/[0.1] bg-white/[0.03] text-white/60 hover:bg-white/[0.07]";
+      ? "border-red-400/20 bg-red-400/6 text-red-300 hover:bg-red-400/12"
+      : "border-white/10 bg-white/3 text-white/60 hover:bg-white/[0.07]";
   return (
     <button type="button" onClick={onClick} disabled={disabled} className={`${base} ${tones}`}>
       {children}

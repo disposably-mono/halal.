@@ -76,7 +76,7 @@ export default function PrivacyClient() {
             title="Cookies we use"
             body="We use only essential, first-party cookies needed to run voting securely. We do not use analytics, advertising, or third-party tracking cookies."
           />
-          <div className="mt-10 overflow-hidden rounded-xl border border-white/[0.08]">
+          <div className="mt-10 overflow-hidden rounded-xl border border-white/8">
             <table className="w-full text-left text-xs">
               <thead className="bg-white/5 text-white/70">
                 <tr>
@@ -93,7 +93,7 @@ export default function PrivacyClient() {
               </thead>
               <tbody>
                 {COOKIES.map((c) => (
-                  <tr key={c.name} className="border-t border-white/[0.06]">
+                  <tr key={c.name} className="border-t border-white/6">
                     <td className="px-4 py-3 font-mono text-gold/80">{c.name}</td>
                     <td className="px-4 py-3 text-white/60">{c.purpose}</td>
                     <td className="px-4 py-3 text-white/50">{c.life}</td>
@@ -152,7 +152,7 @@ function PolicyCard({
   children: ReactNode;
 }) {
   return (
-    <article className="rounded-xl border border-white/[0.08] bg-navy/50 p-6">
+    <article className="rounded-xl border border-white/8 bg-navy/50 p-6">
       <h3 className="font-heading text-base font-bold text-white/90">{title}</h3>
       <p className="mt-3 text-sm leading-6 text-white/50">{children}</p>
     </article>

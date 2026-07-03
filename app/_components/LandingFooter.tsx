@@ -47,7 +47,7 @@ export function LandingFooter({
                 <p className="font-heading font-bold text-white text-lg">{title}</p>
               )}
               {description && (
-                <p className="font-body text-mid/[0.65] text-sm leading-6 mt-2">
+                <p className="font-body text-mid/65 text-sm leading-6 mt-2">
                   {description}
                 </p>
               )}
@@ -67,7 +67,7 @@ export function LandingFooter({
                   <a
                     href={action.href}
                     aria-label={action.ariaLabel ?? action.label}
-                    className="inline-flex items-center justify-center rounded-sm border border-gold/30 px-5 py-2.5 font-heading text-xs font-bold uppercase tracking-[0.18em] text-gold/80 transition-colors hover:border-gold/60 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
+                    className="inline-flex items-center justify-center rounded-sm border border-gold/30 px-5 py-2.5 font-heading text-xs font-bold uppercase tracking-[0.18em] text-gold/80 transition-colors hover:border-gold/60 hover:text-white focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/70 focus-visible:ring-offset-2 focus-visible:ring-offset-navy"
                   >
                     {action.label}
                   </a>

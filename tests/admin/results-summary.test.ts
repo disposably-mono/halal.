@@ -19,7 +19,7 @@ describe("admin results summary helpers", () => {
   test("returns stable status labels for final and live result rows", () => {
     expect(getResultStatusMeta("CLOSED")).toEqual({
       label: "Final",
-      badgeClassName: "bg-white/[0.05] text-white/60",
+      badgeClassName: "bg-white/5 text-white/60",
       dotClassName: "bg-white/20",
       barClassName: "bg-white/30",
     });

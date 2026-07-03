@@ -31,7 +31,7 @@ export function BallotHeader({
         <div className="flex items-center gap-[10px] min-w-0">
           <div className="w-[3px] h-8 bg-gold rounded-sm shrink-0" />
           <div className="min-w-0">
-            <p className="font-ballot-serif font-bold text-[14px] uppercase tracking-[0.1em] text-white whitespace-nowrap overflow-hidden text-ellipsis">
+            <p className="font-ballot-serif font-bold text-[14px] uppercase tracking-widest text-white whitespace-nowrap overflow-hidden text-ellipsis">
               {electionName}
             </p>
             <p className="font-ballot-mono text-[9px] tracking-[0.18em] uppercase text-white/50 mt-0.5">
@@ -44,7 +44,7 @@ export function BallotHeader({
             Gr.{gradeLevel} · Sec.{section}
           </span>
           <div
-            className="relative w-[72px] h-[26px] border-[1.5px] border-gold/35 bg-gold/[0.06] overflow-hidden"
+            className="relative w-[72px] h-[26px] border-[1.5px] border-gold/35 bg-gold/6 overflow-hidden"
             role="progressbar"
             aria-valuenow={selectedCount}
             aria-valuemin={0}

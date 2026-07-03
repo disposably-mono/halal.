@@ -104,7 +104,7 @@ export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[
         </FilterGrid>
       </FilterPanel>
 
-      <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
+      <div className="overflow-hidden rounded-xl border border-white/8 bg-admin-surface">
         {history.length === 0 ? (
           <EmptyState
             icon={<UserCheck aria-hidden="true" className="h-[18px] w-[18px]" />}

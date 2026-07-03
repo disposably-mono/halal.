@@ -55,7 +55,7 @@ export default async function ControlPage(props: PageProps) {
   return (
     <div className="min-h-screen bg-admin-bg font-sans">
       {/* ── Topbar ── */}
-      <nav className="sticky top-0 z-10 border-b border-white/[0.08] bg-admin-surface">
+      <nav className="sticky top-0 z-10 border-b border-white/8 bg-admin-surface">
         <div className="mx-auto flex min-h-[52px] max-w-7xl flex-col gap-2 px-4 py-3 md:flex-row md:items-center md:justify-between md:px-6 md:py-0">
           <div className="flex min-w-0 items-center gap-2">
             <Link href="/admin" className="text-[11px] text-white/40 transition-colors hover:text-white/60">

@@ -47,7 +47,7 @@ export function ReplayPanel({
     "flex h-8 w-8 items-center justify-center rounded-[6px] border border-white/10 text-white/60 transition-all hover:border-white/25 hover:text-white/90 disabled:cursor-not-allowed disabled:opacity-20 cursor-pointer";
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
+    <div className="overflow-hidden rounded-xl border border-white/8 bg-admin-surface">
       {/* Header */}
       <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
         <div className="flex items-center gap-2">
@@ -62,7 +62,7 @@ export function ReplayPanel({
         <button
           type="button"
           onClick={() => setIsOpen((current) => !current)}
-          className="flex h-8 items-center gap-2 rounded-[6px] border border-white/[0.08] px-2 font-mono text-[10px] text-white/60 transition-colors hover:border-white/[0.18] hover:text-white/80"
+          className="flex h-8 items-center gap-2 rounded-[6px] border border-white/8 px-2 font-mono text-[10px] text-white/60 transition-colors hover:border-white/18 hover:text-white/80"
           aria-expanded={isOpen}
         >
           {snapshots.length} snapshot{snapshots.length !== 1 ? "s" : ""}
@@ -108,7 +108,7 @@ export function ReplayPanel({
 
             {/* Scrubber */}
             <div className="relative flex-1">
-              <div className="h-1 overflow-hidden rounded-full bg-white/[0.08]">
+              <div className="h-1 overflow-hidden rounded-full bg-white/8">
                 <div
                   className="h-full rounded-full bg-gold/60 transition-all duration-300"
                   style={{ width: `${progPct}%` }}
@@ -154,8 +154,8 @@ export function ReplayPanel({
                   data-active={isActive ? "true" : "false"}
                   onClick={() => onJump(i)}
                   className={`flex cursor-pointer items-center gap-2 rounded-[7px] border px-2.5 py-1.5 transition-colors ${isActive
-                    ? "border-gold/15 bg-gold/[0.08]"
-                    : "border-transparent hover:bg-white/[0.04]"
+                    ? "border-gold/15 bg-gold/8"
+                    : "border-transparent hover:bg-white/4"
                     }`}
                 >
                   <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${isActive ? "bg-gold" : "bg-emerald-500/60"}`} />

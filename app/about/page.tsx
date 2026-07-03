@@ -257,7 +257,7 @@ export default function AboutComelecClient() {
               <Link
                 href={link.href}
                 className={`font-body text-[0.65rem] tracking-[0.2em] uppercase transition-colors duration-200 no-underline ${
-                  link.active ? "text-gold" : "text-white/[0.45] hover:text-gold"
+                  link.active ? "text-gold" : "text-white/45 hover:text-gold"
                 }`}
               >
                 {link.label}
@@ -292,12 +292,12 @@ export default function AboutComelecClient() {
             <div className="w-8 h-px bg-gold opacity-50" />
           </div>
 
-          <p className="font-tagline text-[0.9rem] italic mb-3 tracking-[0.2em] text-gold/[0.65]">
+          <p className="font-tagline text-[0.9rem] italic mb-3 tracking-[0.2em] text-gold/65">
             VOX POPULI VOX DEI
           </p>
 
           <h1
-            className="font-tagline font-black leading-none tracking-[0.05em] uppercase mb-2"
+            className="font-tagline font-black leading-none tracking-wider uppercase mb-2"
             style={{
               fontSize: "clamp(2.75rem, 8vw, 5.5rem)",
               color: "#ffffff",
@@ -403,7 +403,7 @@ export default function AboutComelecClient() {
           {PRINCIPLES.map((p) => (
             <div
               key={p.num}
-              className="text-center border border-gold/10 transition-all duration-[250ms] hover:-translate-y-1 hover:border-gold/30"
+              className="text-center border border-gold/10 transition-all duration-250 hover:-translate-y-1 hover:border-gold/30"
               style={{
                 padding: "1.75rem 1.25rem",
                 background: "rgba(13,15,43,0.6)",
@@ -451,14 +451,14 @@ export default function AboutComelecClient() {
             <div key={m.year} className="flex gap-8 mb-10 items-start">
               {/* Year */}
               <span
-                className="flex-shrink-0 text-right font-mono text-[0.7rem] pt-0.5"
+                className="shrink-0 text-right font-mono text-[0.7rem] pt-0.5"
                 style={{ width: "68px", color: "#F5C000", opacity: 0.7 }}
               >
                 {m.year}
               </span>
               {/* Dot */}
               <div
-                className="flex-shrink-0 w-2 h-2 rounded-full mt-1"
+                className="shrink-0 w-2 h-2 rounded-full mt-1"
                 style={{
                   background: "#F5C000",
                   opacity: m.highlight ? 1 : 0.45,
@@ -517,7 +517,7 @@ export default function AboutComelecClient() {
             {/* Email */}
             <a
               href="mailto:comelec.club@olps.edu.ph"
-              className="inline-flex items-center gap-3 no-underline font-body font-semibold text-[0.75rem] tracking-[0.1em] uppercase bg-gold text-navy transition-all duration-200 hover:bg-gold/85"
+              className="inline-flex items-center gap-3 no-underline font-body font-semibold text-[0.75rem] tracking-widest uppercase bg-gold text-navy transition-all duration-200 hover:bg-gold/85"
               style={{
                 padding: "0.875rem 1.75rem",
                 borderRadius: "2px",
@@ -536,7 +536,7 @@ export default function AboutComelecClient() {
               href="https://www.facebook.com/comelec.olps"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 no-underline font-body font-semibold text-[0.75rem] tracking-[0.1em] uppercase border border-gold/30 text-white/70 transition-all duration-200 hover:border-gold/60 hover:text-white"
+              className="inline-flex items-center gap-3 no-underline font-body font-semibold text-[0.75rem] tracking-widest uppercase border border-gold/30 text-white/70 transition-all duration-200 hover:border-gold/60 hover:text-white"
               style={{
                 padding: "0.875rem 1.75rem",
                 borderRadius: "2px",

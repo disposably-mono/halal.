@@ -29,13 +29,13 @@ interface ThemedSelectProps {
 }
 
 const triggerClass =
-  "group inline-flex w-full items-center justify-between gap-2 rounded-[7px] border border-white/[0.10] bg-white/[0.04] px-[10px] py-[7px] text-[12px] font-mono text-white/80 outline-none transition-colors hover:border-white/20 focus:border-gold/50 focus:ring-2 focus:ring-gold/10 disabled:cursor-not-allowed disabled:opacity-40 data-[placeholder]:text-white/40";
+  "group inline-flex w-full items-center justify-between gap-2 rounded-[7px] border border-white/10 bg-white/4 px-[10px] py-[7px] text-[12px] font-mono text-white/80 outline-hidden transition-colors hover:border-white/20 focus:border-gold/50 focus:ring-2 focus:ring-gold/10 disabled:cursor-not-allowed disabled:opacity-40 data-placeholder:text-white/40";
 
 const contentClass =
-  "z-[10000] max-h-[var(--radix-select-content-available-height)] min-w-[var(--radix-select-trigger-width)] overflow-hidden rounded-[8px] border border-white/[0.10] bg-admin-raised shadow-xl origin-[var(--radix-select-content-transform-origin)] data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out";
+  "z-10000 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden rounded-[8px] border border-white/10 bg-admin-raised shadow-xl origin-(--radix-select-content-transform-origin) data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out";
 
 const itemClass =
-  "relative flex cursor-pointer select-none items-center justify-between gap-3 rounded-[5px] px-[10px] py-[6px] text-[12px] font-mono text-white/75 outline-none data-[highlighted]:bg-gold/15 data-[highlighted]:text-gold data-[state=checked]:text-gold data-[disabled]:opacity-40";
+  "relative flex cursor-pointer select-none items-center justify-between gap-3 rounded-[5px] px-[10px] py-[6px] text-[12px] font-mono text-white/75 outline-hidden data-highlighted:bg-gold/15 data-highlighted:text-gold data-[state=checked]:text-gold data-disabled:opacity-40";
 
 function ChevronIcon() {
   return (

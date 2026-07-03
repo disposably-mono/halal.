@@ -107,13 +107,13 @@ export function AdminShell({
     <div className="min-h-screen flex flex-col bg-admin-bg">
       <a
         href="#admin-main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-[9999] focus:rounded-[7px] focus:bg-gold focus:px-4 focus:py-2 focus:text-[12px] focus:font-semibold focus:text-admin-bg focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-9999 focus:rounded-[7px] focus:bg-gold focus:px-4 focus:py-2 focus:text-[12px] focus:font-semibold focus:text-admin-bg focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden"
       >
         Skip to content
       </a>
 
       {/* Topbar */}
-      <nav className="h-14 flex items-center justify-between px-4 sm:px-5 sticky top-0 z-50 flex-shrink-0 border-b border-white/[0.07] bg-admin-surface/95 backdrop-blur transition-colors">
+      <nav className="h-14 flex items-center justify-between px-4 sm:px-5 sticky top-0 z-50 shrink-0 border-b border-white/[0.07] bg-admin-surface/95 backdrop-blur-sm transition-colors">
         <div className="flex items-center gap-2">
           <button
             ref={hamburgerRef}
@@ -122,7 +122,7 @@ export function AdminShell({
             aria-controls="admin-drawer"
             aria-label={drawerOpen ? "Close menu" : "Open menu"}
             onClick={() => setDrawerOpen((open) => !open)}
-            className="flex h-11 w-11 items-center justify-center rounded-[7px] text-white/70 hover:bg-white/[0.06] hover:text-white/90 transition-colors lg:hidden focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none"
+            className="flex h-11 w-11 items-center justify-center rounded-[7px] text-white/70 hover:bg-white/6 hover:text-white/90 transition-colors lg:hidden focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden"
           >
             {drawerOpen ? (
               <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -149,7 +149,7 @@ export function AdminShell({
               day: "numeric",
             })}
           </span>
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-gold flex-shrink-0 border border-gold/30 bg-gradient-to-br from-gold/30 to-gold/10">
+          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-gold shrink-0 border border-gold/30 bg-linear-to-br from-gold/30 to-gold/10">
             {adminInitial}
           </div>
           <span className="hidden sm:inline max-w-[140px] truncate text-[11px] text-white/50">{adminName}</span>
@@ -160,7 +160,7 @@ export function AdminShell({
       {/* Body */}
       <div className="relative flex flex-1 overflow-hidden lg:h-[calc(100vh-3.5rem)]">
         {/* Desktop sidebar (lg+) */}
-        <nav className="hidden lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)] w-[220px] flex-shrink-0 flex-col gap-[2px] overflow-y-auto border-r border-white/[0.07] bg-admin-surface py-4 transition-colors">
+        <nav className="hidden lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)] w-[220px] shrink-0 flex-col gap-[2px] overflow-y-auto border-r border-white/[0.07] bg-admin-surface py-4 transition-colors">
           {navContent}
         </nav>
 

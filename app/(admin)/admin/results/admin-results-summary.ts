@@ -23,7 +23,7 @@ export function getResultStatusMeta(status: ResultStatus) {
   if (status === "CLOSED") {
     return {
       label: "Final",
-      badgeClassName: "bg-white/[0.05] text-white/60",
+      badgeClassName: "bg-white/5 text-white/60",
       dotClassName: "bg-white/20",
       barClassName: "bg-white/30",
     };
@@ -31,7 +31,7 @@ export function getResultStatusMeta(status: ResultStatus) {
 
   return {
     label: "Live",
-    badgeClassName: "bg-emerald-400/[0.12] text-emerald-400",
+    badgeClassName: "bg-emerald-400/12 text-emerald-400",
     dotClassName: "bg-emerald-400",
     barClassName: "bg-emerald-400",
   };

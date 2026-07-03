@@ -24,7 +24,7 @@ export default function PermissionNotice({ denied }: { denied?: string }) {
   return (
     <div
       role="alert"
-      className="flex items-start justify-between gap-3 rounded-xl border border-gold/25 bg-gold/[0.08] px-4 py-3"
+      className="flex items-start justify-between gap-3 rounded-xl border border-gold/25 bg-gold/8 px-4 py-3"
     >
       <div className="flex items-start gap-2.5">
         <svg

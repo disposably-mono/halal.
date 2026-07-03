@@ -11,7 +11,7 @@ export function HoldingState({
 }) {
   return (
     <div className="flex-1 flex flex-col items-center justify-center px-6 py-20 text-center">
-      <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-sm border border-gold/[0.15] bg-navy/[0.35] shadow-[0_18px_45px_rgba(0,0,0,0.18)]">
+      <div className="mx-auto mb-8 flex h-16 w-16 items-center justify-center rounded-sm border border-gold/15 bg-navy/35 shadow-[0_18px_45px_rgba(0,0,0,0.18)]">
         <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
           <circle cx="12" cy="12" r="10" stroke="#F5C000" strokeWidth="1.2" strokeOpacity="0.4" />
           <path d="M12 7v5l3 3" stroke="#F5C000" strokeWidth="1.5" strokeLinecap="round" strokeOpacity="0.6" />

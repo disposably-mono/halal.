@@ -15,7 +15,7 @@ export function AdminHelpGate() {
   );
 
   return (
-    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-[#070919]/85 px-5 backdrop-blur-md">
+    <div className="fixed inset-0 z-70 flex items-center justify-center bg-[#070919]/85 px-5 backdrop-blur-md">
       <div role="dialog" aria-modal="true" aria-labelledby="admin-help-title" className="w-full max-w-sm overflow-hidden rounded-2xl border border-gold/20 bg-[#151b36] shadow-2xl">
         <div className="border-b border-white/[0.07] px-6 py-5">
           <p className="text-[9px] uppercase tracking-[0.3em] text-gold/60">Officer Verification</p>
@@ -35,13 +35,13 @@ export function AdminHelpGate() {
               autoComplete="off"
               aria-invalid={Boolean(state?.error)}
               aria-describedby={state?.error ? "help-key-error" : undefined}
-              className="h-11 rounded-lg border border-white/10 bg-white/[0.05] px-3 font-mono text-sm text-white outline-none placeholder:text-white/25 focus:border-gold/50 focus:ring-2 focus:ring-gold/15"
+              className="h-11 rounded-lg border border-white/10 bg-white/5 px-3 font-mono text-sm text-white outline-hidden placeholder:text-white/25 focus:border-gold/50 focus:ring-2 focus:ring-gold/15"
               placeholder="Enter officer key"
             />
           </div>
-          {state?.error && <p id="help-key-error" role="alert" className="rounded-lg border border-red-400/20 bg-red-400/[0.08] px-3 py-2 text-xs text-red-300">{state.error}</p>}
+          {state?.error && <p id="help-key-error" role="alert" className="rounded-lg border border-red-400/20 bg-red-400/8 px-3 py-2 text-xs text-red-300">{state.error}</p>}
           <div className="flex gap-2.5">
-            <Link href="/" className="flex h-10 flex-1 items-center justify-center rounded-lg border border-white/10 text-xs text-white/50 transition-colors hover:bg-white/[0.04] hover:text-white/75">Back home</Link>
+            <Link href="/" className="flex h-10 flex-1 items-center justify-center rounded-lg border border-white/10 text-xs text-white/50 transition-colors hover:bg-white/4 hover:text-white/75">Back home</Link>
             <UnlockButton isPending={isPending} />
           </div>
         </form>

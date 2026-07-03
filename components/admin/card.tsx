@@ -30,7 +30,7 @@ export function Card({
   noPad?: boolean;
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
+    <div className="overflow-hidden rounded-xl border border-white/8 bg-admin-surface">
       {title && (
         <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
           <AdminCardTitle>{title}</AdminCardTitle>
@@ -64,7 +64,7 @@ export function MetricCard({
           "text-white/90";
 
   return (
-    <div className="relative overflow-hidden rounded-[8px] border border-white/[0.07] bg-white/[0.03] px-[13px] py-[10px]">
+    <div className="relative overflow-hidden rounded-[8px] border border-white/[0.07] bg-white/3 px-[13px] py-[10px]">
       {accent && <div className={cn("absolute inset-x-0 top-0 h-[2px]", valColor.replace("text-", "bg-"))} />}
       <p className="mb-[5px] text-[9px] uppercase tracking-[0.12em] text-white/40">{label}</p>
       <p className={cn("text-[18px] font-bold leading-none", valColor, mono && "font-mono text-[13px]")}>

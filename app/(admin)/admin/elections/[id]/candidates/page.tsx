@@ -145,9 +145,9 @@ export default async function CandidatesPage(props: { params: Promise<{ id: stri
                 <form key={pos.id} action={removePosition}>
                   <input type="hidden" name="positionId" value={pos.id} />
                   <input type="hidden" name="electionId" value={election.id} />
-                  <button type="submit" className="inline-flex cursor-pointer items-center gap-[6px] rounded-[6px] border border-white/[0.08] bg-white/[0.05] px-[10px] py-[5px] text-[11px] text-white/60 transition-all hover:border-red-400/25 hover:text-red-400">
+                  <button type="submit" className="inline-flex cursor-pointer items-center gap-[6px] rounded-[6px] border border-white/8 bg-white/5 px-[10px] py-[5px] text-[11px] text-white/60 transition-all hover:border-red-400/25 hover:text-red-400">
                     {pos.title}
-                    <span className="text-[13px] leading-none text-white/[0.18]">×</span>
+                    <span className="text-[13px] leading-none text-white/18">×</span>
                   </button>
                 </form>
               ))}

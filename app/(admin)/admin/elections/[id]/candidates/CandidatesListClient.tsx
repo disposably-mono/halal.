@@ -42,7 +42,7 @@ export function CandidatesListClient({
   }
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
+    <div className="overflow-hidden rounded-xl border border-white/8 bg-admin-surface">
       <div className="flex flex-col gap-3 border-b border-white/[0.07] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50">Positions &amp; Candidates</p>
@@ -53,10 +53,10 @@ export function CandidatesListClient({
       {filteredPositions.length === 0 ? (
         <EmptyState title="No candidates match" hint="Try a different position, name, or grade." />
       ) : (
-        <div className="divide-y divide-white/[0.05]">
+        <div className="divide-y divide-white/5">
           {filteredPositions.map((position) => (
             <details key={position.id} open className="group">
-              <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 transition-colors hover:bg-white/[0.02]">
+              <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 transition-colors hover:bg-white/2">
                 <span className="flex h-4 w-4 shrink-0 items-center justify-center text-white/35 transition-transform duration-200 group-open:rotate-90">
                   <svg width="8" height="8" viewBox="0 0 8 8" fill="none">
                     <path d="M2 1L6 4L2 7" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -78,11 +78,11 @@ export function CandidatesListClient({
                   </span>
                 )}
               </summary>
-              <div className="border-t border-white/[0.04]">
+              <div className="border-t border-white/4">
                 {position.candidates.length === 0 ? (
                   <p className="py-4 pl-[52px] pr-4 text-[11px] italic text-white/60">No candidates added yet</p>
                 ) : (
-                  <div className="divide-y divide-white/[0.04]">
+                  <div className="divide-y divide-white/4">
                     {position.candidates.map((candidate) => (
                       <CandidateItem
                         key={candidate.id}
@@ -94,7 +94,7 @@ export function CandidatesListClient({
                   </div>
                 )}
                 {canEditCandidates && (
-                  <form action={addCandidate} className="flex flex-col gap-2 border-t border-white/[0.04] px-4 py-3 sm:flex-row sm:items-end sm:pl-[52px]">
+                  <form action={addCandidate} className="flex flex-col gap-2 border-t border-white/4 px-4 py-3 sm:flex-row sm:items-end sm:pl-[52px]">
                     <input type="hidden" name="positionId" value={position.id} />
                     <input type="hidden" name="electionId" value={electionId} />
                     <div className="flex flex-1 flex-col gap-[5px]">
@@ -132,7 +132,7 @@ function CandidateItem({
 
   return (
     <div className="flex items-center gap-3 py-[7px] pl-[52px] pr-4">
-      <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-blue-400/[0.12] text-[10px] font-semibold text-blue-400">
+      <div className="flex h-[26px] w-[26px] shrink-0 items-center justify-center rounded-full bg-blue-400/12 text-[10px] font-semibold text-blue-400">
         {initials}
       </div>
       <span className="min-w-0 flex-1 truncate text-[12px] text-white/80">{candidate.fullName}</span>
@@ -143,7 +143,7 @@ function CandidateItem({
           <input type="hidden" name="electionId" value={electionId} />
           <button
             type="submit"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] text-white/25 transition-colors hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] text-white/25 transition-colors hover:text-red-400 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/40"
             title="Remove candidate"
             aria-label={`Remove ${candidate.fullName}`}
           >

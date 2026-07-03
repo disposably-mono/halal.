@@ -40,7 +40,7 @@ export function DataTable<T>({
       )}
       <table className={cn("w-full", mobile === "stack" && "hidden md:table")}>
         <thead>
-          <tr className="border-b border-white/[0.06]">
+          <tr className="border-b border-white/6">
             {columns.map((column) => (
               <th key={column.key} className={cn("px-4 py-[7px] text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-white/35", column.className)}>
                 {column.header}
@@ -51,7 +51,7 @@ export function DataTable<T>({
         </thead>
         <tbody>
           {rows.map((row) => (
-            <tr key={getRowKey(row)} className="border-b border-white/[0.04] last:border-0">
+            <tr key={getRowKey(row)} className="border-b border-white/4 last:border-0">
               {columns.map((column) => (
                 <td key={column.key} className={cn("px-4 py-[10px] text-[12px] text-white/70", column.cellClassName)}>
                   {column.render(row)}
@@ -79,7 +79,7 @@ function DataTableCard<T>({
   const secondary = columns.filter((column) => column.priority !== 1);
 
   return (
-    <div className="rounded-[8px] border border-white/[0.07] bg-white/[0.03] p-3">
+    <div className="rounded-[8px] border border-white/[0.07] bg-white/3 p-3">
       <div className="flex items-start justify-between gap-3">
         <div className="min-w-0 space-y-1">
           {primary.map((column) => <div key={column.key}>{column.render(row)}</div>)}

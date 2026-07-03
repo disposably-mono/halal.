@@ -18,20 +18,20 @@ export function ElectionRow({
   const p = pct(e.votedCount, e._count.voters);
   const showProg = e.status === "OPEN" || e.status === "CLOSED";
 
-  const goldBtn = "text-[10px] text-gold bg-gold/[0.08] border border-gold/20 rounded-[5px] px-[7px] py-[3px] hover:bg-gold/[0.15] transition-all no-underline";
+  const goldBtn = "text-[10px] text-gold bg-gold/8 border border-gold/20 rounded-[5px] px-[7px] py-[3px] hover:bg-gold/15 transition-all no-underline";
 
   return (
-    <div className="flex items-center gap-3 px-[14px] py-[10px] border-b border-white/[0.04] last:border-0 hover:bg-white/[0.025] transition-colors group">
+    <div className="flex items-center gap-3 px-[14px] py-[10px] border-b border-white/4 last:border-0 hover:bg-white/2.5 transition-colors group">
       <StatusPill status={e.status} />
 
       {/* Name + division */}
       <div className="flex-1 min-w-0">
         <div className="text-[12px] font-medium text-white/80 truncate group-hover:text-white/90 transition-colors">{e.name}</div>
-        <div className="text-[10px] text-white/40 mt-[1px]">{DIVISION_LABELS[e.division] ?? e.division}</div>
+        <div className="text-[10px] text-white/40 mt-px">{DIVISION_LABELS[e.division] ?? e.division}</div>
       </div>
 
       {/* Stats */}
-      <div className="hidden md:flex items-center gap-4 flex-shrink-0 text-[10px] text-white/50">
+      <div className="hidden md:flex items-center gap-4 shrink-0 text-[10px] text-white/50">
         <span className="flex items-center gap-[5px]">
           <svg style={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
@@ -57,7 +57,7 @@ export function ElectionRow({
         </span>
         {showProg && (
           <span className="flex items-center gap-[6px]">
-            <div className="w-9 h-[3px] bg-white/[0.06] rounded-full overflow-hidden">
+            <div className="w-9 h-[3px] bg-white/6 rounded-full overflow-hidden">
               <div className={`h-full rounded-full ${e.status === "OPEN" ? "bg-emerald-400" : "bg-white/25"}`} style={{ width: `${p}%` }} />
             </div>
             <span className="min-w-[26px] text-right">{p}%</span>
@@ -69,7 +69,7 @@ export function ElectionRow({
       </div>
 
       {/* Actions — primary Control + overflow menu */}
-      <div className="flex items-center gap-1 flex-shrink-0">
+      <div className="flex items-center gap-1 shrink-0">
         <Link href={`/admin/elections/${e.id}/control`} className={goldBtn}>⚡ Control</Link>
         <RowActions e={e} onToast={onToast} canLifecycle={canLifecycle} />
       </div>

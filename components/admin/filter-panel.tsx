@@ -14,10 +14,10 @@ export function FilterPanel({
   children: ReactNode;
 }) {
   return (
-    <section className="overflow-hidden rounded-[14px] border border-white/[0.08] bg-admin-surface shadow-[0_18px_60px_rgba(0,0,0,0.22)]">
+    <section className="overflow-hidden rounded-[14px] border border-white/8 bg-admin-surface shadow-[0_18px_60px_rgba(0,0,0,0.22)]">
       <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
         <div className="flex min-w-0 items-center gap-2.5">
-          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-gold/20 bg-gold/[0.08] text-gold">
+          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-[8px] border border-gold/20 bg-gold/8 text-gold">
             <Filter aria-hidden="true" className="h-4 w-4" />
           </span>
           <div className="min-w-0">
@@ -53,16 +53,16 @@ export function FilterGroup({
   const contentId = useId();
 
   return (
-    <div className="overflow-hidden rounded-[8px] border border-white/[0.10] bg-white/[0.025]">
+    <div className="overflow-hidden rounded-[8px] border border-white/10 bg-white/2.5">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
         aria-controls={contentId}
         className={cn(
-          "flex w-full items-center justify-between gap-3 px-3 py-3 text-left outline-none transition-colors",
-          "hover:bg-white/[0.03] focus-visible:bg-white/[0.03] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold/40",
-          open && "border-b border-white/[0.06]",
+          "flex w-full items-center justify-between gap-3 px-3 py-3 text-left outline-hidden transition-colors",
+          "hover:bg-white/3 focus-visible:bg-white/3 focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold/40",
+          open && "border-b border-white/6",
         )}
       >
         <div className="flex min-w-0 items-center gap-2.5">
@@ -111,14 +111,14 @@ export function FilterOption({
       className={cn(
         "inline-flex min-h-9 items-center gap-2 rounded-[7px] border px-3 text-[11px] font-medium transition-colors",
         active
-          ? "border-gold/45 bg-gold/[0.13] text-gold shadow-[inset_0_0_0_1px_rgba(245,197,66,0.10)]"
-          : "border-white/[0.08] bg-admin-bg/40 text-white/55 hover:border-white/[0.16] hover:text-white/78",
+          ? "border-gold/45 bg-gold/13 text-gold shadow-[inset_0_0_0_1px_rgba(245,197,66,0.10)]"
+          : "border-white/8 bg-admin-bg/40 text-white/55 hover:border-white/16 hover:text-white/78",
       )}
     >
       <span
         className={cn(
           "flex h-4 w-4 items-center justify-center rounded-[4px] border",
-          active ? "border-gold bg-gold text-admin-bg" : "border-white/[0.14] bg-white/[0.03]",
+          active ? "border-gold bg-gold text-admin-bg" : "border-white/[0.14] bg-white/3",
         )}
       >
         {active && <Check aria-hidden="true" className="h-3 w-3" />}

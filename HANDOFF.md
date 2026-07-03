@@ -1,16 +1,18 @@
 # Handoff: Project Status & Future Improvements
 
 Updated: 2026-07-04
-Branch: `main` at `30b3a2b`
+Branch: `main` at `cd37454`
 
 This file is the working handoff for the project. The staged Next.js 14 → 16 migration
 (sections 10–11) and the 2026-07-03 security-hardening pass (section 1) are **complete and
-merged to `main`**, as are the audit-logging wrapper (section 5) and OpenTelemetry traces
-(section 6). A safe batch of routine dependency bumps also landed (section 8), and of the
-two remaining majors tracked there, the TypeScript 6 bump is now also done (ESLint 10
-remains blocked upstream — see section 8). The active content of this handoff is the
-future-improvements roadmap in sections 4 and 7 — recommended next: **section 7, the
-Tailwind v4 migration** (see section 3 for the full sequencing rationale).
+merged to `main`**, as are the audit-logging wrapper (section 5), OpenTelemetry traces
+(section 6), and the Tailwind v4 migration (section 7). A safe batch of routine dependency
+bumps also landed (section 8), and of the two remaining majors tracked there, the
+TypeScript 6 bump is now also done (ESLint 10 remains blocked upstream — see section 8).
+The active content of this handoff is the future-improvements roadmap in section 4
+(multi-instance Postgres LISTEN/NOTIFY) — the only item left unshipped, and gated on an
+actual second-instance deployment being planned (see section 3 for the full sequencing
+rationale).
 
 ---
 
@@ -68,16 +70,15 @@ them or explicitly replace them:
 | 4 | Multi-instance: Postgres LISTEN/NOTIFY monitor bus | Horizontal scaling / zero-downtime deploys | Medium | Medium |
 | 5 | Extract audit logging into a shared wrapper — **done** (see section 5) | Consistency; audit writes are spread across actions | Small–Medium | Low |
 | 6 | OpenTelemetry traces — **done** (see section 6) | Production debuggability | Medium | Low (privacy caveats) |
-| 7 | Tailwind v4 migration | Build speed, CSS-native config, unblocks `tw-animate-css` | Medium | Low–Medium |
+| 7 | Tailwind v4 migration — **done** (see section 7) | Build speed, CSS-native config, unblocks `tw-animate-css` | Medium | Low–Medium |
 | 8 | ESLint 10 / TypeScript 6 major bumps — TypeScript 6 **done**, ESLint 10 blocked upstream (see section 8) | Stay current; unblock future tooling upgrades | Small each | Medium (plugin/type-check compat) |
 
-Each item is independently shippable. 5, 6, and the TypeScript-6 half of 8 are complete.
-**Recommended order for what's left: 7 → 4** — Tailwind v4 is pure build-tooling risk with
-no external dependency, whereas item 4 (multi-instance) is gated on an actual
-second-instance deployment being planned and isn't actionable until then. (The routine
-patch/minor dependency bumps that don't need their own evaluation — see section 8 — already
-landed and aren't tracked as a roadmap item. ESLint 10 stays parked until upstream plugins
-catch up — see section 8 for the specific blockers.)
+Each item is independently shippable. 5, 6, 7, and the TypeScript-6 half of 8 are complete.
+**What's left: item 4** (multi-instance) — it's gated on an actual second-instance
+deployment being planned and isn't actionable until then. (The routine patch/minor
+dependency bumps that don't need their own evaluation — see section 8 — already landed and
+aren't tracked as a roadmap item. ESLint 10 stays parked until upstream plugins catch up —
+see section 8 for the specific blockers.)
 
 ---
 
@@ -361,6 +362,41 @@ rule in the instrumentation module header.
 
 ## 7. Tailwind v4 Migration
 
+**Status: done (2026-07-04).** `tailwindcss` bumped `3.4.19` → `4.3.2` via
+`npx @tailwindcss/upgrade`. All four definition-of-done items below are checked off.
+One real regression was caught and fixed during the migration, not by the codemod:
+
+- **`@theme` → `@theme inline` (critical fix).** The codemod's output used a plain
+  `@theme { --font-display: var(--font-bebas), sans-serif; ... }` block. Tailwind v4
+  resolves `var()` references inside `@theme` **at `:root`'s own scope**, but this
+  project's font variables (`--font-bebas`, `--font-dm-sans`, etc.) are only defined via
+  next/font's generated `.variable` class on `<body>` — a *descendant* of `:root`, not an
+  ancestor. `:root` has no visibility into a variable defined lower in the tree, so
+  `var(--font-bebas)` was invalid at the point `--font-display` was computed, and that
+  invalid value inherited down to every element, silently collapsing every custom
+  `font-*` utility (`font-display`, `font-body`, `font-heading`, `font-tagline`,
+  `font-ballot-*`) to the browser's default sans stack. Caught by comparing live
+  screenshots against the pre-migration baseline (the entire site rendered in the wrong
+  font family) — confirmed via `getComputedStyle` showing `--font-display` empty on
+  `:root` while `--font-bebas` was correctly set and inherited on `<body>`. Fix:
+  `@theme inline`, which evaluates each theme variable's references at the *utility
+  class's own usage site* instead of hoisting to `:root` — the officially-recommended
+  pattern for theme values that wrap framework-supplied CSS variables (this is also
+  the same pattern shadcn's own v4 templates use for `--color-*` tokens). Verified via
+  compiled CSS: `.font-ballot-serif { font-family: var(--font-playfair), Georgia, serif; }`
+  now inlines directly rather than indirecting through an unreachable root-scoped variable.
+- `tw-animate-css` wired up via `@import 'tw-animate-css';` in `app/globals.css` — confirmed
+  live (not just compiled-CSS-present) via `getComputedStyle` showing `animationName: "enter"`
+  on an open `ConfirmDialog`, and visually screenshotted mid-animation.
+- One test (`tests/admin/results-summary.test.ts`) asserted a literal Tailwind class string
+  (`bg-white/[0.05]`) that the codemod rewrote to the equivalent `bg-white/5` — updated the
+  assertion; no behavior change (both mean 5% opacity).
+- `components.json`'s stale `tailwind.config` pointer (to the now-deleted
+  `tailwind.config.ts`) cleared; `npx shadcn diff` still runs clean.
+- Some `bg-white/[0.07]`-style bracket-opacity classes were left untouched by the codemod
+  (it only rewrites a curated set of fractions) — these remain valid v4 syntax and were not
+  touched, to keep the diff to what the migration actually required.
+
 **The driver:** three things converge here, none individually urgent:
 
 - `tw-animate-css` has been a `package.json` dependency since the dropdown-animation work
@@ -415,15 +451,21 @@ scheduled.
 
 ### Definition of done
 
-- [ ] `tailwind.config.ts` retired in favor of `@theme` in `app/globals.css` (or confirmed
-  intentionally kept, if the codemod recommends a hybrid setup).
-- [ ] All brand/admin/ballot color tokens and custom font families render identically to
-  the pre-migration baseline screenshots.
-- [ ] `tw-animate-css`'s utilities resolve for real (or the PR #18 hand-rolled keyframes are
-  confirmed to still work) — `Dialog`/`ConfirmDialog`/`Toast` actually animate open/close
-  for the first time.
-- [ ] Full verification gate (section 9) green; no visual regressions in the manual smoke
-  pass.
+- [x] `tailwind.config.ts` retired in favor of `@theme inline` in `app/globals.css` (the
+  codemod deleted the file outright; no hybrid setup needed).
+- [x] All brand/admin/ballot color tokens and custom font families render identically to
+  the pre-migration baseline screenshots. (Required the `@theme` → `@theme inline` fix
+  above — the codemod's own output regressed every custom font family until that fix.)
+- [x] `tw-animate-css`'s utilities resolve for real — `ConfirmDialog` confirmed animating
+  live (`animationName: "enter"` via `getComputedStyle`, screenshotted mid-animation).
+  `Dialog`/`Toast` share the same `data-open:animate-in` pattern and the same
+  `@import 'tw-animate-css'`, so they're fixed by the same import.
+- [x] Full verification gate (section 9) green: typecheck/lint clean, 453/453 tests,
+  89.79% coverage, build succeeds on all 32 routes, Playwright e2e passes, `npm audit`
+  shows the same 5 pre-existing upstream advisories (nothing new). No visual regressions
+  in the manual smoke pass (home, results, about, creator, officers, admin dashboard +
+  filter groups, admin accounts + confirm dialog, vote entry page all screenshotted and
+  compared against baseline).
 
 ---
 

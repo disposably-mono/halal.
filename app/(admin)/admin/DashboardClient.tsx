@@ -147,7 +147,7 @@ export default function DashboardClient({
                 render: (election) => (
                   <div className="min-w-0">
                     <p className="truncate text-[12px] font-medium text-white/80">{election.name}</p>
-                    <p className="mt-[1px] text-[10px] text-white/40">{DIVISION_LABELS[election.division] ?? election.division}</p>
+                    <p className="mt-px text-[10px] text-white/40">{DIVISION_LABELS[election.division] ?? election.division}</p>
                   </div>
                 ),
               },
@@ -169,7 +169,7 @@ export default function DashboardClient({
             ]}
             actions={(election) => (
               <div className="flex items-center justify-end gap-1">
-                <Link href={`/admin/elections/${election.id}/control`} className="rounded-[5px] border border-gold/20 bg-gold/[0.08] px-[7px] py-[5px] text-[10px] text-gold no-underline transition-all hover:bg-gold/[0.15]">
+                <Link href={`/admin/elections/${election.id}/control`} className="rounded-[5px] border border-gold/20 bg-gold/8 px-[7px] py-[5px] text-[10px] text-gold no-underline transition-all hover:bg-gold/15">
                   Control
                 </Link>
                 <RowActions e={election} onToast={onToast} canLifecycle={canLifecycle} />

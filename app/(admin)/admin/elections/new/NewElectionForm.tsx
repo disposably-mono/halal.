@@ -77,7 +77,7 @@ export function NewElectionForm() {
           </Field>
         </div>
 
-        <div className="h-px bg-white/[0.06]" />
+        <div className="h-px bg-white/6" />
 
         {submitError && (
           <p className="text-sm text-red-400" role="alert">{submitError}</p>

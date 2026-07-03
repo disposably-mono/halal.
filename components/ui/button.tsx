@@ -5,7 +5,7 @@ import { Slot } from "radix-ui"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-none select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+  "group/button inline-flex shrink-0 items-center justify-center rounded-lg border border-transparent bg-clip-padding text-sm font-medium whitespace-nowrap transition-all outline-hidden select-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 active:not-aria-[haspopup]:translate-y-px disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-3 aria-invalid:ring-destructive/20 dark:aria-invalid:border-destructive/50 dark:aria-invalid:ring-destructive/40 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
   {
     variants: {
       variant: {
@@ -21,15 +21,15 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         // Admin theme — dark navy + gold accents. Always pair with size="adminMd" or "adminSm".
         adminPrimary:
-          "font-semibold bg-gold text-admin-bg hover:opacity-90 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none disabled:opacity-40",
+          "font-semibold bg-gold text-admin-bg hover:opacity-90 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden disabled:opacity-40",
         adminGhost:
-          "font-semibold text-white/60 border border-white/[0.10] bg-transparent hover:text-white/80 hover:border-white/[0.20] active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none disabled:opacity-30",
+          "font-semibold text-white/60 border border-white/10 bg-transparent hover:text-white/80 hover:border-white/20 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden disabled:opacity-30",
         adminEmerald:
-          "font-semibold bg-emerald-400 text-admin-bg hover:opacity-90 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none disabled:opacity-30",
+          "font-semibold bg-emerald-400 text-admin-bg hover:opacity-90 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden disabled:opacity-30",
         adminBlue:
-          "font-semibold bg-blue-400/[0.10] text-blue-400 border border-blue-400/25 hover:bg-blue-400/20 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none disabled:opacity-30",
+          "font-semibold bg-blue-400/10 text-blue-400 border border-blue-400/25 hover:bg-blue-400/20 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden disabled:opacity-30",
         adminDestructive:
-          "font-semibold bg-red-400/[0.10] text-red-400 border border-red-400/25 hover:bg-red-400/20 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-none disabled:opacity-30",
+          "font-semibold bg-red-400/10 text-red-400 border border-red-400/25 hover:bg-red-400/20 active:scale-[0.97] focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden disabled:opacity-30",
       },
       size: {
         default:

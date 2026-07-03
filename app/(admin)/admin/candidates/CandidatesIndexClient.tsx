@@ -112,16 +112,16 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
                 <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
                   {divisionGroup.label}
                 </span>
-                <span className="h-px flex-1 bg-white/[0.05]" />
+                <span className="h-px flex-1 bg-white/5" />
                 <span className="text-[10px] text-white/55">
                   {divisionGroup.totalCandidates} candidates · {divisionGroup.positionCount} positions
                 </span>
-                <span className="hidden rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-[10px] text-white/40 sm:inline">
+                <span className="hidden rounded-full border border-white/8 bg-white/3 px-2 py-1 text-[10px] text-white/40 sm:inline">
                   Click to expand
                 </span>
                 <span className="text-[12px] text-gold transition-transform group-open/division:rotate-90">›</span>
               </summary>
-              <div className="grid gap-3 border-t border-white/[0.06] p-3">
+              <div className="grid gap-3 border-t border-white/6 p-3">
                 {divisionGroup.elections.map((election) => (
                   <details key={election.id} className="group/election overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface">
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
@@ -131,7 +131,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
                       </div>
                       <div className="flex shrink-0 items-center gap-3 text-[10px] text-white/50">
                         <span>{election.totalCandidates} cand. · {election.positionCount} pos.</span>
-                        <span className="hidden rounded-full border border-white/[0.08] bg-white/[0.03] px-2 py-1 text-white/40 lg:inline">
+                        <span className="hidden rounded-full border border-white/8 bg-white/3 px-2 py-1 text-white/40 lg:inline">
                           Click to expand
                         </span>
                         <Link href={`/admin/elections/${election.id}/candidates`} className="rounded-[5px] border border-gold/20 bg-gold/[0.07] px-[7px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]">
@@ -140,7 +140,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
                         <span className="text-[12px] text-gold transition-transform group-open/election:rotate-90">›</span>
                       </div>
                     </summary>
-                    <div className="divide-y divide-white/[0.04]">
+                    <div className="divide-y divide-white/4">
                       {election.positions.map((position) => (
                         <PositionBlock key={position.id} position={position} />
                       ))}
@@ -164,7 +164,7 @@ function PositionBlock({ position }: { position: CandidateIndexPosition }) {
   return (
     <section className="px-4 py-3">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-[11px] font-semibold uppercase tracking-[0.05em] text-white/65">{position.title}</h3>
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/65">{position.title}</h3>
         <p className="text-[10px] text-white/45">Votes: {votingGrades} · Runs: {candidateGrades}</p>
       </div>
       {position.candidates.length === 0 ? (
@@ -172,7 +172,7 @@ function PositionBlock({ position }: { position: CandidateIndexPosition }) {
       ) : (
         <div className="mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
           {position.candidates.map((candidate, index) => (
-            <div key={candidate.id} className="flex min-w-0 items-center gap-3 rounded-[7px] bg-white/[0.025] px-3 py-2">
+            <div key={candidate.id} className="flex min-w-0 items-center gap-3 rounded-[7px] bg-white/2.5 px-3 py-2">
               <span className="w-5 shrink-0 text-right font-mono text-[10px] text-white/45">{index + 1}</span>
               <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-white/80">{candidate.fullName}</span>
               <span className="shrink-0 font-mono text-[10px] text-white/40">Gr. {candidate.gradeLevel}</span>

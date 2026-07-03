@@ -20,28 +20,28 @@ const roles = [
   {
     role: "COMELEC Super-admin",
     title: "Fixed system account",
-    accent: "border-amber-400/30 bg-amber-400/[0.05]",
+    accent: "border-amber-400/30 bg-amber-400/5",
     permissions: ["Create and manage admin accounts", "Assign operational roles", "Reset passwords and unique officer keys", "View the dashboard and monitor"],
     boundary: "Cannot create, operate, close, or canvass elections.",
   },
   {
     role: "Commissioner",
     title: "Moderator, Chairperson, or Vice-Chairperson",
-    accent: "border-blue-400/25 bg-blue-400/[0.04]",
+    accent: "border-blue-400/25 bg-blue-400/4",
     permissions: ["Create elections and manage their lifecycle", "Import, finalize, and export voter rosters", "Manage positions and candidates", "Schedule, open, archive, and restore elections"],
     boundary: "Cannot perform the Canvassing Head's final close or official-results export.",
   },
   {
     role: "Canvassing Head",
     title: "Electoral Canvassing Head",
-    accent: "border-emerald-400/25 bg-emerald-400/[0.04]",
+    accent: "border-emerald-400/25 bg-emerald-400/4",
     permissions: ["View the dashboard and live monitor", "Close an election when voting ends", "Review and export official results", "Observe turnout without seeing voter choices"],
     boundary: "Cannot edit rosters, candidates, schedules, or admin accounts.",
   },
   {
     role: "Officer",
     title: "Other authenticated COMELEC officers",
-    accent: "border-white/10 bg-white/[0.025]",
+    accent: "border-white/10 bg-white/2.5",
     permissions: ["View the admin dashboard", "Open summaries and live monitoring", "Observe election status and turnout", "Provide their key for another officer's login"],
     boundary: "Read-only: cannot change election data, accounts, rosters, candidates, or results.",
   },
@@ -93,7 +93,7 @@ function AdminHelpContent() {
             <InfoCard number="02" title="Another officer's key">Ask another officer to enter their unique key. Your own key is rejected.</InfoCard>
             <InfoCard number="03" title="Role-based panel">After sign-in, the panel enables only the actions granted to your role.</InfoCard>
           </div>
-          <p className="mt-5 rounded-xl border border-amber-400/20 bg-amber-400/[0.05] p-4 text-xs leading-5 text-white/50">
+          <p className="mt-5 rounded-xl border border-amber-400/20 bg-amber-400/5 p-4 text-xs leading-5 text-white/50">
             Officer keys and passwords should be entered in person. Do not send them through messages, save them in shared documents, or exchange accounts to work around a denied action.
           </p>
         </div>
@@ -137,7 +137,7 @@ function AdminHelpContent() {
           <div className="mt-12 grid gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr] lg:items-center">
             {workflow.map(([owner, action, note], index) => (
               <div key={action} className="contents">
-                <article className="rounded-xl border border-white/[0.08] bg-navy/55 p-4 text-center lg:flex lg:min-h-[150px] lg:flex-col lg:justify-center">
+                <article className="rounded-xl border border-white/8 bg-navy/55 p-4 text-center lg:flex lg:min-h-[150px] lg:flex-col lg:justify-center">
                   <span className="font-mono text-[10px] text-gold/50">STEP {index + 1}</span>
                   <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-white/35">{owner}</p>
                   <h3 className="mt-2 font-heading text-sm font-bold text-white/85">{action}</h3>
@@ -161,7 +161,7 @@ function AdminHelpContent() {
 
 function InfoCard({ number, title, children }: { number: string; title: string; children: React.ReactNode }) {
   return (
-    <article className="rounded-xl border border-white/[0.08] bg-navy/50 p-5">
+    <article className="rounded-xl border border-white/8 bg-navy/50 p-5">
       <span className="font-mono text-xs text-gold/60">{number}</span>
       <h3 className="mt-3 font-heading font-bold text-white/85">{title}</h3>
       <p className="mt-2 text-xs leading-5 text-white/45">{children}</p>
@@ -171,7 +171,7 @@ function InfoCard({ number, title, children }: { number: string; title: string; 
 
 function Question({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <article className="rounded-xl border border-white/[0.08] bg-white/[0.025] p-5">
+    <article className="rounded-xl border border-white/8 bg-white/2.5 p-5">
       <h3 className="font-heading font-bold text-white/85">{title}</h3>
       <p className="mt-2 text-xs leading-5 text-white/45">{children}</p>
     </article>

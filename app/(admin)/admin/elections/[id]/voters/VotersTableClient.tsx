@@ -34,7 +34,7 @@ export function VotersTableClient({
   }, [query, voters]);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
+    <div className="overflow-hidden rounded-xl border border-white/8 bg-admin-surface">
       <div className="flex flex-col gap-3 border-b border-white/[0.07] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
         <div>
           <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50">Registered Voters</p>
@@ -74,7 +74,7 @@ export function VotersTableClient({
           <form action={removeVoterById.bind(null, voter.id, electionId)}>
             <button
               type="submit"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] text-white/25 transition-colors hover:text-red-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] text-white/25 transition-colors hover:text-red-400 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/40"
               title="Remove voter"
               aria-label={`Remove voter ${voter.studentId}`}
             >

@@ -100,7 +100,7 @@ export default function MonitorClient({
             {/* Positions grid */}
             <div>
               {displayData.positions.length === 0 ? (
-                <div className="rounded-xl border border-white/[0.08] bg-admin-surface px-6 py-16 text-center">
+                <div className="rounded-xl border border-white/8 bg-admin-surface px-6 py-16 text-center">
                   <p className="text-[13px] text-white/40">No positions found for this election.</p>
                 </div>
               ) : (

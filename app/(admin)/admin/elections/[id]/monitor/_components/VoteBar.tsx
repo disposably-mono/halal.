@@ -26,13 +26,13 @@ export function VoteBar({
     ? "border-gold/30 bg-[#1d2a3a]"
     : isTie
       ? "border-sky-400/25 bg-[#131e30]"
-      : "border-white/[0.06] bg-admin-surface";
+      : "border-white/6 bg-admin-surface";
 
   const fillCls = isLeader && !isTie
     ? "bg-gold/10"
     : isTie
       ? "bg-sky-400/[0.07]"
-      : "bg-white/[0.03]";
+      : "bg-white/3";
 
   const countColor = isLeader && !isTie
     ? "text-gold"

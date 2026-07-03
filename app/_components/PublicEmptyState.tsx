@@ -12,7 +12,7 @@ export function PublicEmptyState({
   eyebrow?: string;
 }) {
   return (
-    <div className="max-w-md rounded-sm border border-white/[0.08] bg-navy/[0.35] px-8 py-10 text-center shadow-[0_18px_45px_rgba(0,0,0,0.18)]">
+    <div className="max-w-md rounded-sm border border-white/8 bg-navy/35 px-8 py-10 text-center shadow-[0_18px_45px_rgba(0,0,0,0.18)]">
       <p className="font-body text-gold/50 text-[10px] tracking-[0.4em] uppercase mb-3">
         {eyebrow}
       </p>
@@ -20,7 +20,7 @@ export function PublicEmptyState({
         {title}
       </h1>
       <p className="font-tagline text-white/40 text-sm italic">VOX POPULI VOX DEI</p>
-      <p className="mt-5 font-body text-mid/[0.6] text-sm leading-6">{message}</p>
+      <p className="mt-5 font-body text-mid/60 text-sm leading-6">{message}</p>
     </div>
   );
 }

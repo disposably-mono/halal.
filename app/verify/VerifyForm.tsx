@@ -28,12 +28,12 @@ export function VerifyForm({ defaultCode = "" }: { defaultCode?: string }) {
           autoComplete="off"
           spellCheck={false}
           placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX-XXXX"
-          className="min-w-0 flex-1 rounded-sm border border-white/10 bg-navy px-4 py-3.5 font-mono text-sm uppercase tracking-wider text-white placeholder-white/15 outline-none transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25"
+          className="min-w-0 flex-1 rounded-sm border border-white/10 bg-navy px-4 py-3.5 font-mono text-sm uppercase tracking-wider text-white placeholder-white/15 outline-hidden transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25"
         />
         <button
           type="submit"
           disabled={isPending}
-          className="rounded-sm bg-gold px-6 py-3.5 font-heading text-sm font-bold uppercase tracking-[0.2em] text-navy transition-colors hover:bg-gold/90 active:bg-gold/80 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep"
+          className="rounded-sm bg-gold px-6 py-3.5 font-heading text-sm font-bold uppercase tracking-[0.2em] text-navy transition-colors hover:bg-gold/90 active:bg-gold/80 disabled:opacity-60 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep"
         >
           {isPending ? "Verifying…" : "Verify"}
         </button>
@@ -85,14 +85,14 @@ export function VerifyForm({ defaultCode = "" }: { defaultCode?: string }) {
         </section>
       )}
       {state.status === "compromised" && (
-        <section className="mt-6 rounded-sm border border-red-400/40 bg-red-400/[0.08] p-5" role="alert">
+        <section className="mt-6 rounded-sm border border-red-400/40 bg-red-400/8 p-5" role="alert">
           <h2 className="font-heading text-sm uppercase tracking-[0.15em] text-red-300">Integrity check failed</h2>
           <p className="mt-2 font-body text-sm text-white/65">This ballot record may have changed. Retain your receipt and contact OLPS COMELEC.</p>
           <p className="mt-3 break-all font-mono text-[10px] text-white/40">Audit fingerprint: {state.fingerprint}</p>
         </section>
       )}
       {state.status === "closed" && (
-        <section className="mt-6 rounded-sm border border-white/15 bg-white/[0.04] p-5" role="alert">
+        <section className="mt-6 rounded-sm border border-white/15 bg-white/4 p-5" role="alert">
           <h2 className="font-heading text-sm uppercase tracking-[0.15em] text-white/70">Verification closed</h2>
           <p className="mt-2 font-body text-sm text-white/55">Receipt verification is available only while an election is open. Please check back when polls are open.</p>
         </section>

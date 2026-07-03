@@ -44,7 +44,7 @@ export function ElectionSubNav({
   ];
 
   return (
-    <div className="overflow-x-auto border-b border-white/[0.06] bg-admin-bg">
+    <div className="overflow-x-auto border-b border-white/6 bg-admin-bg">
       <div className="mx-auto flex h-[42px] min-w-max max-w-7xl items-center gap-1 px-4 sm:px-6" aria-label="Election setup navigation">
         {tabs.map((tab) => {
           const isActive = pathname.startsWith(tab.href);
@@ -53,23 +53,23 @@ export function ElectionSubNav({
               ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-400"
               : isActive
                 ? "border-gold/40 bg-gold/10 text-gold"
-                : "border-white/[0.12] text-white/60"
+                : "border-white/12 text-white/60"
               }`}>
               {tab.done ? "✓" : tab.step}
             </span>
           ) : <BarsIcon />;
 
           return tab.disabled ? (
-            <span key={tab.label} className="ml-2 flex cursor-not-allowed select-none items-center gap-[5px] border-l border-white/[0.08] px-[12px] py-[5px] text-[11px] text-white/60" title="Available once the election opens">
+            <span key={tab.label} className="ml-2 flex cursor-not-allowed select-none items-center gap-[5px] border-l border-white/8 px-[12px] py-[5px] text-[11px] text-white/60" title="Available once the election opens">
               {marker}
               {tab.label}
             </span>
           ) : (
-            <Link key={tab.label} href={tab.href} className={`relative flex items-center gap-[6px] rounded-[6px] px-[10px] py-[6px] text-[11px] no-underline transition-all ${tab.step === null ? "ml-2 border-l border-white/[0.08] pl-[14px]" : ""} ${isActive ? "bg-white/[0.06] text-white/90" : "text-white/50 hover:bg-white/[0.03] hover:text-white/70"}`}>
+            <Link key={tab.label} href={tab.href} className={`relative flex items-center gap-[6px] rounded-[6px] px-[10px] py-[6px] text-[11px] no-underline transition-all ${tab.step === null ? "ml-2 border-l border-white/8 pl-[14px]" : ""} ${isActive ? "bg-white/6 text-white/90" : "text-white/50 hover:bg-white/3 hover:text-white/70"}`}>
               {isActive && <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-t-[2px] bg-gold" />}
               {marker}
               {tab.label}
-              {tab.step && tab.step < 3 && <span className="ml-1 text-white/[0.12]">›</span>}
+              {tab.step && tab.step < 3 && <span className="ml-1 text-white/12">›</span>}
             </Link>
           );
         })}
@@ -101,9 +101,9 @@ export function SetupStepper({
         const isCurrent = !step.done && i === firstIncomplete;
         return (
           <div key={step.label} className="flex items-center">
-            {i > 0 && <div className={`h-px w-8 ${steps[i - 1].done ? "bg-emerald-400/40" : "bg-white/[0.08]"}`} />}
+            {i > 0 && <div className={`h-px w-8 ${steps[i - 1].done ? "bg-emerald-400/40" : "bg-white/8"}`} />}
             <div className="flex items-center gap-[6px]">
-              <div className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border text-[9px] font-bold transition-all ${step.done ? "border-emerald-400/40 bg-emerald-400/20 text-emerald-400" : isCurrent ? "border-gold/40 bg-gold/15 text-gold" : "border-white/[0.10] bg-white/[0.04] text-white/60"}`}>
+              <div className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border text-[9px] font-bold transition-all ${step.done ? "border-emerald-400/40 bg-emerald-400/20 text-emerald-400" : isCurrent ? "border-gold/40 bg-gold/15 text-gold" : "border-white/10 bg-white/4 text-white/60"}`}>
                 {step.done ? <CheckIcon /> : <span>{i + 1}</span>}
               </div>
               <span className={`text-[11px] font-medium ${step.done ? "text-emerald-400/70" : isCurrent ? "text-gold/80" : "text-white/60"}`}>
@@ -129,7 +129,7 @@ export function SetupNextStep({
   label: string;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-gold/20 bg-gold/[0.05] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-3 rounded-xl border border-gold/20 bg-gold/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="text-[12px] font-semibold text-white/80">{title}</p>
         <p className="mt-0.5 text-[10px] text-white/40">{description}</p>

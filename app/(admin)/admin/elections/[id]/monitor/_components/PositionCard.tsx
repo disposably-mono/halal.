@@ -8,12 +8,12 @@ export function PositionCard({ position }: { position: PositionResult }) {
   const isTie = position.candidates.some((c) => c.isTie);
 
   return (
-    <div className="overflow-hidden rounded-xl border border-white/[0.08] bg-admin-surface">
+    <div className="overflow-hidden rounded-xl border border-white/8 bg-admin-surface">
       <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
         <AdminCardTitle as="h3">{position.title}</AdminCardTitle>
         <div className="flex shrink-0 items-center gap-2">
           {isTie && (
-            <span className="rounded-full border border-sky-400/20 bg-sky-400/[0.06] px-[7px] py-[2px] text-[9px] font-semibold text-sky-400">
+            <span className="rounded-full border border-sky-400/20 bg-sky-400/6 px-[7px] py-[2px] text-[9px] font-semibold text-sky-400">
               TIE
             </span>
           )}
@@ -21,7 +21,7 @@ export function PositionCard({ position }: { position: PositionResult }) {
             {position.totalVotes} vote{position.totalVotes !== 1 ? "s" : ""}
           </span>
           {position.abstentions > 0 && (
-            <span className="rounded-full border border-white/[0.08] px-[7px] py-[2px] text-[9px] text-white/60">
+            <span className="rounded-full border border-white/8 px-[7px] py-[2px] text-[9px] text-white/60">
               {position.abstentions} abstain{position.abstentions !== 1 ? "s" : ""}
             </span>
           )}

@@ -33,7 +33,7 @@ export function PublicHelpShell({
     <div className="min-h-screen overflow-x-hidden font-body text-white" style={PAGE_BACKGROUND}>
       <LandingNav />
       <main>
-        <section className="relative flex min-h-screen items-center justify-center overflow-hidden border-b border-white/[0.06] px-6 pb-20 pt-28 text-center">
+        <section className="relative flex min-h-screen items-center justify-center overflow-hidden border-b border-white/6 px-6 pb-20 pt-28 text-center">
           <HelpRibbons />
           <div className="relative z-10 mx-auto max-w-3xl">
             <p className="text-[10px] uppercase tracking-[0.38em] text-gold/70">{eyebrow}</p>
@@ -46,7 +46,7 @@ export function PublicHelpShell({
           </div>
         </section>
         {children}
-        <div className="border-t border-white/[0.06] px-6 py-10 text-center">
+        <div className="border-t border-white/6 px-6 py-10 text-center">
           <Link
             href="/"
             className="font-body text-xs uppercase tracking-[0.16em] text-white/40 transition-colors hover:text-gold"
@@ -63,7 +63,7 @@ export function PublicHelpShell({
 export function HelpTexturedBand() {
   return (
     <>
-      <div className="pointer-events-none absolute inset-0 bg-[#1b1f5e]/25" />
+      <div className="pointer-events-none absolute inset-0 bg-navy/25" />
       <div
         className="pointer-events-none absolute inset-0 opacity-[0.045]"
         style={{

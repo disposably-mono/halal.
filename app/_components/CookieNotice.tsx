@@ -33,7 +33,7 @@ export function CookieNotice() {
     <div
       role="region"
       aria-label="Cookie notice"
-      className="fixed inset-x-0 bottom-0 z-[100] border-t border-gold/20 bg-navy-deep/95 px-6 py-4 backdrop-blur"
+      className="fixed inset-x-0 bottom-0 z-100 border-t border-gold/20 bg-navy-deep/95 px-6 py-4 backdrop-blur-sm"
     >
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 sm:flex-row sm:justify-between">
         <p className="font-body text-sm leading-6 text-white/70">
@@ -51,7 +51,7 @@ export function CookieNotice() {
           type="button"
           onClick={dismiss}
           aria-label="Dismiss cookie notice"
-          className="shrink-0 rounded-sm border border-gold/40 px-5 py-2 font-heading text-xs font-bold uppercase tracking-[0.18em] text-gold/90 transition-colors hover:border-gold/70 hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/70"
+          className="shrink-0 rounded-sm border border-gold/40 px-5 py-2 font-heading text-xs font-bold uppercase tracking-[0.18em] text-gold/90 transition-colors hover:border-gold/70 hover:text-white focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/70"
         >
           Got it
         </button>

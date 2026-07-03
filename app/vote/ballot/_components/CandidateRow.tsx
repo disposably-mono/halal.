@@ -25,9 +25,9 @@ export function CandidateRow({
         group w-full flex items-center gap-3 px-4 py-[9px]
         border-b border-ballot-rule last:border-b-0
         transition-colors duration-100 text-left
-        focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold/55
+        focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold/55
         ${selected
-          ? "bg-navy/[0.06] shadow-[inset_3px_0_0_#F5C000]"
+          ? "bg-navy/6 shadow-[inset_3px_0_0_#F5C000]"
           : "bg-transparent hover:bg-ballot-hover"
         }
         ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}

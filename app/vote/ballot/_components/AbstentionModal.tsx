@@ -51,11 +51,11 @@ export function AbstentionModal({
         <div className="p-[18px] pb-4">
           <h2
             id="modal-title"
-            className="font-ballot-serif font-bold text-[17px] uppercase tracking-[0.1em] text-navy mb-1"
+            className="font-ballot-serif font-bold text-[17px] uppercase tracking-widest text-navy mb-1"
           >
             Unselected Positions
           </h2>
-          <p className="font-ballot-mono text-[11px] tracking-[0.1em] uppercase text-navy/45 mb-3">
+          <p className="font-ballot-mono text-[11px] tracking-widest uppercase text-navy/45 mb-3">
             The following positions have no selection:
           </p>
           <div className="border-[1.5px] border-navy mb-3">
@@ -82,7 +82,7 @@ export function AbstentionModal({
               type="button"
               onClick={onBack}
               disabled={pending}
-              className="flex-1 py-[10px] border-[1.5px] border-navy/25 bg-transparent text-navy font-ballot-mono text-[11px] tracking-[0.18em] uppercase hover:border-navy/60 opacity-60 hover:opacity-100 transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-navy/20 disabled:opacity-30"
+              className="flex-1 py-[10px] border-[1.5px] border-navy/25 bg-transparent text-navy font-ballot-mono text-[11px] tracking-[0.18em] uppercase hover:border-navy/60 opacity-60 hover:opacity-100 transition-opacity focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-navy/20 disabled:opacity-30"
             >
               ← Go Back
             </button>
@@ -91,7 +91,7 @@ export function AbstentionModal({
               type="button"
               onClick={onConfirm}
               disabled={pending}
-              className="flex-1 py-[10px] bg-gold border-none text-navy font-ballot-mono text-[11px] font-bold tracking-[0.18em] uppercase hover:opacity-[0.85] transition-opacity focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ballot-paper disabled:opacity-50 flex items-center justify-center gap-2"
+              className="flex-1 py-[10px] bg-gold border-none text-navy font-ballot-mono text-[11px] font-bold tracking-[0.18em] uppercase hover:opacity-[0.85] transition-opacity focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:ring-offset-2 focus-visible:ring-offset-ballot-paper disabled:opacity-50 flex items-center justify-center gap-2"
             >
               {pending ? (
                 <>

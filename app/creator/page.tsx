@@ -229,7 +229,7 @@ export default function AboutCreatorClient() {
               <Link
                 href={link.href}
                 className={`font-body text-[0.65rem] tracking-[0.2em] uppercase transition-colors duration-200 no-underline ${
-                  link.active ? "text-gold" : "text-white/[0.45] hover:text-gold"
+                  link.active ? "text-gold" : "text-white/45 hover:text-gold"
                 }`}
               >
                 {link.label}
@@ -290,7 +290,7 @@ export default function AboutCreatorClient() {
           </p>
 
           <h1
-            className="font-tagline font-bold leading-none tracking-[0.05em] uppercase mb-1"
+            className="font-tagline font-bold leading-none tracking-wider uppercase mb-1"
             style={{ fontSize: "clamp(2.5rem, 6vw, 4rem)", color: "#ffffff" }}
           >
             Mikel Taopa
@@ -345,7 +345,7 @@ export default function AboutCreatorClient() {
               aria-label={`${s.platform}: ${s.handle}`}
             >
               <div
-                className="w-9 h-9 rounded-full flex items-center justify-center flex-shrink-0"
+                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
                 style={{ background: s.color, border: `1px solid ${s.border}` }}
               >
                 {s.icon}
@@ -386,7 +386,7 @@ export default function AboutCreatorClient() {
           {HIGHLIGHTS.map((h) => (
             <div
               key={h.num}
-              className="relative overflow-hidden group border border-white/[0.07] transition-all duration-[250ms] hover:border-gold/20"
+              className="relative overflow-hidden group border border-white/[0.07] transition-all duration-250 hover:border-gold/20"
               style={{
                 padding: "1.75rem 1.5rem",
                 background: "rgba(27,31,94,0.2)",
@@ -394,7 +394,7 @@ export default function AboutCreatorClient() {
               }}
             >
               <div
-                className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-gold opacity-0 transition-opacity duration-[250ms] group-hover:opacity-60"
+                className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-gold opacity-0 transition-opacity duration-250 group-hover:opacity-60"
               />
               <p className="font-mono text-[0.65rem] mb-2" style={{ color: "rgba(245,192,0,0.45)" }}>
                 {h.num}

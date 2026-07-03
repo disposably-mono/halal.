@@ -35,12 +35,12 @@ export function ArchivedSection({
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex items-center gap-2 px-[14px] py-[10px] cursor-pointer border-b border-white/[0.07] bg-transparent w-full hover:bg-white/[0.025] focus-visible:outline-none focus-visible:bg-white/[0.04] transition-colors"
+        className="flex items-center gap-2 px-[14px] py-[10px] cursor-pointer border-b border-white/[0.07] bg-transparent w-full hover:bg-white/2.5 focus-visible:outline-hidden focus-visible:bg-white/4 transition-colors"
       >
         <span className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/40 flex-1 text-left">
           Archived
         </span>
-        <span className="text-[10px] bg-white/[0.06] text-white/40 rounded-full px-[7px] py-[1px]">
+        <span className="text-[10px] bg-white/6 text-white/40 rounded-full px-[7px] py-px">
           {elections.length}
         </span>
         <svg
@@ -54,11 +54,11 @@ export function ArchivedSection({
         elections.map((e) => (
           <div
             key={e.id}
-            className="flex items-center gap-3 px-[14px] py-[10px] border-b border-white/[0.04] last:border-0"
+            className="flex items-center gap-3 px-[14px] py-[10px] border-b border-white/4 last:border-0"
           >
             <div className="flex-1 min-w-0">
               <div className="text-[12px] font-medium text-white/70 truncate">{e.name}</div>
-              <div className="text-[10px] text-white/30 mt-[1px]">
+              <div className="text-[10px] text-white/30 mt-px">
                 {DIVISION_LABELS[e.division] ?? e.division} · archived {fmt(e.archivedAt)}
               </div>
             </div>
@@ -67,7 +67,7 @@ export function ArchivedSection({
                 type="button"
                 onClick={() => handleRestore(e.id)}
                 disabled={isPending}
-                className="text-[10px] text-gold bg-gold/[0.08] border border-gold/20 rounded-[5px] px-[9px] py-[4px] hover:bg-gold/[0.15] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold/40 transition-all disabled:opacity-40"
+                className="text-[10px] text-gold bg-gold/8 border border-gold/20 rounded-[5px] px-[9px] py-[4px] hover:bg-gold/15 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/40 transition-all disabled:opacity-40"
               >
                 Restore
               </button>

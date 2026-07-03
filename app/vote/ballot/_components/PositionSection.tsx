@@ -25,7 +25,7 @@ export function PositionSection({
       className={`
         border-2 bg-ballot-paper transition-all duration-200
         ${skipped
-          ? "border-amber-600 shadow-[inset_3px_0_0_theme(colors.amber.600)]"
+          ? "border-amber-600 shadow-[inset_3px_0_0_var(--color-amber-600)]"
           : "border-navy"
         }
       `}
@@ -48,7 +48,7 @@ export function PositionSection({
         </div>
         <div className="flex items-center pr-3 shrink-0">
           {selectedCandidateId ? (
-            <span className="font-ballot-mono text-[9px] tracking-[0.2em] uppercase font-bold px-[7px] py-[3px] border-[1.5px] border-navy/40 bg-navy/[0.06] text-navy">
+            <span className="font-ballot-mono text-[9px] tracking-[0.2em] uppercase font-bold px-[7px] py-[3px] border-[1.5px] border-navy/40 bg-navy/6 text-navy">
               ✓ Voted
             </span>
           ) : skipped ? (
