@@ -1,14 +1,15 @@
 # Handoff: Project Status & Future Improvements
 
 Updated: 2026-07-03
-Branch: `main` at `8496e9b`
+Branch: `main` at `6ee39ae`
 
 This file is the working handoff for the project. The staged Next.js 14 → 16 migration
-(sections 9–10) and the 2026-07-03 security-hardening pass (section 1) are **complete and
+(sections 10–11) and the 2026-07-03 security-hardening pass (section 1) are **complete and
 merged to `main`**, as are the audit-logging wrapper (section 5) and OpenTelemetry traces
-(section 6). The active content of this handoff is the future-improvements roadmap in
-sections 4 and 7 — recommended next: **section 7, the Tailwind v4 migration** (see section
-3 for why it's sequenced ahead of section 4).
+(section 6). A safe batch of routine dependency bumps also landed (section 8). The active
+content of this handoff is the future-improvements roadmap in sections 4, 7, and 8 —
+recommended next: **section 7, the Tailwind v4 migration** (see section 3 for the full
+sequencing rationale).
 
 ---
 
@@ -17,7 +18,7 @@ sections 4 and 7 — recommended next: **section 7, the Tailwind v4 migration** 
 - **Stack:** Next.js 16.2.10 (App Router, Turbopack), React 19.2.7, Auth.js v5 beta,
   Prisma 7 + PostgreSQL 16, Vitest (59 files / 453 tests, 80% coverage gate), Playwright.
 - **Framework migration:** complete. Next 14 → 15 → 16 merged via PRs #9–#11; Cache
-  Components evaluated and declined (section 10).
+  Components evaluated and declined (section 11).
 - **Security posture:** a full security/optimization/resilience review was run on
   2026-07-03 and all 10 findings were fixed and pushed (`4071ad2..851a6f0`, nine atomic
   commits). Highlights now live on `main`:
@@ -67,11 +68,14 @@ them or explicitly replace them:
 | 5 | Extract audit logging into a shared wrapper — **done** (see section 5) | Consistency; audit writes are spread across actions | Small–Medium | Low |
 | 6 | OpenTelemetry traces — **done** (see section 6) | Production debuggability | Medium | Low (privacy caveats) |
 | 7 | Tailwind v4 migration | Build speed, CSS-native config, unblocks `tw-animate-css` | Medium | Low–Medium |
+| 8 | ESLint 10 / TypeScript 6 major bumps | Stay current; unblock future tooling upgrades | Small each | Medium (plugin/type-check compat) |
 
 Each item is independently shippable. 5 and 6 are complete. **Recommended order for what's
-left: 7 → 4** — Tailwind v4 has no external dependency and is pure build-tooling/CSS risk,
-whereas item 4 (multi-instance) is gated on an actual second-instance deployment being
-planned and isn't actionable until then.
+left: 7 → 8 → 4** — Tailwind v4 and the ESLint/TypeScript majors are pure build-tooling risk
+with no external dependency, whereas item 4 (multi-instance) is gated on an actual
+second-instance deployment being planned and isn't actionable until then. (The routine
+patch/minor dependency bumps that don't need their own evaluation — see section 8 — already
+landed and aren't tracked as a roadmap item.)
 
 ---
 
@@ -384,7 +388,7 @@ anything, the same way PR #18 fixed the dropdown case — hand-written keyframes
 plugin needed). Do that first if the dead animations need fixing before this migration is
 scheduled.
 
-### Adoption path (mirror the Next.js migration's staged approach — section 9)
+### Adoption path (mirror the Next.js migration's staged approach — section 10)
 
 1. **Baseline**: screenshot the four public pages, the admin dashboard/filter groups, the
    ballot flow, and the results page (light + the ballot-paper theme) before touching
@@ -404,7 +408,7 @@ scheduled.
    usage, Radix primitives themselves are unaffected — those aren't Tailwind-version-coupled).
 4. **Wire up `tw-animate-css` properly** (or keep the hand-rolled keyframes from PR #18 —
    either works under v4; don't do both for the same animation).
-5. **Full verification gate** (section 8) plus the manual visual smoke pass from step 1,
+5. **Full verification gate** (section 9) plus the manual visual smoke pass from step 1,
    comparing against the baseline screenshots.
 
 ### Definition of done
@@ -416,12 +420,56 @@ scheduled.
 - [ ] `tw-animate-css`'s utilities resolve for real (or the PR #18 hand-rolled keyframes are
   confirmed to still work) — `Dialog`/`ConfirmDialog`/`Toast` actually animate open/close
   for the first time.
-- [ ] Full verification gate (section 8) green; no visual regressions in the manual smoke
+- [ ] Full verification gate (section 9) green; no visual regressions in the manual smoke
   pass.
 
 ---
 
-## 8. Verification Gate (Reusable, for Every PR From This Handoff)
+## 8. Other Major Dependency Upgrades to Evaluate
+
+**Status: the safe batch already landed** (patch/minor bumps, all within existing
+`package.json` semver ranges, no version-range edits needed): `@auth/prisma-adapter`,
+`@prisma/adapter-pg`, `@prisma/client`, `prisma` (kept in lockstep at 7.8.0),
+`@react-pdf/renderer`, `@vitest/coverage-v8`, `lucide-react`, `next-auth`
+(`5.0.0-beta.30` → `5.0.0-beta.31`), `pg`, `radix-ui`, `shadcn` (the CLI, not a runtime
+dependency), `tailwind-merge`, `@types/node` (patch within the `^20` range), and `vitest`.
+Verified with the full gate (typecheck/lint/453 tests/coverage/build) plus a live
+dev-server smoke test: admin login (next-auth), the `ThemedSelect` Radix dropdown
+(radix-ui), icon rendering (lucide-react), and the PR #18 filter-group toggle all still
+work with zero page errors.
+
+**Left deliberately untouched — each needs its own evaluation, not a drive-by bump:**
+
+- **ESLint 9 → 10** (major). `eslint-config-next` is pinned to `16.2.10`; confirm it (and
+  any other ESLint plugins in use) declare ESLint 10 support before jumping — flat-config
+  major version bumps have a history of breaking plugin compatibility. Check
+  `eslint-config-next`'s own release notes for a matching Next 16.2.x + ESLint 10 combo
+  before attempting.
+- **TypeScript 5.9 → 6.0** (major, very recent release as of this writing). Likely
+  low-risk for a codebase this consistently typed (TS majors are usually stricter checks
+  plus removed deprecated APIs, not breaking syntax changes), but run a dedicated
+  `tsc --noEmit` pass across the whole repo first, and re-check `eslint-config-next`'s
+  type-aware rules and `next.config.mjs` against it before merging.
+- **`tailwindcss` 3 → 4** — already tracked as its own staged migration; see section 7.
+
+**Not worth chasing:**
+
+- `@types/node`'s npm "latest" (major v26) — this project's `engines.node` floor is
+  `>=20.9.0`; jumping the *types* package to a major ahead of the actual Node runtime
+  would describe APIs that may not exist at runtime. Stay on the `^20` range and take
+  patches only (already current as of the batch above).
+- `next-auth`'s npm "latest" dist-tag (`4.24.14`) — misleading; npm's `latest` tag points
+  at the last stable v4 release because v5 is still in beta and untagged. This project is
+  intentionally on the actively-developed v5 beta line (`auth.ts`/`auth.config.ts` target
+  v5's APIs) — that tag is not a real upgrade candidate, let alone a downgrade one.
+
+Re-run `npm outdated` periodically; re-file this section's "safe batch" the same way each
+time one accumulates (same-day patch/minor bumps, full gate, brief smoke test) rather than
+holding routine bumps hostage to the majors above.
+
+---
+
+## 9. Verification Gate (Reusable, for Every PR From This Handoff)
 
 Automated:
 
@@ -460,7 +508,7 @@ document MEDIUM/LOW in the PR.
 
 ---
 
-## 9. Archive: Next.js 16 Migration (Complete)
+## 10. Archive: Next.js 16 Migration (Complete)
 
 Kept for the record; details live in git history and PRs #9–#11.
 
@@ -475,7 +523,7 @@ Kept for the record; details live in git history and PRs #9–#11.
 - Do not run forced major framework upgrades in the future without repeating this staged
   approach (baseline → codemods → hand checks → full gate → manual smoke per stage).
 
-## 10. Archive: Cache Components Evaluation (Declined 2026-07-03)
+## 11. Archive: Cache Components Evaluation (Declined 2026-07-03)
 
 Evaluated on `chore/cache-components-evaluation` (never merged). Enabling
 `cacheComponents: true` surfaced build failures on **18 of 31 routes (58%)** — each one
