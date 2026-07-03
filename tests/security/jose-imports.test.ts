@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 const JOSE_FILES = [
-  "middleware.ts",
+  "proxy.ts",
   "lib/voter-session.ts",
   "lib/ballot-confirmation.ts",
 ];
@@ -14,9 +14,9 @@ describe("jose imports", () => {
     expect(imports.join("\n")).not.toMatch(/from ["']jose["']/);
   });
 
-  it("keeps the edge middleware off the broad NextAuth server entrypoint", () => {
-    const middleware = readFileSync("middleware.ts", "utf8");
+  it("keeps the edge proxy off the broad NextAuth server entrypoint", () => {
+    const proxy = readFileSync("proxy.ts", "utf8");
 
-    expect(middleware).not.toMatch(/from ["']next-auth["']/);
+    expect(proxy).not.toMatch(/from ["']next-auth["']/);
   });
 });
