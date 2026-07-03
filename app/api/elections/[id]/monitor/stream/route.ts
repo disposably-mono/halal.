@@ -4,6 +4,7 @@ import { requireCapabilityOrError } from "@/lib/server/auth";
 import { permissionErrorMessage } from "@/lib/auth/permissions";
 import { subscribe, getLatest } from "@/lib/server/monitor-hub";
 import { computeAdminMonitorPayload } from "@/lib/server/results-aggregate";
+import { tryAcquire, release } from "@/lib/server/sse-connections";
 import type { ResultsPayload } from "@/app/(admin)/admin/elections/[id]/monitor/_components/monitor-shared";
 
 export const runtime = "nodejs";
@@ -44,6 +45,16 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
     return NextResponse.json({ error: "Election not found" }, { status: 404 });
   }
 
+  // Acquire as late as possible — right before the stream (and its heartbeat
+  // interval + hub subscription) actually comes into existence — so a
+  // rejected request never holds a slot.
+  if (!tryAcquire()) {
+    return NextResponse.json(
+      { error: "Too many live monitor connections. Close other monitor tabs and retry." },
+      { status: 429 },
+    );
+  }
+
   const encoder = new TextEncoder();
 
   const stream = new ReadableStream<Uint8Array>({
@@ -77,6 +88,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
         clearInterval(heartbeat);
         unsubscribe();
         req.signal.removeEventListener("abort", cleanup);
+        release();
         try {
           controller.close();
         } catch {
@@ -86,10 +98,20 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
 
       req.signal.addEventListener("abort", cleanup);
 
-      // Initial frame: prefer the hub's cached latest (free); otherwise compute
-      // once so a monitor opened on an idle election still renders immediately.
-      const initial = getLatest(id) ?? (await computeAdminMonitorPayload(id));
-      if (initial) send(initial);
+      try {
+        // Initial frame: prefer the hub's cached latest (free); otherwise compute
+        // once so a monitor opened on an idle election still renders immediately.
+        const initial = getLatest(id) ?? (await computeAdminMonitorPayload(id));
+        if (initial) send(initial);
+      } catch (error) {
+        // `cleanup` is already wired to `req.signal` by this point, so this
+        // covers the one gap where it isn't yet reachable any other way: a
+        // synchronous throw here would otherwise error the stream without
+        // ever calling `cleanup()`, leaking the connection slot acquired
+        // above. Routing through `cleanup()` also releases it exactly once.
+        console.error(`monitor stream: failed to compute initial frame for election ${id}`, error);
+        cleanup();
+      }
     },
   });
 
