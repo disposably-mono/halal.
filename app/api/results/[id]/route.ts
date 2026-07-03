@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCapabilityOrError } from "@/lib/server/auth";
 import { permissionErrorMessage } from "@/lib/auth/permissions";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
+import { computePositionTally } from "@/lib/domain/tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
 import { cached } from "@/lib/server/ttl-cache";
 import { recordSnapshot } from "@/lib/server/monitor-snapshots";
@@ -121,50 +122,72 @@ export async function GET(
 
   const livePositionResults = (aggregate?.positions ?? []).map((pos) => {
     const abstentions = aggregate!.positionAbstentions.get(pos.id) ?? 0;
-    const candidatesWithVotes = pos.candidates.map((c) => ({
-      id: c.id,
-      fullName: c.fullName,
-      gradeLevel: c.gradeLevel,
-      votes: aggregate!.candidateVoteCounts.get(c.id) ?? 0,
-    }));
-    const maxVotes = candidatesWithVotes.reduce((m, c) => Math.max(m, c.votes), 0);
-    const tiedTopCount = candidatesWithVotes.filter(
-      (c) => c.votes > 0 && c.votes === maxVotes,
-    ).length;
-    const candidates = candidatesWithVotes.map((c) => ({
-      ...c,
-      isWinner: c.votes > 0 && c.votes === maxVotes,
-      isTie: tiedTopCount > 1 && c.votes === maxVotes,
-    }));
-    const totalCandidateVotes = candidates.reduce((s, c) => s + c.votes, 0);
+    const totalVotesCast = pos.candidates.reduce(
+      (sum, c) => sum + (aggregate!.candidateVoteCounts.get(c.id) ?? 0),
+      0,
+    );
+    // Feed the already-known abstentions + votes-cast back in as "voters who
+    // voted" so computePositionTally's abstentions math reproduces the exact
+    // same abstentions figure — we still get isWinner/isTie from one place.
+    const tally = computePositionTally(
+      pos.candidates,
+      aggregate!.candidateVoteCounts,
+      abstentions + totalVotesCast,
+    );
+
+    const candidates = tally.candidates
+      .map((c) => ({
+        id: c.id,
+        fullName: c.fullName,
+        // Position candidates are always selected with gradeLevel, so this is
+        // never actually undefined — CandidateInput just allows it to be
+        // optional for callers (like the PDF route) that don't have it.
+        gradeLevel: c.gradeLevel!,
+        votes: c.votes,
+        isWinner: c.isWinner,
+        isTie: c.isTie,
+      }))
+      .sort((a, b) => b.votes - a.votes);
 
     return {
       id: pos.id,
       title: pos.title,
       order: pos.order,
-      candidates: candidates.sort((a, b) => b.votes - a.votes),
-      abstentions: isAdminRequest ? abstentions : undefined,
-      totalVotes: totalCandidateVotes,
+      candidates,
+      abstentions: isAdminRequest ? tally.abstentions : undefined,
+      totalVotes: tally.totalVotesCast,
     };
   });
 
   const positionResults = certified
     ? certified.positions.map((position) => {
-        const maxVotes = position.candidates.reduce((max, candidate) => Math.max(max, candidate.votes), 0);
-        const tiedTopCount = position.candidates.filter((candidate) => candidate.votes > 0 && candidate.votes === maxVotes).length;
+        const voteMap = new Map(position.candidates.map((c) => [c.id, c.votes] as [string, number]));
+        const totalVotesCast = position.candidates.reduce((sum, c) => sum + c.votes, 0);
+        // Same reconstruction trick as the live branch above: the certified
+        // snapshot's abstentions figure is authoritative, so we feed it back
+        // in to keep computePositionTally's output consistent with it while
+        // still sourcing isWinner/isTie from the shared module.
+        const tally = computePositionTally(
+          position.candidates,
+          voteMap,
+          position.abstentions + totalVotesCast,
+        );
         return {
           id: position.id,
           title: position.title,
           order: position.order,
-          candidates: position.candidates
-            .map((candidate) => ({
-              ...candidate,
-              isWinner: candidate.votes > 0 && candidate.votes === maxVotes,
-              isTie: tiedTopCount > 1 && candidate.votes === maxVotes,
+          candidates: tally.candidates
+            .map((c) => ({
+              id: c.id,
+              fullName: c.fullName,
+              gradeLevel: c.gradeLevel!,
+              votes: c.votes,
+              isWinner: c.isWinner,
+              isTie: c.isTie,
             }))
             .sort((a, b) => b.votes - a.votes),
           abstentions: isAdminRequest ? position.abstentions : undefined,
-          totalVotes: position.candidates.reduce((sum, candidate) => sum + candidate.votes, 0),
+          totalVotes: totalVotesCast,
         };
       })
     : livePositionResults;
