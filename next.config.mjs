@@ -7,6 +7,15 @@ const SECURITY_HEADERS = [
     key: "Permissions-Policy",
     value: "camera=(), microphone=(), geolocation=()",
   },
+  // No `preload` directive: submitting to the HSTS preload list is a
+  // semi-permanent registration (removal takes months to propagate across
+  // browsers), so that's a deliberate opt-in the team should make separately,
+  // not a default baked into every deploy. Harmless to send over plain HTTP —
+  // browsers only act on it when received over HTTPS.
+  {
+    key: "Strict-Transport-Security",
+    value: "max-age=63072000; includeSubDomains",
+  },
 ];
 
 const nextConfig = {
