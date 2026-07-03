@@ -37,7 +37,7 @@ function createPrismaClient() {
     connectionString: process.env.DATABASE_URL!,
     // Concurrent-voting bursts must fail fast instead of queueing forever —
     // pg's defaults are max: 10 and connectionTimeoutMillis: 0 (wait forever).
-    max: positiveIntEnv("DB_POOL_MAX", 20),
+    max: positiveIntEnv("DB_POOL_MAX", 40),
     idleTimeoutMillis: positiveIntEnv("DB_POOL_IDLE_TIMEOUT_MS", 30_000),
     connectionTimeoutMillis: positiveIntEnv("DB_POOL_CONNECTION_TIMEOUT_MS", 10_000),
     statement_timeout: positiveIntEnv("DB_STATEMENT_TIMEOUT_MS", 15_000),
