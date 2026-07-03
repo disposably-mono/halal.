@@ -1,4 +1,4 @@
-import { describe, expect, test } from "vitest";
+import { afterAll, beforeAll, describe, expect, test } from "vitest";
 import {
   buildDashboardSummary,
   filterDashboardElections,
@@ -21,6 +21,24 @@ const baseElection: DashboardElection = {
 };
 
 describe("dashboard helpers", () => {
+  // snapshotsToTurnoutTrend formats labels with toLocaleTimeString, which resolves
+  // against the system TZ (the "en-PH" locale only controls formatting, not the
+  // timezone conversion) — pin it so the expected "08:0x AM" labels below don't
+  // depend on the machine/CI runner's local timezone.
+  const originalTZ = process.env.TZ;
+
+  beforeAll(() => {
+    process.env.TZ = "Asia/Manila";
+  });
+
+  afterAll(() => {
+    if (originalTZ === undefined) {
+      delete process.env.TZ;
+    } else {
+      process.env.TZ = originalTZ;
+    }
+  });
+
   test("summarizes active election state without mutating input", () => {
     const elections = [
       baseElection,
