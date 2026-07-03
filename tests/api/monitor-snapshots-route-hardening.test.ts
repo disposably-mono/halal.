@@ -35,7 +35,7 @@ describe("/api/elections/[id]/monitor-snapshots hardening", () => {
     loadSnapshotsMock.loadSnapshots.mockRejectedValue(new Error("cache miss"));
 
     const response = await GET(new Request("http://localhost/api/elections/e1/monitor-snapshots"), {
-      params: { id: "e1" },
+      params: Promise.resolve({ id: "e1" }),
     });
 
     expect(response.status).toBe(500);

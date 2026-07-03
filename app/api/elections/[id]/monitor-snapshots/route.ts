@@ -20,10 +20,8 @@ function unexpectedSnapshotsErrorResponse() {
  * anonymous aggregate payloads already served by `/api/results/[id]?admin=1`
  * — no voter-identifying data — ascending by capture time.
  */
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } },
-) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const guard = await requireCapabilityOrError("admin:view");
     if (!guard.ok) {

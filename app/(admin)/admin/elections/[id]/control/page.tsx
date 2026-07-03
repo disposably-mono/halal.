@@ -9,10 +9,11 @@ import { StatusPill, ElectionSubNav, SetupStepper } from "@/components/admin/ui"
 export const dynamic = "force-dynamic";
 
 interface PageProps {
-  params: { id: string };
+  params: Promise<{ id: string }>;
 }
 
-export default async function ControlPage({ params }: PageProps) {
+export default async function ControlPage(props: PageProps) {
+  const params = await props.params;
   // Election status, schedule, and audit/recount internals are read here, so
   // viewing requires elections:view. Mutation controls below are separately
   // gated on election:lifecycle / election:close / recounts:run.

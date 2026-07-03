@@ -25,10 +25,8 @@ const HEARTBEAT_MS = 25_000;
  * the same `admin:view` capability that gates `GET /api/results/[id]?admin=1`
  * gates the stream.
  */
-export async function GET(
-  req: NextRequest,
-  { params }: { params: { id: string } },
-) {
+export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   const guard = await requireCapabilityOrError("admin:view");
   if (!guard.ok) {
     return NextResponse.json(

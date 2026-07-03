@@ -11,10 +11,8 @@ function unexpectedExportErrorResponse() {
   );
 }
 
-export async function GET(
-  _req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     const guard = await requireCapabilityOrError("voters:export");
     if (!guard.ok) {

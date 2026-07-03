@@ -23,7 +23,8 @@ export const dynamic = "force-dynamic";
 
 const SCHOOL_YEAR = new Date().getFullYear();
 
-export default async function VotersPage({ params }: { params: { id: string } }) {
+export default async function VotersPage(props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   // Control numbers shown below are live voting credentials, so reading requires
   // voters:view (Commissioner + oversight roles). Mutation controls below are
   // separately gated on voters:manage. Other roles are bounced to the dashboard.

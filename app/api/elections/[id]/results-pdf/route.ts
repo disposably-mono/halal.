@@ -62,10 +62,8 @@ function schoolYearLabel(date: Date): string {
 
 // ─── Route Handler ────────────────────────────────────────────────────────────
 
-export async function GET(
-  _req: NextRequest,
-  { params }: { params: { id: string } }
-) {
+export async function GET(_req: NextRequest, props: { params: Promise<{ id: string }> }) {
+  const params = await props.params;
   try {
     // ── Auth ──────────────────────────────────────────────────────────────────
     // Results export is the Canvassing Head's domain.

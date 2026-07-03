@@ -78,7 +78,7 @@ describe("/api/elections/[id]/results-pdf hardening", () => {
     renderToBufferMock.renderToBuffer.mockRejectedValue(new Error("render boom"));
 
     const response = await GET(new NextRequest("http://localhost/api/elections/e1/results-pdf"), {
-      params: { id: "e1" },
+      params: Promise.resolve({ id: "e1" }),
     });
 
     expect(response.status).toBe(500);

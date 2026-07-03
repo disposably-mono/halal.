@@ -122,7 +122,7 @@ vi.mock("@/lib/prisma", () => ({
       }),
     },
     $transaction: vi.fn(async (callback: (tx: unknown) => Promise<unknown>) => {
-      let release: (() => void) | null = null;
+      let release: (() => void) | undefined;
       const tx = {
         $queryRaw: async (_strings: TemplateStringsArray, ...values: unknown[]) => {
           const id = values[0] as string;
@@ -149,7 +149,9 @@ vi.mock("@/lib/prisma", () => ({
       try {
         return await callback(tx);
       } finally {
-        release?.();
+        if (release) {
+          release();
+        }
       }
     }),
   },
