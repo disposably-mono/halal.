@@ -157,32 +157,55 @@ Every author must remember the guard → validate → transaction → mutate →
 revalidate sequence by hand; a forgotten log line is invisible until an incident needs
 the trail.
 
-**The shape of the fix:** Next.js server actions have no true middleware layer
-(`proxy.ts` runs on the Edge runtime and cannot touch Prisma), so "middleware" here means
-a **higher-order wrapper**, not HTTP middleware. Add `lib/server/audited-action.ts`:
+**Status: wrapper landed, first file migrated (this pass).** `lib/server/audited-action.ts`
+now exists and `app/(admin)/admin/actions.ts` (archive/restore) has been migrated onto it,
+behavior-identical (same guard, row lock, audit strings, and error copy — verified by the
+existing `tests/admin/archive-restore-race.test.ts` passing unchanged, plus a new
+`tests/server/audited-action.test.ts` for the wrapper itself). Remaining files to migrate,
+one PR at a time per the plan below:
+
+- `app/(admin)/admin/elections/[id]/control/actions.ts` (four lifecycle actions)
+- `lib/server/close-election.ts` / `lib/election-transitions.ts`
+- `app/(admin)/admin/accounts/actions.ts` (five `AdminAccountLog` writes — see the shape
+  note below before migrating these; they also need `mapError` for the P2002/P2034 cases
+  and `isolationLevel: Serializable` for two of the five)
+
+**The shape actually implemented** (adjusted from the original sketch below during
+implementation — see note):
 
 ```ts
-export function auditedAction<Args, Result>(opts: {
+export function auditedAction<Args extends unknown[]>(opts: {
+  name: string; // console.error log tag on unexpected failure
   capability: Capability;
-  audit: (args, session, outcome) => AuditEntry | AdminAccountEntry | null;
-  run: (tx, args, session) => Promise<Result>;
-}): (args: Args) => Promise<Result>
+  errorMessage: string; // generic fallback message
+  isolationLevel?: Prisma.TransactionIsolationLevel;
+  run: (tx: Prisma.TransactionClient, session: Session, ...args: Args) => Promise<void>;
+  mapError?: (error: unknown) => string | null; // recognize e.g. P2002/P2034 → friendly message
+}): (...args: Args) => Promise<ActionResult>
 ```
 
 - The wrapper owns: capability guard (`requireCapabilityOrError`), the
-  `prisma.$transaction`, writing the audit row **in the same transaction** as the
-  mutation (the invariant the accounts actions already establish — keep it), and the
-  standard `{ success, error }` result mapping including `TransitionValidationError`
-  passthrough.
-- The per-action `audit` builder stays pure and unit-testable — the pattern already
-  exists in `app/(admin)/admin/accounts/account-log.ts`; generalize it rather than
-  inventing a new one.
+  `prisma.$transaction` (with optional isolation level), and the standard
+  `{ success, error }` result mapping, including `TransitionValidationError` passthrough
+  and an optional `mapError` hook for recognized Prisma errors (unique-constraint,
+  serialization conflict) that need a friendlier message than the generic fallback.
+- **Deviation from the original sketch:** the audit write itself stays inside the
+  caller's `run` callback rather than being pulled out into a separate `audit` builder
+  parameter. `AuditLog` and `AdminAccountLog` have different shapes and are deliberately
+  not unified (see Non-goals below), so a generic `audit(args, session, outcome) =>
+  AuditEntry | AdminAccountEntry` parameter would need a runtime discriminant anyway —
+  no simpler than just calling `tx.auditLog.create(...)` or
+  `tx.adminAccountLog.create(...)` directly inside `run`, right next to the row lock and
+  mutation it's paired with. This also directly serves the "row locks and status
+  re-checks must stay easy to keep, not hidden" requirement: `run` is exactly the
+  guard → validate → mutate → log sequence, in one place, per action.
+- The per-action audit-row *builders* (e.g. `app/(admin)/admin/accounts/account-log.ts`)
+  are unaffected and still called from inside `run`.
 - **Migrate incrementally**: one actions file per PR, behavior-identical, with the
   existing tests as the safety net. Do not change audit strings — the history UI and any
   operator muscle memory depend on them.
 - Row locks (`SELECT ... FOR UPDATE`) and status re-checks inside transactions are
-  load-bearing (double-fired cron, concurrent admins). The wrapper must make them easy to
-  keep, not hide them.
+  load-bearing (double-fired cron, concurrent admins). They stay inside `run`, unchanged.
 
 **Non-goals:** do not unify `AuditLog` (election-scoped) and `AdminAccountLog`
 (account-scoped) into one table — they were deliberately separated because the account
