@@ -25,6 +25,15 @@ export type FinalizeResult = {
   error?: string;
 };
 
+/**
+ * Thrown for expected validation failures inside a locked transaction so the
+ * caller can surface `error.message` verbatim (or no-op silently for void
+ * actions), while any other (unexpected) error is logged and reported
+ * generically. Mirrors the `TransitionValidationError` pattern in
+ * `elections/[id]/control/actions.ts`.
+ */
+class RosterGuardError extends Error {}
+
 export async function seedAllPositions(formData: FormData) {
   await requireCapability("candidates:manage");
   const parsed = safeParseFormData(SeedPositionsSchema, formData);
@@ -106,20 +115,36 @@ export async function removePosition(formData: FormData) {
   if (!parsed.success) return;
   const { positionId, electionId } = parsed.data;
 
-  const position = await prisma.position.findUnique({
-    where: { id: positionId },
-    select: {
-      electionId: true,
-      election: { select: { status: true, candidatesFinalized: true } },
-    },
-  });
-  if (!position || position.electionId !== electionId) return;
-  if (!canEditCandidateRoster(position.election.status, position.election.candidatesFinalized).ok) return;
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Lock the election row so a concurrent finalizeCandidates() can't commit
+      // "finalized" between our guard check and the update below.
+      await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
 
-  await prisma.position.update({
-    where: { id: positionId },
-    data: { isActive: false },
-  });
+      const position = await tx.position.findUnique({
+        where: { id: positionId },
+        select: {
+          electionId: true,
+          election: { select: { status: true, candidatesFinalized: true } },
+        },
+      });
+      if (!position || position.electionId !== electionId) {
+        throw new RosterGuardError("Position not found.");
+      }
+      if (!canEditCandidateRoster(position.election.status, position.election.candidatesFinalized).ok) {
+        throw new RosterGuardError("Roster locked.");
+      }
+
+      await tx.position.update({
+        where: { id: positionId },
+        data: { isActive: false },
+      });
+    });
+  } catch (error) {
+    if (error instanceof RosterGuardError) return;
+    console.error("[removePosition] transaction failed:", error);
+    return;
+  }
   revalidateElectionCandidates(electionId);
 }
 
@@ -129,32 +154,46 @@ export async function addCandidate(formData: FormData) {
   if (!parsed.success) return;
   const { positionId, electionId, fullName } = parsed.data;
 
-  const position = await prisma.position.findUnique({
-    where: { id: positionId },
-    select: {
-      candidateGrade: true,
-      electionId: true,
-      election: { select: { status: true, candidatesFinalized: true } },
-    },
-  });
-  if (!position) return;
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Lock the election row so a concurrent finalizeCandidates() can't commit
+      // "finalized" between our guard check and the create below.
+      await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
 
-  // Trust the position's own election, never the caller-supplied electionId. A
-  // mismatch means a crafted/stale request trying to plant a Candidate row whose
-  // positionId and electionId span two elections — which would contaminate the
-  // ballots and tallies of both. Reject it outright.
-  if (position.electionId !== electionId) return;
-  if (!canEditCandidateRoster(position.election.status, position.election.candidatesFinalized).ok) return;
+      const position = await tx.position.findUnique({
+        where: { id: positionId },
+        select: {
+          candidateGrade: true,
+          electionId: true,
+          election: { select: { status: true, candidatesFinalized: true } },
+        },
+      });
+      if (!position) throw new RosterGuardError("Position not found.");
 
-  await prisma.candidate.create({
-    data: {
-      positionId,
-      electionId: position.electionId,
-      fullName,
-      gradeLevel: pickCandidateDefaultGrade(position.candidateGrade),
-    },
-  });
-  revalidateElectionCandidates(position.electionId);
+      // Trust the position's own election, never the caller-supplied electionId. A
+      // mismatch means a crafted/stale request trying to plant a Candidate row whose
+      // positionId and electionId span two elections — which would contaminate the
+      // ballots and tallies of both. Reject it outright.
+      if (position.electionId !== electionId) throw new RosterGuardError("Election mismatch.");
+      if (!canEditCandidateRoster(position.election.status, position.election.candidatesFinalized).ok) {
+        throw new RosterGuardError("Roster locked.");
+      }
+
+      await tx.candidate.create({
+        data: {
+          positionId,
+          electionId: position.electionId,
+          fullName,
+          gradeLevel: pickCandidateDefaultGrade(position.candidateGrade),
+        },
+      });
+    });
+  } catch (error) {
+    if (error instanceof RosterGuardError) return;
+    console.error("[addCandidate] transaction failed:", error);
+    return;
+  }
+  revalidateElectionCandidates(electionId);
 }
 
 export async function removeCandidate(formData: FormData) {
@@ -197,36 +236,47 @@ export async function finalizeCandidates(
   }
   const { electionId } = parsed.data;
 
-  const election = await prisma.election.findUnique({
-    where: { id: electionId },
-    select: { status: true, candidatesFinalized: true },
-  });
-  if (!election) return { success: false, error: "Election not found." };
-  const editGuard = canEditCandidateRoster(election.status, election.candidatesFinalized);
-  if (!editGuard.ok) return { success: false, error: editGuard.reason };
+  try {
+    await prisma.$transaction(async (tx) => {
+      // Lock the election row so a concurrent addCandidate()/removePosition()
+      // can't land after we've decided the roster is safe to finalize.
+      await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
 
-  const positions = await prisma.position.findMany({
-    where: { electionId, isActive: true },
-    include: { _count: { select: { candidates: true } } },
-  });
+      const election = await tx.election.findUnique({
+        where: { id: electionId },
+        select: { status: true, candidatesFinalized: true },
+      });
+      if (!election) throw new RosterGuardError("Election not found.");
+      const editGuard = canEditCandidateRoster(election.status, election.candidatesFinalized);
+      if (!editGuard.ok) throw new RosterGuardError(editGuard.reason);
 
-  if (positions.length === 0) {
-    return { success: false, error: "Add at least one position before finalizing." };
+      const positions = await tx.position.findMany({
+        where: { electionId, isActive: true },
+        include: { _count: { select: { candidates: true } } },
+      });
+
+      if (positions.length === 0) {
+        throw new RosterGuardError("Add at least one position before finalizing.");
+      }
+
+      const empty = positions.filter((p) => p._count.candidates === 0);
+      if (empty.length > 0) {
+        const names = empty.map((p) => p.title).join(", ");
+        throw new RosterGuardError(
+          `These positions have no candidates yet: ${names}. Add at least one candidate to each before finalizing.`,
+        );
+      }
+
+      await tx.election.update({
+        where: { id: electionId },
+        data: { candidatesFinalized: true },
+      });
+    });
+  } catch (error) {
+    if (error instanceof RosterGuardError) return { success: false, error: error.message };
+    console.error("[finalizeCandidates] transaction failed:", error);
+    return { success: false, error: "Failed to finalize candidates." };
   }
-
-  const empty = positions.filter((p) => p._count.candidates === 0);
-  if (empty.length > 0) {
-    const names = empty.map((p) => p.title).join(", ");
-    return {
-      success: false,
-      error: `These positions have no candidates yet: ${names}. Add at least one candidate to each before finalizing.`,
-    };
-  }
-
-  await prisma.election.update({
-    where: { id: electionId },
-    data: { candidatesFinalized: true },
-  });
 
   revalidateElectionCandidates(electionId);
   return { success: true };
