@@ -1,6 +1,5 @@
 "use server";
 
-import { prisma } from "@/lib/prisma";
 import { ElectionStatus } from "@prisma/client";
 import {
   canAdvanceToScheduled,
@@ -9,13 +8,12 @@ import {
   canReschedule,
   nextStatusForReschedule,
 } from "@/lib/domain/election-state";
-import { requireCapabilityOrError, adminEmailFromSession } from "@/lib/server/auth";
-import { permissionErrorMessage } from "@/lib/auth/permissions";
+import { adminEmailFromSession } from "@/lib/server/auth";
 import {
   revalidateAdminDashboard,
   revalidateElectionControl,
 } from "@/lib/server/revalidate";
-import { closeElectionWithCertification } from "@/lib/server/close-election";
+import { closeElectionCore } from "@/lib/server/close-election";
 import { scheduleMonitorRefresh } from "@/lib/server/monitor-broadcast";
 import { loadAuditSnapshot } from "@/lib/server/election-audit";
 import {
@@ -86,29 +84,30 @@ export async function openElectionNow(electionId: string): Promise<ActionResult>
   return result;
 }
 
+const runCloseElectionNow = auditedAction<[electionId: string]>({
+  name: "closeElectionNow",
+  capability: "election:close",
+  errorMessage: "Failed to certify and close election",
+  run: async (tx, session, electionId) => {
+    await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
+    const election = await tx.election.findUnique({ where: { id: electionId } });
+    if (!election) throw new TransitionValidationError("Election not found");
+
+    const check = canManuallyClose(election.status);
+    if (!check.ok) throw new TransitionValidationError(check.reason);
+
+    await closeElectionCore(tx, electionId, adminEmailFromSession(session), ["OPEN"]);
+  },
+});
+
 export async function closeElectionNow(electionId: string): Promise<ActionResult> {
-  const guard = await requireCapabilityOrError("election:close");
-  if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
-
-  const election = await prisma.election.findUnique({ where: { id: electionId } });
-  if (!election) return { success: false, error: "Election not found" };
-
-  const check = canManuallyClose(election.status);
-  if (!check.ok) return { success: false, error: check.reason };
-
-  try {
-    await closeElectionWithCertification(
-      electionId,
-      adminEmailFromSession(guard.session),
-    );
-  } catch (error) {
-    console.error("[closeElectionNow] certification failed:", error);
-    return { success: false, error: "Failed to certify and close election" };
+  const result = await runCloseElectionNow(electionId);
+  if (result.success) {
+    // Broadcast the CLOSED frame so any monitor still open reflects the freeze.
+    void scheduleMonitorRefresh(electionId);
+    revalidateAfterTransition(electionId);
   }
-  // Broadcast the CLOSED frame so any monitor still open reflects the freeze.
-  void scheduleMonitorRefresh(electionId);
-  revalidateAfterTransition(electionId);
-  return { success: true };
+  return result;
 }
 
 const runInitiateRecount = auditedAction<[electionId: string]>({

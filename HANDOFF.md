@@ -157,39 +157,59 @@ Every author must remember the guard → validate → transaction → mutate →
 revalidate sequence by hand; a forgotten log line is invisible until an incident needs
 the trail.
 
-**Status: wrapper landed; two of four files migrated.** `lib/server/audited-action.ts`
-now exists. Migrated so far, both behavior-identical (verified by existing/new unit
-tests, full gate green):
+**Status: complete — all four files migrated.** `lib/server/audited-action.ts` exists
+and every action file listed above now uses it, all behavior-identical (verified by
+existing/new unit tests, full gate green each time):
 
 - `app/(admin)/admin/actions.ts` — `archiveElection`/`restoreElection`, onto the wrapper.
   Verified by the existing `tests/admin/archive-restore-race.test.ts` passing unchanged,
   plus `tests/server/audited-action.test.ts` for the wrapper itself.
 - `app/(admin)/admin/elections/[id]/control/actions.ts` — `openElectionNow`,
-  `rescheduleElection`, `advanceToScheduled`, and `initiateRecount` all migrated. New
-  `tests/admin/control-lifecycle-actions.test.ts` covers row-lock ordering, domain-check
-  passthrough, and the success/broadcast/revalidate paths for all four (no test existed
-  for this file before). One deliberate note preserved from the original code:
-  `initiateRecount` throws plain `Error` (not `TransitionValidationError`) for its three
-  validation failures, because the pre-existing behavior always collapsed them to the
-  generic "Recount failed" message rather than surfacing the specific reason — the
-  wrapper's generic-error fallback reproduces that exactly, so this was left as-is rather
-  than "fixed" as part of a behavior-identical migration.
-  - `closeElectionNow` in the same file was **not** migrated: it delegates its transaction
-    entirely to `closeElectionWithCertification` (a shared helper also called by the
-    cron scheduler), so it doesn't own a per-action transaction the wrapper could take
-    over. It'll move together with the next item below.
-
-Remaining files to migrate, one PR at a time:
-
-- `lib/server/close-election.ts` / `lib/election-transitions.ts` (and, with it,
-  `closeElectionNow` above) — these need a variant that accepts an already-open
-  transaction or a `run` that itself owns nested-transaction-free logic, since
-  `closeElectionWithCertification` is invoked from three different callers (manual close,
-  cron open→close, cron missed-window close) each with their own actor string and
-  allowed-status set.
-- `app/(admin)/admin/accounts/actions.ts` (five `AdminAccountLog` writes — see the shape
-  note below before migrating these; they also need `mapError` for the P2002/P2034 cases
-  and `isolationLevel: Serializable` for two of the five)
+  `rescheduleElection`, `advanceToScheduled`, `initiateRecount`, and (in a later pass)
+  `closeElectionNow` all migrated. `tests/admin/control-lifecycle-actions.test.ts` covers
+  row-lock ordering, domain-check passthrough, and the success/broadcast/revalidate paths
+  for all five (no test existed for this file before). One deliberate note preserved from
+  the original code: `initiateRecount` throws plain `Error` (not
+  `TransitionValidationError`) for its three validation failures, because the
+  pre-existing behavior always collapsed them to the generic "Recount failed" message
+  rather than surfacing the specific reason — the wrapper's generic-error fallback
+  reproduces that exactly, so this was left as-is rather than "fixed" as part of a
+  behavior-identical migration.
+- `lib/server/close-election.ts` — `closeElectionWithCertification`'s transaction body
+  was extracted into a new exported `closeElectionCore(tx, electionId, actor,
+  allowedStatuses, auditActionOverride)` that takes an already-open `tx` instead of
+  opening its own. `closeElectionWithCertification` is now a thin wrapper —
+  `prisma.$transaction((tx) => closeElectionCore(...))` — with an unchanged public
+  signature and behavior, so its other two callers (`lib/election-transitions.ts`'s cron
+  sweep, for both the OPEN→CLOSED and missed-window SCHEDULED→CLOSED cases) needed **zero
+  changes**. `closeElectionNow` (the one genuine "admin action" caller) migrated onto
+  `auditedAction`, whose `run` does its own row-locked pre-check (reproducing the
+  friendly `canManuallyClose` message via `TransitionValidationError`, closing a
+  pre-existing TOCTOU gap — the original pre-check ran outside any transaction/lock) and
+  then calls `closeElectionCore` on the wrapper's own `tx`. `closeElectionCore` re-locks
+  and re-checks status internally too — deliberate, harmless redundancy inside the same
+  already-held lock, kept so `closeElectionWithCertification`'s cron-facing contract
+  didn't need to change at all.
+- `app/(admin)/admin/accounts/actions.ts` — all five actions (`createAdmin`,
+  `updateAdminRole`, `resetAdminPassword`, `resetAdminOfficerKey`, `deleteAdmin`)
+  migrated, including `isolationLevel: Serializable` + `mapError` (P2002 duplicate-email
+  for `createAdmin`; P2034 serialization-conflict for both `createAdmin` and
+  `resetAdminOfficerKey`). New `tests/admin/accounts-actions.test.ts` (26 tests; no test
+  existed for this file before) mocks `bcryptjs` with fast tagged stand-ins so the suite
+  doesn't pay real cost-12 hashing time. Two disclosed, deliberate behavior changes here
+  (not silent regressions):
+  - **Transaction duration:** `createAdmin`/`resetAdminOfficerKey` used to `bcrypt.hash`
+    *before* opening their transaction; since `auditedAction`'s `run` always executes
+    inside an already-open transaction, hashing now happens inside it, extending a
+    Serializable transaction by ~tens of ms. Accepted: these are rare, low-concurrency,
+    admin-only actions, not the ballot-casting hot path.
+  - **Uniform error safety net:** `updateAdminRole`, `resetAdminPassword`, and
+    `deleteAdmin` previously had no catch-all around their transaction at all (an
+    unexpected DB error propagated uncaught); `createAdmin`/`resetAdminOfficerKey` only
+    caught two specific error codes and rethrew everything else. All five now get
+    `auditedAction`'s uniform net — an unexpected error is logged and returns a friendly
+    generic message instead of crashing. This is exactly the class of gap section 5 exists
+    to close, not a regression.
 
 **The shape actually implemented** (adjusted from the original sketch below during
 implementation — see note):
