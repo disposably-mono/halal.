@@ -8,7 +8,7 @@ import { PositionCard } from "./_components/PositionCard";
 import { ReplayPanel } from "./_components/ReplayPanel";
 import { TurnoutCard } from "./_components/TurnoutCard";
 import { DIVISION_LABELS } from "./_components/monitor-shared";
-import { useMonitorPolling } from "./_components/useMonitorPolling";
+import { useMonitorStream } from "./_components/useMonitorStream";
 import { useMonitorReplay } from "./_components/useMonitorReplay";
 
 export default function MonitorClient({
@@ -24,7 +24,7 @@ export default function MonitorClient({
   status: string;
   canExportResults: boolean;
 }) {
-  const { liveData, snapshots, loading, isFetching, error, lastUpdated, refresh } = useMonitorPolling(electionId);
+  const { liveData, snapshots, loading, isFetching, error, lastUpdated, refresh } = useMonitorStream(electionId);
   const replay = useMonitorReplay(snapshots, lastUpdated);
 
   const displayData =

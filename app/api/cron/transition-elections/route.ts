@@ -15,6 +15,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { timingSafeEqual } from "node:crypto";
 import { applyScheduledTransitions } from "@/lib/election-transitions";
+import { scheduleMonitorRefresh } from "@/lib/server/monitor-broadcast";
 
 /** Constant-time bearer-token check (length guard + timingSafeEqual). */
 function bearerMatches(authHeader: string | null, secret: string): boolean {
@@ -46,6 +47,12 @@ export async function GET(req: NextRequest) {
   // ── Run transitions ────────────────────────────────────────────────────────
   try {
     const result = await applyScheduledTransitions();
+
+    // Broadcast a fresh frame for every election whose lifecycle just changed
+    // so connected monitors flip without a manual refresh.
+    for (const electionId of [...result.opened, ...result.closed]) {
+      void scheduleMonitorRefresh(electionId);
+    }
 
     const summary = {
       timestamp: new Date().toISOString(),
