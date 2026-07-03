@@ -125,7 +125,7 @@ function CreateSubmit({ isPending }: { isPending: boolean }) {
 }
 
 function CreateAdminForm({ onResult }: { onResult: (toast: ToastInput) => void }) {
-  const { state: result, isPending, handleSubmit } = useServerActionForm<AccountActionResult | null>(
+  const { state: result, isPending, submitError, handleSubmit } = useServerActionForm<AccountActionResult | null>(
     createAdmin,
     null,
     { shouldRefresh: (nextResult) => Boolean(nextResult?.success) },
@@ -171,6 +171,9 @@ function CreateAdminForm({ onResult }: { onResult: (toast: ToastInput) => void }
 
         {result && !result.success && (
           <p className="text-[11px] text-red-400">✗ {result.error}</p>
+        )}
+        {submitError && (
+          <p className="text-[11px] text-red-400">✗ {submitError}</p>
         )}
       </form>
     </Card>
