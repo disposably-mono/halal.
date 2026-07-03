@@ -21,5 +21,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id?: string;
     role?: AdminRole;
+    /** Unix ms timestamp of the last DB role-revalidation (see lib/auth/token-refresh.ts). */
+    roleCheckedAt?: number;
   }
 }

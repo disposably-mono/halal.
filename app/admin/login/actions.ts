@@ -23,6 +23,15 @@ export async function verifyAdminCredentials(
     return { ok: false, reason: "rateLimited" };
   }
 
+  // `x-forwarded-for` is client-spoofable without a header-sanitizing reverse
+  // proxy in front of the app (see lib/server/rate-limit.ts). Add a
+  // per-account throttle keyed by normalized email as defense in depth, so
+  // brute-forcing one admin's password/officer key is still capped even when
+  // the attacker rotates IPs/headers per request.
+  if (!rateLimit(`admin-login-email:${email.trim().toLowerCase()}`, RATE_LIMITS.adminLogin).ok) {
+    return { ok: false, reason: "rateLimited" };
+  }
+
   try {
     const result = await checkAdminCredentials(email, password, officerKey);
     return result.ok ? { ok: true } : result;
