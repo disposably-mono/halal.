@@ -3,6 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { CalendarClock, UserCheck, UserRound } from "lucide-react";
 import {
+  Card,
   EmptyState,
   FilterGrid,
   FilterGroup,
@@ -104,7 +105,11 @@ export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[
         </FilterGrid>
       </FilterPanel>
 
-      <div className="overflow-hidden rounded-xl border border-white/8 bg-admin-surface">
+      <Card
+        title="Recent sign-ins"
+        meta={<span className="text-[10px] text-white/45">{filtered.length} of {history.length} shown</span>}
+        noPad
+      >
         {history.length === 0 ? (
           <EmptyState
             icon={<UserCheck aria-hidden="true" className="h-[18px] w-[18px]" />}
@@ -118,13 +123,14 @@ export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[
             hint="Try a different search, person, or date filter."
           />
         ) : (
-          <HistoryTable history={filtered} />
+          <>
+            <HistoryTable history={filtered} />
+            <p className="border-t border-white/[0.07] px-4 py-3 text-[10px] text-white/40">
+              Times are shown in Philippine Standard Time. The latest 250 sign-ins are displayed.
+            </p>
+          </>
         )}
-      </div>
-
-      <p className="text-[10px] text-gold/70">
-        Times are shown in Philippine Standard Time. The latest 250 sign-ins are displayed.
-      </p>
+      </Card>
     </>
   );
 }

@@ -32,7 +32,7 @@ export function FilterPanel({
 }
 
 export function FilterGrid({ children }: { children: ReactNode }) {
-  return <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">{children}</div>;
+  return <div className="grid grid-cols-1 items-start gap-3 lg:grid-cols-2">{children}</div>;
 }
 
 export function FilterGroup({

@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import {
+  Disclosure,
+  DisclosureChevron,
   EmptyState,
   FilterGrid,
   FilterGroup,
@@ -107,24 +109,32 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
       ) : (
         <div className="space-y-4">
           {filtered.map((divisionGroup) => (
-            <details key={divisionGroup.division} className="group/division overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface/70">
-              <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3">
-                <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
-                  {divisionGroup.label}
-                </span>
-                <span className="h-px flex-1 bg-white/5" />
-                <span className="text-[10px] text-white/55">
-                  {divisionGroup.totalCandidates} candidates · {divisionGroup.positionCount} positions
-                </span>
-                <span className="hidden rounded-full border border-white/8 bg-white/3 px-2 py-1 text-[10px] text-white/40 sm:inline">
-                  Click to expand
-                </span>
-                <span className="text-[12px] text-gold transition-transform group-open/division:rotate-90">›</span>
-              </summary>
-              <div className="grid gap-3 border-t border-white/6 p-3">
-                {divisionGroup.elections.map((election) => (
-                  <details key={election.id} className="group/election overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface">
-                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
+            <Disclosure
+              key={divisionGroup.division}
+              className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface/70"
+              contentClassName="grid gap-3 border-t border-white/6 p-3"
+              trigger={({ open }) => (
+                <div className="flex items-center gap-3 px-4 py-3">
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
+                    {divisionGroup.label}
+                  </span>
+                  <span className="h-px flex-1 bg-white/5" />
+                  <span className="text-[10px] text-white/55">
+                    {divisionGroup.totalCandidates} candidates · {divisionGroup.positionCount} positions
+                  </span>
+                  <span className="hidden rounded-full border border-white/8 bg-white/3 px-2 py-1 text-[10px] text-white/40 sm:inline">
+                    {open ? "Click to collapse" : "Click to expand"}
+                  </span>
+                  <DisclosureChevron open={open} />
+                </div>
+              )}
+            >
+              {divisionGroup.elections.map((election) => (
+                <Disclosure
+                  key={election.id}
+                  className="overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface"
+                  trigger={({ open }) => (
+                    <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <StatusDot status={election.status} />
                         <span className="truncate text-[12px] font-semibold text-white/80">{election.name}</span>
@@ -132,23 +142,28 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
                       <div className="flex shrink-0 items-center gap-3 text-[10px] text-white/50">
                         <span>{election.totalCandidates} cand. · {election.positionCount} pos.</span>
                         <span className="hidden rounded-full border border-white/8 bg-white/3 px-2 py-1 text-white/40 lg:inline">
-                          Click to expand
+                          {open ? "Click to collapse" : "Click to expand"}
                         </span>
-                        <Link href={`/admin/elections/${election.id}/candidates`} className="rounded-[5px] border border-gold/20 bg-gold/[0.07] px-[7px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]">
+                        <Link
+                          href={`/admin/elections/${election.id}/candidates`}
+                          onClick={(event) => event.stopPropagation()}
+                          className="rounded-[5px] border border-gold/20 bg-gold/[0.07] px-[7px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]"
+                        >
                           Manage
                         </Link>
-                        <span className="text-[12px] text-gold transition-transform group-open/election:rotate-90">›</span>
+                        <DisclosureChevron open={open} />
                       </div>
-                    </summary>
-                    <div className="divide-y divide-white/4">
-                      {election.positions.map((position) => (
-                        <PositionBlock key={position.id} position={position} />
-                      ))}
                     </div>
-                  </details>
-                ))}
-              </div>
-            </details>
+                  )}
+                >
+                  <div className="divide-y divide-white/4">
+                    {election.positions.map((position) => (
+                      <PositionBlock key={position.id} position={position} />
+                    ))}
+                  </div>
+                </Disclosure>
+              ))}
+            </Disclosure>
           ))}
         </div>
       )}
