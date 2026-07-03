@@ -44,7 +44,7 @@ vi.mock("@/lib/server/monitor-broadcast", () => ({
 }));
 
 vi.mock("@/lib/server/close-election", () => ({
-  closeElectionWithCertification: vi.fn(),
+  closeElectionCore: vi.fn(async () => ({ legacy: false })),
 }));
 
 vi.mock("@/lib/server/election-audit", () => ({
@@ -71,10 +71,12 @@ vi.mock("@/lib/domain/audit-tally", () => ({
 
 import {
   advanceToScheduled,
+  closeElectionNow,
   initiateRecount,
   openElectionNow,
   rescheduleElection,
 } from "@/app/(admin)/admin/elections/[id]/control/actions";
+import { closeElectionCore } from "@/lib/server/close-election";
 import { scheduleMonitorRefresh } from "@/lib/server/monitor-broadcast";
 import { revalidateAdminDashboard, revalidateElectionControl } from "@/lib/server/revalidate";
 
@@ -88,6 +90,7 @@ beforeEach(() => {
   vi.mocked(scheduleMonitorRefresh).mockClear();
   vi.mocked(revalidateAdminDashboard).mockClear();
   vi.mocked(revalidateElectionControl).mockClear();
+  vi.mocked(closeElectionCore).mockClear();
 });
 
 describe("openElectionNow", () => {
@@ -152,6 +155,62 @@ describe("openElectionNow", () => {
 
     expect(result).toEqual({ success: false, error: "Election not found" });
     expect(txMock.election.update).not.toHaveBeenCalled();
+  });
+});
+
+describe("closeElectionNow", () => {
+  it("takes the row lock before reading the election", async () => {
+    txMock.election.findUnique.mockResolvedValue({
+      id: "e1",
+      status: "OPEN",
+    });
+
+    await closeElectionNow("e1");
+
+    const lockOrder = txMock.$queryRaw.mock.invocationCallOrder[0];
+    const readOrder = txMock.election.findUnique.mock.invocationCallOrder[0];
+    expect(lockOrder).toBeLessThan(readOrder);
+  });
+
+  it("passes the domain-check reason through verbatim when not open", async () => {
+    txMock.election.findUnique.mockResolvedValue({
+      id: "e1",
+      status: "DRAFT",
+    });
+
+    const result = await closeElectionNow("e1");
+
+    expect(result).toEqual({ success: false, error: "Election must be Open to close it" });
+    expect(closeElectionCore).not.toHaveBeenCalled();
+  });
+
+  it("closes an open election and broadcasts + revalidates on success", async () => {
+    txMock.election.findUnique.mockResolvedValue({
+      id: "e1",
+      status: "OPEN",
+    });
+
+    const result = await closeElectionNow("e1");
+
+    expect(result).toEqual({ success: true });
+    expect(closeElectionCore).toHaveBeenCalledWith(
+      txMock,
+      "e1",
+      "admin@example.com",
+      ["OPEN"],
+    );
+    expect(scheduleMonitorRefresh).toHaveBeenCalledWith("e1");
+    expect(revalidateAdminDashboard).toHaveBeenCalled();
+    expect(revalidateElectionControl).toHaveBeenCalledWith("e1");
+  });
+
+  it("reports election-not-found without touching closeElectionCore", async () => {
+    txMock.election.findUnique.mockResolvedValue(null);
+
+    const result = await closeElectionNow("missing");
+
+    expect(result).toEqual({ success: false, error: "Election not found" });
+    expect(closeElectionCore).not.toHaveBeenCalled();
   });
 });
 
