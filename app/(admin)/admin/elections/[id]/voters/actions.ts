@@ -73,18 +73,51 @@ export async function addVotersFromCSV(
     existingVoterCodes: new Set(allCodes.map((v) => v.voterCode)),
   });
 
+  let createdCount = result.toCreate.length;
+
   if (result.toCreate.length > 0) {
-    await prisma.voter.createMany({
-      data: result.toCreate.map((row) => ({ ...row, electionId })),
-    });
-    revalidateElectionVoters(electionId);
+    try {
+      // skipDuplicates degrades a whole-batch unique-constraint failure into a
+      // partial insert: rows that lose a race against a concurrent import (same
+      // voterCode or electionId+studentId claimed between our uniqueness scan
+      // above and this write) are silently dropped instead of aborting every
+      // row in the batch.
+      const outcome = await prisma.voter.createMany({
+        data: result.toCreate.map((row) => ({ ...row, electionId })),
+        skipDuplicates: true,
+      });
+      createdCount = outcome.count;
+    } catch (error) {
+      // Defensive fallback: if the driver still surfaces a raw unique-constraint
+      // violation despite skipDuplicates, degrade gracefully instead of letting
+      // it crash the server action — same P2002 handling as addVoterManual.
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2002"
+      ) {
+        createdCount = 0;
+      } else {
+        throw error;
+      }
+    }
+
+    if (createdCount > 0) revalidateElectionVoters(electionId);
   }
 
+  const collided = result.toCreate.length - createdCount;
+  const reasons =
+    collided > 0
+      ? [
+          ...result.reasons,
+          `${createdCount} of ${result.toCreate.length} voters imported; ${collided} had control-number collisions with a concurrent import — please retry the import for the remainder.`,
+        ]
+      : result.reasons;
+
   return {
-    added: result.toCreate.length,
+    added: createdCount,
     rejected: result.rejected,
     skippedDuplicates: result.skippedDuplicates,
-    reasons: result.reasons,
+    reasons,
   };
 }
 
