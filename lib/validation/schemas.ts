@@ -97,9 +97,13 @@ const SchoolYear = z
   .transform((s) => parseInt(s, 10))
   .pipe(z.number().int().min(2000).max(2100));
 
+// Bounds the CSV import payload so an oversized upload can't be used to tie up
+// the parser/DB import path — 200KB comfortably covers a full-school roster.
+const CSVText = NonEmptyString.max(200_000, "CSV file is too large (max 200KB).");
+
 export const AddVotersFromCSVSchema = z.object({
   electionId: Cuid,
-  csvText: NonEmptyString,
+  csvText: CSVText,
   schoolYear: SchoolYear,
 });
 
