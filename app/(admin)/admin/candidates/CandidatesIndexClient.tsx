@@ -10,6 +10,7 @@ import {
   FilterGroup,
   FilterOption,
   FilterPanel,
+  highlightMatch,
   MetricCard,
   PageHeader,
   SearchInput,
@@ -50,6 +51,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
     ? "All divisions"
     : divisionOptions.find((option) => option.value === division)?.label ?? division;
   const statusLabel = status === "ALL" ? "All statuses" : status;
+  const hasQuery = query.trim().length > 0;
 
   return (
     <>
@@ -110,13 +112,14 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
         <div className="space-y-4">
           {filtered.map((divisionGroup) => (
             <Disclosure
-              key={divisionGroup.division}
+              key={`${divisionGroup.division}-${hasQuery}`}
+              defaultOpen={hasQuery}
               className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface/70"
               contentClassName="grid gap-3 border-t border-white/6 p-3"
               trigger={({ open }) => (
                 <div className="flex items-center gap-3 px-4 py-3">
                   <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
-                    {divisionGroup.label}
+                    {highlightMatch(divisionGroup.label, query)}
                   </span>
                   <span className="h-px flex-1 bg-white/5" />
                   <span className="text-[10px] text-white/55">
@@ -131,13 +134,16 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
             >
               {divisionGroup.elections.map((election) => (
                 <Disclosure
-                  key={election.id}
+                  key={`${election.id}-${hasQuery}`}
+                  defaultOpen={hasQuery}
                   className="overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface"
                   trigger={({ open }) => (
                     <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <StatusDot status={election.status} />
-                        <span className="truncate text-[12px] font-semibold text-white/80">{election.name}</span>
+                        <span className="truncate text-[12px] font-semibold text-white/80">
+                          {highlightMatch(election.name, query)}
+                        </span>
                       </div>
                       <div className="flex shrink-0 items-center gap-3 text-[10px] text-white/50">
                         <span>{election.totalCandidates} cand. · {election.positionCount} pos.</span>
@@ -158,7 +164,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
                 >
                   <div className="divide-y divide-white/4">
                     {election.positions.map((position) => (
-                      <PositionBlock key={position.id} position={position} />
+                      <PositionBlock key={position.id} position={position} query={query} />
                     ))}
                   </div>
                 </Disclosure>
@@ -171,7 +177,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
   );
 }
 
-function PositionBlock({ position }: { position: CandidateIndexPosition }) {
+function PositionBlock({ position, query }: { position: CandidateIndexPosition; query?: string }) {
   const fullGrades = gradesForDivision(position.election.division as Parameters<typeof gradesForDivision>[0]);
   const votingGrades = formatGradeList(position.eligibleGrades, fullGrades);
   const candidateGrades = formatGradeList(parseGrades(position.candidateGrade), fullGrades);
@@ -179,7 +185,9 @@ function PositionBlock({ position }: { position: CandidateIndexPosition }) {
   return (
     <section className="px-4 py-3">
       <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/65">{position.title}</h3>
+        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/65">
+          {highlightMatch(position.title, query)}
+        </h3>
         <p className="text-[10px] text-white/45">Votes: {votingGrades} · Runs: {candidateGrades}</p>
       </div>
       {position.candidates.length === 0 ? (
@@ -189,8 +197,12 @@ function PositionBlock({ position }: { position: CandidateIndexPosition }) {
           {position.candidates.map((candidate, index) => (
             <div key={candidate.id} className="flex min-w-0 items-center gap-3 rounded-[7px] bg-white/2.5 px-3 py-2">
               <span className="w-5 shrink-0 text-right font-mono text-[10px] text-white/45">{index + 1}</span>
-              <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-white/80">{candidate.fullName}</span>
-              <span className="shrink-0 font-mono text-[10px] text-white/40">Gr. {candidate.gradeLevel}</span>
+              <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-white/80">
+                {highlightMatch(candidate.fullName, query)}
+              </span>
+              <span className="shrink-0 font-mono text-[10px] text-white/40">
+                {highlightMatch(`Gr. ${candidate.gradeLevel}`, query)}
+              </span>
             </div>
           ))}
         </div>

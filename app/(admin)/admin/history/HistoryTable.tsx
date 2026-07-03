@@ -1,6 +1,6 @@
 "use client";
 
-import { DataTable, EmptyState } from "@/components/admin/ui";
+import { DataTable, EmptyState, highlightMatch } from "@/components/admin/ui";
 
 export type LoginHistoryRow = {
   id: string;
@@ -20,7 +20,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PH", {
   minute: "2-digit",
 });
 
-export function HistoryTable({ history }: { history: readonly LoginHistoryRow[] }) {
+export function HistoryTable({ history, query }: { history: readonly LoginHistoryRow[]; query?: string }) {
   return (
     <DataTable
       rows={history}
@@ -47,23 +47,23 @@ export function HistoryTable({ history }: { history: readonly LoginHistoryRow[] 
           key: "officer",
           header: "Officer logged in",
           priority: 1,
-          render: (entry) => <OfficerCell name={entry.officerName} email={entry.officerEmail} />,
+          render: (entry) => <OfficerCell name={entry.officerName} email={entry.officerEmail} query={query} />,
         },
         {
           key: "verifier",
           header: "Verified by",
-          render: (entry) => <OfficerCell name={entry.verifierName} email={entry.verifierEmail} />,
+          render: (entry) => <OfficerCell name={entry.verifierName} email={entry.verifierEmail} query={query} />,
         },
       ]}
     />
   );
 }
 
-function OfficerCell({ name, email }: { name: string; email: string }) {
+function OfficerCell({ name, email, query }: { name: string; email: string; query?: string }) {
   return (
     <div>
-      <p className="text-[12px] font-medium text-white/80">{name}</p>
-      <p className="mt-0.5 font-mono text-[10px] text-white/60">{email}</p>
+      <p className="text-[12px] font-medium text-white/80">{highlightMatch(name, query)}</p>
+      <p className="mt-0.5 font-mono text-[10px] text-white/60">{highlightMatch(email, query)}</p>
     </div>
   );
 }

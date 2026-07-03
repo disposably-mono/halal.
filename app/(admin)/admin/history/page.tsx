@@ -1,8 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { requireCapability } from "@/lib/server/auth";
-import { Card, PageContainer } from "@/components/admin/ui";
+import { PageContainer } from "@/components/admin/ui";
 import { HistoryIndexClient } from "./HistoryIndexClient";
-import { AccountLogTable } from "./AccountLogTable";
+import { AccountChangesCard } from "./AccountChangesCard";
 
 export const dynamic = "force-dynamic";
 
@@ -35,24 +35,18 @@ export default async function AdminHistoryPage() {
         }))}
       />
 
-      <Card
-        title="Account changes"
-        meta={<span className="text-[10px] text-white/45">Latest {accountLogs.length}</span>}
-        noPad
-      >
-        <AccountLogTable
-          logs={accountLogs.map((entry) => ({
-            id: entry.id,
-            createdAt: entry.createdAt.toISOString(),
-            action: entry.action,
-            actorName: entry.actorName,
-            actorEmail: entry.actorEmail,
-            targetName: entry.targetName,
-            targetEmail: entry.targetEmail,
-            targetRole: entry.targetRole,
-          }))}
-        />
-      </Card>
+      <AccountChangesCard
+        logs={accountLogs.map((entry) => ({
+          id: entry.id,
+          createdAt: entry.createdAt.toISOString(),
+          action: entry.action,
+          actorName: entry.actorName,
+          actorEmail: entry.actorEmail,
+          targetName: entry.targetName,
+          targetEmail: entry.targetEmail,
+          targetRole: entry.targetRole,
+        }))}
+      />
     </PageContainer>
   );
 }

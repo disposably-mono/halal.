@@ -10,6 +10,7 @@ import {
   FilterGroup,
   FilterOption,
   FilterPanel,
+  highlightMatch,
   MetricCard,
   PageHeader,
   SearchInput,
@@ -53,6 +54,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
     : divisionOptions.find((option) => option.value === division)?.label ?? division;
   const statusLabel = status === "ALL" ? "All statuses" : status;
   const voteStatusLabel = voteStatus === "ALL" ? "All voters" : voteStatus;
+  const hasQuery = query.trim().length > 0;
 
   return (
     <>
@@ -124,13 +126,14 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
         <div className="space-y-4">
           {filtered.map((divisionGroup) => (
             <Disclosure
-              key={divisionGroup.division}
+              key={`${divisionGroup.division}-${hasQuery}`}
+              defaultOpen={hasQuery}
               className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface/70"
               contentClassName="grid gap-3 border-t border-white/6 p-3"
               trigger={({ open }) => (
                 <div className="flex items-center gap-3 px-4 py-3">
                   <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
-                    {divisionGroup.label}
+                    {highlightMatch(divisionGroup.label, query)}
                   </span>
                   <span className="h-px flex-1 bg-white/5" />
                   <span className="text-[10px] text-white/55">
@@ -145,13 +148,16 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
             >
               {divisionGroup.elections.map((election) => (
                 <Disclosure
-                  key={election.id}
+                  key={`${election.id}-${hasQuery}`}
+                  defaultOpen={hasQuery}
                   className="overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface"
                   trigger={({ open }) => (
                     <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
                       <div className="flex min-w-0 items-center gap-3">
                         <StatusDot status={election.status} />
-                        <span className="truncate text-[12px] font-semibold text-white/80">{election.name}</span>
+                        <span className="truncate text-[12px] font-semibold text-white/80">
+                          {highlightMatch(election.name, query)}
+                        </span>
                       </div>
                       <div className="flex shrink-0 items-center gap-3 text-[10px] text-white/50">
                         <span>{election.voterCount} voters · {turnout(election.votedCount, election.voterCount)}%</span>
@@ -170,7 +176,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
                     </div>
                   )}
                 >
-                  <VoterRows voters={election.voters} />
+                  <VoterRows voters={election.voters} query={query} />
                 </Disclosure>
               ))}
             </Disclosure>
@@ -181,7 +187,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
   );
 }
 
-function VoterRows({ voters }: { voters: VoterIndexRow[] }) {
+function VoterRows({ voters, query }: { voters: VoterIndexRow[]; query?: string }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full">
@@ -198,10 +204,10 @@ function VoterRows({ voters }: { voters: VoterIndexRow[] }) {
           {voters.map((voter, index) => (
             <tr key={voter.id} className="border-b border-white/3 last:border-0 hover:bg-white/2">
               <td className="px-4 py-[8px] font-mono text-[10px] text-white/35">{index + 1}</td>
-              <td className="px-4 py-[8px] font-mono text-[11px] font-medium text-white/70">{voter.voterCode}</td>
-              <td className="px-4 py-[8px] font-mono text-[11px] text-white/55">{voter.studentId}</td>
-              <td className="px-4 py-[8px] text-[11px] text-white/55">Grade {voter.gradeLevel}</td>
-              <td className="px-4 py-[8px] text-[11px] text-white/55">Section {voter.section}</td>
+              <td className="px-4 py-[8px] font-mono text-[11px] font-medium text-white/70">{highlightMatch(voter.voterCode, query)}</td>
+              <td className="px-4 py-[8px] font-mono text-[11px] text-white/55">{highlightMatch(voter.studentId, query)}</td>
+              <td className="px-4 py-[8px] text-[11px] text-white/55">{highlightMatch(`Grade ${voter.gradeLevel}`, query)}</td>
+              <td className="px-4 py-[8px] text-[11px] text-white/55">{highlightMatch(`Section ${voter.section}`, query)}</td>
               <td className="px-4 py-[8px]"><VoteBadge hasVoted={voter.hasVoted} /></td>
             </tr>
           ))}

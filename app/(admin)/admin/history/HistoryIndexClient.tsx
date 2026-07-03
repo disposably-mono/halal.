@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { CalendarClock, UserCheck, UserRound } from "lucide-react";
+import { CalendarClock, ListOrdered, UserCheck, UserRound } from "lucide-react";
 import {
   Card,
   EmptyState,
@@ -24,6 +24,8 @@ import { HistoryTable } from "./HistoryTable";
 
 const PERSON_OPTIONS: HistoryPersonFilter[] = ["ALL", "OFFICER", "VERIFIER"];
 const DATE_OPTIONS: HistoryDateFilter[] = ["ALL", "TODAY", "7D", "30D"];
+const LIMIT_OPTIONS: ShowLimit[] = ["25", "50", "100", "ALL"];
+const DEFAULT_LIMIT: ShowLimit = "50";
 
 const PERSON_LABELS: Record<HistoryPersonFilter, string> = {
   ALL: "All people",
@@ -38,19 +40,34 @@ const DATE_LABELS: Record<HistoryDateFilter, string> = {
   "30D": "Last 30 days",
 };
 
+type ShowLimit = "25" | "50" | "100" | "ALL";
+
+const LIMIT_LABELS: Record<ShowLimit, string> = {
+  "25": "Latest 25",
+  "50": "Latest 50",
+  "100": "Latest 100",
+  ALL: "All rows",
+};
+
 export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[] }) {
   const [query, setQuery] = useState("");
   const [person, setPerson] = useState<HistoryPersonFilter>("ALL");
   const [date, setDate] = useState<HistoryDateFilter>("ALL");
+  const [limit, setLimit] = useState<ShowLimit>(DEFAULT_LIMIT);
   const onSearch = useCallback((value: string) => setQuery(value), []);
 
   const filtered = useMemo(
     () => filterLoginHistory(history, { query, person, date }),
     [date, history, person, query],
   );
+  const visible = useMemo(
+    () => (limit === "ALL" ? filtered : filtered.slice(0, Number(limit))),
+    [filtered, limit],
+  );
   const totalSummary = useMemo(() => summarizeLoginHistory(history), [history]);
-  const visibleSummary = useMemo(() => summarizeLoginHistory(filtered), [filtered]);
-  const activeFilters = activeFilterCount({ query, person, date });
+  const matchedSummary = useMemo(() => summarizeLoginHistory(filtered), [filtered]);
+  const visibleSummary = useMemo(() => summarizeLoginHistory(visible), [visible]);
+  const activeFilters = activeFilterCount({ query, person, date, limit });
 
   return (
     <>
@@ -77,7 +94,7 @@ export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[
         <MetricCard label="Visible" value={visibleSummary.total.toLocaleString()} sub={`${activeFilters} active filters`} accent="blue" />
       </div>
 
-      <FilterPanel title="Filter history" meta={`${visibleSummary.total} login rows matched`}>
+      <FilterPanel title="Filter history" meta={`${matchedSummary.total} login rows matched`}>
         <SearchInput onSearch={onSearch} placeholder="Search officer, verifier, or email" className="sm:max-w-none" />
         <FilterGrid>
           <FilterGroup
@@ -102,12 +119,23 @@ export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[
               </FilterOption>
             ))}
           </FilterGroup>
+          <FilterGroup
+            icon={<ListOrdered aria-hidden="true" className="h-4 w-4" />}
+            label="Show"
+            value={LIMIT_LABELS[limit]}
+          >
+            {LIMIT_OPTIONS.map((option) => (
+              <FilterOption key={option} active={limit === option} onClick={() => setLimit(option)}>
+                {LIMIT_LABELS[option]}
+              </FilterOption>
+            ))}
+          </FilterGroup>
         </FilterGrid>
       </FilterPanel>
 
       <Card
         title="Recent sign-ins"
-        meta={<span className="text-[10px] text-white/45">{filtered.length} of {history.length} shown</span>}
+        meta={<span className="text-[10px] text-white/45">{visible.length} of {matchedSummary.total} shown</span>}
         noPad
       >
         {history.length === 0 ? (
@@ -124,7 +152,7 @@ export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[
           />
         ) : (
           <>
-            <HistoryTable history={filtered} />
+            <HistoryTable history={visible} query={query} />
             <p className="border-t border-white/[0.07] px-4 py-3 text-[10px] text-white/40">
               Times are shown in Philippine Standard Time. The latest 250 sign-ins are displayed.
             </p>
@@ -139,6 +167,12 @@ function activeFilterCount(filters: {
   query: string;
   person: HistoryPersonFilter;
   date: HistoryDateFilter;
+  limit: ShowLimit;
 }) {
-  return [filters.query.trim().length > 0, filters.person !== "ALL", filters.date !== "ALL"].filter(Boolean).length;
+  return [
+    filters.query.trim().length > 0,
+    filters.person !== "ALL",
+    filters.date !== "ALL",
+    filters.limit !== DEFAULT_LIMIT,
+  ].filter(Boolean).length;
 }

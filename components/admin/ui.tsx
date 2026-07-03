@@ -8,6 +8,7 @@ export * from "./disclosure";
 export * from "./election-setup";
 export * from "./filter-panel";
 export * from "./form-controls";
+export * from "./highlight";
 export * from "./layout-primitives";
 export * from "./polling-status";
 export * from "./search-input";
