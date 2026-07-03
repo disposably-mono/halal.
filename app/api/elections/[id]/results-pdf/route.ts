@@ -17,6 +17,7 @@ import { permissionErrorMessage } from "@/lib/auth/permissions";
 import { prisma } from "@/lib/prisma";
 import { ResultsPDF, type ResultPosition } from "@/lib/pdf/ResultsPDF";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
+import { buildVoteMap, computePositionTally } from "@/lib/domain/tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
 import { DIVISION_CODES } from "@/lib/ui/division-labels";
 
@@ -134,12 +135,7 @@ export async function GET(
     _count: { candidateId: true },
   });
 
-  // Fix: filter out null candidateId (abstentions) before building the map
-  const voteMap = new Map<string, number>(
-    voteCounts
-      .filter((v): v is typeof v & { candidateId: string } => v.candidateId !== null)
-      .map((v) => [v.candidateId, v._count.candidateId] as [string, number])
-  );
+  const voteMap = buildVoteMap(voteCounts);
 
   // Voted-voter turnout grouped by grade, so each position's abstention baseline
   // can be the turnout *eligible for that position* — not the whole electorate.
@@ -163,50 +159,50 @@ export async function GET(
 
   // Build the shape expected by ResultsPDF
   const legacyResultPositions: ResultPosition[] = positions.map((pos) => {
-    const candidatesWithVotes = pos.candidates.map((c) => ({
-      id: c.id,
-      fullName: c.fullName,
-      votes: voteMap.get(c.id) ?? 0,
-    }));
-
-    const maxVotes = Math.max(0, ...candidatesWithVotes.map((c) => c.votes));
-    const tiedTopCount = candidatesWithVotes.filter(
-      (c) => c.votes > 0 && c.votes === maxVotes,
-    ).length;
-    const totalVotesForPosition = candidatesWithVotes.reduce(
-      (s, c) => s + c.votes,
-      0
-    );
-    const abstentions = Math.max(0, eligibleTurnoutFor(pos.eligibleGrades) - totalVotesForPosition);
+    // eligibleTurnoutFor(...) is exactly the "voters who voted" figure
+    // computePositionTally expects — its abstentions math (max(0, voters -
+    // votesCast)) reproduces the same formula this route used inline before.
+    const tally = computePositionTally(pos.candidates, voteMap, eligibleTurnoutFor(pos.eligibleGrades));
 
     return {
       id: pos.id,
       title: pos.title,
       totalVoters: election._count.voters,
-      abstentions,
-      candidates: candidatesWithVotes.map((c) => ({
-        ...c,
-        isWinner: c.votes > 0 && c.votes === maxVotes,
-        isTie: tiedTopCount > 1 && c.votes === maxVotes,
+      abstentions: tally.abstentions,
+      candidates: tally.candidates.map((c) => ({
+        id: c.id,
+        fullName: c.fullName,
+        votes: c.votes,
+        isWinner: c.isWinner,
+        isTie: c.isTie,
       })),
     };
   });
   const certified = election.certification?.snapshot as unknown as AuditSnapshot | undefined;
   const resultPositions: ResultPosition[] = certified
     ? certified.positions.map((position) => {
-        const maxVotes = Math.max(0, ...position.candidates.map((candidate) => candidate.votes));
-        const tiedTopCount = position.candidates.filter((candidate) => candidate.votes > 0 && candidate.votes === maxVotes).length;
+        const positionVoteMap = new Map(position.candidates.map((c) => [c.id, c.votes] as [string, number]));
+        const totalVotesForPosition = position.candidates.reduce((sum, c) => sum + c.votes, 0);
+        // Same reconstruction trick as the legacy branch above: the certified
+        // snapshot's abstentions figure is authoritative, so feed it back in
+        // to keep the shared tally's math consistent with it while still
+        // sourcing isWinner/isTie from one place.
+        const tally = computePositionTally(
+          position.candidates,
+          positionVoteMap,
+          position.abstentions + totalVotesForPosition,
+        );
         return {
           id: position.id,
           title: position.title,
           totalVoters: certified.turnout.total,
           abstentions: position.abstentions,
-          candidates: position.candidates.map((candidate) => ({
-            id: candidate.id,
-            fullName: candidate.fullName,
-            votes: candidate.votes,
-            isWinner: candidate.votes > 0 && candidate.votes === maxVotes,
-            isTie: tiedTopCount > 1 && candidate.votes === maxVotes,
+          candidates: tally.candidates.map((c) => ({
+            id: c.id,
+            fullName: c.fullName,
+            votes: c.votes,
+            isWinner: c.isWinner,
+            isTie: c.isTie,
           })),
         };
       })

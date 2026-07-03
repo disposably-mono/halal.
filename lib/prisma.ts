@@ -22,8 +22,26 @@ function logQueryEvent(e: Prisma.QueryEvent) {
   console.log(`prisma  ${op.toUpperCase().padEnd(6)} ${table.padEnd(12)} ${e.duration}ms${slow}`);
 }
 
+// Parses a positive-integer env var, falling back to `fallback` if it is
+// unset, empty, or not a positive number. Keeps pool sizing/timeouts
+// overridable per-environment without risking a NaN/0 reaching `pg.Pool`.
+function positiveIntEnv(name: string, fallback: number): number {
+  const raw = process.env[name];
+  if (!raw) return fallback;
+  const parsed = Number(raw);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
 function createPrismaClient() {
-  const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! });
+  const adapter = new PrismaPg({
+    connectionString: process.env.DATABASE_URL!,
+    // Concurrent-voting bursts must fail fast instead of queueing forever —
+    // pg's defaults are max: 10 and connectionTimeoutMillis: 0 (wait forever).
+    max: positiveIntEnv("DB_POOL_MAX", 20),
+    idleTimeoutMillis: positiveIntEnv("DB_POOL_IDLE_TIMEOUT_MS", 30_000),
+    connectionTimeoutMillis: positiveIntEnv("DB_POOL_CONNECTION_TIMEOUT_MS", 10_000),
+    statement_timeout: positiveIntEnv("DB_STATEMENT_TIMEOUT_MS", 15_000),
+  });
   const client = new PrismaClient({
     adapter,
     log: [
