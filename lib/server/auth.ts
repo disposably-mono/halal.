@@ -24,6 +24,14 @@ export function adminEmailFromSession(session: Session): string {
   return session.user?.email ?? "unknown";
 }
 
+export function adminNameFromSession(session: Session): string {
+  return session.user?.name ?? "unknown";
+}
+
+export function adminIdFromSession(session: Session): string {
+  return session.user?.id ?? "unknown";
+}
+
 export function adminRoleFromSession(session: Session): AdminRole | undefined {
   return session.user?.role;
 }

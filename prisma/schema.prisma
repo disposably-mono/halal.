@@ -212,6 +212,26 @@ model AdminLoginHistory {
   @@index([createdAt])
 }
 
+// Audit trail for admin account management (create/role-change/credential-reset/
+// delete) — deliberately has no FK to AdminUser, same rationale as
+// AdminLoginHistory above: it snapshots actor/target emails, names, and the
+// target's role as plain strings so the trail survives account deletion and
+// stays readable without joining back to a row that may no longer exist.
+model AdminAccountLog {
+  id          String   @id @default(cuid())
+  action      String   // e.g. "Created account", "Changed role: OFFICER → CANVASSER", "Reset password (target role: SUPERADMIN)", "Reset officer key (target role: SUPERADMIN)", "Deleted account"
+  actorId     String
+  actorEmail  String
+  actorName   String
+  targetId    String
+  targetEmail String
+  targetName  String
+  targetRole  String
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+}
+
 enum Division {
   GS
   JHS

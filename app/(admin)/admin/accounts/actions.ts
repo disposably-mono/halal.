@@ -3,7 +3,12 @@
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-import { requireCapabilityOrError } from "@/lib/server/auth";
+import {
+  adminEmailFromSession,
+  adminIdFromSession,
+  adminNameFromSession,
+  requireCapabilityOrError,
+} from "@/lib/server/auth";
 import { isGrantableRole, permissionErrorMessage } from "@/lib/auth/permissions";
 import { revalidateAdminAccounts } from "@/lib/server/revalidate";
 import {
@@ -14,8 +19,27 @@ import {
   UpdateAdminRoleSchema,
   safeParseFormData,
 } from "@/lib/validation/schemas";
+import {
+  createdAccountEntry,
+  deletedAccountEntry,
+  officerKeyResetEntry,
+  passwordResetEntry,
+  roleChangedEntry,
+  type AccountLogActor,
+} from "./account-log";
 
 const HASH_ROUNDS = 12;
+
+// H2 audit-trail tradeoff: credential resets (resetAdminPassword,
+// resetAdminOfficerKey) are deliberately NOT blocked against SUPERADMIN
+// targets. The two bootstrap super-admins must be able to recover each
+// other's lost password/officer key — that's the whole point of having two.
+// The risk this finding raises (one super-admin silently resetting another's
+// credentials and logging in as them) is real, but the fix is visibility, not
+// a block: every credential reset writes an AdminAccountLog row naming the
+// actor, the target, and the target's role, so the action is unmistakable and
+// permanently attributable instead of silent. See AdminAccountLog in
+// prisma/schema.prisma and app/(admin)/admin/history/page.tsx for the read side.
 
 export type AccountActionResult =
   | { success: true }
@@ -94,6 +118,12 @@ export async function createAdmin(
     return { success: false, error: "Super-admin can no longer be granted." };
   }
 
+  const actor: AccountLogActor = {
+    id: adminIdFromSession(guard.session),
+    email: adminEmailFromSession(guard.session),
+    name: adminNameFromSession(guard.session),
+  };
+
   const [passwordHash, officerKeyHash] = await Promise.all([
     bcrypt.hash(password, HASH_ROUNDS),
     bcrypt.hash(officerKey, HASH_ROUNDS),
@@ -113,8 +143,16 @@ export async function createAdmin(
             error: "That officer key is already assigned to another account.",
           } as const;
         }
-        await tx.adminUser.create({
+        const created = await tx.adminUser.create({
           data: { email, name, role, passwordHash, officerKey: officerKeyHash },
+        });
+        await tx.adminAccountLog.create({
+          data: createdAccountEntry(actor, {
+            id: created.id,
+            email: created.email,
+            name: created.name,
+            role: created.role,
+          }),
         });
         return { success: true } as const;
       },
@@ -153,10 +191,16 @@ export async function updateAdminRole(
     return { success: false, error: "Super-admin can no longer be granted." };
   }
 
+  const actor: AccountLogActor = {
+    id: adminIdFromSession(guard.session),
+    email: adminEmailFromSession(guard.session),
+    name: adminNameFromSession(guard.session),
+  };
+
   const result = await prisma.$transaction(async (tx) => {
     const target = await tx.adminUser.findUnique({
       where: { id: parsed.data.adminId },
-      select: { role: true },
+      select: { id: true, email: true, name: true, role: true },
     });
     if (!target) return { success: false, error: "Account not found." } as const;
     if (target.role === parsed.data.role) return { success: true } as const;
@@ -172,6 +216,13 @@ export async function updateAdminRole(
     await tx.adminUser.update({
       where: { id: parsed.data.adminId },
       data: { role: parsed.data.role },
+    });
+    await tx.adminAccountLog.create({
+      data: roleChangedEntry(
+        actor,
+        { id: target.id, email: target.email, name: target.name, role: parsed.data.role },
+        target.role,
+      ),
     });
     return { success: true } as const;
   });
@@ -195,14 +246,32 @@ export async function resetAdminPassword(
     };
   }
 
+  const actor: AccountLogActor = {
+    id: adminIdFromSession(guard.session),
+    email: adminEmailFromSession(guard.session),
+    name: adminNameFromSession(guard.session),
+  };
+
   const passwordHash = await bcrypt.hash(parsed.data.password, HASH_ROUNDS);
-  await prisma.adminUser.update({
-    where: { id: parsed.data.adminId },
-    data: { passwordHash },
+  const result = await prisma.$transaction(async (tx) => {
+    const target = await tx.adminUser.findUnique({
+      where: { id: parsed.data.adminId },
+      select: { id: true, email: true, name: true, role: true },
+    });
+    if (!target) return { success: false, error: "Account not found." } as const;
+
+    await tx.adminUser.update({
+      where: { id: parsed.data.adminId },
+      data: { passwordHash },
+    });
+    await tx.adminAccountLog.create({
+      data: passwordResetEntry(actor, target),
+    });
+    return { success: true } as const;
   });
 
-  revalidateAdminAccounts();
-  return { success: true };
+  if (result.success) revalidateAdminAccounts();
+  return result;
 }
 
 export async function resetAdminOfficerKey(
@@ -222,11 +291,23 @@ export async function resetAdminOfficerKey(
 
   const officerKeyHash = await bcrypt.hash(parsed.data.officerKey, HASH_ROUNDS);
 
+  const actor: AccountLogActor = {
+    id: adminIdFromSession(guard.session),
+    email: adminEmailFromSession(guard.session),
+    name: adminNameFromSession(guard.session),
+  };
+
   // Same TOCTOU hazard as createAdmin: wrap the uniqueness check and the
   // write in one Serializable transaction so two concurrent resets can't both
   // land on the same key.
   const result = await prisma.$transaction(
     async (tx) => {
+      const target = await tx.adminUser.findUnique({
+        where: { id: parsed.data.adminId },
+        select: { id: true, email: true, name: true, role: true },
+      });
+      if (!target) return { success: false, error: "Account not found." } as const;
+
       if (await officerKeyIsInUse(tx, parsed.data.officerKey, parsed.data.adminId)) {
         return {
           success: false,
@@ -236,6 +317,9 @@ export async function resetAdminOfficerKey(
       await tx.adminUser.update({
         where: { id: parsed.data.adminId },
         data: { officerKey: officerKeyHash },
+      });
+      await tx.adminAccountLog.create({
+        data: officerKeyResetEntry(actor, target),
       });
       return { success: true } as const;
     },
@@ -263,10 +347,16 @@ export async function deleteAdmin(adminId: string): Promise<AccountActionResult>
     return { success: false, error: "You cannot delete your own account." };
   }
 
+  const actor: AccountLogActor = {
+    id: adminIdFromSession(guard.session),
+    email: adminEmailFromSession(guard.session),
+    name: adminNameFromSession(guard.session),
+  };
+
   const result = await prisma.$transaction(async (tx) => {
     const target = await tx.adminUser.findUnique({
       where: { id: parsed.data.adminId },
-      select: { role: true },
+      select: { id: true, email: true, name: true, role: true },
     });
     if (!target) return { success: false, error: "Account not found." } as const;
 
@@ -274,6 +364,9 @@ export async function deleteAdmin(adminId: string): Promise<AccountActionResult>
     if (blocked) return blocked;
 
     await tx.adminUser.delete({ where: { id: parsed.data.adminId } });
+    await tx.adminAccountLog.create({
+      data: deletedAccountEntry(actor, target),
+    });
     return { success: true } as const;
   });
 
