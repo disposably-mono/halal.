@@ -1,15 +1,16 @@
 # Handoff: Project Status & Future Improvements
 
-Updated: 2026-07-03
-Branch: `main` at `6ee39ae`
+Updated: 2026-07-04
+Branch: `main` at `30b3a2b`
 
 This file is the working handoff for the project. The staged Next.js 14 → 16 migration
 (sections 10–11) and the 2026-07-03 security-hardening pass (section 1) are **complete and
 merged to `main`**, as are the audit-logging wrapper (section 5) and OpenTelemetry traces
-(section 6). A safe batch of routine dependency bumps also landed (section 8). The active
-content of this handoff is the future-improvements roadmap in sections 4, 7, and 8 —
-recommended next: **section 7, the Tailwind v4 migration** (see section 3 for the full
-sequencing rationale).
+(section 6). A safe batch of routine dependency bumps also landed (section 8), and of the
+two remaining majors tracked there, the TypeScript 6 bump is now also done (ESLint 10
+remains blocked upstream — see section 8). The active content of this handoff is the
+future-improvements roadmap in sections 4 and 7 — recommended next: **section 7, the
+Tailwind v4 migration** (see section 3 for the full sequencing rationale).
 
 ---
 
@@ -68,14 +69,15 @@ them or explicitly replace them:
 | 5 | Extract audit logging into a shared wrapper — **done** (see section 5) | Consistency; audit writes are spread across actions | Small–Medium | Low |
 | 6 | OpenTelemetry traces — **done** (see section 6) | Production debuggability | Medium | Low (privacy caveats) |
 | 7 | Tailwind v4 migration | Build speed, CSS-native config, unblocks `tw-animate-css` | Medium | Low–Medium |
-| 8 | ESLint 10 / TypeScript 6 major bumps | Stay current; unblock future tooling upgrades | Small each | Medium (plugin/type-check compat) |
+| 8 | ESLint 10 / TypeScript 6 major bumps — TypeScript 6 **done**, ESLint 10 blocked upstream (see section 8) | Stay current; unblock future tooling upgrades | Small each | Medium (plugin/type-check compat) |
 
-Each item is independently shippable. 5 and 6 are complete. **Recommended order for what's
-left: 7 → 8 → 4** — Tailwind v4 and the ESLint/TypeScript majors are pure build-tooling risk
-with no external dependency, whereas item 4 (multi-instance) is gated on an actual
+Each item is independently shippable. 5, 6, and the TypeScript-6 half of 8 are complete.
+**Recommended order for what's left: 7 → 4** — Tailwind v4 is pure build-tooling risk with
+no external dependency, whereas item 4 (multi-instance) is gated on an actual
 second-instance deployment being planned and isn't actionable until then. (The routine
 patch/minor dependency bumps that don't need their own evaluation — see section 8 — already
-landed and aren't tracked as a roadmap item.)
+landed and aren't tracked as a roadmap item. ESLint 10 stays parked until upstream plugins
+catch up — see section 8 for the specific blockers.)
 
 ---
 
@@ -438,18 +440,29 @@ dev-server smoke test: admin login (next-auth), the `ThemedSelect` Radix dropdow
 (radix-ui), icon rendering (lucide-react), and the PR #18 filter-group toggle all still
 work with zero page errors.
 
-**Left deliberately untouched — each needs its own evaluation, not a drive-by bump:**
+**TypeScript 5.9 → 6.0 — done (2026-07-04).** Bumped `typescript` to `^6` (resolved
+`6.0.3`). Zero source changes required: `tsc --noEmit` produced no new diagnostics vs the
+5.9.3 baseline, `eslint-config-next`'s type-aware rules parsed fine against TS6 (same 0
+errors / 8 pre-existing warnings), `next.config.mjs`/`next build` unaffected. Full gate
+green: 453/453 tests, 89.79%/82.72%/94.02%/93.18% (stmt/branch/func/line) coverage, build
+succeeded. Confirms this section's prediction that the bump would be low-risk for a
+codebase this consistently typed.
 
-- **ESLint 9 → 10** (major). `eslint-config-next` is pinned to `16.2.10`; confirm it (and
-  any other ESLint plugins in use) declare ESLint 10 support before jumping — flat-config
-  major version bumps have a history of breaking plugin compatibility. Check
-  `eslint-config-next`'s own release notes for a matching Next 16.2.x + ESLint 10 combo
-  before attempting.
-- **TypeScript 5.9 → 6.0** (major, very recent release as of this writing). Likely
-  low-risk for a codebase this consistently typed (TS majors are usually stricter checks
-  plus removed deprecated APIs, not breaking syntax changes), but run a dedicated
-  `tsc --noEmit` pass across the whole repo first, and re-check `eslint-config-next`'s
-  type-aware rules and `next.config.mjs` against it before merging.
+**ESLint 9 → 10 — blocked upstream, re-check later.** `eslint-config-next@16.2.10`
+declares a loose `peerDependencies: { eslint: ">=9.0.0" }`, but three of its bundled
+transitive plugins cap their own peer range at ESLint `^9` even at their current latest
+npm versions: `eslint-plugin-import@2.32.0`, `eslint-plugin-jsx-a11y@6.10.x`, and
+`eslint-plugin-react@7.37.x`. Confirmed via registry peer-dep inspection and
+`npm install eslint@10.6.0 --dry-run`, which produced 3 `ERESOLVE overriding peer
+dependency` conflicts. Checked Next's `preview`/`canary` channels too (up to
+`16.3.0-canary.76`) — same unchanged peer range, so this isn't fixed on the horizon yet.
+Note the ecosystem is mid-transition, not universally stuck: `eslint-plugin-react-hooks@7.1.1`
+and `typescript-eslint@8.62.1` have already added `^10.0.0` support. Re-check once
+`eslint-plugin-import` and `eslint-plugin-jsx-a11y` (and `eslint-config-next` bumping its
+pinned versions of these) ship ESLint 10 peer support. No changes made; nothing to revert.
+
+**Left deliberately untouched:**
+
 - **`tailwindcss` 3 → 4** — already tracked as its own staged migration; see section 7.
 
 **Not worth chasing:**
