@@ -118,12 +118,24 @@ describe("canAdvanceToScheduled", () => {
 });
 
 describe("nextStatusForReschedule", () => {
-  it("returns SCHEDULED when an open time is set", () => {
-    expect(nextStatusForReschedule(new Date())).toBe("SCHEDULED");
+  it("returns SCHEDULED when an open time is set from DRAFT", () => {
+    expect(nextStatusForReschedule("DRAFT", new Date())).toBe("SCHEDULED");
   });
 
-  it("returns DRAFT when open time cleared", () => {
-    expect(nextStatusForReschedule(null)).toBe("DRAFT");
+  it("returns DRAFT when open time cleared from DRAFT", () => {
+    expect(nextStatusForReschedule("DRAFT", null)).toBe("DRAFT");
+  });
+
+  it("returns SCHEDULED when an open time is set from SCHEDULED", () => {
+    expect(nextStatusForReschedule("SCHEDULED", new Date())).toBe("SCHEDULED");
+  });
+
+  it("preserves OPEN when extending/trimming a live election's window", () => {
+    expect(nextStatusForReschedule("OPEN", new Date())).toBe("OPEN");
+  });
+
+  it("preserves OPEN even if the open time is cleared while live", () => {
+    expect(nextStatusForReschedule("OPEN", null)).toBe("OPEN");
   });
 });
 

@@ -40,42 +40,48 @@ function revalidateAfterTransition(electionId: string) {
   revalidateElectionControl(electionId);
 }
 
-async function transitionStatus(
-  electionId: string,
-  toStatus: ElectionStatus,
-  action: string,
-  adminEmail: string,
-) {
-  await prisma.$transaction([
-    prisma.election.update({
-      where: { id: electionId },
-      data: { status: toStatus },
-    }),
-    prisma.auditLog.create({
-      data: { electionId, action, toStatus, adminEmail },
-    }),
-  ]);
-}
+/**
+ * Thrown for expected validation failures inside a locked transaction so the
+ * caller can surface `error.message` verbatim to the admin UI, while any other
+ * (unexpected) error is logged and reported generically.
+ */
+class TransitionValidationError extends Error {}
 
 export async function openElectionNow(electionId: string): Promise<ActionResult> {
   const guard = await requireCapabilityOrError("election:lifecycle");
   if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
+  const adminEmail = adminEmailFromSession(guard.session);
 
-  const election = await prisma.election.findUnique({ where: { id: electionId } });
-  if (!election) return { success: false, error: "Election not found" };
-  if (!election.auditVersion || !election.auditKeyEncrypted) {
-    return { success: false, error: "Legacy elections are read-only and cannot be opened" };
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
+      const election = await tx.election.findUnique({ where: { id: electionId } });
+      if (!election) throw new TransitionValidationError("Election not found");
+      if (!election.auditVersion || !election.auditKeyEncrypted) {
+        throw new TransitionValidationError("Legacy elections are read-only and cannot be opened");
+      }
+
+      const check = canManuallyOpen(election.status, election.archivedAt);
+      if (!check.ok) throw new TransitionValidationError(check.reason);
+
+      await tx.election.update({
+        where: { id: electionId },
+        data: { status: ElectionStatus.OPEN },
+      });
+      await tx.auditLog.create({
+        data: {
+          electionId,
+          action: "Manually opened election (override)",
+          toStatus: ElectionStatus.OPEN,
+          adminEmail,
+        },
+      });
+    });
+  } catch (error) {
+    if (error instanceof TransitionValidationError) return { success: false, error: error.message };
+    console.error("[openElectionNow] transition failed:", error);
+    return { success: false, error: "Failed to open election" };
   }
-
-  const check = canManuallyOpen(election.status, election.archivedAt);
-  if (!check.ok) return { success: false, error: check.reason };
-
-  await transitionStatus(
-    electionId,
-    ElectionStatus.OPEN,
-    "Manually opened election (override)",
-    adminEmailFromSession(guard.session),
-  );
   revalidateAfterTransition(electionId);
   return { success: true };
 }
@@ -181,34 +187,42 @@ export async function rescheduleElection(
 ): Promise<ActionResult> {
   const guard = await requireCapabilityOrError("election:lifecycle");
   if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
-
-  const election = await prisma.election.findUnique({ where: { id: electionId } });
-  if (!election) return { success: false, error: "Election not found" };
+  const adminEmail = adminEmailFromSession(guard.session);
 
   const openDate = scheduledOpen ? new Date(scheduledOpen) : null;
   const closeDate = scheduledClose ? new Date(scheduledClose) : null;
 
-  const check = canReschedule(election.status, openDate, closeDate, election.archivedAt);
-  if (!check.ok) return { success: false, error: check.reason };
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
+      const election = await tx.election.findUnique({ where: { id: electionId } });
+      if (!election) throw new TransitionValidationError("Election not found");
 
-  await prisma.$transaction([
-    prisma.election.update({
-      where: { id: electionId },
-      data: {
-        scheduledOpen: openDate,
-        scheduledClose: closeDate,
-        status: nextStatusForReschedule(openDate),
-      },
-    }),
-    prisma.auditLog.create({
-      data: {
-        electionId,
-        action: `Schedule overridden: ${fmtDate(openDate)} – ${fmtDate(closeDate)}`,
-        toStatus: null,
-        adminEmail: adminEmailFromSession(guard.session),
-      },
-    }),
-  ]);
+      const check = canReschedule(election.status, openDate, closeDate, election.archivedAt);
+      if (!check.ok) throw new TransitionValidationError(check.reason);
+
+      await tx.election.update({
+        where: { id: electionId },
+        data: {
+          scheduledOpen: openDate,
+          scheduledClose: closeDate,
+          status: nextStatusForReschedule(election.status, openDate),
+        },
+      });
+      await tx.auditLog.create({
+        data: {
+          electionId,
+          action: `Schedule overridden: ${fmtDate(openDate)} – ${fmtDate(closeDate)}`,
+          toStatus: null,
+          adminEmail,
+        },
+      });
+    });
+  } catch (error) {
+    if (error instanceof TransitionValidationError) return { success: false, error: error.message };
+    console.error("[rescheduleElection] transition failed:", error);
+    return { success: false, error: "Failed to reschedule election" };
+  }
   revalidateAfterTransition(electionId);
   return { success: true };
 }
@@ -216,19 +230,35 @@ export async function rescheduleElection(
 export async function advanceToScheduled(electionId: string): Promise<ActionResult> {
   const guard = await requireCapabilityOrError("election:lifecycle");
   if (!guard.ok) return { success: false, error: permissionErrorMessage(guard.error) };
+  const adminEmail = adminEmailFromSession(guard.session);
 
-  const election = await prisma.election.findUnique({ where: { id: electionId } });
-  if (!election) return { success: false, error: "Election not found" };
+  try {
+    await prisma.$transaction(async (tx) => {
+      await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
+      const election = await tx.election.findUnique({ where: { id: electionId } });
+      if (!election) throw new TransitionValidationError("Election not found");
 
-  const check = canAdvanceToScheduled(election.status, election.scheduledOpen, election.archivedAt);
-  if (!check.ok) return { success: false, error: check.reason };
+      const check = canAdvanceToScheduled(election.status, election.scheduledOpen, election.archivedAt);
+      if (!check.ok) throw new TransitionValidationError(check.reason);
 
-  await transitionStatus(
-    electionId,
-    ElectionStatus.SCHEDULED,
-    "Advanced to Scheduled",
-    adminEmailFromSession(guard.session),
-  );
+      await tx.election.update({
+        where: { id: electionId },
+        data: { status: ElectionStatus.SCHEDULED },
+      });
+      await tx.auditLog.create({
+        data: {
+          electionId,
+          action: "Advanced to Scheduled",
+          toStatus: ElectionStatus.SCHEDULED,
+          adminEmail,
+        },
+      });
+    });
+  } catch (error) {
+    if (error instanceof TransitionValidationError) return { success: false, error: error.message };
+    console.error("[advanceToScheduled] transition failed:", error);
+    return { success: false, error: "Failed to advance election to scheduled" };
+  }
   revalidateAfterTransition(electionId);
   return { success: true };
 }
