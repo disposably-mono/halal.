@@ -1,6 +1,6 @@
 "use client";
 
-import type { ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { Check, ChevronDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -40,15 +40,31 @@ export function FilterGroup({
   label,
   value,
   children,
+  defaultOpen = true,
 }: {
   icon: ReactNode;
   label: string;
   value: string;
   children: ReactNode;
+  /** Groups start expanded (matching prior always-visible behavior) unless opted out. */
+  defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(defaultOpen);
+  const contentId = useId();
+
   return (
     <div className="overflow-hidden rounded-[8px] border border-white/[0.10] bg-white/[0.025]">
-      <div className="flex items-center justify-between gap-3 border-b border-white/[0.06] px-3 py-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        aria-expanded={open}
+        aria-controls={contentId}
+        className={cn(
+          "flex w-full items-center justify-between gap-3 px-3 py-3 text-left outline-none transition-colors",
+          "hover:bg-white/[0.03] focus-visible:bg-white/[0.03] focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold/40",
+          open && "border-b border-white/[0.06]",
+        )}
+      >
         <div className="flex min-w-0 items-center gap-2.5">
           <span className="shrink-0 text-gold/80">{icon}</span>
           <div className="min-w-0">
@@ -56,9 +72,25 @@ export function FilterGroup({
             <p className="mt-0.5 truncate text-[12px] font-medium text-white/80">{value}</p>
           </div>
         </div>
-        <ChevronDown aria-hidden="true" className="h-4 w-4 shrink-0 text-white/35" />
+        <ChevronDown
+          aria-hidden="true"
+          className={cn(
+            "h-4 w-4 shrink-0 text-white/35 transition-transform duration-200",
+            open && "rotate-180",
+          )}
+        />
+      </button>
+      <div
+        id={contentId}
+        className={cn(
+          "grid transition-[grid-template-rows] duration-300 ease-out",
+          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+        )}
+      >
+        <div className="overflow-hidden">
+          <div className="flex flex-wrap gap-1.5 p-3">{children}</div>
+        </div>
       </div>
-      <div className="flex flex-wrap gap-1.5 p-3">{children}</div>
     </div>
   );
 }

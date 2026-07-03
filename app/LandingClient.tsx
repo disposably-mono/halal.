@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import { Link } from "next-view-transitions";
 import { ComelecBirdPlaceholder } from "./_components/ComelecBirdPlaceholder";
 import { CountdownUnit } from "./_components/CountdownUnit";
 import { DivisionStatusCard } from "./_components/DivisionStatusCard";
+import { FadeInSection } from "./_components/FadeInSection";
 import { InfoBand } from "./_components/InfoBand";
 import { LandingFooter } from "./_components/LandingFooter";
 import { LandingNav } from "./_components/LandingNav";
@@ -38,13 +38,6 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
   );
   const anyOpen = divisionCards.some((c) => c.election?.status === "OPEN");
 
-  // Staggered entrance animation
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 50);
-    return () => clearTimeout(t);
-  }, []);
-
   return (
     <div className="min-h-screen text-white overflow-x-hidden" style={PAGE_BACKGROUND}>
       <LandingNav />
@@ -64,10 +57,7 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
         <WaveRibbon />
 
         {/* Content */}
-        <div
-          className={`relative z-10 flex flex-col items-center text-center px-6 transition-all duration-700 ${mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-            }`}
-        >
+        <FadeInSection className="relative z-10 flex flex-col items-center text-center px-6">
           {/* Bird logo */}
           <div className="bird-container mb-6">
             <ComelecBirdPlaceholder />
@@ -144,7 +134,7 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
               View Results
             </Link>
           </div>
-        </div>
+        </FadeInSection>
 
         {/* Scroll indicator */}
         <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">

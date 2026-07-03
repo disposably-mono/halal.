@@ -105,7 +105,7 @@ export function RowActions({
             ref={menuRef}
             role="menu"
             style={{ position: "fixed", top: coords.top, left: coords.left, width: MENU_WIDTH }}
-            className="z-50 overflow-hidden rounded-[8px] border border-white/[0.10] bg-admin-surface py-1 shadow-xl"
+            className="z-50 origin-top-right animate-dropdown-in overflow-hidden rounded-[8px] border border-white/[0.10] bg-admin-surface py-1 shadow-xl"
           >
             <Link role="menuitem" href={`/admin/elections/${e.id}/candidates`} className={itemCls}>
               Candidates

@@ -1,4 +1,5 @@
 import { Link } from "next-view-transitions";
+import { FadeInSection } from "../_components/FadeInSection";
 import { LandingFooter } from "../_components/LandingFooter";
 
 /* ─────────────────────────────────────────────
@@ -249,7 +250,7 @@ export default function AboutCreatorClient() {
         </div>
         <HeroRibbons />
 
-        <div className="relative z-10 flex flex-col items-center text-center max-w-2xl w-full">
+        <FadeInSection className="relative z-10 flex flex-col items-center text-center max-w-2xl w-full">
           {/* Photo placeholder */}
           <div className="relative mb-8">
             <div
@@ -314,7 +315,7 @@ export default function AboutCreatorClient() {
               Vox Populi Vox Dei
             </em>, the voice of the people is the voice of God.
           </p>
-        </div>
+        </FadeInSection>
       </section>
 
       {/* ── SOCIAL LINKS ─────────────────────────────────── */}

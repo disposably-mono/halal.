@@ -1,4 +1,5 @@
 import { Link } from "next-view-transitions";
+import { FadeInSection } from "../_components/FadeInSection";
 import { LandingFooter } from "../_components/LandingFooter";
 
 /* ─────────────────────────────────────────────
@@ -277,7 +278,7 @@ export default function AboutComelecClient() {
         </div>
         <HeroRibbons />
 
-        <div className="relative z-10 text-center max-w-[680px]">
+        <FadeInSection className="relative z-10 text-center max-w-[680px]">
           <HeroLogoPlaceholder />
 
           <div className="flex items-center justify-center gap-4 mb-3">
@@ -322,7 +323,7 @@ export default function AboutComelecClient() {
             Peace School. It manages school elections and helps students practice civic
             responsibility.
           </p>
-        </div>
+        </FadeInSection>
       </section>
 
       {/* ── MISSION / VISION / DESCRIPTION ───────────────── */}
