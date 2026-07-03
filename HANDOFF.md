@@ -157,15 +157,36 @@ Every author must remember the guard → validate → transaction → mutate →
 revalidate sequence by hand; a forgotten log line is invisible until an incident needs
 the trail.
 
-**Status: wrapper landed, first file migrated (this pass).** `lib/server/audited-action.ts`
-now exists and `app/(admin)/admin/actions.ts` (archive/restore) has been migrated onto it,
-behavior-identical (same guard, row lock, audit strings, and error copy — verified by the
-existing `tests/admin/archive-restore-race.test.ts` passing unchanged, plus a new
-`tests/server/audited-action.test.ts` for the wrapper itself). Remaining files to migrate,
-one PR at a time per the plan below:
+**Status: wrapper landed; two of four files migrated.** `lib/server/audited-action.ts`
+now exists. Migrated so far, both behavior-identical (verified by existing/new unit
+tests, full gate green):
 
-- `app/(admin)/admin/elections/[id]/control/actions.ts` (four lifecycle actions)
-- `lib/server/close-election.ts` / `lib/election-transitions.ts`
+- `app/(admin)/admin/actions.ts` — `archiveElection`/`restoreElection`, onto the wrapper.
+  Verified by the existing `tests/admin/archive-restore-race.test.ts` passing unchanged,
+  plus `tests/server/audited-action.test.ts` for the wrapper itself.
+- `app/(admin)/admin/elections/[id]/control/actions.ts` — `openElectionNow`,
+  `rescheduleElection`, `advanceToScheduled`, and `initiateRecount` all migrated. New
+  `tests/admin/control-lifecycle-actions.test.ts` covers row-lock ordering, domain-check
+  passthrough, and the success/broadcast/revalidate paths for all four (no test existed
+  for this file before). One deliberate note preserved from the original code:
+  `initiateRecount` throws plain `Error` (not `TransitionValidationError`) for its three
+  validation failures, because the pre-existing behavior always collapsed them to the
+  generic "Recount failed" message rather than surfacing the specific reason — the
+  wrapper's generic-error fallback reproduces that exactly, so this was left as-is rather
+  than "fixed" as part of a behavior-identical migration.
+  - `closeElectionNow` in the same file was **not** migrated: it delegates its transaction
+    entirely to `closeElectionWithCertification` (a shared helper also called by the
+    cron scheduler), so it doesn't own a per-action transaction the wrapper could take
+    over. It'll move together with the next item below.
+
+Remaining files to migrate, one PR at a time:
+
+- `lib/server/close-election.ts` / `lib/election-transitions.ts` (and, with it,
+  `closeElectionNow` above) — these need a variant that accepts an already-open
+  transaction or a `run` that itself owns nested-transaction-free logic, since
+  `closeElectionWithCertification` is invoked from three different callers (manual close,
+  cron open→close, cron missed-window close) each with their own actor string and
+  allowed-status set.
 - `app/(admin)/admin/accounts/actions.ts` (five `AdminAccountLog` writes — see the shape
   note below before migrating these; they also need `mapError` for the P2002/P2034 cases
   and `isolationLevel: Serializable` for two of the five)
