@@ -17,7 +17,11 @@ export async function unlockAdminHelp(
   formData: FormData,
 ): Promise<AdminHelpAccessState> {
   const officerKey = formData.get("officerKey");
-  if (typeof officerKey !== "string" || officerKey.length < 8) {
+  // This is only a cheap sanity floor before the O(n) bcrypt loop, NOT the
+  // credential policy. Keep it below the create/reset minimum (8) so officer
+  // keys issued under the older 6-char rule can still unlock the help page —
+  // new keys must be >= 8, but already-set shorter keys must keep working.
+  if (typeof officerKey !== "string" || officerKey.length < 6) {
     return { error: "Enter a valid officer key." };
   }
 
