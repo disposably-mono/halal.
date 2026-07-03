@@ -1,21 +1,23 @@
 # Handoff: Project Status & Future Improvements
 
 Updated: 2026-07-03
-Branch: `main` at `851a6f0`
+Branch: `main` at `8496e9b`
 
 This file is the working handoff for the project. The staged Next.js 14 → 16 migration
-(sections 8–9) and the 2026-07-03 security-hardening pass (section 1) are **complete and
-merged to `main`**. The active content of this handoff is the future-improvements roadmap
-in sections 4–6.
+(sections 9–10) and the 2026-07-03 security-hardening pass (section 1) are **complete and
+merged to `main`**, as are the audit-logging wrapper (section 5) and OpenTelemetry traces
+(section 6). The active content of this handoff is the future-improvements roadmap in
+sections 4 and 7 — recommended next: **section 7, the Tailwind v4 migration** (see section
+3 for why it's sequenced ahead of section 4).
 
 ---
 
 ## 1. Current State
 
 - **Stack:** Next.js 16.2.10 (App Router, Turbopack), React 19.2.7, Auth.js v5 beta,
-  Prisma 7 + PostgreSQL 16, Vitest (55 files / 400 tests, 80% coverage gate), Playwright.
+  Prisma 7 + PostgreSQL 16, Vitest (59 files / 453 tests, 80% coverage gate), Playwright.
 - **Framework migration:** complete. Next 14 → 15 → 16 merged via PRs #9–#11; Cache
-  Components evaluated and declined (section 9).
+  Components evaluated and declined (section 10).
 - **Security posture:** a full security/optimization/resilience review was run on
   2026-07-03 and all 10 findings were fixed and pushed (`4071ad2..851a6f0`, nine atomic
   commits). Highlights now live on `main`:
@@ -62,12 +64,14 @@ them or explicitly replace them:
 | # | Improvement | Driver | Size | Risk |
 | --- | --- | --- | --- | --- |
 | 4 | Multi-instance: Postgres LISTEN/NOTIFY monitor bus | Horizontal scaling / zero-downtime deploys | Medium | Medium |
-| 5 | Extract audit logging into a shared wrapper | Consistency; audit writes are spread across actions | Small–Medium | Low |
-| 6 | OpenTelemetry traces | Production debuggability | Medium | Low (privacy caveats) |
+| 5 | Extract audit logging into a shared wrapper — **done** (see section 5) | Consistency; audit writes are spread across actions | Small–Medium | Low |
+| 6 | OpenTelemetry traces — **done** (see section 6) | Production debuggability | Medium | Low (privacy caveats) |
+| 7 | Tailwind v4 migration | Build speed, CSS-native config, unblocks `tw-animate-css` | Medium | Low–Medium |
 
-Each item is independently shippable. Recommended order: 5 → 6 → 4 (the wrapper cleans up
-the code OTel will instrument; the multi-instance bus is only needed when a second
-instance is actually planned).
+Each item is independently shippable. 5 and 6 are complete. **Recommended order for what's
+left: 7 → 4** — Tailwind v4 has no external dependency and is pure build-tooling/CSS risk,
+whereas item 4 (multi-instance) is gated on an actual second-instance deployment being
+planned and isn't actionable until then.
 
 ---
 
@@ -349,7 +353,75 @@ rule in the instrumentation module header.
 
 ---
 
-## 7. Verification Gate (Reusable, for Every PR From This Handoff)
+## 7. Tailwind v4 Migration
+
+**The driver:** three things converge here, none individually urgent:
+
+- `tw-animate-css` has been a `package.json` dependency since the dropdown-animation work
+  (PR #18) but **does nothing** — it's the Tailwind v4-only replacement for
+  `tailwindcss-animate`, ships `@utility`/`@property` rules that only Tailwind v4's engine
+  understands, and was never imported or registered as a plugin in this v3 project.
+  Confirmed empirically: the compiled dev CSS output contains zero occurrences of
+  `.animate-in` / `.fade-in-0` / `.zoom-in-95`. This means `components/ui/dialog.tsx`,
+  `components/admin/confirm-dialog.tsx`, and `components/admin/toast-view.tsx` — which all
+  reference those classes via `data-open:animate-in data-open:fade-in-0 ...` — currently
+  have **no entrance/exit animation at all**; the classes are silently dead. (PR #18's
+  dropdown animations for `ThemedSelect`/`RowActions` sidestepped this by hand-writing real
+  `dropdown-in`/`dropdown-out` keyframes directly in `tailwind.config.ts` instead of relying
+  on the package — that still works fine post-migration, or can be ported into `@theme`.)
+- Tailwind v4's CSS-first `@theme` config replaces `tailwind.config.ts`, which would let
+  `tw-animate-css` (or any equivalent) work as intended, removes the need to hand-roll
+  keyframes for every new animation, and drops the `content: [...]` glob list in favor of
+  automatic content detection.
+- Build speed: v4's Oxide (Rust) engine is materially faster than v3's JS pipeline — a
+  bigger win once this project's Tailwind surface grows past the current admin/public/ballot
+  theme set.
+
+**Not urgent:** the specific dead-class bug above can be fixed today, without upgrading
+anything, the same way PR #18 fixed the dropdown case — hand-written keyframes in
+`tailwind.config.ts` (`theme.extend.keyframes`/`animation`) plus `data-[state=open]:`/
+`data-[state=closed]:` Tailwind v3 arbitrary-attribute variants (native since v3.4, no
+plugin needed). Do that first if the dead animations need fixing before this migration is
+scheduled.
+
+### Adoption path (mirror the Next.js migration's staged approach — section 9)
+
+1. **Baseline**: screenshot the four public pages, the admin dashboard/filter groups, the
+   ballot flow, and the results page (light + the ballot-paper theme) before touching
+   anything, so visual regressions are easy to spot. This project's design system leans
+   heavily on hard-coded hex tokens (`navy`, `navy-deep`, `gold`, `maroon`,
+   `admin-bg`/`admin-surface`/`admin-raised`/`admin-overlay`, `ballot-bg`/`ballot-paper`/
+   etc. in `tailwind.config.ts`) plus custom font-family CSS vars — the highest-risk
+   regression surface is these tokens silently resolving differently, not missing utility
+   classes (v4's codemod handles those).
+2. **Run the codemod**: `npx @tailwindcss/upgrade` against this repo. Expect it to rewrite
+   `tailwind.config.ts`'s `theme.extend` into an `app/globals.css` `@theme` block,
+   swap the PostCSS plugin (`tailwindcss` → `@tailwindcss/postcss`), and flag anything it
+   can't auto-migrate.
+3. **Re-verify shadcn/Radix Nova components**: `components.json` and `components/ui/*.tsx`
+   were generated against the v3 shadcn CLI; check whether shadcn's v4 component variants
+   changed anything import-path- or class-name-wise (the `cn()` helper, `class-variance-authority`
+   usage, Radix primitives themselves are unaffected — those aren't Tailwind-version-coupled).
+4. **Wire up `tw-animate-css` properly** (or keep the hand-rolled keyframes from PR #18 —
+   either works under v4; don't do both for the same animation).
+5. **Full verification gate** (section 8) plus the manual visual smoke pass from step 1,
+   comparing against the baseline screenshots.
+
+### Definition of done
+
+- [ ] `tailwind.config.ts` retired in favor of `@theme` in `app/globals.css` (or confirmed
+  intentionally kept, if the codemod recommends a hybrid setup).
+- [ ] All brand/admin/ballot color tokens and custom font families render identically to
+  the pre-migration baseline screenshots.
+- [ ] `tw-animate-css`'s utilities resolve for real (or the PR #18 hand-rolled keyframes are
+  confirmed to still work) — `Dialog`/`ConfirmDialog`/`Toast` actually animate open/close
+  for the first time.
+- [ ] Full verification gate (section 8) green; no visual regressions in the manual smoke
+  pass.
+
+---
+
+## 8. Verification Gate (Reusable, for Every PR From This Handoff)
 
 Automated:
 
@@ -388,7 +460,7 @@ document MEDIUM/LOW in the PR.
 
 ---
 
-## 8. Archive: Next.js 16 Migration (Complete)
+## 9. Archive: Next.js 16 Migration (Complete)
 
 Kept for the record; details live in git history and PRs #9–#11.
 
@@ -403,7 +475,7 @@ Kept for the record; details live in git history and PRs #9–#11.
 - Do not run forced major framework upgrades in the future without repeating this staged
   approach (baseline → codemods → hand checks → full gate → manual smoke per stage).
 
-## 9. Archive: Cache Components Evaluation (Declined 2026-07-03)
+## 10. Archive: Cache Components Evaluation (Declined 2026-07-03)
 
 Evaluated on `chore/cache-components-evaluation` (never merged). Enabling
 `cacheComponents: true` surfaced build failures on **18 of 31 routes (58%)** — each one
