@@ -78,13 +78,13 @@ See your local `.env` (or `.env.example` for the variable names):
 
 ## Architecture Overview
 
-**Stack:** Next.js 14.2 (App Router) + React 18 + TypeScript + Prisma 7 + PostgreSQL 16.
-The staged Next.js 16 migration is planned in `HANDOFF.md`; do not run forced major
-upgrades directly on `main`.
+**Stack:** Next.js 16.2 (App Router) + React 19 + TypeScript + Prisma 7 + PostgreSQL 16.
+The Next.js 14 -> 16 migration described in `HANDOFF.md` is complete on `main`; do not run
+forced major framework upgrades without going through the same staged approach.
 
 **System Architecture:**
 ```
-Next.js 14.2 (Full Stack)
+Next.js 16.2 (Full Stack)
 ├── App Router (Frontend UI + Server Actions)
 ├── Authentication (NextAuth.js with 2FA)
 ├── Prisma 7 ORM
@@ -123,7 +123,7 @@ app/
 │   ├── actions.ts                  # validateCode / submitBallot
 │   ├── ballot/ (BallotClient + _components/) · confirmed/
 ├── admin/login/page.tsx            # 2FA login form (outside route group)
-├── (admin)/admin/                  # Protected admin panel (middleware)
+├── (admin)/admin/                  # Protected admin panel (proxy.ts)
 │   ├── layout.tsx                  # Topbar + sidebar chrome
 │   ├── page.tsx · DashboardClient.tsx · _components/   # Dashboard + archive
 │   ├── actions.ts                  # archiveElection / restoreElection (lifecycle transitions live in elections/[id]/control/actions.ts)
@@ -155,7 +155,7 @@ app/
    `CANVASSER`, or `OFFICER`. Authorization is capability-based: roles map to
    capabilities in `lib/auth/permissions.ts` (`ROLE_CAPABILITIES`), and every
    guard/UI gate derives from that single source of truth.
-5. `middleware.ts` protects all `/admin/*` routes using NextAuth's `auth()` redirect
+5. `proxy.ts` protects all `/admin/*` routes using NextAuth's `auth()` redirect
 
 > **Multi-host auth:** `auth.config.ts` sets `trustHost: true`, so callback URLs and
 > cookies use the requesting host (`X-Forwarded-Host`) rather than a fixed
@@ -197,9 +197,8 @@ app/
 ## Project Status
 
 The admin UX overhaul, receipt verification, election monitoring, archive flows,
-permission guards, and audit-oriented results work are shipped on `main`. The main
-forward-looking engineering item is the staged Next.js 14 to 16 migration in
-`HANDOFF.md`.
+permission guards, and audit-oriented results work are shipped on `main`. The
+Next.js 14 -> 16 framework migration (see `HANDOFF.md`) is also complete on `main`.
 
 ## Key Features to Understand
 
@@ -236,7 +235,7 @@ Enter Code → Validate → Generate Ballot → Select → Review → Submit
 - `prisma/seed.ts` - Database seeder (run with `npx prisma db seed`)
 - `auth.ts` - NextAuth configuration + credentials provider + 2FA logic
 - `auth.config.ts` - NextAuth callbacks & page overrides
-- `middleware.ts` - Admin route protection (`/admin/*`)
+- `proxy.ts` - Admin route protection (`/admin/*`)
 - `tailwind.config.ts` - Design tokens + brand colors + custom font families
 - `components.json` - shadcn/ui configuration (Radix Nova style)
 
@@ -441,7 +440,7 @@ Volume: halal_pgdata (persists between restarts)
 ### Production Considerations
 - **Build:** `npm run build` outputs `.next/` static assets
 - **Start:** `npm start` runs `next start` (production server)
-- **Node:** Use Node.js 20.19 or newer for this project. Next.js 16 will require the runtime floor documented in `HANDOFF.md`.
+- **Node:** Use Node.js >=20.9.0 (Next.js 16's runtime floor, pinned via `engines.node` in `package.json`).
 - **Port:** Configurable via `PORT` env (default: 3000)
 - **Database:** Managed PostgreSQL (configure `DATABASE_URL`)
 - **Migrations:** Run `npx prisma migrate deploy` in production after deploy
@@ -468,7 +467,7 @@ Volume: halal_pgdata (persists between restarts)
 ### Gotchas & Pitfalls
 - **Prisma Client reload:** Changes to schema require `npx prisma generate` before TypeScript
   recognizes new fields (e.g. after the `archivedAt` migration).
-- **Middleware path matching:** `middleware.ts` only protects `/admin/*`; public pages need no auth
+- **Proxy path matching:** `proxy.ts` only protects `/admin/*`, `/vote/ballot/*`, and `/vote/confirmed`; public pages need no auth
 - **Anonymous voting:** Cannot trace votes back to voters by design; audits rely on `voterCode` consumption flag
 - **Division inference:** When parsing control numbers, ensure grade falls within known ranges; reject invalid
 - **Server Actions:** Must be colocated in `app/` directory (cannot import from `src/` or elsewhere)

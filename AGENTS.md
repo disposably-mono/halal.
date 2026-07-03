@@ -73,8 +73,8 @@ Run `npm run build` and `npm run test:e2e` when the change touches routing, rend
 
 ## Repo-Specific Notes
 
-- Current stack is Next.js 14.2, React 18, TypeScript, Prisma 7, PostgreSQL 16, Auth.js, Tailwind CSS, Vitest, and Playwright.
-- The staged Next.js 16 migration plan lives in `HANDOFF.md`; do not run forced major upgrades on `main`.
+- Current stack is Next.js 16.2, React 19, TypeScript, Prisma 7, PostgreSQL 16, Auth.js, Tailwind CSS, Vitest, and Playwright.
+- The Next.js 14 -> 16 migration plan in `HANDOFF.md` is complete on `main`; do not run forced major framework upgrades without going through the same staged approach.
 - Do not modify `.env`, seed/reset the database, or touch real voter data without explicit approval.
 - Keep voter, receipt, audit, authentication, and rate-limit copy precise. These strings are security- and election-critical.
 - The app must run behind a header-sanitizing reverse proxy because rate limiting trusts `x-forwarded-for`.
