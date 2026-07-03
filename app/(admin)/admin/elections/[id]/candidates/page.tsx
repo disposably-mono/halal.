@@ -1,5 +1,5 @@
-import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import { requireCapability } from "@/lib/server/auth";
 import { prisma } from "@/lib/prisma";
 import { DIVISION_POSITIONS, gradesForDivision } from "@/lib/elections/constants";
 import { can } from "@/lib/auth/permissions";
@@ -29,8 +29,10 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function CandidatesPage({ params }: { params: { id: string } }) {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
+  // Candidate rosters are read here, so viewing requires candidates:view
+  // (Commissioner + oversight roles). Mutation controls below are separately
+  // gated on candidates:manage. Other roles are bounced to the dashboard.
+  const session = await requireCapability("candidates:view");
 
   const election = await prisma.election.findUnique({
     where: { id: params.id },

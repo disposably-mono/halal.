@@ -97,9 +97,13 @@ const SchoolYear = z
   .transform((s) => parseInt(s, 10))
   .pipe(z.number().int().min(2000).max(2100));
 
+// Bounds the CSV import payload so an oversized upload can't be used to tie up
+// the parser/DB import path — 200KB comfortably covers a full-school roster.
+const CSVText = NonEmptyString.max(200_000, "CSV file is too large (max 200KB).");
+
 export const AddVotersFromCSVSchema = z.object({
   electionId: Cuid,
-  csvText: NonEmptyString,
+  csvText: CSVText,
   schoolYear: SchoolYear,
 });
 
@@ -119,7 +123,9 @@ export const AddVoterManualSchema = z.object({
 // ─── Admin account management ───────────────────────────────────────────────
 
 const Password = z.string().min(8, "Password must be at least 8 characters.");
-const OfficerKey = z.string().min(6, "Officer key must be at least 6 characters.");
+// The officer key is the sole factor guarding /admin-help and co-signs admin
+// login (2FA), so it needs meaningfully more entropy than a 6-char minimum.
+const OfficerKey = z.string().min(12, "Officer key must be at least 12 characters.");
 const Email = z.string().trim().toLowerCase().email();
 
 export const CreateAdminSchema = z.object({

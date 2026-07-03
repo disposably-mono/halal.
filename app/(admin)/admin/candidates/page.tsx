@@ -1,12 +1,10 @@
-import { auth } from "@/auth";
 import { PageContainer } from "@/components/admin/ui";
 import { prisma } from "@/lib/prisma";
-import { redirect } from "next/navigation";
+import { requireCapability } from "@/lib/server/auth";
 import { CandidatesIndexClient } from "./CandidatesIndexClient";
 
 export default async function AdminCandidatesPage() {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
+  await requireCapability("candidates:view");
 
   const positions = await prisma.position.findMany({
     where: { isActive: true, election: { archivedAt: null } },

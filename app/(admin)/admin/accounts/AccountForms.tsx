@@ -125,7 +125,7 @@ function CreateSubmit({ isPending }: { isPending: boolean }) {
 }
 
 function CreateAdminForm({ onResult }: { onResult: (toast: ToastInput) => void }) {
-  const { state: result, isPending, handleSubmit } = useServerActionForm<AccountActionResult | null>(
+  const { state: result, isPending, submitError, handleSubmit } = useServerActionForm<AccountActionResult | null>(
     createAdmin,
     null,
     { shouldRefresh: (nextResult) => Boolean(nextResult?.success) },
@@ -157,7 +157,7 @@ function CreateAdminForm({ onResult }: { onResult: (toast: ToastInput) => void }
           <Field label="Password" hint="Min 8 characters">
             <AdminSecretInput name="password" secretLabel="password" placeholder="••••••••" required autoComplete="new-password" />
           </Field>
-          <Field label="Officer key" hint="Min 6 characters — unique per officer">
+          <Field label="Officer key" hint="Min 12 characters — unique per officer">
             <AdminSecretInput name="officerKey" secretLabel="officer key" placeholder="••••••" required autoComplete="new-password" />
           </Field>
         </div>
@@ -171,6 +171,9 @@ function CreateAdminForm({ onResult }: { onResult: (toast: ToastInput) => void }
 
         {result && !result.success && (
           <p className="text-[11px] text-red-400">✗ {result.error}</p>
+        )}
+        {submitError && (
+          <p className="text-[11px] text-red-400">✗ {submitError}</p>
         )}
       </form>
     </Card>

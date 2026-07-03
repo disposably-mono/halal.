@@ -16,12 +16,14 @@ export function useServerActionForm<State>(
   const router = useRouter();
   const [state, setState] = useState<State>(initialState);
   const [isPending, setIsPending] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (isPending) return;
 
     setIsPending(true);
+    setSubmitError(null);
     try {
       const formData = new FormData(event.currentTarget);
       const nextState = await action(state, formData);
@@ -29,10 +31,19 @@ export function useServerActionForm<State>(
       if (options.shouldRefresh?.(nextState)) {
         router.refresh();
       }
+    } catch (error) {
+      // Server actions normally report failure through the typed State (e.g.
+      // { success: false, error }), handled above. An unexpected throw (a bug,
+      // a rethrown non-P2002 Prisma error, a network drop) must never vanish
+      // silently — surface it so the user isn't left staring at a reset
+      // spinner with no explanation.
+      setSubmitError(
+        error instanceof Error ? error.message : "Something went wrong. Please try again.",
+      );
     } finally {
       setIsPending(false);
     }
   }
 
-  return { state, isPending, handleSubmit };
+  return { state, isPending, submitError, handleSubmit };
 }

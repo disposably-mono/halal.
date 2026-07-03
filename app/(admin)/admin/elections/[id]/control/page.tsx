@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
-import { auth } from "@/auth";
-import { redirect } from "next/navigation";
+import { requireCapability } from "@/lib/server/auth";
 import { prisma } from "@/lib/prisma";
 import { can } from "@/lib/auth/permissions";
 import ControlClient from "./ControlClient";
@@ -14,8 +13,10 @@ interface PageProps {
 }
 
 export default async function ControlPage({ params }: PageProps) {
-  const session = await auth();
-  if (!session) redirect("/admin/login");
+  // Election status, schedule, and audit/recount internals are read here, so
+  // viewing requires elections:view. Mutation controls below are separately
+  // gated on election:lifecycle / election:close / recounts:run.
+  const session = await requireCapability("elections:view");
 
   const canLifecycle = can(session.user?.role, "election:lifecycle");
   const canClose = can(session.user?.role, "election:close");

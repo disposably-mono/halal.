@@ -22,6 +22,7 @@ export type AccountActionResult =
   | { success: false; error: string };
 
 async function officerKeyIsInUse(
+  client: Prisma.TransactionClient,
   officerKey: string,
   excludeAdminId?: string,
 ): Promise<boolean> {
@@ -29,7 +30,7 @@ async function officerKeyIsInUse(
   // uniqueness cannot be checked with an indexed lookup — we must bcrypt-compare
   // against every admin's hash. Admin accounts number in the low single digits at
   // school scale, so this linear scan is an accepted tradeoff.
-  const accounts = await prisma.adminUser.findMany({
+  const accounts = await client.adminUser.findMany({
     where: excludeAdminId ? { id: { not: excludeAdminId } } : undefined,
     select: { officerKey: true },
   });
@@ -38,6 +39,22 @@ async function officerKeyIsInUse(
     if (await bcrypt.compare(officerKey, account.officerKey)) return true;
   }
   return false;
+}
+
+const CONCURRENT_WRITE_MESSAGE =
+  "Another account change happened at the same time. Please try again.";
+
+/**
+ * True when a Prisma error is a serializable-transaction conflict (P2034).
+ * The check-then-write for officer-key uniqueness runs inside a Serializable
+ * transaction (see createAdmin / resetAdminOfficerKey) so concurrent callers
+ * racing on the same key never both succeed — Postgres aborts the loser with
+ * this error instead, and we surface it as a "please retry" message.
+ */
+function isSerializationConflict(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034"
+  );
 }
 
 /**
@@ -77,28 +94,42 @@ export async function createAdmin(
     return { success: false, error: "Super-admin can no longer be granted." };
   }
 
-  if (await officerKeyIsInUse(officerKey)) {
-    return {
-      success: false,
-      error: "That officer key is already assigned to another account.",
-    };
-  }
-
   const [passwordHash, officerKeyHash] = await Promise.all([
     bcrypt.hash(password, HASH_ROUNDS),
     bcrypt.hash(officerKey, HASH_ROUNDS),
   ]);
 
+  // Check-then-write on officer-key uniqueness is a TOCTOU hazard: two
+  // concurrent createAdmin calls could both pass the check and create two
+  // accounts sharing a key, weakening the "different account co-signs login"
+  // 2FA guarantee. Serializable isolation makes Postgres abort one of the two
+  // concurrent transactions instead.
   try {
-    await prisma.adminUser.create({
-      data: { email, name, role, passwordHash, officerKey: officerKeyHash },
-    });
+    const result = await prisma.$transaction(
+      async (tx) => {
+        if (await officerKeyIsInUse(tx, officerKey)) {
+          return {
+            success: false,
+            error: "That officer key is already assigned to another account.",
+          } as const;
+        }
+        await tx.adminUser.create({
+          data: { email, name, role, passwordHash, officerKey: officerKeyHash },
+        });
+        return { success: true } as const;
+      },
+      { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+    );
+    if (!result.success) return result;
   } catch (error) {
     if (
       error instanceof Prisma.PrismaClientKnownRequestError &&
       error.code === "P2002"
     ) {
       return { success: false, error: "An account with that email already exists." };
+    }
+    if (isSerializationConflict(error)) {
+      return { success: false, error: CONCURRENT_WRITE_MESSAGE };
     }
     throw error;
   }
@@ -189,21 +220,35 @@ export async function resetAdminOfficerKey(
     };
   }
 
-  if (await officerKeyIsInUse(parsed.data.officerKey, parsed.data.adminId)) {
-    return {
-      success: false,
-      error: "That officer key is already assigned to another account.",
-    };
-  }
-
   const officerKeyHash = await bcrypt.hash(parsed.data.officerKey, HASH_ROUNDS);
-  await prisma.adminUser.update({
-    where: { id: parsed.data.adminId },
-    data: { officerKey: officerKeyHash },
+
+  // Same TOCTOU hazard as createAdmin: wrap the uniqueness check and the
+  // write in one Serializable transaction so two concurrent resets can't both
+  // land on the same key.
+  const result = await prisma.$transaction(
+    async (tx) => {
+      if (await officerKeyIsInUse(tx, parsed.data.officerKey, parsed.data.adminId)) {
+        return {
+          success: false,
+          error: "That officer key is already assigned to another account.",
+        } as const;
+      }
+      await tx.adminUser.update({
+        where: { id: parsed.data.adminId },
+        data: { officerKey: officerKeyHash },
+      });
+      return { success: true } as const;
+    },
+    { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+  ).catch((error) => {
+    if (isSerializationConflict(error)) {
+      return { success: false, error: CONCURRENT_WRITE_MESSAGE } as const;
+    }
+    throw error;
   });
 
-  revalidateAdminAccounts();
-  return { success: true };
+  if (result.success) revalidateAdminAccounts();
+  return result;
 }
 
 export async function deleteAdmin(adminId: string): Promise<AccountActionResult> {

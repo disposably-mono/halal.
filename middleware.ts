@@ -2,7 +2,7 @@ import NextAuth from "next-auth";
 import type { Session } from "next-auth";
 import { authConfig } from "@/auth.config";
 import { NextRequest, NextResponse } from "next/server";
-import { VOTER_COOKIE } from "@/lib/voter-session";
+import { VOTER_COOKIE, getSecret } from "@/lib/voter-session";
 import { jwtVerify } from "jose";
 import { can } from "@/lib/auth/permissions";
 
@@ -43,8 +43,7 @@ export default auth(async function middleware(req: NextRequest & { auth: Session
     const token = req.cookies.get(VOTER_COOKIE)?.value;
     if (!token) return NextResponse.redirect(new URL("/vote", req.url));
     try {
-      const secret = new TextEncoder().encode(process.env.NEXTAUTH_SECRET!);
-      await jwtVerify(token, secret);
+      await jwtVerify(token, getSecret());
       return NextResponse.next();
     } catch {
       const response = NextResponse.redirect(new URL("/vote", req.url));
