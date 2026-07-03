@@ -74,6 +74,21 @@ const config: Config = {
         sm: "calc(var(--radius) - 4px)",
       },
 
+      keyframes: {
+        "dropdown-in": {
+          from: { opacity: "0", transform: "scale(0.96) translateY(-4px)" },
+          to: { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+        "dropdown-out": {
+          from: { opacity: "1", transform: "scale(1) translateY(0)" },
+          to: { opacity: "0", transform: "scale(0.96) translateY(-4px)" },
+        },
+      },
+      animation: {
+        "dropdown-in": "dropdown-in 150ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "dropdown-out": "dropdown-out 100ms ease-in",
+      },
+
       fontFamily: {
         // ── Existing app fonts ─────────────────────────────────────
         display: ["var(--font-bebas)", "sans-serif"],

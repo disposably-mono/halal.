@@ -2,7 +2,8 @@
 
 import { Link } from "next-view-transitions";
 import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
+import { FadeInSection } from "../_components/FadeInSection";
 import { LandingFooter } from "../_components/LandingFooter";
 
 /* ─────────────────────────────────────────────
@@ -288,7 +289,6 @@ function OfficersGrid({ officers, past = false, year }: { officers: Officer[]; p
 // ── Main Component ───────────────────────────────────────────────
 
 export default function OfficersPage() {
-  const [mounted, setMounted] = useState(false);
   const [activeTab, setActiveTab] = useState<"upcoming" | "current" | "past">("current");
   const gridRef = useRef<HTMLElement>(null);
 
@@ -297,11 +297,6 @@ export default function OfficersPage() {
     { key: "current", label: "S.Y. 2025–2026" },
     { key: "past", label: "S.Y. 2024–2025" },
   ];
-
-  useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 50);
-    return () => clearTimeout(t);
-  }, []);
 
   return (
     <div
@@ -366,11 +361,7 @@ export default function OfficersPage() {
         <HeroRibbons />
 
         {/* Fade-in content */}
-        <div
-          className={`relative z-10 text-center max-w-[640px] w-full transition-all duration-700 ${
-            mounted ? "opacity-100 translate-y-0" : "opacity-0 translate-y-6"
-          }`}
-        >
+        <FadeInSection className="relative z-10 text-center max-w-[640px] w-full">
           <Eyebrow label="OLPS COMELEC" />
 
           <h1
@@ -417,7 +408,7 @@ export default function OfficersPage() {
               </button>
             ))}
           </div>
-        </div>
+        </FadeInSection>
       </section>
 
       {/* ── OFFICERS GRID ────────────────────────────────── */}
