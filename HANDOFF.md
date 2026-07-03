@@ -1,22 +1,25 @@
 # Handoff: Next.js 16 Migration Status
 
 Updated: 2026-07-03
-Branch: `chore/next-16-stabilization`
-Base: `main` at merge commit `9df154e`
+Branch: `chore/cache-components-evaluation`
+Base: `main` at merge commit `0353db7`
 
-This file is the working handoff for the staged Next.js migration. Stage 1 and Stage 2
-have both merged to `main`. Stage 3 stabilization is in progress on this branch.
+This file is the working handoff for the staged Next.js migration. Stages 1 through 3 have
+all merged to `main`. Stage 4 was evaluated and declined; see section 9 for findings.
 
 Migration status:
 
 1. Baseline and Stage 1: complete. Next.js 14 -> 15 and React 19 merged through PR #9.
 2. Stage 2: complete. Next.js 15 -> 16, proxy convention, ESLint CLI, Node engine floor,
    and Turbopack build verification merged to `main` through PR #10.
-3. Stage 3: in progress on `chore/next-16-stabilization` (post-merge doc cleanup,
-   audit re-check, branch cleanup).
-4. Stage 4: optional Cache Components evaluation remains separate.
+3. Stage 3: complete. Post-merge doc cleanup, audit re-check, and branch cleanup merged
+   to `main` through PR #11.
+4. Stage 4: evaluated and declined on 2026-07-03. Cache Components broke 18 of 31 routes
+   and offered no measurable benefit for this app's traffic profile; see section 9 for the
+   full writeup. Not merged to `main`.
 
-Do not fold optional Cache Components work into this branch.
+The Next.js migration is now complete. Revisit Stage 4 only if a future need for genuine
+public static/ISR content emerges.
 
 ---
 
@@ -507,6 +510,42 @@ Decision gate:
 - If Cache Components add complexity without measurable benefit, close the branch with notes.
 - If they improve build/runtime behavior safely, open a separate PR with a narrow scope and a
   detailed test plan.
+
+### Evaluation outcome (2026-07-03): declined
+
+Evaluated on `chore/cache-components-evaluation` (branch not merged; experimental changes were
+discarded, not committed). Per the current
+[Cache Components migration guide](https://nextjs.org/docs/app/guides/migrating-to-cache-components)
+(fetched 2026-07-03, Next.js 16.2.10):
+
+- Enabling `cacheComponents: true` and removing all `dynamic`/`runtime` route segment configs
+  (19 files) surfaced build failures on **18 of 31 routes (58%)** — the homepage, every voter
+  page (`/vote`, `/vote/ballot`, `/vote/confirmed`), `/verify`, and every admin page. Each
+  failure is `next build` correctly identifying that the page reads a voter/admin session
+  cookie, queries live election status, or calls `new Date()` before establishing request-bound
+  data access — i.e., exactly the behavior these pages are supposed to have. This is not a
+  backlog of bugs to fix; it is nearly the entire application surface.
+- Fixing this properly would require wrapping session/cookie reads in `<Suspense>` across almost
+  every page, auditing 14+ call sites of `new Date()` reachable from Server Components, rewriting
+  every route handler's error handling (Cache Components makes `GET` handlers bail out of
+  prerendering by *throwing*, which existing `try/catch` blocks — e.g. in the results-PDF and
+  voters-export routes — would silently swallow), and validating the long-lived SSE monitor
+  stream (`/api/elections/[id]/monitor/stream`) against a caching model whose docs do not
+  address streaming `Response` objects at all.
+- The migration guide also documents that dropdowns, popovers, and dialogs now persist state
+  across navigations by default (React `Activity`) instead of unmounting. That directly touches
+  this app's portalled admin `RowActions` menu and the ballot review flow, both already
+  documented as fragile in `CLAUDE.md`, and would need explicit re-testing.
+- Expected benefit is minimal: there is no meaningful public, high-traffic static content here
+  to benefit from partial prerendering. The results page already has a bespoke TTL/single-flight
+  cache (`lib/server/ttl-cache.ts`) that this evaluation's non-goals correctly said not to touch,
+  and the admin monitor is inherently live (SSE) and must never serve stale data.
+
+Given the app's security- and correctness-sensitive nature (anonymous voting, results embargo,
+capability-gated admin access), the risk of a subtle staleness bug outweighs any caching benefit
+at this app's traffic scale. **Recommendation: do not adopt Cache Components.** Revisit only if
+a future need for genuine public static/ISR content emerges, or if a later Next.js release
+narrows the blocking-route/`new Date()` constraints for auth-gated apps.
 
 ---
 
