@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { requireCapabilityOrError } from "@/lib/server/auth";
 import { permissionErrorMessage } from "@/lib/auth/permissions";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
-import { computePositionTally } from "@/lib/domain/tally";
+import { buildVoteMap, computePositionTally } from "@/lib/domain/tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
 import { cached } from "@/lib/server/ttl-cache";
 import { recordSnapshot } from "@/lib/server/monitor-snapshots";
@@ -237,42 +237,38 @@ export async function GET(
  * whether to expose abstentions).
  */
 async function computeResultsAggregate(id: string) {
-  const positions = await prisma.position.findMany({
-    where: { electionId: id, isActive: true },
-    include: {
-      candidates: {
-        select: { id: true, fullName: true, gradeLevel: true },
-        orderBy: { fullName: "asc" },
+  const [positions, voteCounts, abstentionCounts, totalVoters, votedCount] = await Promise.all([
+    prisma.position.findMany({
+      where: { electionId: id, isActive: true },
+      include: {
+        candidates: {
+          select: { id: true, fullName: true, gradeLevel: true },
+          orderBy: { fullName: "asc" },
+        },
       },
-    },
-    orderBy: { order: "asc" },
-  });
+      orderBy: { order: "asc" },
+    }),
+    prisma.vote.groupBy({
+      by: ["candidateId"],
+      where: { electionId: id },
+      _count: { candidateId: true },
+    }),
+    // isAbstain is always true iff candidateId is null (enforced at write
+    // time — see lib/domain/ballot.ts), so grouping on candidateId: null
+    // per position is exactly the abstention count.
+    prisma.vote.groupBy({
+      by: ["positionId"],
+      where: { electionId: id, candidateId: null },
+      _count: { _all: true },
+    }),
+    prisma.voter.count({ where: { electionId: id } }),
+    prisma.voter.count({ where: { electionId: id, hasVoted: true } }),
+  ]);
 
-  const votes = await prisma.vote.findMany({
-    where: { electionId: id },
-    select: { positionId: true, candidateId: true, isAbstain: true },
-  });
-
-  const candidateVoteCounts = new Map<string, number>();
-  const positionAbstentions = new Map<string, number>();
-  for (const vote of votes) {
-    if (vote.isAbstain || !vote.candidateId) {
-      positionAbstentions.set(
-        vote.positionId,
-        (positionAbstentions.get(vote.positionId) ?? 0) + 1,
-      );
-    } else {
-      candidateVoteCounts.set(
-        vote.candidateId,
-        (candidateVoteCounts.get(vote.candidateId) ?? 0) + 1,
-      );
-    }
-  }
-
-  const totalVoters = await prisma.voter.count({ where: { electionId: id } });
-  const votedCount = await prisma.voter.count({
-    where: { electionId: id, hasVoted: true },
-  });
+  const candidateVoteCounts = buildVoteMap(voteCounts);
+  const positionAbstentions = new Map<string, number>(
+    abstentionCounts.map((a) => [a.positionId, a._count._all] as [string, number]),
+  );
 
   return { positions, candidateVoteCounts, positionAbstentions, totalVoters, votedCount };
 }
