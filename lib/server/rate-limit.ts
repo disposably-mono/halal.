@@ -12,11 +12,26 @@ import { headers } from "next/headers";
  *  - Fixed-window (not sliding) keeps it allocation-free and predictable; the
  *    worst case is up to 2× `limit` across a window boundary, which is fine for
  *    brute-force / enumeration throttling.
+ *  - Eviction under the `MAX_BUCKETS` cap never removes a bucket that is BOTH
+ *    unexpired AND currently blocked (`count >= limit`). Some limiters key on
+ *    attacker-controlled values (e.g. voter validation keys by studentId, which
+ *    is only regex-validated), so an attacker can flood ~10k fabricated keys to
+ *    force eviction. If eviction were indiscriminate, that flood could evict a
+ *    live, mid-count `admin-login:<ip>` bucket and reset the admin brute-force
+ *    throttle at will. Protecting blocked buckets means the map can temporarily
+ *    exceed `MAX_BUCKETS` in the pathological case where >10k keys are all
+ *    simultaneously blocked — accepted, because driving a single key to
+ *    "blocked" costs the attacker a full limit's worth of requests, which is
+ *    far more expensive than minting a fresh unique key.
  */
 
 interface Bucket {
   count: number;
   resetAt: number;
+  /** The limit this bucket was created under; used by `pruneIfNeeded` to tell
+   *  whether it is currently blocked (`count >= limit`) and therefore must not
+   *  be evicted while still live. */
+  limit: number;
 }
 
 const buckets = new Map<string, Bucket>();
@@ -52,7 +67,7 @@ export function rateLimit(
   const existing = buckets.get(key);
 
   if (!existing || existing.resetAt <= now) {
-    buckets.set(key, { count: 1, resetAt: now + windowMs });
+    buckets.set(key, { count: 1, resetAt: now + windowMs, limit });
     pruneIfNeeded(now);
     return { ok: true, retryAfterMs: 0, remaining: limit - 1 };
   }
@@ -67,16 +82,26 @@ export function rateLimit(
 
 function pruneIfNeeded(now: number): void {
   if (buckets.size < MAX_BUCKETS) return;
+
+  // 1. Expired buckets first — always safe to drop regardless of state.
   for (const [key, bucket] of Array.from(buckets.entries())) {
     if (bucket.resetAt <= now) buckets.delete(key);
   }
-  // If still over the cap (all live), drop the oldest-inserted keys.
+
+  // 2. Still over the cap: drop oldest-inserted keys, but only ones that are
+  //    NOT currently blocked. A blocked bucket (count >= limit) is actively
+  //    throttling something — e.g. a brute-forced admin-login IP or officer
+  //    key — and evicting it would hand the attacker a free reset. See the
+  //    header comment for the full threat model and the accepted tradeoff
+  //    (the map may exceed MAX_BUCKETS while >10k keys are all blocked).
   if (buckets.size >= MAX_BUCKETS) {
     const overflow = buckets.size - MAX_BUCKETS + 1;
     let dropped = 0;
-    for (const key of Array.from(buckets.keys())) {
-      if (dropped++ >= overflow) break;
+    for (const [key, bucket] of Array.from(buckets.entries())) {
+      if (dropped >= overflow) break;
+      if (bucket.count >= bucket.limit) continue;
       buckets.delete(key);
+      dropped++;
     }
   }
 }
@@ -124,4 +149,12 @@ export const RATE_LIMITS = {
   adminLogin: { limit: 10, windowMs: 5 * 60_000 },
   adminHelpUnlock: { limit: 10, windowMs: 5 * 60_000 },
   voterValidate: { limit: 12, windowMs: 10 * 60_000 },
+  // Receipt verification is keyed by IP (unauthenticated, no per-account
+  // identity to key on). Legitimate voters check receipts from a shared
+  // campus NAT on election day, so this must stay generous — it exists to
+  // blunt cheap DoS hammering of the DB lookup, not to tightly cap attempts.
+  // The receipt code itself is a 160-bit random value, so brute-forcing it
+  // within any plausible rate limit is already infeasible; this limit only
+  // needs to stop a single client from burning CPU/DB with rapid-fire junk.
+  receiptVerify: { limit: 60, windowMs: 10 * 60_000 },
 } as const satisfies Record<string, RateLimitOptions>;

@@ -44,3 +44,70 @@ describe("rateLimit", () => {
     expect(rateLimit("b", OPTS, 0).ok).toBe(true);
   });
 });
+
+describe("rateLimit eviction under MAX_BUCKETS", () => {
+  // MAX_BUCKETS is an internal constant (10_000), mirrored here so the test
+  // doesn't need to export it. If the module's cap ever changes, update this.
+  const MAX_BUCKETS = 10_000;
+
+  it("never evicts a blocked, unexpired bucket even when flooded with new unique keys", () => {
+    const now = 0;
+    // Drive one key to blocked (at its limit) — this is the bucket an
+    // attacker would want to force-reset, e.g. admin-login:<ip>.
+    const victimOpts: RateLimitOptions = { limit: 3, windowMs: 60_000 };
+    rateLimit("victim", victimOpts, now);
+    rateLimit("victim", victimOpts, now);
+    rateLimit("victim", victimOpts, now);
+    expect(rateLimit("victim", victimOpts, now).ok).toBe(false);
+
+    // Flood past MAX_BUCKETS with fresh, non-blocked, attacker-controlled
+    // keys (e.g. fabricated studentIds) to force pruneIfNeeded to run.
+    const floodOpts: RateLimitOptions = { limit: 100, windowMs: 60_000 };
+    for (let i = 0; i < MAX_BUCKETS + 500; i++) {
+      rateLimit(`flood-${i}`, floodOpts, now);
+    }
+
+    // The victim bucket must still be blocked — it was never evicted.
+    expect(rateLimit("victim", victimOpts, now).ok).toBe(false);
+  });
+
+  it("prunes expired buckets before evicting anything else", () => {
+    const now = 0;
+    const shortOpts: RateLimitOptions = { limit: 5, windowMs: 10 };
+    // Fill up to the cap with buckets that will have expired by `later`.
+    for (let i = 0; i < MAX_BUCKETS; i++) {
+      rateLimit(`expiring-${i}`, shortOpts, now);
+    }
+
+    const later = now + 1000; // well past the 10ms window for all of them
+    // A single new key at `later` should trigger pruneIfNeeded, which drops
+    // all expired buckets first — no non-expired eviction should be needed.
+    const result = rateLimit("fresh", shortOpts, later);
+    expect(result.ok).toBe(true);
+    expect(result.remaining).toBe(shortOpts.limit - 1);
+
+    // A previously-expired key is treated as a brand-new bucket, not evicted.
+    const reissued = rateLimit("expiring-0", shortOpts, later);
+    expect(reissued.ok).toBe(true);
+    expect(reissued.remaining).toBe(shortOpts.limit - 1);
+  });
+
+  it("evicts oldest-inserted non-blocked keys when over cap with no expired entries", () => {
+    const now = 0;
+    const longOpts: RateLimitOptions = { limit: 100, windowMs: 60_000 };
+    // Fill to MAX_BUCKETS with long-lived, non-blocked buckets in insertion order.
+    for (let i = 0; i < MAX_BUCKETS; i++) {
+      rateLimit(`old-${i}`, longOpts, now);
+    }
+
+    // One more unique key pushes past the cap; nothing has expired, so the
+    // oldest-inserted (non-blocked) key(s) must be evicted to make room.
+    rateLimit("newcomer", longOpts, now);
+
+    // The very first-inserted key should have been evicted and therefore
+    // reissued fresh (remaining = limit - 1) rather than continuing its old count.
+    const oldest = rateLimit("old-0", longOpts, now);
+    expect(oldest.ok).toBe(true);
+    expect(oldest.remaining).toBe(longOpts.limit - 1);
+  });
+});
