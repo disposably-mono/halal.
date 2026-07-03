@@ -13,6 +13,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
   const canManageAccounts = can(role, "accounts:manage");
   const canCreateElection = can(role, "election:lifecycle");
   const canViewVoters = can(role, "voters:view");
+  const canViewCandidates = can(role, "candidates:view");
   const canViewHistory = can(role, "history:view");
 
   const adminName = session.user?.name ?? "Admin";
@@ -47,7 +48,9 @@ export default async function AdminLayout({ children }: { children: ReactNode })
         ...(canViewVoters
           ? [{ href: "/admin/voters", label: "Voters", iconKey: "voters" as const }]
           : []),
-        { href: "/admin/candidates", label: "Candidates", iconKey: "candidates" as const },
+        ...(canViewCandidates
+          ? [{ href: "/admin/candidates", label: "Candidates", iconKey: "candidates" as const }]
+          : []),
       ],
     },
     ...(canManageAccounts || canViewHistory
