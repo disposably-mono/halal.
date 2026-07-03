@@ -1,13 +1,12 @@
 import { prisma } from "@/lib/prisma";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
-import Link from "next/link";
-import { BarChart3, FileText } from "lucide-react";
-import { Card, EmptyState, PageContainer, PageHeader } from "@/components/admin/ui";
-import { DIVISION_CODES } from "@/lib/ui/division-labels";
+import { PageContainer } from "@/components/admin/ui";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
-import { getResultStatusMeta, getTurnoutPercent, orderResultsElections } from "./admin-results-summary";
+import { orderResultsElections } from "./admin-results-summary";
+import { ResultsIndexClient } from "./ResultsIndexClient";
+import type { ResultsIndexElection, ResultsIndexStatus } from "./results-index";
 
 export default async function AdminResultsPage() {
   const session = await auth();
@@ -35,12 +34,7 @@ export default async function AdminResultsPage() {
   if (closedFirst.length === 0) {
     return (
       <PageContainer className="flex flex-col gap-[18px]">
-        <ResultsHeader count={0} />
-        <EmptyState
-          icon={<BarChart3 aria-hidden="true" className="h-[18px] w-[18px]" />}
-          title="No results yet"
-          hint="Results appear once an election is open or closed."
-        />
+        <ResultsIndexClient elections={[]} />
       </PageContainer>
     );
   }
@@ -134,137 +128,30 @@ export default async function AdminResultsPage() {
     })
   );
 
+  const resultsElections: ResultsIndexElection[] = electionData.map((el) => ({
+    id: el.id,
+    name: el.name,
+    division: el.division,
+    status: el.status as ResultsIndexStatus,
+    votedCount: el.votedCount,
+    voterCount: el._count.voters,
+    integrityFailure: el.integrityFailure,
+    positions: el.positions.map((pos) => ({
+      id: pos.id,
+      title: pos.title,
+      candidates: pos.candidates.map((candidate) => ({ id: candidate.id, fullName: candidate.fullName })),
+      winner: pos.winner ? { id: pos.winner.id, fullName: pos.winner.fullName, votes: pos.winner.votes } : null,
+      draw: pos.draw
+        ? pos.draw.map((candidate) => ({ id: candidate.id, fullName: candidate.fullName, votes: candidate.votes }))
+        : null,
+      winnerVotes: pos.winnerVotes,
+      totalVotes: pos.totalVotes,
+    })),
+  }));
+
   return (
     <PageContainer className="flex flex-col gap-[18px]">
-      <ResultsHeader count={closedFirst.length} />
-
-      <div className="flex flex-col gap-4">
-        {electionData.map((el) => {
-          const pct = getTurnoutPercent({ voted: el.votedCount, voters: el._count.voters });
-          const statusMeta = getResultStatusMeta(el.status);
-
-          return (
-            <Card key={el.id} noPad>
-              {/* Election header */}
-              <div className="px-4 py-3 border-b border-white/[0.07] flex items-center justify-between gap-3">
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className={`inline-flex items-center gap-1 rounded-full px-[7px] py-[2px] text-[10px] font-semibold shrink-0 ${statusMeta.badgeClassName}`}>
-                    <span className={`w-1 h-1 rounded-full ${statusMeta.dotClassName}`} />
-                    {statusMeta.label}
-                  </span>
-                  <div className="min-w-0">
-                    <div className="text-[13px] font-semibold text-white/90 truncate">{el.name}</div>
-                    <div className="text-[10px] text-white/50">{DIVISION_CODES[el.division] ?? el.division}</div>
-                  </div>
-                </div>
-
-                {/* Turnout */}
-                <div className="flex items-center gap-3 shrink-0">
-                  <div className="text-right">
-                    <div className="text-[13px] font-bold text-white/80">{pct}%</div>
-                    <div className="text-[10px] text-white/40">{el.votedCount} / {el._count.voters} voters</div>
-                  </div>
-                  <div className="w-[48px] h-[4px] bg-white/6 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full ${statusMeta.barClassName}`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <Link href={`/admin/elections/${el.id}/monitor`} className="inline-flex items-center gap-1 text-[10px] text-gold/70 hover:text-gold transition-colors no-underline">
-                    <FileText aria-hidden="true" className="h-3 w-3" />
-                    Full tally
-                  </Link>
-                </div>
-              </div>
-
-              {/* Winners grid */}
-              <div className="p-4">
-                {el.integrityFailure ? (
-                  <div className="rounded-[8px] border border-red-400/25 bg-red-400/5 px-4 py-3 text-[11px] text-red-300">
-                    Certified results failed cryptographic verification. Results are withheld pending a recount and audit.
-                  </div>
-                ) : el.positions.length === 0 ? (
-                  <div className="text-[11px] text-white/60 italic">No positions configured</div>
-                ) : (
-                  <div
-                    className="grid gap-[6px]"
-                    style={{ gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))" }}
-                  >
-                    {el.positions.map((pos) => {
-                      const hasResult = pos.winner || pos.draw;
-                      return (
-                        <div
-                          key={pos.id}
-                          className={`flex items-center gap-3 rounded-[8px] px-3 py-[8px] border
-                            ${hasResult
-                              ? "bg-white/2.5 border-white/6"
-                              : "bg-transparent border-white/4"}`}
-                        >
-                          {/* Icon */}
-                          <div className={`w-[28px] h-[28px] rounded-[6px] shrink-0 flex items-center justify-center text-[11px]
-                            ${pos.winner
-                              ? "bg-gold/10 text-gold"
-                              : pos.draw
-                                ? "bg-sky-400/10 text-sky-400"
-                                : "bg-white/4 text-white/60"}`}>
-                            {pos.winner ? "*" : pos.draw ? "=" : "-"}
-                          </div>
-
-                          {/* Content */}
-                          <div className="min-w-0 flex-1">
-                            <div className="text-[10px] text-white/40 truncate">{pos.title}</div>
-                            {pos.winner ? (
-                              <div className="text-[12px] font-semibold text-white/85 truncate mt-px">
-                                {pos.winner.fullName}
-                              </div>
-                            ) : pos.draw ? (
-                              <div className="text-[11px] text-sky-400 font-medium mt-px">
-                                TIE - {pos.draw.map((c) => c.fullName).join(" / ")}
-                              </div>
-                            ) : (
-                              <div className="text-[11px] text-white/60 italic mt-px">
-                                {pos.totalVotes === 0 ? "No votes cast yet" : "No candidates"}
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Winner vote count */}
-                          {(pos.winner || pos.draw) && pos.winnerVotes > 0 && (
-                            <div className="text-[10px] text-white/40 shrink-0 font-mono">
-                              {pos.winnerVotes}v
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+      <ResultsIndexClient elections={resultsElections} />
     </PageContainer>
-  );
-}
-
-function ResultsHeader({ count }: { count: number }) {
-  const countLabel = count > 0 ? `${count.toLocaleString()} tracked` : "No tracked results";
-  const summary =
-    count > 0
-      ? `${count} election${count > 1 ? "s" : ""} with results. Winners are shown per position.`
-      : "No elections with results yet";
-
-  return (
-    <PageHeader
-      eyebrow="Reports"
-      title="Results"
-      meta={
-        <span>
-          <span className="font-medium text-gold/80">{countLabel}</span>
-          {" · "}{summary}
-        </span>
-      }
-    />
   );
 }

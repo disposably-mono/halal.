@@ -2,11 +2,11 @@ import { prisma } from "@/lib/prisma";
 import { requireCapability } from "@/lib/server/auth";
 import { PageContainer } from "@/components/admin/ui";
 import { HistoryIndexClient } from "./HistoryIndexClient";
-import { AccountChangesCard } from "./AccountChangesCard";
 
 export const dynamic = "force-dynamic";
 
-const ACCOUNT_LOG_LIMIT = 100;
+const HISTORY_LIMIT = 255;
+const ACCOUNT_LOG_LIMIT = 255;
 
 export default async function AdminHistoryPage() {
   await requireCapability("history:view");
@@ -14,7 +14,7 @@ export default async function AdminHistoryPage() {
   const [history, accountLogs] = await Promise.all([
     prisma.adminLoginHistory.findMany({
       orderBy: { createdAt: "desc" },
-      take: 250,
+      take: HISTORY_LIMIT,
     }),
     prisma.adminAccountLog.findMany({
       orderBy: { createdAt: "desc" },
@@ -33,10 +33,7 @@ export default async function AdminHistoryPage() {
           verifierName: entry.verifierName,
           verifierEmail: entry.verifierEmail,
         }))}
-      />
-
-      <AccountChangesCard
-        logs={accountLogs.map((entry) => ({
+        accountLogs={accountLogs.map((entry) => ({
           id: entry.id,
           createdAt: entry.createdAt.toISOString(),
           action: entry.action,

@@ -1,5 +1,6 @@
 "use client";
 
+import { UserCog } from "lucide-react";
 import { DataTable, EmptyState } from "@/components/admin/ui";
 
 export type AccountLogRow = {
@@ -30,6 +31,7 @@ export function AccountLogTable({ logs }: { logs: readonly AccountLogRow[] }) {
       mobile="stack"
       empty={
         <EmptyState
+          icon={<UserCog aria-hidden="true" className="h-[18px] w-[18px]" />}
           title="No account changes yet"
           hint="Account creations, role changes, credential resets, and deletions will appear here."
         />

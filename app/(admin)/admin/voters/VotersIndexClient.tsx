@@ -54,7 +54,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
     : divisionOptions.find((option) => option.value === division)?.label ?? division;
   const statusLabel = status === "ALL" ? "All statuses" : status;
   const voteStatusLabel = voteStatus === "ALL" ? "All voters" : voteStatus;
-  const hasQuery = query.trim().length > 0;
+  const isFiltering = query.trim().length > 0 || status !== "ALL" || division !== "ALL" || voteStatus !== "ALL";
 
   return (
     <>
@@ -126,8 +126,8 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
         <div className="space-y-4">
           {filtered.map((divisionGroup) => (
             <Disclosure
-              key={`${divisionGroup.division}-${hasQuery}`}
-              defaultOpen={hasQuery}
+              key={`${divisionGroup.division}-${isFiltering}`}
+              defaultOpen={isFiltering}
               className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface/70"
               contentClassName="grid gap-3 border-t border-white/6 p-3"
               trigger={({ open }) => (
@@ -148,8 +148,8 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
             >
               {divisionGroup.elections.map((election) => (
                 <Disclosure
-                  key={`${election.id}-${hasQuery}`}
-                  defaultOpen={hasQuery}
+                  key={`${election.id}-${isFiltering}`}
+                  defaultOpen={isFiltering}
                   className="overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface"
                   trigger={({ open }) => (
                     <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">

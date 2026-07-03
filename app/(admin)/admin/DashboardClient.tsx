@@ -90,7 +90,7 @@ export default function DashboardClient({
           <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/40 mb-2">
             Active &amp; Upcoming
           </div>
-          <div className="grid gap-[10px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))" }}>
+          <div className="grid gap-[10px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
             {attnElections.map((e) => <AttnCard key={e.id} e={e} />)}
           </div>
         </div>

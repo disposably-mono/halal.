@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useMemo, useState } from "react";
-import { CalendarClock, ListOrdered, UserCheck, UserRound } from "lucide-react";
+import { CalendarClock, ListOrdered, UserCheck, UserCog, UserRound } from "lucide-react";
 import {
   Card,
   EmptyState,
@@ -21,6 +21,7 @@ import {
   type LoginHistoryIndexRow,
 } from "./history-index";
 import { HistoryTable } from "./HistoryTable";
+import { AccountLogTable, type AccountLogRow } from "./AccountLogTable";
 
 const PERSON_OPTIONS: HistoryPersonFilter[] = ["ALL", "OFFICER", "VERIFIER"];
 const DATE_OPTIONS: HistoryDateFilter[] = ["ALL", "TODAY", "7D", "30D"];
@@ -49,11 +50,18 @@ const LIMIT_LABELS: Record<ShowLimit, string> = {
   ALL: "All rows",
 };
 
-export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[] }) {
+export function HistoryIndexClient({
+  history,
+  accountLogs,
+}: {
+  history: LoginHistoryIndexRow[];
+  accountLogs: AccountLogRow[];
+}) {
   const [query, setQuery] = useState("");
   const [person, setPerson] = useState<HistoryPersonFilter>("ALL");
   const [date, setDate] = useState<HistoryDateFilter>("ALL");
   const [limit, setLimit] = useState<ShowLimit>(DEFAULT_LIMIT);
+  const [accountLimit, setAccountLimit] = useState<ShowLimit>(DEFAULT_LIMIT);
   const onSearch = useCallback((value: string) => setQuery(value), []);
 
   const filtered = useMemo(
@@ -63,6 +71,10 @@ export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[
   const visible = useMemo(
     () => (limit === "ALL" ? filtered : filtered.slice(0, Number(limit))),
     [filtered, limit],
+  );
+  const visibleAccountLogs = useMemo(
+    () => (accountLimit === "ALL" ? accountLogs : accountLogs.slice(0, Number(accountLimit))),
+    [accountLogs, accountLimit],
   );
   const totalSummary = useMemo(() => summarizeLoginHistory(history), [history]);
   const matchedSummary = useMemo(() => summarizeLoginHistory(filtered), [filtered]);
@@ -88,7 +100,7 @@ export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[
       />
 
       <div className="grid grid-cols-1 gap-[10px] sm:grid-cols-2 xl:grid-cols-4">
-        <MetricCard label="Sign-ins" value={totalSummary.total.toLocaleString()} sub="latest 250 retained" accent="gold" />
+        <MetricCard label="Sign-ins" value={totalSummary.total.toLocaleString()} sub="latest 255 retained" accent="gold" />
         <MetricCard label="Officers" value={totalSummary.uniqueOfficers.toLocaleString()} sub="logged-in accounts" />
         <MetricCard label="Verifiers" value={totalSummary.uniqueVerifiers.toLocaleString()} sub="second-officer checks" />
         <MetricCard label="Visible" value={visibleSummary.total.toLocaleString()} sub={`${activeFilters} active filters`} accent="blue" />
@@ -121,11 +133,22 @@ export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[
           </FilterGroup>
           <FilterGroup
             icon={<ListOrdered aria-hidden="true" className="h-4 w-4" />}
-            label="Show"
+            label="Show sign-ins"
             value={LIMIT_LABELS[limit]}
           >
             {LIMIT_OPTIONS.map((option) => (
               <FilterOption key={option} active={limit === option} onClick={() => setLimit(option)}>
+                {LIMIT_LABELS[option]}
+              </FilterOption>
+            ))}
+          </FilterGroup>
+          <FilterGroup
+            icon={<UserCog aria-hidden="true" className="h-4 w-4" />}
+            label="Show account changes"
+            value={LIMIT_LABELS[accountLimit]}
+          >
+            {LIMIT_OPTIONS.map((option) => (
+              <FilterOption key={option} active={accountLimit === option} onClick={() => setAccountLimit(option)}>
                 {LIMIT_LABELS[option]}
               </FilterOption>
             ))}
@@ -154,10 +177,18 @@ export function HistoryIndexClient({ history }: { history: LoginHistoryIndexRow[
           <>
             <HistoryTable history={visible} query={query} />
             <p className="border-t border-white/[0.07] px-4 py-3 text-[10px] text-white/40">
-              Times are shown in Philippine Standard Time. The latest 250 sign-ins are displayed.
+              Times are shown in Philippine Standard Time. The latest 255 sign-ins are displayed.
             </p>
           </>
         )}
+      </Card>
+
+      <Card
+        title="Account changes"
+        meta={<span className="text-[10px] text-white/45">{visibleAccountLogs.length} of {accountLogs.length} shown</span>}
+        noPad
+      >
+        <AccountLogTable logs={visibleAccountLogs} />
       </Card>
     </>
   );

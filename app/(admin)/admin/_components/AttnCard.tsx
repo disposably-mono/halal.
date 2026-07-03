@@ -27,8 +27,9 @@ export function AttnCard({ e }: { e: Election }) {
 
       {/* Header */}
       <div className="flex items-start justify-between gap-[6px]">
-        <div>
-          <div className="text-[11px] font-semibold text-white/90">{DIVISION_LABELS[e.division] ?? e.division}</div>
+        <div className="min-w-0">
+          <div className="text-[9px] font-semibold uppercase tracking-[0.06em] text-white/40">{DIVISION_LABELS[e.division] ?? e.division}</div>
+          <div className="text-[12px] font-semibold leading-snug text-white/90 mt-px">{e.name}</div>
           <div className="text-[10px] text-white/50 mt-px">{subtitles[e.status]}</div>
         </div>
         <StatusPill status={e.status} />
