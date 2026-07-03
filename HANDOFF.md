@@ -1,29 +1,29 @@
-# Handoff: Eventual Next.js 16 Migration Plan
+# Handoff: Next.js 16 Migration Status
 
 Updated: 2026-07-03
-Branch: `main`
-Current HEAD: `84f6105`
+Branch: `chore/next-16-upgrade`
+Base: `main` at merge commit `60cf257`
 
-This file is the working handoff for migrating this app from Next.js 14.2 to Next.js 16.
-Treat it as an execution plan, not permission to run a forced major upgrade on `main`.
+This file is the working handoff for the staged Next.js migration. Stage 1 has merged, and
+Stage 2 has been implemented on `chore/next-16-upgrade`.
 
-The migration should be staged, reviewable, and reversible:
+Migration status:
 
-1. Stabilize the current Next.js 14 baseline.
-2. Upgrade Next.js 14 -> 15 with React 19 and async request APIs.
-3. Upgrade Next.js 15 -> 16.
-4. After the app is stable on 16, evaluate optional Cache Components adoption.
+1. Baseline and Stage 1: complete. Next.js 14 -> 15 and React 19 merged through PR #9.
+2. Stage 2: implemented on this branch. Next.js 15 -> 16, proxy convention, ESLint CLI,
+   Node engine floor, and Turbopack build verification are done.
+3. Stage 3: still run after this branch is reviewed and merged to `main`.
+4. Stage 4: optional Cache Components evaluation remains separate.
 
-Do not combine those stages into one PR.
+Do not fold optional Cache Components work into this branch.
 
 ---
 
 ## 1. Why This Migration Exists
 
-`next@14.2.35` is the ceiling of the current major line in this project, while `npm audit
---omit=dev` has previously reported production advisories that require a Next major upgrade
-to clear. The goal is to remove the stale framework security surface without breaking the
-school election flows that are security- and data-critical.
+The original driver was stale Next.js 14 production advisories that required a framework
+major upgrade. The app has now moved through Next.js 15 and this branch moves it to
+Next.js 16.2.10 without changing the database schema.
 
 This is not a database migration. Do not modify `.env`, seed data, reset a database, or touch
 real voter data for this work unless the user explicitly approves it.
@@ -34,8 +34,7 @@ The migration is worth doing, but it must be deliberate:
   result embargoes, CSV export, PDF export, and cron transitions are all load-bearing.
 - The app relies on a header-sanitizing reverse proxy because rate limiting trusts
   `x-forwarded-for`.
-- `middleware.ts` protects admin and ballot routes and must be re-tested carefully when
-  moving to Next.js 16's `proxy.ts` convention.
+- `proxy.ts` protects admin and ballot routes and must be re-tested carefully in review.
 
 ---
 
@@ -73,14 +72,14 @@ Verified notes as of 2026-07-03:
 
 ## 3. Current Repo Inventory
 
-Migration-relevant files:
+Migration-relevant files after Stage 2:
 
 ```text
 package.json
 package-lock.json
 next.config.mjs
-.eslintrc.json
-middleware.ts
+eslint.config.mjs
+proxy.ts
 tsconfig.json
 app/**/*
 lib/**/*
@@ -91,17 +90,18 @@ Current package state:
 
 | Package | Current | Migration note |
 | --- | --- | --- |
-| `next` | `14.2.35` | Upgrade to 15 first, then 16. |
-| `react`, `react-dom` | `^18` | Next 15 moves to React 19. Upgrade both with `@types/react` and `@types/react-dom`. |
-| `eslint`, `eslint-config-next` | `^8`, `14.2.35` | Next 16 removes `next lint`; migrate `.eslintrc.json` to the supported ESLint CLI setup. |
+| `next` | `16.2.10` | Stage 2 upgrade complete. |
+| `react`, `react-dom` | `19.2.7` | React 19 upgrade complete. |
+| `eslint`, `eslint-config-next` | `9.39.4`, `16.2.10` | ESLint CLI migration complete via `eslint.config.mjs`. |
 | `next-auth` | `^5.0.0-beta.30` | Confirm current Auth.js beta compatibility with React 19 and Next 16 before upgrading. |
 | `@auth/prisma-adapter` | `^2.11.1` | Check peer range with the selected Auth.js release. |
 | `@react-pdf/renderer` | `^4.3.2` | Verify React 19 peer support; retest results PDF route. |
 | `radix-ui` | `^1.4.3` | Verify React 19 peer support. |
 | `lucide-react` | `^1.7.0` | Verify React 19 peer support. |
 | `prisma`, `@prisma/client` | `^7.6.0` | Low framework risk; do not change schema for this migration. |
-| `typescript` | `^5` | Confirm installed version is `>=5.1.0` before Next 16. |
-| `@types/node` | `^20` | Compatible with the Next 16 Node floor, but pin runtime files too. |
+| `typescript` | `^5` | Meets Next 16's `>=5.1.0` floor. |
+| `@types/node` | `^20` | Compatible with the Next 16 Node floor. |
+| `engines.node` | `>=20.9.0` | Added for Next 16 runtime support. |
 
 Current scripts:
 
@@ -110,7 +110,7 @@ Current scripts:
   "dev": "next dev",
   "build": "next build",
   "start": "next start",
-  "lint": "next lint",
+  "lint": "eslint .",
   "typecheck": "tsc --noEmit",
   "test": "vitest run",
   "test:e2e": "playwright test",
@@ -118,14 +118,16 @@ Current scripts:
 }
 ```
 
-`npm run lint` is expected to change during the Next 16 stage because `next lint` is removed.
+`next lint` is no longer used. `eslint.config.mjs` extends Next core-web-vitals and
+TypeScript configs, ignores generated output, and keeps the new
+`react-hooks/set-state-in-effect` rule off to avoid unrelated UI refactors in the framework
+upgrade branch.
 
 ---
 
-## 4. Current Async Request API Checklist
+## 4. Async Request API Checklist
 
-`cookies()` and `headers()` are already awaited in the important server helpers found during
-this handoff:
+Complete as of Stage 2. `cookies()` and `headers()` are awaited in:
 
 - `lib/voter-session.ts`
 - `lib/ballot-confirmation.ts`
@@ -135,7 +137,8 @@ this handoff:
 - `app/admin-help/actions.ts`
 - `app/api/ballot-confirmation/route.ts`
 
-The remaining synchronous `params` / `searchParams` call sites found on 2026-07-03 are:
+The Stage 1 synchronous `params` / `searchParams` call sites were migrated to Promise-based
+access:
 
 ```text
 app/(admin)/admin/page.tsx                                  searchParams.denied
@@ -150,7 +153,7 @@ app/api/elections/[id]/results-pdf/route.ts                 params.id
 app/api/elections/[id]/voters/export/route.ts               params.id
 ```
 
-In Stage 1, each should become Promise-based, for example:
+The expected pattern is now:
 
 ```ts
 type PageProps = {
@@ -285,7 +288,7 @@ Required hand checks after codemods:
 - No `UnsafeUnwrappedCookies`, `UnsafeUnwrappedHeaders`, or `UnsafeUnwrappedDraftMode`
   imports remain.
 - No React 19 codemod leftovers remain.
-- Auth.js still reads sessions correctly in `middleware.ts`.
+- Auth.js still reads sessions correctly in `proxy.ts`.
 - Server actions still return the same user-facing errors.
 - `app/api/elections/[id]/results-pdf/route.ts` still renders a PDF under React 19.
 - `app/api/elections/[id]/monitor/stream/route.ts` still streams admin monitor updates.
@@ -336,118 +339,59 @@ Merge gate:
 
 ## 7. Stage 2: Next.js 15 -> 16
 
-Branch:
+Status: implemented on `chore/next-16-upgrade`.
+
+Commands used:
 
 ```bash
-git switch main
-git pull --rebase
-git switch -c chore/next-16-upgrade
+npx @next/codemod@canary upgrade latest --yes
+npx @next/codemod@canary next-lint-to-eslint-cli . --force
+npm install --save-dev eslint@9.39.4
 ```
 
-Run only after Stage 1 has merged.
+Implemented changes:
 
-Recommended command path:
+- Upgraded `next` to `16.2.10`.
+- Kept React at `19.2.7`.
+- Renamed `middleware.ts` to `proxy.ts`; the exported function is `proxy`.
+- Preserved proxy matcher coverage for `/admin/:path*`, `/vote/ballot/:path*`, and
+  `/vote/confirmed`.
+- Replaced `next lint` with `eslint .`.
+- Added `eslint.config.mjs` and removed `.eslintrc.json`.
+- Pinned `engines.node` to `>=20.9.0`.
+- Kept `next build` on the default Next 16 Turbopack path; no webpack fallback is used.
+- Accepted Next 16's `tsconfig.json` changes: `jsx: "react-jsx"` and
+  `.next/dev/types/**/*.ts` in `include`.
+- Updated the `jose` import hardening test to read `proxy.ts`.
+
+Verification recorded on 2026-07-03:
 
 ```bash
-npx @next/codemod@canary upgrade latest
-npm install
+npm run typecheck                           # pass
+npm run lint                                # pass, 8 warnings
+npm test                                    # pass, 50 files / 371 tests
+npm run test:coverage                       # pass, branches 82.24%
+npm run build                               # pass, Next.js 16.2.10 (Turbopack)
+PLAYWRIGHT_HTML_OPEN=never npm run test:e2e # pass, 1 Chromium smoke test
+npm audit --omit=dev                        # fails with 5 moderate advisories
 ```
 
-Expected codemod areas:
+Audit status:
 
-- Move supported Turbopack config from `experimental.turbopack` to top-level `turbopack` if
-  such config exists later.
-- Migrate `next lint` to the ESLint CLI.
-- Rename deprecated `middleware.ts` convention to `proxy.ts`.
-- Remove stabilized `unstable_` API prefixes if they exist later.
-- Remove unsupported `experimental_ppr` segment config if it exists later.
+- `npm audit --omit=dev` still reports 5 moderate vulnerabilities.
+- Remaining advisories are through `@hono/node-server` under Prisma dev tooling and
+  Next's bundled `postcss`.
+- `npm audit fix --force` would install breaking/downgrade versions, so do not run it
+  blindly.
 
-Required manual changes:
+Known warnings:
 
-1. Runtime floor:
+- `npm run lint` exits 0 but reports existing warnings in load scripts, one test mock, and
+  NextAuth type augmentation.
+- Playwright passes but the dev server logs a Next 16 `allowedDevOrigins` warning for
+  `127.0.0.1` HMR access.
 
-   Add or update the runtime pinning files that exist by then.
-
-   ```json
-   {
-     "engines": {
-       "node": ">=20.9.0"
-     }
-   }
-   ```
-
-   If the repo has Docker, CI, deploy, or `.nvmrc` files at execution time, update them to
-   Node `>=20.9.0` too.
-
-2. Lint script:
-
-   `package.json` must no longer contain `"lint": "next lint"`. Use the codemod result or
-   set a direct ESLint command, for example:
-
-   ```json
-   {
-     "scripts": {
-       "lint": "eslint ."
-     }
-   }
-   ```
-
-   Keep the command compatible with the config generated by the codemod.
-
-3. ESLint config:
-
-   `.eslintrc.json` may need migration to the supported flat config path generated by the
-   codemod. Keep the Next core-web-vitals and TypeScript rules active.
-
-4. Middleware/proxy:
-
-   If the codemod renames `middleware.ts` to `proxy.ts`, verify these points:
-
-   - The exported function is named `proxy`.
-   - The matcher still covers `/admin/:path*`, `/vote/ballot/:path*`, and `/vote/confirmed`.
-   - The admin login redirect still works.
-   - The voter ballot cookie redirect still works.
-   - The confirmed-vote cookie deletion still works.
-
-5. Turbopack:
-
-   Next 16 uses Turbopack by default for build. Keep `next build` as the first choice. If
-   Turbopack fails because of a real unsupported integration, use `next build --webpack` only
-   as a temporary documented fallback and open a follow-up issue.
-
-6. Images:
-
-   Re-check `next/image` use. The current repo uses local SVG/static image paths without
-   query strings, so the local image query-string breaking change should not apply. If new
-   query-string image URLs exist by then, add explicit `images.localPatterns`.
-
-7. Removed config:
-
-   Confirm `next.config.mjs` does not use removed options:
-
-   - `eslint`
-   - `serverRuntimeConfig`
-   - `publicRuntimeConfig`
-   - AMP config
-   - removed `devIndicators` options
-   - deprecated `experimental.dynamicIO`
-   - deprecated `experimental.useCache`
-
-Verification commands:
-
-```bash
-rg -n "\"lint\": \"next lint\"|serverRuntimeConfig|publicRuntimeConfig|next/config|UnsafeUnwrapped|experimental\\.dynamicIO|experimental\\.useCache" .
-rg -n "params: \\{ id: string \\}|searchParams: \\{" app
-npm run typecheck
-npm run lint
-npm test
-npm run test:coverage
-npm run build
-PLAYWRIGHT_HTML_OPEN=never npm run test:e2e
-npm audit --omit=dev
-```
-
-Manual smoke:
+Manual smoke still recommended before merge:
 
 Run the same manual smoke list from Stage 1. Pay extra attention to:
 
@@ -465,14 +409,14 @@ npm run start
 Rollback:
 
 - Branch-isolated. Do not revert `main`.
-- If Stage 2 cannot pass without `next build --webpack`, document the Turbopack blocker
-  precisely and decide whether a temporary webpack build is acceptable for one release.
+- No database changes were made.
 
 Merge gate:
 
 - Typecheck, lint, unit tests, coverage, build, E2E, audit, and manual smoke are recorded.
-- Code review has no CRITICAL or HIGH findings.
-- Security review is completed because route protection and user input paths are in scope.
+- Code review should focus on `proxy.ts`, ESLint config, package versions, and the audit
+  decision.
+- Security review should focus on route protection and user input paths.
 
 ---
 
@@ -615,10 +559,10 @@ Review:
 | Risk | Likelihood | Impact | Mitigation |
 | --- | --- | --- | --- |
 | Missed async `params` or `searchParams` usage | Medium | Build/runtime failure on Next 16 | Use codemod, Section 4 checklist, `rg`, and typecheck. |
-| Auth.js beta peer or middleware behavior changes | Medium | Admin/voter lockout | Check package peers first; smoke login and ballot redirects on every stage. |
-| `middleware.ts` -> `proxy.ts` rename changes route protection | Medium | Protected routes exposed or over-blocked | Verify matcher and redirect behavior manually. |
+| Auth.js beta peer or proxy behavior changes | Medium | Admin/voter lockout | Check package peers first; smoke login and ballot redirects on every stage. |
+| `proxy.ts` route protection regression | Medium | Protected routes exposed or over-blocked | Verify matcher and redirect behavior manually. |
 | React 19 peer breakage in UI/PDF libraries | Medium | UI or PDF rendering failure | Check peer ranges; test PDF and key pages before merge. |
-| `next lint` removal breaks CI | High | CI failure | Migrate lint script and config in Stage 2. |
+| ESLint CLI config drift | Medium | CI/lint failure | Keep `eslint.config.mjs` and `package.json` lint script in sync. |
 | Turbopack production build exposes bundling issue | Medium | Build failure or runtime issue | Prefer fixing for Turbopack; use `--webpack` only as documented temporary fallback. |
 | Image optimizer behavior changes | Low | Broken local images | Re-check `next/image` usage and configure `images.localPatterns` only if needed. |
 | Cache Components over-caches sensitive data | Medium | Privacy/security issue | Keep Cache Components as separate stage; do not cache auth/voter/admin-specific data. |
@@ -628,7 +572,7 @@ Review:
 
 ## 12. Current Project State
 
-The app is a Next.js 14.2 App Router project for school elections. It includes:
+The app is a Next.js 16.2 App Router project for school elections. It includes:
 
 - Public landing, about, officers, creator, privacy, voter help, admin help, vote, verify,
   and results pages.
@@ -649,7 +593,8 @@ Migration-adjacent shipped work before this handoff:
 - Unified tally logic in `lib/domain/tally.ts`.
 - Missing FK indexes migration.
 - Officer-key policy cleanup.
-- Within-range audit fixes already applied; framework major upgrade remains.
+- Framework major upgrade work is implemented on `chore/next-16-upgrade`; residual audit
+  advisories remain documented in Stage 2.
 
-The next worker should start with Stage 0, update this file if reality has drifted, then
-proceed stage by stage.
+The next worker should review this branch, run the manual smoke checks, then merge it and
+continue with Stage 3 stabilization on `main`.

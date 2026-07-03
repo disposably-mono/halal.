@@ -4,7 +4,7 @@ import { jwtVerify } from "jose/jwt/verify";
 import { can } from "@/lib/auth/permissions";
 import { getEdgeAdminRole } from "@/lib/auth/edge-session";
 
-export default async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const adminRole = await getEdgeAdminRole(req);
   const isLoggedIn = adminRole !== null;

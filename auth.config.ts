@@ -10,7 +10,7 @@ export const authConfig = {
   },
   callbacks: {
     authorized() {
-      return true; // Let middleware.ts handle all route protection
+      return true; // Let proxy.ts handle all route protection
     },
     jwt({ token, user }: { token: JWT; user?: User }) {
       if (user) {
