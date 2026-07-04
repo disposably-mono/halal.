@@ -2,6 +2,7 @@
 
 import { UserCog } from "lucide-react";
 import { DataTable, EmptyState, highlightMatch } from "@/components/admin/ui";
+import { historyDateFormatter } from "./history-index";
 
 export type AccountLogRow = {
   id: string;
@@ -13,15 +14,6 @@ export type AccountLogRow = {
   targetEmail: string;
   targetRole: string;
 };
-
-const dateFormatter = new Intl.DateTimeFormat("en-PH", {
-  timeZone: "Asia/Manila",
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-});
 
 export function AccountLogTable({ logs, query }: { logs: readonly AccountLogRow[]; query?: string }) {
   return (
@@ -44,7 +36,7 @@ export function AccountLogTable({ logs, query }: { logs: readonly AccountLogRow[
           className: "w-[213px]",
           render: (entry) => (
             <span className="whitespace-nowrap font-mono text-[12px] text-white/45">
-              {dateFormatter.format(new Date(entry.createdAt))}
+              {historyDateFormatter.format(new Date(entry.createdAt))}
             </span>
           ),
         },

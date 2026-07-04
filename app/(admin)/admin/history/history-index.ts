@@ -1,3 +1,12 @@
+export const historyDateFormatter = new Intl.DateTimeFormat("en-PH", {
+  timeZone: "Asia/Manila",
+  year: "numeric",
+  month: "short",
+  day: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+});
+
 export type LoginHistoryIndexRow = {
   id: string;
   createdAt: string;

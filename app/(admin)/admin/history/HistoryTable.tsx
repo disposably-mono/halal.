@@ -1,6 +1,7 @@
 "use client";
 
 import { DataTable, EmptyState, highlightMatch } from "@/components/admin/ui";
+import { historyDateFormatter } from "./history-index";
 
 export type LoginHistoryRow = {
   id: string;
@@ -10,15 +11,6 @@ export type LoginHistoryRow = {
   verifierName: string;
   verifierEmail: string;
 };
-
-const dateFormatter = new Intl.DateTimeFormat("en-PH", {
-  timeZone: "Asia/Manila",
-  year: "numeric",
-  month: "short",
-  day: "numeric",
-  hour: "numeric",
-  minute: "2-digit",
-});
 
 export function HistoryTable({ history, query }: { history: readonly LoginHistoryRow[]; query?: string }) {
   return (
@@ -40,7 +32,7 @@ export function HistoryTable({ history, query }: { history: readonly LoginHistor
           className: "w-[213px]",
           render: (entry) => (
             <span className="whitespace-nowrap font-mono text-[12px] text-white/45">
-              {dateFormatter.format(new Date(entry.createdAt))}
+              {historyDateFormatter.format(new Date(entry.createdAt))}
             </span>
           ),
         },
