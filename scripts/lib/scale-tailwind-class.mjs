@@ -28,7 +28,21 @@ const PREFIXES = [
   "mx", "my", "mt", "mb", "ml", "mr", "m",
 ];
 
-const ARBITRARY_RE = new RegExp(`\\b(${PREFIXES.join("|")})-\\[(\\d+)px\\]`, "g");
+// A Tailwind class token only ever starts right after whitespace, a quote,
+// a backtick, a variant colon (md:, hover:, [&:hover]:), or the start of a
+// string — never mid-word. Without this, "top"/"left"/"right"/"bottom"
+// collide with tw-animate-css's compound distance-modifier classes
+// (slide-in-from-bottom-2, slide-out-to-left-4), which use the same
+// {side}-{n} suffix shape but are not Tailwind position utilities at all.
+// The lookbehind also permits an optional leading "-" (Tailwind's negative-
+// value syntax, e.g. -translate-y-1) as long as THAT hyphen itself sits at
+// a token start.
+const TOKEN_START = `(?<=^|[\\s"'\`:])`;
+
+const ARBITRARY_RE = new RegExp(
+  `${TOKEN_START}(-?)(${PREFIXES.join("|")})-\\[(\\d+)px\\]`,
+  "g",
+);
 
 // "rounded" and "text" have no bare-number semantic form in Tailwind v4
 // (rounded-lg/xl/full and text-sm/lg/xl are named tokens, never bare
@@ -36,18 +50,18 @@ const ARBITRARY_RE = new RegExp(`\\b(${PREFIXES.join("|")})-\\[(\\d+)px\\]`, "g"
 // arbitrary-bracket pattern.
 const SEMANTIC_PREFIXES = PREFIXES.filter((p) => p !== "rounded" && p !== "text");
 const SEMANTIC_RE = new RegExp(
-  `\\b(${SEMANTIC_PREFIXES.join("|")})-(\\d+(?:\\.\\d+)?)\\b(?!/)`,
+  `${TOKEN_START}(-?)(${SEMANTIC_PREFIXES.join("|")})-(\\d+(?:\\.\\d+)?)\\b(?!/)`,
   "g",
 );
 
 const SVG_ICON_RE = /style=\{\{\s*width:\s*(\d+),\s*height:\s*(\d+)/g;
 
 export function scaleFileContents(source, factor = SCALE_FACTOR) {
-  let result = source.replace(ARBITRARY_RE, (_match, prefix, px) =>
-    scaleArbitraryToken(prefix, px, factor),
+  let result = source.replace(ARBITRARY_RE, (_match, sign, prefix, px) =>
+    `${sign}${scaleArbitraryToken(prefix, px, factor)}`,
   );
-  result = result.replace(SEMANTIC_RE, (_match, prefix, n) =>
-    scaleSemanticToken(prefix, n, factor),
+  result = result.replace(SEMANTIC_RE, (_match, sign, prefix, n) =>
+    `${sign}${scaleSemanticToken(prefix, n, factor)}`,
   );
   result = result.replace(
     SVG_ICON_RE,

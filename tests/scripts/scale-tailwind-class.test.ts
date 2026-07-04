@@ -95,4 +95,25 @@ describe("scaleFileContents", () => {
     const input = `<div style={{ width: \`\${p}%\` }} /><div style={{ height: H }} />`;
     expect(scaleFileContents(input)).toBe(input);
   });
+
+  test("does not scale side-suffixed tw-animate-css utility classes", () => {
+    const input = `<div className="animate-dropdown-in slide-in-from-bottom-2 slide-out-to-left-4">`;
+    expect(scaleFileContents(input)).toBe(input);
+  });
+
+  test("still scales standalone position utilities correctly", () => {
+    const input = `<div className="absolute bottom-4 right-4 top-2 left-2">`;
+    // bottom-4=16px->17.92->18, right-4=16px->18, top-2=8px->8.96->9, left-2=8px->9
+    expect(scaleFileContents(input)).toBe(
+      `<div className="absolute bottom-[18px] right-[18px] top-[9px] left-[9px]">`,
+    );
+  });
+
+  test("still scales negative and variant-prefixed classes correctly", () => {
+    const input = `<div className="-translate-y-1 md:h-4 hover:text-[14px]">`;
+    // -translate-y-1 = -4px*1.12=-4.48->-4 (rounds to itself), md:h-4=16px->18, hover:text-[14px]=14*1.12=15.68->16
+    expect(scaleFileContents(input)).toBe(
+      `<div className="-translate-y-[4px] md:h-[18px] hover:text-[16px]">`,
+    );
+  });
 });
