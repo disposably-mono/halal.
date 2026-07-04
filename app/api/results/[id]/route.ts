@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireCapabilityOrJsonError } from "@/lib/server/auth";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
-import { computePositionTally } from "@/lib/domain/tally";
+import { calcTurnoutPercent, computePositionTally } from "@/lib/domain/tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
 import { cached, peek } from "@/lib/server/ttl-cache";
 import { withSpan } from "@/lib/server/otel";
@@ -181,7 +181,7 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
       turnout: (() => {
         const voted = certified?.turnout.voted ?? aggregate?.votedCount ?? 0;
         const total = certified?.turnout.total ?? aggregate?.totalVoters ?? 0;
-        return { voted, total, pct: total > 0 ? Math.round((voted / total) * 100) : 0 };
+        return { voted, total, pct: calcTurnoutPercent(voted, total) };
       })(),
       audit: {
         receiptVerificationSupported: election.auditVersion !== null,

@@ -15,6 +15,7 @@ export type Election = {
 };
 
 export { DIVISION_LABELS } from "@/lib/ui/division-labels";
+import { calcTurnoutPercent } from "@/lib/domain/tally";
 
 export const STATUS_LABELS: Record<ElectionStatus, string> = {
   DRAFT: "Draft",
@@ -23,8 +24,9 @@ export const STATUS_LABELS: Record<ElectionStatus, string> = {
   CLOSED: "Closed",
 };
 
+/** Thin re-export: shared formula now lives in lib/domain/tally.ts. */
 export function pct(voted: number, total: number): number {
-  return total > 0 ? Math.round((voted / total) * 100) : 0;
+  return calcTurnoutPercent(voted, total);
 }
 
 export function fmt(d: Date | null): string {

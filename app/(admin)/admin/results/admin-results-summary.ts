@@ -1,3 +1,5 @@
+import { calcTurnoutPercent } from "@/lib/domain/tally";
+
 type ResultStatus = "OPEN" | "CLOSED" | string;
 
 export type ResultsElectionOrderInput = {
@@ -14,9 +16,9 @@ export function orderResultsElections<T extends ResultsElectionOrderInput>(elect
   });
 }
 
+/** Thin re-export: shared formula now lives in lib/domain/tally.ts. */
 export function getTurnoutPercent({ voted, voters }: { voted: number; voters: number }): number {
-  if (voters <= 0) return 0;
-  return Math.round((voted / voters) * 100);
+  return calcTurnoutPercent(voted, voters);
 }
 
 export function getResultStatusMeta(status: ResultStatus) {

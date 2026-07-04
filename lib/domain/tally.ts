@@ -20,6 +20,15 @@ export interface PositionTally {
   maxVotes: number;
 }
 
+/**
+ * Shared turnout-percentage formula: rounded percent of `voted` out of
+ * `total`, or 0 when there's no electorate to divide by. Single source of
+ * truth for every admin/public surface that renders a turnout percentage.
+ */
+export function calcTurnoutPercent(voted: number, total: number): number {
+  return total > 0 ? Math.round((voted / total) * 100) : 0;
+}
+
 export function buildVoteMap(
   voteCounts: ReadonlyArray<{ candidateId: string | null; _count: { candidateId: number } }>,
 ): Map<string, number> {

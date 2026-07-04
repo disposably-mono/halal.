@@ -14,7 +14,7 @@
  */
 
 import { prisma } from "@/lib/prisma";
-import { buildVoteMap, computePositionTally } from "@/lib/domain/tally";
+import { buildVoteMap, calcTurnoutPercent, computePositionTally } from "@/lib/domain/tally";
 import { withSpan } from "@/lib/server/otel";
 import type {
   PositionResult,
@@ -139,7 +139,7 @@ export function buildLivePositions(
 
 /** Turnout summary from an aggregate's voter counts. */
 export function buildTurnout(voted: number, total: number) {
-  return { voted, total, pct: total > 0 ? Math.round((voted / total) * 100) : 0 };
+  return { voted, total, pct: calcTurnoutPercent(voted, total) };
 }
 
 /**
