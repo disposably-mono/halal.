@@ -1,8 +1,14 @@
 import { pct, type Election, type ElectionStatus } from "./shared";
 import type { PersistedMonitorSnapshot, TurnoutTrendPoint } from "./dashboard-live-stats";
+import {
+  getRecentElectionIds,
+  includesRecentElection,
+  type RecentElectionFilter,
+} from "../shared/recent-election-filter";
 
 export type DashboardElection = Election;
 export type DashboardStatusFilter = ElectionStatus | "ALL";
+export type DashboardArchiveFilter = "ACTIVE" | "ARCHIVED" | "ALL";
 
 const STATUS_ORDER: ElectionStatus[] = ["OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
 
@@ -72,6 +78,41 @@ export function sortDashboardElections(elections: readonly DashboardElection[]):
   return [...elections].sort(
     (a, b) => STATUS_ORDER.indexOf(a.status) - STATUS_ORDER.indexOf(b.status),
   );
+}
+
+export function filterDashboardBuckets(
+  activeElections: readonly DashboardElection[],
+  archivedElections: readonly DashboardElection[],
+  filters: {
+    query: string;
+    status: DashboardStatusFilter;
+    recentElectionCount: RecentElectionFilter;
+    archiveScope: DashboardArchiveFilter;
+  },
+) {
+  const activePool = filters.archiveScope === "ARCHIVED" ? [] : activeElections;
+  const archivedPool = filters.archiveScope === "ACTIVE" ? [] : archivedElections;
+  const scopedElections = [...activePool, ...archivedPool];
+  const recentElectionIds = getRecentElectionIds(
+    [{ elections: scopedElections }],
+    filters.recentElectionCount,
+  );
+  const applyFilters = (elections: readonly DashboardElection[]) =>
+    sortDashboardElections(
+      filterDashboardElections(
+        elections.filter((election) => includesRecentElection(election.id, recentElectionIds)),
+        filters,
+      ),
+    );
+  const active = applyFilters(activePool);
+  const archived = applyFilters(archivedPool);
+
+  return {
+    active,
+    archived,
+    totalScoped: scopedElections.length,
+    totalVisible: active.length + archived.length,
+  };
 }
 
 export function snapshotsToTurnoutTrend(

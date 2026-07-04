@@ -8,6 +8,7 @@ import { RowActions } from "./_components/RowActions";
 import { StatusPill } from "./_components/StatusPill";
 import { DashboardLiveStats } from "./_components/DashboardLiveStats";
 import {
+  AccordionCard,
   DataTable,
   EmptyState,
   FilterGroup,
@@ -18,17 +19,31 @@ import {
   SearchInput,
   Toast,
   useToast,
+  highlightMatch,
   type ToastVariant,
 } from "@/components/admin/ui";
 import {
   buildDashboardSummary,
-  filterDashboardElections,
-  sortDashboardElections,
+  filterDashboardBuckets,
+  type DashboardArchiveFilter,
   type DashboardStatusFilter,
 } from "./_components/dashboard-helpers";
-import { DIVISION_LABELS, fmt, pct, type Election, type ElectionStatus } from "./_components/shared";
+import { DIVISION_LABELS, fmt, pct, type Election } from "./_components/shared";
 import { Button } from "@/components/ui/button";
-import { ListFilter } from "lucide-react";
+import { Archive, CalendarClock, ListFilter } from "lucide-react";
+import {
+  formatRecentElectionFilter,
+  RECENT_ELECTION_OPTIONS,
+  type RecentElectionFilter,
+} from "./shared/recent-election-filter";
+
+const ARCHIVE_SCOPE_OPTIONS: DashboardArchiveFilter[] = ["ACTIVE", "ARCHIVED", "ALL"];
+const ARCHIVE_SCOPE_LABELS: Record<DashboardArchiveFilter, string> = {
+  ACTIVE: "Current first",
+  ARCHIVED: "Archived only",
+  ALL: "Current + archived",
+};
+const RECENT_OPTIONS: RecentElectionFilter[] = ["ALL", ...RECENT_ELECTION_OPTIONS];
 
 export default function DashboardClient({
   elections,
@@ -45,6 +60,8 @@ export default function DashboardClient({
 }) {
   const [query, setQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<DashboardStatusFilter>("ALL");
+  const [recentElectionCount, setRecentElectionCount] = useState<RecentElectionFilter>("ALL");
+  const [archiveScope, setArchiveScope] = useState<DashboardArchiveFilter>("ALL");
   const { toast, showToast, dismissToast } = useToast();
 
   function onToast(msg: string, variant: ToastVariant) {
@@ -53,14 +70,24 @@ export default function DashboardClient({
 
   const onSearch = useCallback((value: string) => setQuery(value), []);
   const summary = buildDashboardSummary(elections, uniqueStudentCount, totalRegistrations);
-  const attnOrder: ElectionStatus[] = ["OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
-  const attnElections = [...elections].sort(
-    (a, b) => attnOrder.indexOf(a.status) - attnOrder.indexOf(b.status)
+  const isFiltering =
+    query.trim().length > 0 ||
+    statusFilter !== "ALL" ||
+    recentElectionCount !== "ALL" ||
+    archiveScope !== "ALL";
+  const buckets = useMemo(
+    () => filterDashboardBuckets(elections, archivedElections, {
+      query,
+      status: statusFilter,
+      recentElectionCount,
+      archiveScope,
+    }),
+    [archiveScope, archivedElections, elections, query, recentElectionCount, statusFilter],
   );
-  const filteredElections = useMemo(
-    () => sortDashboardElections(filterDashboardElections(elections, { query, status: statusFilter })),
-    [elections, query, statusFilter],
-  );
+  const filteredElections = buckets.active;
+  const attnElections = filteredElections;
+  const filteredArchivedElections = buckets.archived;
+  const totalElectionCount = elections.length + archivedElections.length;
   const statusOptions: DashboardStatusFilter[] = ["ALL", "OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
 
   return (
@@ -91,12 +118,12 @@ export default function DashboardClient({
             Active &amp; Upcoming
           </div>
           <div className="grid gap-[11px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
-            {attnElections.map((e) => <AttnCard key={e.id} e={e} />)}
+            {attnElections.map((e) => <AttnCard key={e.id} e={e} query={query} />)}
           </div>
         </div>
       )}
 
-      {elections.length === 0 && (
+      {totalElectionCount === 0 && (
         <EmptyState
           title="No active elections"
           hint={canLifecycle ? "Create an election or restore one from the archive." : "No elections are currently active."}
@@ -110,80 +137,126 @@ export default function DashboardClient({
         />
       )}
 
-      {elections.length > 0 && (
+      {totalElectionCount > 0 && (
         <>
           <FilterPanel
             title="Filter elections"
-            meta={`${filteredElections.length} of ${elections.length} shown`}
+            meta={`${buckets.totalVisible} of ${buckets.totalScoped} shown`}
           >
             <SearchInput onSearch={onSearch} placeholder="Search elections" className="sm:max-w-none" />
-            <FilterGroup
-              icon={<ListFilter aria-hidden="true" className="h-[18px] w-[18px]" />}
-              label="Election status"
-              value={statusFilter === "ALL" ? "All statuses" : statusFilter}
-            >
-              {statusOptions.map((status) => (
-                <FilterOption
-                  key={status}
-                  active={statusFilter === status}
-                  onClick={() => setStatusFilter(status)}
-                >
-                  {status === "ALL" ? "All statuses" : status}
-                </FilterOption>
-              ))}
-            </FilterGroup>
+            <div className="space-y-[13px]">
+              <FilterGroup
+                icon={<ListFilter aria-hidden="true" className="h-[18px] w-[18px]" />}
+                label="Election status"
+                value={statusFilter === "ALL" ? "All statuses" : statusFilter}
+              >
+                {statusOptions.map((status) => (
+                  <FilterOption
+                    key={status}
+                    active={statusFilter === status}
+                    onClick={() => setStatusFilter(status)}
+                  >
+                    {status === "ALL" ? "All statuses" : status}
+                  </FilterOption>
+                ))}
+              </FilterGroup>
+              <FilterGroup
+                icon={<CalendarClock aria-hidden="true" className="h-[18px] w-[18px]" />}
+                label="Recent elections"
+                value={formatRecentElectionFilter(recentElectionCount)}
+              >
+                {RECENT_OPTIONS.map((option) => (
+                  <FilterOption
+                    key={option}
+                    active={recentElectionCount === option}
+                    onClick={() => setRecentElectionCount(option)}
+                  >
+                    {formatRecentElectionFilter(option)}
+                  </FilterOption>
+                ))}
+              </FilterGroup>
+              <FilterGroup
+                icon={<Archive aria-hidden="true" className="h-[18px] w-[18px]" />}
+                label="Archive scope"
+                value={ARCHIVE_SCOPE_LABELS[archiveScope]}
+              >
+                {ARCHIVE_SCOPE_OPTIONS.map((option) => (
+                  <FilterOption
+                    key={option}
+                    active={archiveScope === option}
+                    onClick={() => setArchiveScope(option)}
+                  >
+                    {ARCHIVE_SCOPE_LABELS[option]}
+                  </FilterOption>
+                ))}
+              </FilterGroup>
+            </div>
           </FilterPanel>
-          <div className="overflow-hidden rounded-[13px] border border-white/[0.07] bg-admin-surface">
-          <DataTable
-            rows={filteredElections}
-            getRowKey={(election) => election.id}
-            mobile="stack"
-            empty={<EmptyState title="No elections match" hint="Try a different search or status filter." />}
-            columns={[
-              {
-                key: "name",
-                header: "Election",
-                priority: 1,
-                render: (election) => (
-                  <div className="min-w-[0px]">
-                    <p className="truncate text-[13px] font-medium text-white/80">{election.name}</p>
-                    <p className="mt-px text-[11px] text-white/40">{DIVISION_LABELS[election.division] ?? election.division}</p>
+          {archiveScope !== "ARCHIVED" && (
+            <AccordionCard
+              title="Elections"
+              meta={<span className="text-[11px] text-white/45">{filteredElections.length} of {elections.length} shown</span>}
+              defaultOpen={isFiltering}
+              noPad
+            >
+              <DataTable
+                rows={filteredElections}
+                getRowKey={(election) => election.id}
+                mobile="stack"
+                empty={<EmptyState title="No elections match" hint="Try a different search, status, or recent-election filter." />}
+                columns={[
+                  {
+                    key: "name",
+                    header: "Election",
+                    priority: 1,
+                    render: (election) => (
+                      <div className="min-w-[0px]">
+                        <p className="truncate text-[13px] font-medium text-white/80">{highlightMatch(election.name, query)}</p>
+                        <p className="mt-px text-[11px] text-white/40">{highlightMatch(DIVISION_LABELS[election.division] ?? election.division, query)}</p>
+                      </div>
+                    ),
+                  },
+                  { key: "status", header: "Status", priority: 1, className: "w-[112px]", render: (election) => <StatusPill status={election.status} /> },
+                  { key: "voters", header: "Voters", className: "w-[90px]", render: (election) => election._count.voters.toLocaleString() },
+                  { key: "setup", header: "Setup", className: "w-[146px]", render: (election) => `${election._count.positions} pos. · ${election._count.candidates} cand.` },
+                  {
+                    key: "turnout",
+                    header: "Turnout",
+                    className: "w-[101px]",
+                    render: (election) => election.status === "OPEN" || election.status === "CLOSED"
+                      ? `${pct(election.votedCount, election._count.voters)}%`
+                      : "—",
+                  },
+                  {
+                    key: "schedule",
+                    header: "Schedule",
+                    className: "w-[146px]",
+                    render: (election) => election.status === "SCHEDULED" && election.scheduledOpen ? fmt(election.scheduledOpen) : "—",
+                  },
+                ]}
+                actionsClassName="w-[157px]"
+                actions={(election) => (
+                  <div className="flex items-center justify-end gap-[4px]">
+                    <Link href={`/admin/elections/${election.id}/control`} className="rounded-[6px] border border-gold/20 bg-gold/8 px-[8px] py-[6px] text-[11px] text-gold no-underline transition-all hover:bg-gold/15">
+                      Control
+                    </Link>
+                    <RowActions e={election} onToast={onToast} canLifecycle={canLifecycle} />
                   </div>
-                ),
-              },
-              { key: "status", header: "Status", priority: 1, className: "w-[112px]", render: (election) => <StatusPill status={election.status} /> },
-              { key: "voters", header: "Voters", className: "w-[90px]", render: (election) => election._count.voters.toLocaleString() },
-              { key: "setup", header: "Setup", className: "w-[146px]", render: (election) => `${election._count.positions} pos. · ${election._count.candidates} cand.` },
-              {
-                key: "turnout",
-                header: "Turnout",
-                className: "w-[101px]",
-                render: (election) => election.status === "OPEN" || election.status === "CLOSED"
-                  ? `${pct(election.votedCount, election._count.voters)}%`
-                  : "—",
-              },
-              {
-                key: "schedule",
-                header: "Schedule",
-                className: "w-[146px]",
-                render: (election) => election.status === "SCHEDULED" && election.scheduledOpen ? fmt(election.scheduledOpen) : "—",
-              },
-            ]}
-            actionsClassName="w-[157px]"
-            actions={(election) => (
-              <div className="flex items-center justify-end gap-[4px]">
-                <Link href={`/admin/elections/${election.id}/control`} className="rounded-[6px] border border-gold/20 bg-gold/8 px-[8px] py-[6px] text-[11px] text-gold no-underline transition-all hover:bg-gold/15">
-                  Control
-                </Link>
-                <RowActions e={election} onToast={onToast} canLifecycle={canLifecycle} />
-              </div>
-            )}
-          />
-          </div>
+                )}
+              />
+            </AccordionCard>
+          )}
         </>
       )}
 
-      <ArchivedSection elections={archivedElections} onToast={onToast} canLifecycle={canLifecycle} />
+      <ArchivedSection
+        elections={filteredArchivedElections}
+        totalCount={archivedElections.length}
+        query={query}
+        defaultOpen={isFiltering}
+        onToast={onToast}
+        canLifecycle={canLifecycle}
+      />
 
       <Toast toast={toast} onDismiss={dismissToast} />
     </>

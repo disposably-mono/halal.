@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, useTransition } from "react";
+import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
 import type { AdminRole } from "@prisma/client";
+import { ShieldCheck, UserCheck } from "lucide-react";
 import { useServerActionForm } from "@/lib/client/use-server-action-form";
 import {
   createAdmin,
@@ -11,10 +12,37 @@ import {
   deleteAdmin,
   type AccountActionResult,
 } from "./actions";
-import { AdminInput, AdminSecretInput, Card, ConfirmDialog, Field, Toast, useToast, type ToastInput } from "@/components/admin/ui";
+import {
+  AccordionCard,
+  AdminInput,
+  AdminSecretInput,
+  Card,
+  ConfirmDialog,
+  EmptyState,
+  Field,
+  FilterGrid,
+  FilterGroup,
+  FilterOption,
+  FilterPanel,
+  SearchInput,
+  Toast,
+  useToast,
+  highlightMatch,
+  type ToastInput,
+} from "@/components/admin/ui";
 import { ThemedSelect } from "@/components/admin/ThemedSelect";
 import { Button } from "@/components/ui/button";
 import { GRANTABLE_ROLES } from "@/lib/auth/permissions";
+import {
+  ACCOUNT_LOGIN_FILTER_LABELS,
+  ACCOUNT_LOGIN_FILTERS,
+  ACCOUNT_ROLE_FILTER_LABELS,
+  ACCOUNT_ROLE_FILTERS,
+  DEFAULT_ACCOUNT_FILTERS,
+  countActiveAccountFilters,
+  filterAccounts,
+  type AccountFilterState,
+} from "./account-filters";
 
 // ─── Types & constants ──────────────────────────────────────────────────────
 
@@ -72,42 +100,89 @@ export function AccountsManager({
   superadminCount: number;
 }) {
   const { toast, showToast, dismissToast } = useToast();
+  const [query, setQuery] = useState(DEFAULT_ACCOUNT_FILTERS.query);
+  const [role, setRole] = useState<AccountFilterState["role"]>(DEFAULT_ACCOUNT_FILTERS.role);
+  const [loginState, setLoginState] = useState<AccountFilterState["loginState"]>(DEFAULT_ACCOUNT_FILTERS.loginState);
+  const onSearch = useCallback((value: string) => setQuery(value), []);
+  const filters = useMemo(() => ({ query, role, loginState }), [loginState, query, role]);
+  const filteredAccounts = useMemo(() => filterAccounts(accounts, filters), [accounts, filters]);
+  const activeFilters = countActiveAccountFilters(filters);
 
   return (
     <div className="flex flex-col gap-[20px]">
       <CreateAdminForm onResult={showToast} />
 
-      <Card title="Accounts" noPad>
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead>
-              <tr className="border-b border-white/6">
-                {["Account", "Role", "Last login", "Actions"].map((h) => (
-                  <th
-                    key={h}
-                    className="text-left px-[18px] py-[8px] text-[11px] font-semibold uppercase tracking-[0.06em] text-white/35"
-                  >
-                    {h}
-                  </th>
+      <FilterPanel title="Filter accounts" meta={`${filteredAccounts.length} of ${accounts.length} shown · ${activeFilters} active`}>
+        <SearchInput onSearch={onSearch} placeholder="Search name or email" className="sm:max-w-none" />
+        <FilterGrid>
+          <FilterGroup
+            icon={<ShieldCheck aria-hidden="true" className="h-[18px] w-[18px]" />}
+            label="Role"
+            value={ACCOUNT_ROLE_FILTER_LABELS[role]}
+          >
+            {ACCOUNT_ROLE_FILTERS.map((option) => (
+              <FilterOption key={option} active={role === option} onClick={() => setRole(option)}>
+                {ACCOUNT_ROLE_FILTER_LABELS[option]}
+              </FilterOption>
+            ))}
+          </FilterGroup>
+          <FilterGroup
+            icon={<UserCheck aria-hidden="true" className="h-[18px] w-[18px]" />}
+            label="Login state"
+            value={ACCOUNT_LOGIN_FILTER_LABELS[loginState]}
+          >
+            {ACCOUNT_LOGIN_FILTERS.map((option) => (
+              <FilterOption key={option} active={loginState === option} onClick={() => setLoginState(option)}>
+                {ACCOUNT_LOGIN_FILTER_LABELS[option]}
+              </FilterOption>
+            ))}
+          </FilterGroup>
+        </FilterGrid>
+      </FilterPanel>
+
+      <AccordionCard
+        title="Accounts"
+        meta={<span className="text-[11px] text-white/45">{filteredAccounts.length} of {accounts.length} shown</span>}
+        defaultOpen={activeFilters > 0}
+        noPad
+      >
+        {accounts.length === 0 ? (
+          <EmptyState title="No accounts yet" hint="Create the first admin account above." />
+        ) : filteredAccounts.length === 0 ? (
+          <EmptyState title="No accounts match" hint="Try a different search, role, or login-state filter." />
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-white/6">
+                  {["Account", "Role", "Last login", "Actions"].map((h) => (
+                    <th
+                      key={h}
+                      className="text-left px-[18px] py-[8px] text-[11px] font-semibold uppercase tracking-[0.06em] text-white/35"
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {filteredAccounts.map((account) => (
+                  <AccountRow
+                    key={account.id}
+                    account={account}
+                    isSelf={account.id === currentUserId}
+                    isLastSuperadmin={
+                      account.role === "SUPERADMIN" && superadminCount <= 1
+                    }
+                    query={query}
+                    onResult={showToast}
+                  />
                 ))}
-              </tr>
-            </thead>
-            <tbody>
-              {accounts.map((account) => (
-                <AccountRow
-                  key={account.id}
-                  account={account}
-                  isSelf={account.id === currentUserId}
-                  isLastSuperadmin={
-                    account.role === "SUPERADMIN" && superadminCount <= 1
-                  }
-                  onResult={showToast}
-                />
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </Card>
+              </tbody>
+            </table>
+          </div>
+        )}
+      </AccordionCard>
 
       <Toast toast={toast} onDismiss={dismissToast} />
     </div>
@@ -186,11 +261,13 @@ function AccountRow({
   account,
   isSelf,
   isLastSuperadmin,
+  query,
   onResult,
 }: {
   account: Account;
   isSelf: boolean;
   isLastSuperadmin: boolean;
+  query?: string;
   onResult: (toast: ToastInput) => void;
 }) {
   const [pending, startTransition] = useTransition();
@@ -257,10 +334,10 @@ function AccountRow({
       {/* Account */}
       <td className="px-[18px] py-[11px]">
         <div className="text-[13px] font-medium text-white/85">
-          {account.name}
+          {highlightMatch(account.name, query)}
           {isSelf && <span className="ml-[9px] text-[10px] text-gold/80">you</span>}
         </div>
-        <div className="font-mono text-[12px] text-white/45">{account.email}</div>
+        <div className="font-mono text-[12px] text-white/45">{highlightMatch(account.email, query)}</div>
       </td>
 
       {/* Role */}

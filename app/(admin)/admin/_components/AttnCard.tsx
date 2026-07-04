@@ -4,8 +4,9 @@ import { AttnBtn } from "./AttnBtn";
 import { CheckRow } from "./CheckRow";
 import { StatusPill } from "./StatusPill";
 import { DIVISION_LABELS, fmt, pct, type Election, type ElectionStatus } from "./shared";
+import { highlightMatch } from "@/components/admin/ui";
 
-export function AttnCard({ e }: { e: Election }) {
+export function AttnCard({ e, query }: { e: Election; query?: string }) {
   const p = pct(e.votedCount, e._count.voters);
   const topColors: Record<ElectionStatus, string> = {
     OPEN: "bg-emerald-400",
@@ -28,8 +29,8 @@ export function AttnCard({ e }: { e: Election }) {
       {/* Header */}
       <div className="flex items-start justify-between gap-[7px]">
         <div className="min-w-[0px]">
-          <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-white/40">{DIVISION_LABELS[e.division] ?? e.division}</div>
-          <div className="text-[13px] font-semibold leading-snug text-white/90 mt-px">{e.name}</div>
+          <div className="text-[10px] font-semibold uppercase tracking-[0.06em] text-white/40">{highlightMatch(DIVISION_LABELS[e.division] ?? e.division, query)}</div>
+          <div className="text-[13px] font-semibold leading-snug text-white/90 mt-px">{highlightMatch(e.name, query)}</div>
           <div className="text-[11px] text-white/50 mt-px">{subtitles[e.status]}</div>
         </div>
         <StatusPill status={e.status} />

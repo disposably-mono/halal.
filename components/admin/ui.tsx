@@ -1,6 +1,7 @@
 "use client";
 
 export * from "./banners";
+export * from "./accordion-card";
 export * from "./animated-collapse";
 export * from "./card";
 export * from "./confirm-dialog";

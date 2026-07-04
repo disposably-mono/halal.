@@ -29,6 +29,7 @@ export default async function AdminDashboard(
           name: true,
           division: true,
           status: true,
+          createdAt: true,
           scheduledOpen: true,
           scheduledClose: true,
           archivedAt: true,

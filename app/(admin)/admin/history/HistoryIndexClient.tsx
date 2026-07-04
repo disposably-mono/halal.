@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { CalendarClock, KeyRound, ListOrdered, ShieldCheck, UserCheck, UserCog, UserRound } from "lucide-react";
 import {
-  Card,
+  AccordionCard,
   EmptyState,
   FilterGrid,
   FilterGroup,
@@ -210,9 +210,10 @@ export function HistoryIndexClient({
         </FilterGrid>
       </FilterPanel>
 
-      <Card
+      <AccordionCard
         title="Recent sign-ins"
         meta={<span className="text-[11px] text-white/45">{visible.length} of {matchedSummary.total} shown</span>}
+        defaultOpen={activeFilters > 0}
         noPad
       >
         {history.length === 0 ? (
@@ -235,11 +236,12 @@ export function HistoryIndexClient({
             </p>
           </>
         )}
-      </Card>
+      </AccordionCard>
 
-      <Card
+      <AccordionCard
         title="Account changes"
         meta={<span className="text-[11px] text-white/45">{visibleAccountLogs.length} of {matchedAccountSummary.total} shown</span>}
+        defaultOpen={activeFilters > 0}
         noPad
       >
         {accountLogs.length === 0 ? (
@@ -262,7 +264,7 @@ export function HistoryIndexClient({
             </p>
           </>
         )}
-      </Card>
+      </AccordionCard>
     </>
   );
 }

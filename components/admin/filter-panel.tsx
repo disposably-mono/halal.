@@ -41,14 +41,14 @@ export function FilterGroup({
   label,
   value,
   children,
-  defaultOpen = true,
+  defaultOpen = false,
   className,
 }: {
   icon: ReactNode;
   label: string;
   value: string;
   children: ReactNode;
-  /** Groups start expanded (matching prior always-visible behavior) unless opted out. */
+  /** Groups start folded by default so filter cards load compactly unless opted in. */
   defaultOpen?: boolean;
   className?: string;
 }) {

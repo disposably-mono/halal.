@@ -5,6 +5,7 @@ export type Election = {
   name: string;
   division: string;
   status: ElectionStatus;
+  createdAt: Date;
   scheduledOpen: Date | null;
   scheduledClose: Date | null;
   archivedAt: Date | null;

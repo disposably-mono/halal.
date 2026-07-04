@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import {
+  AccordionCard,
   Disclosure,
   DisclosureChevron,
   EmptyState,
@@ -139,26 +140,12 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
       ) : (
         <div className="space-y-[18px]">
           {filtered.map((divisionGroup) => (
-            <Disclosure
+            <AccordionCard
               key={divisionGroup.division}
+              title={highlightMatch(divisionGroup.label, query)}
+              meta={<span>{divisionGroup.totalCandidates} candidates · {divisionGroup.positionCount} positions</span>}
               defaultOpen={isFiltering}
-              className="overflow-hidden rounded-[13px] border border-white/[0.07] bg-admin-surface/70"
               contentClassName="grid gap-[13px] border-t border-white/6 p-[13px]"
-              trigger={({ open }) => (
-                <div className="flex items-center gap-[13px] px-[18px] py-[13px]">
-                  <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
-                    {highlightMatch(divisionGroup.label, query)}
-                  </span>
-                  <span className="h-px flex-1 bg-white/5" />
-                  <span className="text-[11px] text-white/55">
-                    {divisionGroup.totalCandidates} candidates · {divisionGroup.positionCount} positions
-                  </span>
-                  <span className="hidden rounded-full border border-white/8 bg-white/3 px-[9px] py-[4px] text-[11px] text-white/40 sm:inline">
-                    {open ? "Click to collapse" : "Click to expand"}
-                  </span>
-                  <DisclosureChevron open={open} />
-                </div>
-              )}
             >
               {divisionGroup.elections.map((election) => (
                 <Disclosure
@@ -197,7 +184,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
                   </div>
                 </Disclosure>
               ))}
-            </Disclosure>
+            </AccordionCard>
           ))}
         </div>
       )}
