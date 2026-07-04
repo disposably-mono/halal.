@@ -26,6 +26,21 @@ export function StatusPill({ status }: { status: AdminStatus }) {
   );
 }
 
+export function ElectionStatusDot({ status }: { status: AdminStatus }) {
+  const colors: Record<AdminStatus, string> = {
+    OPEN: "bg-emerald-400",
+    SCHEDULED: "bg-blue-400",
+    DRAFT: "bg-white/20",
+    CLOSED: "bg-white/10",
+  };
+  return (
+    <span className="inline-flex shrink-0 items-center gap-[4px] text-[11px] text-white/50">
+      <span className={`h-[7px] w-[7px] rounded-full ${colors[status]}`} />
+      {status}
+    </span>
+  );
+}
+
 export function FlowTrack({ status }: { status: AdminStatus }) {
   const idx = STATUSES.indexOf(status);
 

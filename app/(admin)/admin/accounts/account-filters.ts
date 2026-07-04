@@ -1,4 +1,5 @@
 import type { AdminRole } from "@prisma/client";
+import { activeFilterCount } from "../shared/filter-state";
 
 export type AccountLoginFilter = "ALL" | "HAS_LOGIN" | "NEVER";
 export type AccountRoleFilter = AdminRole | "ALL";
@@ -73,9 +74,9 @@ export function filterAccounts<T extends AccountFilterRow>(
 }
 
 export function countActiveAccountFilters(filters: AccountFilterState): number {
-  return [
+  return activeFilterCount([
     filters.query.trim().length > 0,
     filters.role !== "ALL",
     filters.loginState !== "ALL",
-  ].filter(Boolean).length;
+  ]);
 }

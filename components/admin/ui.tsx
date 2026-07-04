@@ -7,6 +7,7 @@ export * from "./card";
 export * from "./confirm-dialog";
 export * from "./data-table";
 export * from "./disclosure";
+export * from "./election-accordion-row";
 export * from "./election-setup";
 export * from "./filter-panel";
 export * from "./form-controls";

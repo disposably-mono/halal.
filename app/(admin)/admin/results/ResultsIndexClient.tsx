@@ -5,8 +5,7 @@ import { useCallback, useMemo, useState } from "react";
 import { BarChart3, CalendarClock, FileText, Layers, ListFilter } from "lucide-react";
 import {
   AccordionCard,
-  Disclosure,
-  DisclosureChevron,
+  ElectionAccordionRow,
   EmptyState,
   FilterGrid,
   FilterGroup,
@@ -17,10 +16,11 @@ import {
   PageHeader,
   SearchInput,
 } from "@/components/admin/ui";
-import { DIVISION_CODES } from "@/lib/ui/division-labels";
+import { hasActiveFilters } from "../shared/filter-state";
+import { buildDivisionFilterOptions, resolveDivisionFilterLabel } from "../shared/division-filter";
 import {
+  ALL_RECENT_ELECTION_FILTER_OPTIONS as RECENT_OPTIONS,
   formatRecentElectionFilter,
-  RECENT_ELECTION_OPTIONS,
   type RecentElectionFilter,
 } from "../shared/recent-election-filter";
 import { getResultStatusMeta, getTurnoutPercent } from "./admin-results-summary";
@@ -35,7 +35,6 @@ import {
 } from "./results-index";
 
 const STATUS_OPTIONS: ResultsStatusFilter[] = ["ALL", "OPEN", "CLOSED"];
-const RECENT_OPTIONS: RecentElectionFilter[] = ["ALL", ...RECENT_ELECTION_OPTIONS];
 
 export function ResultsIndexClient({ elections }: { elections: ResultsIndexElection[] }) {
   const [query, setQuery] = useState("");
@@ -51,16 +50,16 @@ export function ResultsIndexClient({ elections }: { elections: ResultsIndexElect
   );
   const totalSummary = useMemo(() => summarizeResultsIndex(index), [index]);
   const visibleSummary = useMemo(() => summarizeResultsIndex(filtered), [filtered]);
-  const divisionOptions = useMemo(
-    () => index.map((group) => ({ value: group.division, label: DIVISION_CODES[group.division] ?? group.label })),
-    [index],
-  );
-  const divisionLabel = division === "ALL"
-    ? "All divisions"
-    : divisionOptions.find((option) => option.value === division)?.label ?? division;
+  const divisionOptions = useMemo(() => buildDivisionFilterOptions(index), [index]);
+  const divisionLabel = resolveDivisionFilterLabel(division, divisionOptions);
   const statusLabel = status === "ALL" ? "All statuses" : status;
   const recentElectionLabel = formatRecentElectionFilter(recentElectionCount);
-  const isFiltering = query.trim().length > 0 || division !== "ALL" || status !== "ALL" || recentElectionCount !== "ALL";
+  const isFiltering = hasActiveFilters([
+    query.trim().length > 0,
+    division !== "ALL",
+    status !== "ALL",
+    recentElectionCount !== "ALL",
+  ]);
 
   return (
     <>
@@ -176,37 +175,26 @@ function ResultsElectionDisclosure({
   const statusMeta = getResultStatusMeta(election.status);
 
   return (
-    <Disclosure
+    <ElectionAccordionRow
       defaultOpen={isFiltering}
-      className="overflow-hidden rounded-[11px] border border-white/[0.07] bg-admin-surface"
-      trigger={({ open }) => (
-        <div className="flex items-center justify-between gap-[13px] border-b border-white/[0.07] px-[18px] py-[13px]">
-          <div className="flex min-w-[0px] items-center gap-[13px]">
-            <span className={`inline-flex shrink-0 items-center gap-[4px] rounded-full px-[8px] py-[2px] text-[11px] font-semibold ${statusMeta.badgeClassName}`}>
-              <span className={`h-[4px] w-[4px] rounded-full ${statusMeta.dotClassName}`} />
-              {statusMeta.label}
-            </span>
-            <span className="truncate text-[13px] font-semibold text-white/80">
-              {highlightMatch(election.name, query)}
-            </span>
-          </div>
-          <div className="flex shrink-0 items-center gap-[13px] text-[11px] text-white/50">
-            <span>{pct}% · {election.votedCount}/{election.voterCount}</span>
-            <span className="hidden rounded-full border border-white/8 bg-white/3 px-[9px] py-[4px] text-white/40 lg:inline">
-              {open ? "Click to collapse" : "Click to expand"}
-            </span>
-            <Link
-              href={`/admin/elections/${election.id}/monitor`}
-              onClick={(event) => event.stopPropagation()}
-              className="inline-flex items-center gap-[4px] rounded-[6px] border border-gold/20 bg-gold/[0.07] px-[8px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]"
-            >
-              <FileText aria-hidden="true" className="h-[13px] w-[13px]" />
-              Full tally
-            </Link>
-            <DisclosureChevron open={open} />
-          </div>
-        </div>
-      )}
+      statusNode={
+        <span className={`inline-flex shrink-0 items-center gap-[4px] rounded-full px-[8px] py-[2px] text-[11px] font-semibold ${statusMeta.badgeClassName}`}>
+          <span className={`h-[4px] w-[4px] rounded-full ${statusMeta.dotClassName}`} />
+          {statusMeta.label}
+        </span>
+      }
+      title={highlightMatch(election.name, query)}
+      meta={<>{pct}% · {election.votedCount}/{election.voterCount}</>}
+      actionNode={
+        <Link
+          href={`/admin/elections/${election.id}/monitor`}
+          onClick={(event) => event.stopPropagation()}
+          className="inline-flex items-center gap-[4px] rounded-[6px] border border-gold/20 bg-gold/[0.07] px-[8px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]"
+        >
+          <FileText aria-hidden="true" className="h-[13px] w-[13px]" />
+          Full tally
+        </Link>
+      }
     >
       <div className="p-[18px]">
         {election.integrityFailure ? (
@@ -223,7 +211,7 @@ function ResultsElectionDisclosure({
           </div>
         )}
       </div>
-    </Disclosure>
+    </ElectionAccordionRow>
   );
 }
 

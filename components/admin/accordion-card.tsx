@@ -10,6 +10,8 @@ export function AccordionCard({
   meta,
   children,
   defaultOpen = false,
+  open,
+  onOpenChange,
   noPad,
   className,
   contentClassName,
@@ -18,6 +20,8 @@ export function AccordionCard({
   meta?: ReactNode;
   children?: ReactNode;
   defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   noPad?: boolean;
   className?: string;
   contentClassName?: string;
@@ -27,6 +31,8 @@ export function AccordionCard({
   return (
     <Disclosure
       defaultOpen={defaultOpen}
+      open={open}
+      onOpenChange={onOpenChange}
       className={cn("overflow-hidden rounded-[13px] border border-white/[0.07] bg-admin-surface/70", className)}
       contentClassName={resolvedContentClassName}
       trigger={({ open }) => (

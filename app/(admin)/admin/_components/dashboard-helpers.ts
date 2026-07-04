@@ -90,13 +90,10 @@ export function filterDashboardBuckets(
     archiveScope: DashboardArchiveFilter;
   },
 ) {
+  const allElections = [...activeElections, ...archivedElections];
+  const recentElectionIds = getRecentElectionIds([{ elections: allElections }], filters.recentElectionCount);
   const activePool = filters.archiveScope === "ARCHIVED" ? [] : activeElections;
   const archivedPool = filters.archiveScope === "ACTIVE" ? [] : archivedElections;
-  const scopedElections = [...activePool, ...archivedPool];
-  const recentElectionIds = getRecentElectionIds(
-    [{ elections: scopedElections }],
-    filters.recentElectionCount,
-  );
   const applyFilters = (elections: readonly DashboardElection[]) =>
     sortDashboardElections(
       filterDashboardElections(
@@ -110,7 +107,7 @@ export function filterDashboardBuckets(
   return {
     active,
     archived,
-    totalScoped: scopedElections.length,
+    totalScoped: allElections.length,
     totalVisible: active.length + archived.length,
   };
 }

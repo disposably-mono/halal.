@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import {
   AccordionCard,
-  Disclosure,
-  DisclosureChevron,
+  ElectionAccordionRow,
+  ElectionStatusDot,
   EmptyState,
   FilterGrid,
   FilterGroup,
@@ -16,10 +16,11 @@ import {
   PageHeader,
   SearchInput,
 } from "@/components/admin/ui";
-import { DIVISION_CODES } from "@/lib/ui/division-labels";
+import { hasActiveFilters } from "../shared/filter-state";
+import { buildDivisionFilterOptions, resolveDivisionFilterLabel } from "../shared/division-filter";
 import {
+  ALL_RECENT_ELECTION_FILTER_OPTIONS as RECENT_OPTIONS,
   formatRecentElectionFilter,
-  RECENT_ELECTION_OPTIONS,
   type RecentElectionFilter,
 } from "../shared/recent-election-filter";
 import {
@@ -29,14 +30,12 @@ import {
   type VoteStatusFilter,
   type VoterDivisionFilter,
   type VoterIndexRow,
-  type VoterIndexStatus,
   type VoterStatusFilter,
 } from "./voter-index";
 import { CalendarClock, Layers, ListFilter, Vote } from "lucide-react";
 
 const STATUS_OPTIONS: VoterStatusFilter[] = ["ALL", "OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
 const VOTE_OPTIONS: VoteStatusFilter[] = ["ALL", "VOTED", "PENDING"];
-const RECENT_OPTIONS: RecentElectionFilter[] = ["ALL", ...RECENT_ELECTION_OPTIONS];
 
 export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
   const [query, setQuery] = useState("");
@@ -53,21 +52,18 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
   );
   const totalSummary = useMemo(() => summarizeVoterIndex(index), [index]);
   const visibleSummary = useMemo(() => summarizeVoterIndex(filtered), [filtered]);
-  const divisionOptions = useMemo(
-    () => index.map((group) => ({ value: group.division, label: DIVISION_CODES[group.division] ?? group.label })),
-    [index],
-  );
-  const divisionLabel = division === "ALL"
-    ? "All divisions"
-    : divisionOptions.find((option) => option.value === division)?.label ?? division;
+  const divisionOptions = useMemo(() => buildDivisionFilterOptions(index), [index]);
+  const divisionLabel = resolveDivisionFilterLabel(division, divisionOptions);
   const statusLabel = status === "ALL" ? "All statuses" : status;
   const voteStatusLabel = voteStatus === "ALL" ? "All voters" : voteStatus;
   const recentElectionLabel = formatRecentElectionFilter(recentElectionCount);
-  const isFiltering = query.trim().length > 0 ||
-    status !== "ALL" ||
-    division !== "ALL" ||
-    voteStatus !== "ALL" ||
-    recentElectionCount !== "ALL";
+  const isFiltering = hasActiveFilters([
+    query.trim().length > 0,
+    status !== "ALL",
+    division !== "ALL",
+    voteStatus !== "ALL",
+    recentElectionCount !== "ALL",
+  ]);
 
   return (
     <>
@@ -161,37 +157,26 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
               contentClassName="grid gap-[13px] border-t border-white/6 p-[13px]"
             >
               {divisionGroup.elections.map((election) => (
-                <Disclosure
+                <ElectionAccordionRow
                   key={election.id}
                   defaultOpen={isFiltering}
-                  className="overflow-hidden rounded-[11px] border border-white/[0.07] bg-admin-surface"
-                  trigger={({ open }) => (
-                    <div className="flex items-center justify-between gap-[13px] border-b border-white/[0.07] px-[18px] py-[13px]">
-                      <div className="flex min-w-[0px] items-center gap-[13px]">
-                        <StatusDot status={election.status} />
-                        <span className="truncate text-[13px] font-semibold text-white/80">
-                          {highlightMatch(election.name, query)}
-                        </span>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-[13px] text-[11px] text-white/50">
-                        <span>{election.voterCount} voters · {turnout(election.votedCount, election.voterCount)}%</span>
-                        <span className="hidden rounded-full border border-white/8 bg-white/3 px-[9px] py-[4px] text-white/40 lg:inline">
-                          {open ? "Click to collapse" : "Click to expand"}
-                        </span>
-                        <Link
-                          href={`/admin/elections/${election.id}/voters`}
-                          onClick={(event) => event.stopPropagation()}
-                          className="rounded-[6px] border border-gold/20 bg-gold/[0.07] px-[8px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]"
-                        >
-                          Manage
-                        </Link>
-                        <DisclosureChevron open={open} />
-                      </div>
-                    </div>
-                  )}
+                  statusNode={<ElectionStatusDot status={election.status} />}
+                  title={highlightMatch(election.name, query)}
+                  meta={
+                    <>{election.voterCount} voters · {turnout(election.votedCount, election.voterCount)}%</>
+                  }
+                  actionNode={
+                    <Link
+                      href={`/admin/elections/${election.id}/voters`}
+                      onClick={(event) => event.stopPropagation()}
+                      className="rounded-[6px] border border-gold/20 bg-gold/[0.07] px-[8px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]"
+                    >
+                      Manage
+                    </Link>
+                  }
                 >
                   <VoterRows voters={election.voters} query={query} />
-                </Disclosure>
+                </ElectionAccordionRow>
               ))}
             </AccordionCard>
           ))}
@@ -241,21 +226,6 @@ function VoteBadge({ hasVoted }: { hasVoted: boolean }) {
     <span className="inline-flex items-center gap-[4px] text-[11px] text-white/60">
       <span className="h-[6px] w-[6px] rounded-full bg-white/15" />
       Pending
-    </span>
-  );
-}
-
-function StatusDot({ status }: { status: VoterIndexStatus }) {
-  const colors: Record<VoterIndexStatus, string> = {
-    OPEN: "bg-emerald-400",
-    SCHEDULED: "bg-blue-400",
-    DRAFT: "bg-white/20",
-    CLOSED: "bg-white/10",
-  };
-  return (
-    <span className="inline-flex shrink-0 items-center gap-[4px] text-[11px] text-white/50">
-      <span className={`h-[7px] w-[7px] rounded-full ${colors[status]}`} />
-      {status}
     </span>
   );
 }

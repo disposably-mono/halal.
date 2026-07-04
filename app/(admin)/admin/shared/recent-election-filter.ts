@@ -3,6 +3,11 @@ export const RECENT_ELECTION_OPTIONS = [1, 2, 5, 10] as const;
 export type RecentElectionCount = (typeof RECENT_ELECTION_OPTIONS)[number];
 export type RecentElectionFilter = RecentElectionCount | "ALL";
 
+export const ALL_RECENT_ELECTION_FILTER_OPTIONS: RecentElectionFilter[] = [
+  "ALL",
+  ...RECENT_ELECTION_OPTIONS,
+];
+
 export type RecentElection = {
   id: string;
   createdAt?: Date | string | null;

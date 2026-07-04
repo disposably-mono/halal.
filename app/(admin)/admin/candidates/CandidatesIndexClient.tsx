@@ -4,8 +4,8 @@ import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import {
   AccordionCard,
-  Disclosure,
-  DisclosureChevron,
+  ElectionAccordionRow,
+  ElectionStatusDot,
   EmptyState,
   FilterGrid,
   FilterGroup,
@@ -18,10 +18,11 @@ import {
 } from "@/components/admin/ui";
 import { formatGradeList, parseGrades } from "@/lib/domain/grade-format";
 import { gradesForDivision } from "@/lib/elections/constants";
-import { DIVISION_CODES } from "@/lib/ui/division-labels";
+import { activeFilterCount, hasActiveFilters } from "../shared/filter-state";
+import { buildDivisionFilterOptions, resolveDivisionFilterLabel } from "../shared/division-filter";
 import {
+  ALL_RECENT_ELECTION_FILTER_OPTIONS as RECENT_OPTIONS,
   formatRecentElectionFilter,
-  RECENT_ELECTION_OPTIONS,
   type RecentElectionFilter,
 } from "../shared/recent-election-filter";
 import {
@@ -35,7 +36,6 @@ import {
 import { CalendarClock, Layers, ListFilter } from "lucide-react";
 
 const STATUS_OPTIONS: CandidateStatusFilter[] = ["ALL", "OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
-const RECENT_OPTIONS: RecentElectionFilter[] = ["ALL", ...RECENT_ELECTION_OPTIONS];
 
 export function CandidatesIndexClient({ positions }: { positions: CandidateIndexPosition[] }) {
   const [query, setQuery] = useState("");
@@ -51,16 +51,17 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
   );
   const totalSummary = useMemo(() => summarizeCandidateIndex(index), [index]);
   const visibleSummary = useMemo(() => summarizeCandidateIndex(filtered), [filtered]);
-  const divisionOptions = useMemo(
-    () => index.map((group) => ({ value: group.division, label: DIVISION_CODES[group.division] ?? group.label })),
-    [index],
-  );
-  const divisionLabel = division === "ALL"
-    ? "All divisions"
-    : divisionOptions.find((option) => option.value === division)?.label ?? division;
+  const divisionOptions = useMemo(() => buildDivisionFilterOptions(index), [index]);
+  const divisionLabel = resolveDivisionFilterLabel(division, divisionOptions);
   const statusLabel = status === "ALL" ? "All statuses" : status;
   const recentElectionLabel = formatRecentElectionFilter(recentElectionCount);
-  const isFiltering = query.trim().length > 0 || status !== "ALL" || division !== "ALL" || recentElectionCount !== "ALL";
+  const filterFlags = [
+    query.trim().length > 0,
+    status !== "ALL",
+    division !== "ALL",
+    recentElectionCount !== "ALL",
+  ];
+  const isFiltering = hasActiveFilters(filterFlags);
 
   return (
     <>
@@ -76,7 +77,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
         <MetricCard label="Visible" value={visibleSummary.candidates.toLocaleString()} sub={`${visibleSummary.elections} elections shown`} accent="blue" />
         <MetricCard
           label="Open Filters"
-          value={activeFilterCount({ query, status, division, recentElectionCount }).toString()}
+          value={activeFilterCount(filterFlags).toString()}
           sub="search, status, division, recent"
         />
       </div>
@@ -148,41 +149,30 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
               contentClassName="grid gap-[13px] border-t border-white/6 p-[13px]"
             >
               {divisionGroup.elections.map((election) => (
-                <Disclosure
+                <ElectionAccordionRow
                   key={election.id}
                   defaultOpen={isFiltering}
-                  className="overflow-hidden rounded-[11px] border border-white/[0.07] bg-admin-surface"
-                  trigger={({ open }) => (
-                    <div className="flex items-center justify-between gap-[13px] border-b border-white/[0.07] px-[18px] py-[13px]">
-                      <div className="flex min-w-[0px] items-center gap-[13px]">
-                        <StatusDot status={election.status} />
-                        <span className="truncate text-[13px] font-semibold text-white/80">
-                          {highlightMatch(election.name, query)}
-                        </span>
-                      </div>
-                      <div className="flex shrink-0 items-center gap-[13px] text-[11px] text-white/50">
-                        <span>{election.totalCandidates} cand. · {election.positionCount} pos.</span>
-                        <span className="hidden rounded-full border border-white/8 bg-white/3 px-[9px] py-[4px] text-white/40 lg:inline">
-                          {open ? "Click to collapse" : "Click to expand"}
-                        </span>
-                        <Link
-                          href={`/admin/elections/${election.id}/candidates`}
-                          onClick={(event) => event.stopPropagation()}
-                          className="rounded-[6px] border border-gold/20 bg-gold/[0.07] px-[8px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]"
-                        >
-                          Manage
-                        </Link>
-                        <DisclosureChevron open={open} />
-                      </div>
-                    </div>
-                  )}
+                  statusNode={<ElectionStatusDot status={election.status} />}
+                  title={highlightMatch(election.name, query)}
+                  meta={
+                    <>{election.totalCandidates} cand. · {election.positionCount} pos.</>
+                  }
+                  actionNode={
+                    <Link
+                      href={`/admin/elections/${election.id}/candidates`}
+                      onClick={(event) => event.stopPropagation()}
+                      className="rounded-[6px] border border-gold/20 bg-gold/[0.07] px-[8px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]"
+                    >
+                      Manage
+                    </Link>
+                  }
                 >
                   <div className="divide-y divide-white/4">
                     {election.positions.map((position) => (
                       <PositionBlock key={position.id} position={position} query={query} />
                     ))}
                   </div>
-                </Disclosure>
+                </ElectionAccordionRow>
               ))}
             </AccordionCard>
           ))}
@@ -226,31 +216,3 @@ function PositionBlock({ position, query }: { position: CandidateIndexPosition; 
   );
 }
 
-function StatusDot({ status }: { status: CandidateStatusFilter }) {
-  const colors: Record<Exclude<CandidateStatusFilter, "ALL">, string> = {
-    OPEN: "bg-emerald-400",
-    SCHEDULED: "bg-blue-400",
-    DRAFT: "bg-white/20",
-    CLOSED: "bg-white/10",
-  };
-  return (
-    <span className="inline-flex shrink-0 items-center gap-[4px] text-[11px] text-white/50">
-      <span className={`h-[7px] w-[7px] rounded-full ${colors[status as Exclude<CandidateStatusFilter, "ALL">]}`} />
-      {status}
-    </span>
-  );
-}
-
-function activeFilterCount(filters: {
-  query: string;
-  status: CandidateStatusFilter;
-  division: CandidateDivisionFilter;
-  recentElectionCount: RecentElectionFilter;
-}) {
-  return [
-    filters.query.trim().length > 0,
-    filters.status !== "ALL",
-    filters.division !== "ALL",
-    filters.recentElectionCount !== "ALL",
-  ].filter(Boolean).length;
-}

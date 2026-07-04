@@ -26,6 +26,7 @@ import {
 } from "./history-index";
 import { HistoryTable } from "./HistoryTable";
 import { AccountLogTable, type AccountLogRow } from "./AccountLogTable";
+import { activeFilterCount, hasActiveFilters } from "../shared/filter-state";
 
 const PERSON_OPTIONS: HistoryPersonFilter[] = ["ALL", "OFFICER", "VERIFIER"];
 const DATE_OPTIONS: HistoryDateFilter[] = ["ALL", "TODAY", "7D", "30D"];
@@ -110,7 +111,30 @@ export function HistoryIndexClient({
   const totalAccountSummary = useMemo(() => summarizeAccountLogs(accountLogs), [accountLogs]);
   const matchedAccountSummary = useMemo(() => summarizeAccountLogs(filteredAccountLogs), [filteredAccountLogs]);
   const visibleAccountSummary = useMemo(() => summarizeAccountLogs(visibleAccountLogs), [visibleAccountLogs]);
-  const activeFilters = activeFilterCount({ query, person, date, accountAction, accountRole, limit, accountLimit });
+  const loginFilterFlags = [
+    query.trim().length > 0,
+    person !== "ALL",
+    date !== "ALL",
+    limit !== DEFAULT_LIMIT,
+  ];
+  const accountFilterFlags = [
+    query.trim().length > 0,
+    accountAction !== "ALL",
+    accountRole !== "ALL",
+    date !== "ALL",
+    accountLimit !== DEFAULT_LIMIT,
+  ];
+  const activeFilters = activeFilterCount([
+    query.trim().length > 0,
+    person !== "ALL",
+    date !== "ALL",
+    accountAction !== "ALL",
+    accountRole !== "ALL",
+    limit !== DEFAULT_LIMIT,
+    accountLimit !== DEFAULT_LIMIT,
+  ]);
+  const loginIsFiltering = hasActiveFilters(loginFilterFlags);
+  const accountIsFiltering = hasActiveFilters(accountFilterFlags);
 
   return (
     <>
@@ -213,7 +237,7 @@ export function HistoryIndexClient({
       <AccordionCard
         title="Recent sign-ins"
         meta={<span className="text-[11px] text-white/45">{visible.length} of {matchedSummary.total} shown</span>}
-        defaultOpen={activeFilters > 0}
+        defaultOpen={loginIsFiltering}
         noPad
       >
         {history.length === 0 ? (
@@ -241,7 +265,7 @@ export function HistoryIndexClient({
       <AccordionCard
         title="Account changes"
         meta={<span className="text-[11px] text-white/45">{visibleAccountLogs.length} of {matchedAccountSummary.total} shown</span>}
-        defaultOpen={activeFilters > 0}
+        defaultOpen={accountIsFiltering}
         noPad
       >
         {accountLogs.length === 0 ? (
@@ -267,24 +291,4 @@ export function HistoryIndexClient({
       </AccordionCard>
     </>
   );
-}
-
-function activeFilterCount(filters: {
-  query: string;
-  person: HistoryPersonFilter;
-  date: HistoryDateFilter;
-  accountAction: AccountActionFilter;
-  accountRole: AccountRoleFilter;
-  limit: ShowLimit;
-  accountLimit: ShowLimit;
-}) {
-  return [
-    filters.query.trim().length > 0,
-    filters.person !== "ALL",
-    filters.date !== "ALL",
-    filters.accountAction !== "ALL",
-    filters.accountRole !== "ALL",
-    filters.limit !== DEFAULT_LIMIT,
-    filters.accountLimit !== DEFAULT_LIMIT,
-  ].filter(Boolean).length;
 }

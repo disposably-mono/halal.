@@ -74,33 +74,44 @@ describe("dashboard helpers", () => {
 
   test("filters dashboard buckets by archive scope and recent election count", () => {
     const active = [
-      { ...baseElection, id: "active-old", name: "Old Active", createdAt: new Date("2026-01-01T00:00:00.000Z") },
-      { ...baseElection, id: "active-new", name: "New Active", createdAt: new Date("2026-04-01T00:00:00.000Z") },
+      { ...baseElection, id: "active-1", name: "Active 1", createdAt: new Date("2026-07-06T00:00:00.000Z") },
+      { ...baseElection, id: "active-2", name: "Active 2", createdAt: new Date("2026-07-05T00:00:00.000Z") },
+      { ...baseElection, id: "active-3", name: "Active 3", createdAt: new Date("2026-07-04T00:00:00.000Z") },
+      { ...baseElection, id: "active-5", name: "Active 5", createdAt: new Date("2026-07-02T00:00:00.000Z") },
+      { ...baseElection, id: "active-6", name: "Active 6", createdAt: new Date("2026-07-01T00:00:00.000Z") },
     ] satisfies DashboardElection[];
     const archived = [
-      { ...baseElection, id: "archived-new", name: "Archived New", archivedAt: new Date("2026-06-01T00:00:00.000Z"), createdAt: new Date("2026-05-01T00:00:00.000Z") },
-      { ...baseElection, id: "archived-old", name: "Archived Old", archivedAt: new Date("2026-03-01T00:00:00.000Z"), createdAt: new Date("2026-02-01T00:00:00.000Z") },
+      { ...baseElection, id: "archived-4", name: "Archived 4", archivedAt: new Date("2026-07-03T00:00:00.000Z"), createdAt: new Date("2026-07-03T00:00:00.000Z") },
     ] satisfies DashboardElection[];
 
     const recentAll = filterDashboardBuckets(active, archived, {
       query: "",
       status: "ALL",
-      recentElectionCount: 2,
+      recentElectionCount: 5,
       archiveScope: "ALL",
     });
-    expect(recentAll.active.map((election) => election.id)).toEqual(["active-new"]);
-    expect(recentAll.archived.map((election) => election.id)).toEqual(["archived-new"]);
-    expect(recentAll.totalScoped).toBe(4);
-    expect(recentAll.totalVisible).toBe(2);
+    expect(recentAll.active.map((election) => election.id)).toEqual(["active-1", "active-2", "active-3", "active-5"]);
+    expect(recentAll.archived.map((election) => election.id)).toEqual(["archived-4"]);
+    expect(recentAll.totalScoped).toBe(6);
+    expect(recentAll.totalVisible).toBe(5);
+
+    const activeOnly = filterDashboardBuckets(active, archived, {
+      query: "",
+      status: "ALL",
+      recentElectionCount: 5,
+      archiveScope: "ACTIVE",
+    });
+    expect(activeOnly.active.map((election) => election.id)).toEqual(["active-1", "active-2", "active-3", "active-5"]);
+    expect(activeOnly.archived).toEqual([]);
 
     const archivedOnly = filterDashboardBuckets(active, archived, {
-      query: "old",
+      query: "",
       status: "ALL",
-      recentElectionCount: "ALL",
+      recentElectionCount: 5,
       archiveScope: "ARCHIVED",
     });
     expect(archivedOnly.active).toEqual([]);
-    expect(archivedOnly.archived.map((election) => election.id)).toEqual(["archived-old"]);
+    expect(archivedOnly.archived.map((election) => election.id)).toEqual(["archived-4"]);
   });
 
   test("converts persisted snapshots to a capped turnout trend", () => {

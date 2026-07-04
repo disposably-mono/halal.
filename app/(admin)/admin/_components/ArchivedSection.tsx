@@ -1,6 +1,6 @@
 "use client";
 
-import { useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { restoreElection } from "../actions";
 import { DIVISION_LABELS } from "@/lib/ui/division-labels";
@@ -10,7 +10,7 @@ import { fmt, type Election } from "./shared";
 export function ArchivedSection({
   elections,
   totalCount = elections.length,
-  query,
+  query = "",
   defaultOpen = false,
   onToast,
   canLifecycle,
@@ -24,8 +24,11 @@ export function ArchivedSection({
 }) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const [open, setOpen] = useState(defaultOpen);
 
-  if (totalCount === 0) return null;
+  useEffect(() => {
+    setOpen(defaultOpen);
+  }, [defaultOpen]);
 
   function handleRestore(id: string) {
     startTransition(async () => {
@@ -40,10 +43,11 @@ export function ArchivedSection({
       title="Archived"
       meta={
         <span>
-          {elections.length === totalCount ? totalCount : `${elections.length} of ${totalCount}`}
+          {elections.length} of {totalCount} shown
         </span>
       }
-      defaultOpen={defaultOpen}
+      open={open}
+      onOpenChange={setOpen}
       noPad
     >
       {elections.length === 0 ? (
@@ -59,7 +63,8 @@ export function ArchivedSection({
             <div className="flex-1 min-w-[0px]">
               <div className="text-[13px] font-medium text-white/70 truncate">{highlightMatch(e.name, query)}</div>
               <div className="text-[11px] text-white/30 mt-px">
-                {highlightMatch(DIVISION_LABELS[e.division] ?? e.division, query)} · archived {fmt(e.archivedAt)}
+                {highlightMatch(DIVISION_LABELS[e.division] ?? e.division, query)} · archived{" "}
+                {e.archivedAt ? fmt(e.archivedAt) : "—"}
               </div>
             </div>
             {canLifecycle && (

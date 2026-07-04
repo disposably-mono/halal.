@@ -13,26 +13,45 @@ import { AnimatedCollapse } from "./animated-collapse";
 export function Disclosure({
   trigger,
   defaultOpen = false,
+  open,
+  onOpenChange,
   className,
   contentClassName,
   children,
 }: {
   trigger: (state: { open: boolean }) => ReactNode;
   defaultOpen?: boolean;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
   className?: string;
   contentClassName?: string;
   children: ReactNode;
 }) {
-  const [open, setOpen] = useState(defaultOpen);
+  const [uncontrolledOpen, setUncontrolledOpen] = useState(defaultOpen);
+  const isControlled = open !== undefined;
+  const isOpen = isControlled ? open : uncontrolledOpen;
   const contentId = useId();
-  const toggle = () => setOpen((value) => !value);
 
-  // Re-sync when the caller's defaultOpen flips (e.g. isFiltering turning on/off)
-  // instead of forcing a remount via `key` — a remount would swap in an
-  // already-closed instance for the collapse case, skipping the animation.
+  // Uncontrolled callers (most AccordionCard usages) only ever pass
+  // `defaultOpen` and expect the section to re-open/close when it flips
+  // (e.g. isFiltering turning on/off) instead of forcing a remount via `key`
+  // — a remount would swap in an already-closed instance for the collapse
+  // case, skipping the animation. Controlled callers own `open` themselves,
+  // so they're left alone here.
   useEffect(() => {
-    setOpen(defaultOpen);
-  }, [defaultOpen]);
+    if (!isControlled) {
+      setUncontrolledOpen(defaultOpen);
+    }
+  }, [defaultOpen, isControlled]);
+
+  function setNextOpen(nextOpen: boolean) {
+    if (!isControlled) {
+      setUncontrolledOpen(nextOpen);
+    }
+    onOpenChange?.(nextOpen);
+  }
+
+  const toggle = () => setNextOpen(!isOpen);
 
   return (
     <div className={className}>
@@ -52,13 +71,13 @@ export function Disclosure({
             toggle();
           }
         }}
-        aria-expanded={open}
+        aria-expanded={isOpen}
         aria-controls={contentId}
         className="w-full cursor-pointer text-left outline-hidden"
       >
-        {trigger({ open })}
+        {trigger({ open: isOpen })}
       </div>
-      <AnimatedCollapse id={contentId} open={open}>
+      <AnimatedCollapse id={contentId} open={isOpen}>
         <div className={contentClassName}>{children}</div>
       </AnimatedCollapse>
     </div>
