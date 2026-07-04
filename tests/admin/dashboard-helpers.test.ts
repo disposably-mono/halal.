@@ -3,6 +3,7 @@ import {
   buildDashboardSummary,
   filterDashboardBuckets,
   filterDashboardElections,
+  getDashboardAccordionOpenState,
   snapshotsToTurnoutTrend,
   type DashboardElection,
 } from "@/app/(admin)/admin/_components/dashboard-helpers";
@@ -112,6 +113,35 @@ describe("dashboard helpers", () => {
     });
     expect(archivedOnly.active).toEqual([]);
     expect(archivedOnly.archived.map((election) => election.id)).toEqual(["archived-4"]);
+  });
+
+  test("opens both accordions when active and archived elections are both in scope", () => {
+    expect(
+      getDashboardAccordionOpenState({
+        archiveScope: "ALL",
+      }),
+    ).toEqual({
+      shouldOpenActive: true,
+      shouldOpenArchived: true,
+    });
+
+    expect(
+      getDashboardAccordionOpenState({
+        archiveScope: "ACTIVE",
+      }),
+    ).toEqual({
+      shouldOpenActive: true,
+      shouldOpenArchived: false,
+    });
+
+    expect(
+      getDashboardAccordionOpenState({
+        archiveScope: "ARCHIVED",
+      }),
+    ).toEqual({
+      shouldOpenActive: false,
+      shouldOpenArchived: true,
+    });
   });
 
   test("converts persisted snapshots to a capped turnout trend", () => {
