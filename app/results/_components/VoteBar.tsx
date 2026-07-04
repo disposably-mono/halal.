@@ -30,7 +30,7 @@ export function VoteBar({
     >
       {/* Animated fill */}
       <div
-        className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out
+        className={`absolute inset-y-[0px] left-[0px] transition-all duration-700 ease-out
           ${isLeader && !isTie
             ? "bg-gold/15"
             : isTie
@@ -39,10 +39,10 @@ export function VoteBar({
         style={{ width: `${displayPct}%` }}
       />
 
-      <div className="relative flex items-center gap-3 px-3 py-3 sm:px-4">
+      <div className="relative flex items-center gap-[14px] px-[14px] py-[14px] sm:px-[19px]">
         {/* Rank */}
         <span
-          className={`font-mono text-[11px] w-5 text-center shrink-0
+          className={`font-mono text-[13px] w-[23px] text-center shrink-0
             ${isLeader && !isTie
               ? "text-gold/70"
               : isTie
@@ -54,7 +54,7 @@ export function VoteBar({
 
         {/* Name */}
         <span
-          className={`min-w-0 flex-1 truncate font-heading text-sm font-bold uppercase tracking-wide
+          className={`min-w-[0px] flex-1 truncate font-heading text-[17px] font-bold uppercase tracking-wide
             ${isLeader && !isTie
               ? "text-white"
               : isTie
@@ -65,14 +65,14 @@ export function VoteBar({
         </span>
 
         {/* Grade */}
-        <span className="hidden shrink-0 font-mono text-[10px] text-white/35 sm:inline">
+        <span className="hidden shrink-0 font-mono text-[12px] text-white/35 sm:inline">
           Gr.{candidate.gradeLevel}
         </span>
 
         {/* Vote count */}
-        <div className="text-right shrink-0 min-w-[52px]">
+        <div className="text-right shrink-0 min-w-[59px]">
           <span
-            className={`font-mono text-sm font-bold tabular-nums
+            className={`font-mono text-[17px] font-bold tabular-nums
               ${isLeader && !isTie
                 ? "text-gold"
                 : isTie
@@ -82,7 +82,7 @@ export function VoteBar({
             {candidate.votes.toLocaleString()}
           </span>
           <span
-            className={`font-mono text-[10px] ml-1.5
+            className={`font-mono text-[12px] ml-[7px]
               ${isLeader && !isTie
                 ? "text-gold/50"
                 : isTie
@@ -95,11 +95,11 @@ export function VoteBar({
 
         {/* Tie indicator */}
         {isTie && candidate.votes > 0 && (
-          <span className="text-sky-400 text-xs ml-1 shrink-0 font-mono font-bold">=</span>
+          <span className="text-sky-400 text-[14px] ml-[5px] shrink-0 font-mono font-bold">=</span>
         )}
         {/* Leader crown */}
         {isLeader && !isTie && candidate.votes > 0 && (
-          <span className="text-gold text-xs ml-1 shrink-0">★</span>
+          <span className="text-gold text-[14px] ml-[5px] shrink-0">★</span>
         )}
       </div>
     </div>

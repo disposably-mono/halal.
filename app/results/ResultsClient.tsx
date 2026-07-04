@@ -132,32 +132,32 @@ export default function ResultsClient({
       <main className="flex-1 flex flex-col">
         {loading && !data ? (
           <div className="flex-1 flex items-center justify-center">
-            <div className="flex flex-col items-center gap-4">
-              <Spinner className="w-6 h-6 text-gold/40" />
-              <p className="font-body text-white/40 text-xs tracking-widest uppercase">Loading…</p>
+            <div className="flex flex-col items-center gap-[19px]">
+              <Spinner className="w-[27px] h-[27px] text-gold/40" />
+              <p className="font-body text-white/40 text-[14px] tracking-widest uppercase">Loading…</p>
             </div>
           </div>
         ) : data?.integrityFailure ? (
-          <div className="flex-1 flex items-center justify-center px-6 py-20 text-center">
-            <div className="max-w-lg border border-red-400/30 bg-red-400/6 p-8">
-              <p className="text-[10px] uppercase tracking-[0.25em] text-red-300/70">Integrity Warning</p>
-              <h2 className="mt-3 font-display text-4xl uppercase">Certified Results Unavailable</h2>
-              <p className="mt-4 text-sm leading-6 text-white/55">The official closing snapshot did not pass cryptographic verification. Results are withheld until OLPS COMELEC completes an audit.</p>
+          <div className="flex-1 flex items-center justify-center px-[27px] py-[90px] text-center">
+            <div className="max-w-lg border border-red-400/30 bg-red-400/6 p-[36px]">
+              <p className="text-[12px] uppercase tracking-[0.25em] text-red-300/70">Integrity Warning</p>
+              <h2 className="mt-[14px] font-display text-[41px] uppercase">Certified Results Unavailable</h2>
+              <p className="mt-[19px] text-[17px] leading-[27px] text-white/55">The official closing snapshot did not pass cryptographic verification. Results are withheld until OLPS COMELEC completes an audit.</p>
             </div>
           </div>
         ) : data?.embargoed ? (
           <HoldingState electionName={data.name} status={data.status} audit={data.audit} />
         ) : data ? (
-          <div className="max-w-3xl mx-auto w-full px-4 sm:px-6 py-8 sm:py-10 space-y-6">
+          <div className="max-w-3xl mx-auto w-full px-[19px] sm:px-[27px] py-[36px] sm:py-[45px] space-y-[27px]">
             {/* Page header */}
             <div>
-              <p className="font-tagline text-white/35 text-sm italic mb-1">
+              <p className="font-tagline text-white/35 text-[17px] italic mb-[5px]">
                 VOX POPULI VOX DEI
               </p>
-              <h1 className="font-display text-4xl sm:text-5xl text-white uppercase tracking-wide mb-3">
+              <h1 className="font-display text-[41px] sm:text-[54px] text-white uppercase tracking-wide mb-[14px]">
                 {data.status === "CLOSED" ? "Final Results" : "Live Results"}
               </h1>
-              <div className="mb-4 flex flex-wrap items-center gap-x-2.5 gap-y-1 font-body text-sm text-mid/60">
+              <div className="mb-[19px] flex flex-wrap items-center gap-x-[12px] gap-y-[5px] font-body text-[17px] text-mid/60">
                 <span className="font-heading uppercase tracking-wide text-white/80">
                   {data.name}
                 </span>
@@ -176,23 +176,23 @@ export default function ResultsClient({
             {data.turnout && <TurnoutBadge turnout={data.turnout} />}
 
             {/* Gold rule */}
-            <div className="flex items-center gap-4">
-              <div className="w-8 h-px bg-gold/40" />
-              <span className="font-body text-gold/40 text-[10px] tracking-[0.3em] uppercase">
+            <div className="flex items-center gap-[19px]">
+              <div className="w-[36px] h-px bg-gold/40" />
+              <span className="font-body text-gold/40 text-[12px] tracking-[0.3em] uppercase">
                 {data.positions.length} Position{data.positions.length !== 1 ? "s" : ""}
               </span>
             </div>
 
             {/* Position cards */}
-            <div className="space-y-4">
+            <div className="space-y-[19px]">
               {data.positions.map((position) => (
                 <PositionCard key={position.id} position={position} />
               ))}
             </div>
 
             {data.status === "CLOSED" && (
-              <div className="text-center pt-4 pb-8">
-                <p className="font-body text-white/30 text-xs tracking-widest uppercase">
+              <div className="text-center pt-[19px] pb-[36px]">
+                <p className="font-body text-white/30 text-[14px] tracking-widest uppercase">
                   FINAL OFFICIAL RESULTS — OLPS COMELEC
                 </p>
               </div>

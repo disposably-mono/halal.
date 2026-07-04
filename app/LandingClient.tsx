@@ -45,9 +45,9 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
       {/* ── HERO ──────────────────────────────────────────────────── */}
       <section className="relative min-h-screen flex flex-col items-center justify-center overflow-hidden">
         {/* Radial glow behind logo */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-[0px] flex items-center justify-center pointer-events-none">
           <div
-            className="w-[600px] h-[600px] rounded-full"
+            className="w-[678px] h-[678px] rounded-full"
             style={{
               background:
                 "radial-gradient(ellipse, rgba(27,31,94,0.8) 0%, transparent 70%)",
@@ -57,52 +57,52 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
         <WaveRibbon />
 
         {/* Content */}
-        <FadeInSection className="relative z-10 flex flex-col items-center text-center px-6">
+        <FadeInSection className="relative z-10 flex flex-col items-center text-center px-[27px]">
           {/* Bird logo */}
-          <div className="bird-container mb-6">
+          <div className="bird-container mb-[27px]">
             <ComelecBirdPlaceholder />
           </div>
 
           {/* Org label */}
           <p
-            className="font-body text-gold/70 text-xs tracking-[0.35em] uppercase mb-3"
+            className="font-body text-gold/70 text-[14px] tracking-[0.35em] uppercase mb-[14px]"
             style={{ transitionDelay: "100ms" }}
           >
             OLPS COMELEC — Commission on Elections
           </p>
 
           {/* Tagline */}
-          <p className="font-tagline text-white/60 text-base sm:text-lg italic mb-4 tracking-wide">
+          <p className="font-tagline text-white/60 text-[19px] sm:text-[20px] italic mb-[19px] tracking-wide">
             VOX POPULI VOX DEI
           </p>
 
           {/* Election name / hero headline */}
           {countdownTarget ? (
-            <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl text-white leading-none tracking-wide mb-2 uppercase">
+            <h1 className="font-display text-[54px] sm:text-[81px] lg:text-[108px] text-white leading-none tracking-wide mb-[10px] uppercase">
               {countdownTarget.electionName}
             </h1>
           ) : (
-            <h1 className="font-display text-5xl sm:text-7xl lg:text-8xl text-white leading-none tracking-wide mb-2 uppercase">
+            <h1 className="font-display text-[54px] sm:text-[81px] lg:text-[108px] text-white leading-none tracking-wide mb-[10px] uppercase">
               OLPS Elections
             </h1>
           )}
 
           {/* Gold rule */}
-          <div className="w-24 h-px bg-gold my-6 opacity-60" />
+          <div className="w-[108px] h-px bg-gold my-[27px] opacity-60" />
 
           {/* Countdown */}
           {countdownTarget?.status === "SCHEDULED" && !countdown.expired && (
-            <div className="mb-8">
-              <p className="font-body text-mid text-xs tracking-[0.2em] uppercase mb-4">
+            <div className="mb-[36px]">
+              <p className="font-body text-mid text-[14px] tracking-[0.2em] uppercase mb-[19px]">
                 Voting opens in
               </p>
-              <div className="flex items-start gap-3 sm:gap-4">
+              <div className="flex items-start gap-[14px] sm:gap-[19px]">
                 <CountdownUnit value={countdown.days} label="Days" />
-                <span className="font-mono text-gold/40 text-2xl mt-4">:</span>
+                <span className="font-mono text-gold/40 text-[27px] mt-[19px]">:</span>
                 <CountdownUnit value={countdown.hours} label="Hours" />
-                <span className="font-mono text-gold/40 text-2xl mt-4">:</span>
+                <span className="font-mono text-gold/40 text-[27px] mt-[19px]">:</span>
                 <CountdownUnit value={countdown.minutes} label="Min" />
-                <span className="font-mono text-gold/40 text-2xl mt-4">:</span>
+                <span className="font-mono text-gold/40 text-[27px] mt-[19px]">:</span>
                 <CountdownUnit value={countdown.seconds} label="Sec" />
               </div>
             </div>
@@ -110,11 +110,11 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
 
           {/* CTAs — Vote then Verify share the same availability (an election
               is open); View Results is always reachable. */}
-          <div className="flex flex-col sm:flex-row gap-3 mt-2">
+          <div className="flex flex-col sm:flex-row gap-[14px] mt-[10px]">
             {anyOpen && (
               <Link
                 href="/vote"
-                className="px-8 py-3.5 bg-gold text-navy font-heading font-bold text-sm tracking-[0.15em] uppercase hover:bg-gold/90 transition-colors rounded-sm"
+                className="px-[36px] py-[17px] bg-gold text-navy font-heading font-bold text-[17px] tracking-[0.15em] uppercase hover:bg-gold/90 transition-colors rounded-sm"
               >
                 Cast Your Vote
               </Link>
@@ -122,14 +122,14 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
             {anyOpen && (
               <Link
                 href="/verify"
-                className="px-8 py-3.5 border border-gold/30 text-gold/70 font-heading text-sm tracking-[0.15em] uppercase hover:border-gold/60 hover:text-gold transition-colors rounded-sm"
+                className="px-[36px] py-[17px] border border-gold/30 text-gold/70 font-heading text-[17px] tracking-[0.15em] uppercase hover:border-gold/60 hover:text-gold transition-colors rounded-sm"
               >
                 Verify Receipt
               </Link>
             )}
             <Link
               href="/results"
-              className="px-8 py-3.5 border border-white/20 text-white/70 font-heading text-sm tracking-[0.15em] uppercase hover:border-gold/40 hover:text-gold/80 transition-colors rounded-sm"
+              className="px-[36px] py-[17px] border border-white/20 text-white/70 font-heading text-[17px] tracking-[0.15em] uppercase hover:border-gold/40 hover:text-gold/80 transition-colors rounded-sm"
             >
               View Results
             </Link>
@@ -137,30 +137,30 @@ export default function LandingClient({ divisionCards, countdownTarget }: Props)
         </FadeInSection>
 
         {/* Scroll indicator */}
-        <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 opacity-30">
-          <span className="font-body text-[10px] tracking-[0.3em] uppercase text-white">
+        <div className="absolute bottom-[36px] left-1/2 -translate-x-1/2 flex flex-col items-center gap-[10px] opacity-30">
+          <span className="font-body text-[12px] tracking-[0.3em] uppercase text-white">
             Scroll
           </span>
-          <div className="w-px h-8 bg-white/50" />
+          <div className="w-px h-[36px] bg-white/50" />
         </div>
       </section>
 
       {/* ── DIVISION CARDS ──────────────────────────────────────────── */}
-      <section className="relative py-20 px-6">
+      <section className="relative py-[90px] px-[27px]">
         {/* Section label */}
-        <div className="max-w-5xl mx-auto mb-12">
-          <div className="flex items-center gap-4">
-            <div className="w-8 h-px bg-gold" />
-            <span className="font-body text-gold/70 text-xs tracking-[0.3em] uppercase">
+        <div className="max-w-5xl mx-auto mb-[54px]">
+          <div className="flex items-center gap-[19px]">
+            <div className="w-[36px] h-px bg-gold" />
+            <span className="font-body text-gold/70 text-[14px] tracking-[0.3em] uppercase">
               Elections
             </span>
           </div>
-          <h2 className="font-heading font-bold text-3xl sm:text-4xl text-white mt-3 tracking-wide">
+          <h2 className="font-heading font-bold text-[34px] sm:text-[41px] text-white mt-[14px] tracking-wide">
             Division Status
           </h2>
         </div>
 
-        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="max-w-5xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-[19px]">
           {divisionCards.map((card, i) => (
             <DivisionStatusCard key={card.division} card={card} index={i} />
           ))}

@@ -18,7 +18,7 @@ export default async function VotePage() {
     <div className="min-h-screen flex flex-col text-white overflow-x-hidden" style={PUBLIC_PAGE_BACKGROUND}>
       <PublicNav label="Vote" />
 
-      <main className="flex-1 flex items-center justify-center px-6 py-12">
+      <main className="flex-1 flex items-center justify-center px-[27px] py-[54px]">
         {openCount === 0 ? (
           <PublicEmptyState
             title="Voting Not Open"
