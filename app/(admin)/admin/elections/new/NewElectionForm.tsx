@@ -80,7 +80,7 @@ export function NewElectionForm() {
         <div className="h-px bg-white/6" />
 
         {submitError && (
-          <p className="text-sm text-red-400" role="alert">{submitError}</p>
+          <p className="text-[16px] text-red-400" role="alert">{submitError}</p>
         )}
 
         <div className="flex flex-col-reverse gap-[9px] sm:flex-row sm:justify-end">

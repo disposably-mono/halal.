@@ -6,8 +6,8 @@ export function TurnoutSparkline({ snapshots }: { snapshots: Snapshot[] }) {
   if (snapshots.length < 2) return null;
   const values = snapshots.map((s) => s.payload.turnout?.pct ?? 0);
   const max = Math.max(...values, 1);
-  const W = 200;
-  const H = 40;
+  const W = 224;
+  const H = 45;
   const pts = values
     .map((v, i) => {
       const x = (i / (values.length - 1)) * W;

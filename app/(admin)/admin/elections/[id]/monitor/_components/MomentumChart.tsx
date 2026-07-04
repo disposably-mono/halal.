@@ -11,8 +11,8 @@ export function MomentumChart({ snapshots }: { snapshots: Snapshot[] }) {
   });
   const visible = deltas.slice(-12);
   const maxD = Math.max(...visible, 1);
-  const W = 200;
-  const H = 44;
+  const W = 224;
+  const H = 49;
   const barW = Math.floor((W - (visible.length - 1) * 2) / visible.length);
 
   return (

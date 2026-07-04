@@ -44,8 +44,8 @@ const buttonVariants = cva(
           "size-7 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-9",
         // Admin sizes — preserve original BTN_PRIMARY/BTN_SM dimensions.
-        adminMd: "h-auto rounded-[7px] gap-[5px] px-[13px] py-[7px] text-[12px]",
-        adminSm: "h-auto rounded-[7px] gap-[5px] px-[10px] py-[5px] text-[11px]",
+        adminMd: "h-auto rounded-[8px] gap-[6px] px-[15px] py-[8px] text-[13px]",
+        adminSm: "h-auto rounded-[8px] gap-[6px] px-[11px] py-[6px] text-[12px]",
       },
     },
     defaultVariants: {

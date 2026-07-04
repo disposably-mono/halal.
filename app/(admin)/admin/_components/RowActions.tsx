@@ -9,7 +9,7 @@ import { canArchive } from "@/lib/domain/election-state";
 import type { ToastVariant } from "@/components/admin/ui";
 import type { Election } from "./shared";
 
-const MENU_WIDTH = 150;
+const MENU_WIDTH = 168;
 
 export function RowActions({
   e,
