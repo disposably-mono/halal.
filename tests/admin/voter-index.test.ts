@@ -15,7 +15,13 @@ const voters: VoterIndexRow[] = [
     section: "Wisdom",
     hasVoted: true,
     division: "HC",
-    election: { id: "election-house", name: "House Elections", division: "HC", status: "OPEN" },
+    election: {
+      id: "election-house",
+      name: "House Elections",
+      division: "HC",
+      createdAt: new Date("2026-02-01T00:00:00.000Z"),
+      status: "OPEN",
+    },
   },
   {
     id: "voter-2",
@@ -25,7 +31,13 @@ const voters: VoterIndexRow[] = [
     section: "Charity",
     hasVoted: false,
     division: "HC",
-    election: { id: "election-house", name: "House Elections", division: "HC", status: "OPEN" },
+    election: {
+      id: "election-house",
+      name: "House Elections",
+      division: "HC",
+      createdAt: new Date("2026-02-01T00:00:00.000Z"),
+      status: "OPEN",
+    },
   },
   {
     id: "voter-3",
@@ -35,7 +47,13 @@ const voters: VoterIndexRow[] = [
     section: "Faith",
     hasVoted: false,
     division: "SHS",
-    election: { id: "election-shs", name: "SHS Elections", division: "SHS", status: "DRAFT" },
+    election: {
+      id: "election-shs",
+      name: "SHS Elections",
+      division: "SHS",
+      createdAt: new Date("2026-03-01T00:00:00.000Z"),
+      status: "DRAFT",
+    },
   },
   {
     id: "voter-archived",
@@ -49,6 +67,7 @@ const voters: VoterIndexRow[] = [
       id: "election-archived",
       name: "Archived Election",
       division: "HC",
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
       status: "CLOSED",
       archivedAt: "2026-07-01T00:00:00.000Z",
     },
@@ -81,6 +100,29 @@ describe("voter index helpers", () => {
     ]);
   });
 
+  test("filters to the most recent elections by creation date", () => {
+    const recentVoters = [
+      voterForElection("old-voter", "old-house", "House Elections", "HC", "2026-01-01T00:00:00.000Z"),
+      voterForElection("latest-voter", "latest-shs", "SHS Elections", "SHS", "2026-03-01T00:00:00.000Z"),
+      voterForElection("middle-voter", "middle-gs", "GS Elections", "GS", "2026-02-01T00:00:00.000Z"),
+    ] satisfies VoterIndexRow[];
+    const groups = buildVoterIndex(recentVoters);
+    const filtered = filterVoterIndex(groups, {
+      query: "",
+      division: "ALL",
+      status: "ALL",
+      voteStatus: "ALL",
+      recentElectionCount: 2,
+    });
+
+    const electionIds = filtered.flatMap((group) => group.elections.map((election) => election.id));
+
+    expect(electionIds).toHaveLength(2);
+    expect(electionIds).toEqual(expect.arrayContaining(["latest-shs", "middle-gs"]));
+    expect(electionIds).not.toContain("old-house");
+    expect(summarizeVoterIndex(filtered).voters).toBe(2);
+  });
+
   test("summarizes visible voter counts", () => {
     expect(summarizeVoterIndex(buildVoterIndex(voters))).toEqual({
       divisions: 2,
@@ -91,3 +133,28 @@ describe("voter index helpers", () => {
     });
   });
 });
+
+function voterForElection(
+  id: string,
+  electionId: string,
+  electionName: string,
+  division: string,
+  createdAt: string,
+): VoterIndexRow & { election: VoterIndexRow["election"] & { createdAt: Date } } {
+  return {
+    id,
+    studentId: id,
+    voterCode: id,
+    gradeLevel: 12,
+    section: "Faith",
+    hasVoted: false,
+    division,
+    election: {
+      id: electionId,
+      name: electionName,
+      division,
+      status: "OPEN",
+      createdAt: new Date(createdAt),
+    },
+  };
+}

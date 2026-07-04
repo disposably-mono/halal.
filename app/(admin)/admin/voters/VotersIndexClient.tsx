@@ -17,6 +17,11 @@ import {
 } from "@/components/admin/ui";
 import { DIVISION_CODES } from "@/lib/ui/division-labels";
 import {
+  formatRecentElectionFilter,
+  RECENT_ELECTION_OPTIONS,
+  type RecentElectionFilter,
+} from "../shared/recent-election-filter";
+import {
   buildVoterIndex,
   filterVoterIndex,
   summarizeVoterIndex,
@@ -26,22 +31,24 @@ import {
   type VoterIndexStatus,
   type VoterStatusFilter,
 } from "./voter-index";
-import { Layers, ListFilter, Vote } from "lucide-react";
+import { CalendarClock, Layers, ListFilter, Vote } from "lucide-react";
 
 const STATUS_OPTIONS: VoterStatusFilter[] = ["ALL", "OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
 const VOTE_OPTIONS: VoteStatusFilter[] = ["ALL", "VOTED", "PENDING"];
+const RECENT_OPTIONS: RecentElectionFilter[] = ["ALL", ...RECENT_ELECTION_OPTIONS];
 
 export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<VoterStatusFilter>("ALL");
   const [division, setDivision] = useState<VoterDivisionFilter>("ALL");
   const [voteStatus, setVoteStatus] = useState<VoteStatusFilter>("ALL");
+  const [recentElectionCount, setRecentElectionCount] = useState<RecentElectionFilter>("ALL");
   const onSearch = useCallback((value: string) => setQuery(value), []);
 
   const index = useMemo(() => buildVoterIndex(voters), [voters]);
   const filtered = useMemo(
-    () => filterVoterIndex(index, { query, status, division, voteStatus }),
-    [division, index, query, status, voteStatus],
+    () => filterVoterIndex(index, { query, status, division, voteStatus, recentElectionCount }),
+    [division, index, query, recentElectionCount, status, voteStatus],
   );
   const totalSummary = useMemo(() => summarizeVoterIndex(index), [index]);
   const visibleSummary = useMemo(() => summarizeVoterIndex(filtered), [filtered]);
@@ -54,7 +61,12 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
     : divisionOptions.find((option) => option.value === division)?.label ?? division;
   const statusLabel = status === "ALL" ? "All statuses" : status;
   const voteStatusLabel = voteStatus === "ALL" ? "All voters" : voteStatus;
-  const isFiltering = query.trim().length > 0 || status !== "ALL" || division !== "ALL" || voteStatus !== "ALL";
+  const recentElectionLabel = formatRecentElectionFilter(recentElectionCount);
+  const isFiltering = query.trim().length > 0 ||
+    status !== "ALL" ||
+    division !== "ALL" ||
+    voteStatus !== "ALL" ||
+    recentElectionCount !== "ALL";
 
   return (
     <>
@@ -101,6 +113,21 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
             {STATUS_OPTIONS.map((option) => (
               <FilterOption key={option} active={status === option} onClick={() => setStatus(option)}>
                 {option === "ALL" ? "All statuses" : option}
+              </FilterOption>
+            ))}
+          </FilterGroup>
+          <FilterGroup
+            icon={<CalendarClock aria-hidden="true" className="h-4 w-4" />}
+            label="Recent elections"
+            value={recentElectionLabel}
+          >
+            {RECENT_OPTIONS.map((option) => (
+              <FilterOption
+                key={option}
+                active={recentElectionCount === option}
+                onClick={() => setRecentElectionCount(option)}
+              >
+                {formatRecentElectionFilter(option)}
               </FilterOption>
             ))}
           </FilterGroup>

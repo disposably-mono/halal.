@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useCallback, useMemo, useState } from "react";
-import { BarChart3, FileText, Layers, ListFilter } from "lucide-react";
+import { BarChart3, CalendarClock, FileText, Layers, ListFilter } from "lucide-react";
 import {
   Disclosure,
   DisclosureChevron,
@@ -17,6 +17,11 @@ import {
   SearchInput,
 } from "@/components/admin/ui";
 import { DIVISION_CODES } from "@/lib/ui/division-labels";
+import {
+  formatRecentElectionFilter,
+  RECENT_ELECTION_OPTIONS,
+  type RecentElectionFilter,
+} from "../shared/recent-election-filter";
 import { getResultStatusMeta, getTurnoutPercent } from "./admin-results-summary";
 import {
   buildResultsIndex,
@@ -29,17 +34,19 @@ import {
 } from "./results-index";
 
 const STATUS_OPTIONS: ResultsStatusFilter[] = ["ALL", "OPEN", "CLOSED"];
+const RECENT_OPTIONS: RecentElectionFilter[] = ["ALL", ...RECENT_ELECTION_OPTIONS];
 
 export function ResultsIndexClient({ elections }: { elections: ResultsIndexElection[] }) {
   const [query, setQuery] = useState("");
   const [division, setDivision] = useState<ResultsDivisionFilter>("ALL");
   const [status, setStatus] = useState<ResultsStatusFilter>("ALL");
+  const [recentElectionCount, setRecentElectionCount] = useState<RecentElectionFilter>("ALL");
   const onSearch = useCallback((value: string) => setQuery(value), []);
 
   const index = useMemo(() => buildResultsIndex(elections), [elections]);
   const filtered = useMemo(
-    () => filterResultsIndex(index, { query, division, status }),
-    [division, index, query, status],
+    () => filterResultsIndex(index, { query, division, status, recentElectionCount }),
+    [division, index, query, recentElectionCount, status],
   );
   const totalSummary = useMemo(() => summarizeResultsIndex(index), [index]);
   const visibleSummary = useMemo(() => summarizeResultsIndex(filtered), [filtered]);
@@ -51,7 +58,8 @@ export function ResultsIndexClient({ elections }: { elections: ResultsIndexElect
     ? "All divisions"
     : divisionOptions.find((option) => option.value === division)?.label ?? division;
   const statusLabel = status === "ALL" ? "All statuses" : status;
-  const isFiltering = query.trim().length > 0 || division !== "ALL" || status !== "ALL";
+  const recentElectionLabel = formatRecentElectionFilter(recentElectionCount);
+  const isFiltering = query.trim().length > 0 || division !== "ALL" || status !== "ALL" || recentElectionCount !== "ALL";
 
   return (
     <>
@@ -94,6 +102,22 @@ export function ResultsIndexClient({ elections }: { elections: ResultsIndexElect
             {STATUS_OPTIONS.map((option) => (
               <FilterOption key={option} active={status === option} onClick={() => setStatus(option)}>
                 {option === "ALL" ? "All statuses" : option}
+              </FilterOption>
+            ))}
+          </FilterGroup>
+          <FilterGroup
+            icon={<CalendarClock aria-hidden="true" className="h-4 w-4" />}
+            label="Recent elections"
+            value={recentElectionLabel}
+            className="lg:col-span-2"
+          >
+            {RECENT_OPTIONS.map((option) => (
+              <FilterOption
+                key={option}
+                active={recentElectionCount === option}
+                onClick={() => setRecentElectionCount(option)}
+              >
+                {formatRecentElectionFilter(option)}
               </FilterOption>
             ))}
           </FilterGroup>

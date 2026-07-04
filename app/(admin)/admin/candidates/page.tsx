@@ -15,7 +15,7 @@ export default async function AdminCandidatesPage() {
       eligibleGrades: true,
       candidateGrade: true,
       election: {
-        select: { id: true, name: true, division: true, status: true, archivedAt: true },
+        select: { id: true, name: true, division: true, createdAt: true, status: true, archivedAt: true },
       },
       candidates: {
         orderBy: { fullName: "asc" },
