@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import Link from "next/link";
+import { ERROR_SCREEN_COPY } from "./error-screen-copy";
 
 /**
  * Root client error boundary. Catches render/runtime crashes anywhere in the
@@ -22,27 +23,27 @@ export default function Error({
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-navy-deep px-6 text-center">
       <p className="mb-3 font-tagline text-sm italic text-white/30">
-        VOX POPULI VOX DEI
+        {ERROR_SCREEN_COPY.eyebrow}
       </p>
       <h1 className="font-display text-6xl uppercase tracking-wide text-white">
-        Something went wrong
+        {ERROR_SCREEN_COPY.title}
       </h1>
       <p className="mt-4 max-w-md font-body text-sm leading-6 text-white/60">
-        An unexpected error interrupted your request. Your data is safe. Please
-        try again.
+        {ERROR_SCREEN_COPY.body}
       </p>
       <div className="mt-8 flex flex-col gap-3 sm:flex-row">
         <button
+          type="button"
           onClick={reset}
           className="rounded-sm bg-gold px-6 py-3 font-heading text-sm font-bold uppercase tracking-[0.2em] text-navy transition-colors hover:bg-gold/90"
         >
-          Try Again
+          {ERROR_SCREEN_COPY.primaryAction}
         </button>
         <Link
-          href="/"
+          href={ERROR_SCREEN_COPY.homeHref}
           className="rounded-sm border border-white/15 px-6 py-3 font-heading text-sm font-bold uppercase tracking-[0.2em] text-white/70 transition-colors hover:text-white"
         >
-          Go Home
+          {ERROR_SCREEN_COPY.secondaryAction}
         </Link>
       </div>
     </main>

@@ -1,10 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState, type ReactNode } from "react";
+import { Menu, PanelLeftClose, PanelLeftOpen, X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { ActiveNavItem } from "../ActiveNavItem";
 import { NavIcon } from "./NavIcon";
 import type { NavSectionModel } from "./nav-model";
+import { cn } from "@/lib/utils";
 
 const FOCUSABLE_SELECTOR =
   'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
@@ -23,6 +25,7 @@ export function AdminShell({
   children: ReactNode;
 }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const pathname = usePathname();
   const hamburgerRef = useRef<HTMLButtonElement>(null);
   const drawerRef = useRef<HTMLDivElement>(null);
@@ -84,11 +87,11 @@ export function AdminShell({
     wasOpenRef.current = drawerOpen;
   }, [drawerOpen]);
 
-  const navContent = (
+  const navContent = (collapsed = false) => (
     <>
       {sections.map((section) => (
         <div key={section.label}>
-          <NavSectionLabel label={section.label} />
+          <NavSectionLabel label={section.label} collapsed={collapsed} />
           {section.items.map((item) => (
             <ActiveNavItem
               key={item.href}
@@ -96,6 +99,7 @@ export function AdminShell({
               label={item.label}
               exact={item.exact}
               icon={<NavIcon iconKey={item.iconKey} />}
+              collapsed={collapsed}
             />
           ))}
         </div>
@@ -125,13 +129,9 @@ export function AdminShell({
             className="flex h-11 w-11 items-center justify-center rounded-[7px] text-white/70 hover:bg-white/6 hover:text-white/90 transition-colors lg:hidden focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden"
           >
             {drawerOpen ? (
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-              </svg>
+              <X aria-hidden="true" className="h-5 w-5" />
             ) : (
-              <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="3" y1="6" x2="21" y2="6" /><line x1="3" y1="12" x2="21" y2="12" /><line x1="3" y1="18" x2="21" y2="18" />
-              </svg>
+              <Menu aria-hidden="true" className="h-5 w-5" />
             )}
           </button>
           <div className="flex items-baseline gap-[2px] font-display">
@@ -160,8 +160,29 @@ export function AdminShell({
       {/* Body */}
       <div className="relative flex flex-1 overflow-hidden lg:h-[calc(100vh-3.5rem)]">
         {/* Desktop sidebar (lg+) */}
-        <nav className="hidden lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)] w-[220px] shrink-0 flex-col gap-[2px] overflow-y-auto border-r border-white/[0.07] bg-admin-surface py-4 transition-colors">
-          {navContent}
+        <nav
+          aria-label="Admin navigation"
+          className={cn(
+            "hidden shrink-0 flex-col gap-[2px] overflow-y-auto border-r border-white/[0.07] bg-admin-surface py-4 transition-[width] duration-200 lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)]",
+            sidebarCollapsed ? "w-[64px]" : "w-[220px]",
+          )}
+        >
+          <div className={cn("mb-2 flex px-3", sidebarCollapsed ? "justify-center" : "justify-end")}>
+            <button
+              type="button"
+              aria-label={sidebarCollapsed ? "Expand admin panel" : "Collapse admin panel"}
+              title={sidebarCollapsed ? "Expand admin panel" : "Collapse admin panel"}
+              onClick={() => setSidebarCollapsed((value) => !value)}
+              className="flex h-9 w-9 items-center justify-center rounded-[7px] border border-white/8 text-white/45 transition-colors hover:bg-white/5 hover:text-white/75 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/45"
+            >
+              {sidebarCollapsed ? (
+                <PanelLeftOpen aria-hidden="true" className="h-4 w-4" />
+              ) : (
+                <PanelLeftClose aria-hidden="true" className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+          {navContent(sidebarCollapsed)}
         </nav>
 
         {/* Off-canvas drawer (below lg) */}
@@ -180,7 +201,7 @@ export function AdminShell({
               aria-label="Admin navigation"
               className="fixed inset-y-0 left-0 z-50 flex w-[260px] max-w-[80vw] flex-col gap-[2px] overflow-y-auto border-r border-white/[0.07] bg-admin-surface py-4 shadow-2xl animate-in slide-in-from-left duration-200 lg:hidden"
             >
-              {navContent}
+              {navContent(false)}
             </div>
           </>
         )}
@@ -196,7 +217,11 @@ export function AdminShell({
   );
 }
 
-function NavSectionLabel({ label }: { label: string }) {
+function NavSectionLabel({ label, collapsed }: { label: string; collapsed: boolean }) {
+  if (collapsed) {
+    return <div className="mx-auto my-3 h-px w-7 bg-white/10" aria-hidden="true" />;
+  }
+
   return (
     <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40 px-4 pt-3 pb-1">
       {label}

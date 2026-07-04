@@ -1,7 +1,7 @@
 "use client";
 
 import { UserCog } from "lucide-react";
-import { DataTable, EmptyState } from "@/components/admin/ui";
+import { DataTable, EmptyState, highlightMatch } from "@/components/admin/ui";
 
 export type AccountLogRow = {
   id: string;
@@ -23,7 +23,7 @@ const dateFormatter = new Intl.DateTimeFormat("en-PH", {
   minute: "2-digit",
 });
 
-export function AccountLogTable({ logs }: { logs: readonly AccountLogRow[] }) {
+export function AccountLogTable({ logs, query }: { logs: readonly AccountLogRow[]; query?: string }) {
   return (
     <DataTable
       rows={logs}
@@ -53,9 +53,9 @@ export function AccountLogTable({ logs }: { logs: readonly AccountLogRow[] }) {
           priority: 1,
           render: (entry) => (
             <div>
-              <p className="text-[12px] font-medium text-white/80">{entry.action}</p>
+              <p className="text-[12px] font-medium text-white/80">{highlightMatch(entry.action, query)}</p>
               <p className="mt-0.5 text-[10px] text-white/45">
-                {entry.targetName} ({entry.targetRole}) · {entry.targetEmail}
+                {highlightMatch(entry.targetName, query)} ({highlightMatch(entry.targetRole, query)}) · {highlightMatch(entry.targetEmail, query)}
               </p>
             </div>
           ),
@@ -65,8 +65,8 @@ export function AccountLogTable({ logs }: { logs: readonly AccountLogRow[] }) {
           header: "Performed by",
           render: (entry) => (
             <div>
-              <p className="text-[12px] font-medium text-white/80">{entry.actorName}</p>
-              <p className="mt-0.5 font-mono text-[10px] text-white/60">{entry.actorEmail}</p>
+              <p className="text-[12px] font-medium text-white/80">{highlightMatch(entry.actorName, query)}</p>
+              <p className="mt-0.5 font-mono text-[10px] text-white/60">{highlightMatch(entry.actorEmail, query)}</p>
             </div>
           ),
         },

@@ -2,6 +2,7 @@
 
 import { useId, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { AnimatedCollapse } from "./animated-collapse";
 
 /**
  * Shared accordion primitive so every collapsible section in the admin panel
@@ -50,14 +51,9 @@ export function Disclosure({
       >
         {trigger({ open })}
       </div>
-      <div
-        id={contentId}
-        className={cn("grid transition-[grid-template-rows] duration-300 ease-out", open ? "grid-rows-[1fr]" : "grid-rows-[0fr]")}
-      >
-        <div className="overflow-hidden">
-          <div className={contentClassName}>{children}</div>
-        </div>
-      </div>
+      <AnimatedCollapse id={contentId} open={open}>
+        <div className={contentClassName}>{children}</div>
+      </AnimatedCollapse>
     </div>
   );
 }

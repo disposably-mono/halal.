@@ -19,6 +19,7 @@ const SECURITY_HEADERS = [
 ];
 
 const nextConfig = {
+  distDir: process.env.NEXT_DIST_DIR ?? ".next",
   // Baseline security headers applied to every route. A full CSP is intentionally
   // omitted — Next.js injects inline bootstrap scripts, so a correct CSP needs
   // nonce plumbing that is out of scope here.

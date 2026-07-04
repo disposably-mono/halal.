@@ -10,7 +10,7 @@ export default defineConfig({
     trace: "on-first-retry",
   },
   webServer: {
-    command: "rm -rf .next && npx next dev -p 3100",
+    command: "rm -rf .next-e2e && NEXT_DIST_DIR=.next-e2e npx next dev -p 3100",
     url: "http://127.0.0.1:3100",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

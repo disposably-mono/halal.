@@ -3,6 +3,7 @@
 import { useId, useState, type ReactNode } from "react";
 import { Check, ChevronDown, Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { AnimatedCollapse } from "./animated-collapse";
 
 export function FilterPanel({
   title,
@@ -80,17 +81,9 @@ export function FilterGroup({
           )}
         />
       </button>
-      <div
-        id={contentId}
-        className={cn(
-          "grid transition-[grid-template-rows] duration-300 ease-out",
-          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
-        )}
-      >
-        <div className="overflow-hidden">
-          <div className="flex flex-wrap gap-1.5 p-3">{children}</div>
-        </div>
-      </div>
+      <AnimatedCollapse id={contentId} open={open}>
+        <div className="flex flex-wrap gap-1.5 p-3">{children}</div>
+      </AnimatedCollapse>
     </div>
   );
 }

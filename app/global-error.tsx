@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { ERROR_SCREEN_COPY } from "./error-screen-copy";
 
 /**
  * Last-resort boundary for errors thrown in the root layout itself. Because it
@@ -36,7 +37,7 @@ export default function GlobalError({
         }}
       >
         <h1 style={{ margin: 0, fontSize: "40px", letterSpacing: "0.05em" }}>
-          Something went wrong
+          {ERROR_SCREEN_COPY.title}
         </h1>
         <p
           style={{
@@ -45,25 +46,50 @@ export default function GlobalError({
             lineHeight: 1.6,
           }}
         >
-          An unexpected error interrupted your request. Please try again.
+          {ERROR_SCREEN_COPY.body}
         </p>
-        <button
-          onClick={reset}
+        <div
           style={{
             marginTop: "24px",
-            background: "#F5C000",
-            color: "#1B1F5E",
-            border: "none",
-            borderRadius: "3px",
-            padding: "12px 24px",
-            fontWeight: 700,
-            textTransform: "uppercase",
-            letterSpacing: "0.2em",
-            cursor: "pointer",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "12px",
+            justifyContent: "center",
           }}
         >
-          Try Again
-        </button>
+          <button
+            type="button"
+            onClick={reset}
+            style={{
+              background: "#F5C000",
+              color: "#1B1F5E",
+              border: "none",
+              borderRadius: "3px",
+              padding: "12px 24px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "0.2em",
+              cursor: "pointer",
+            }}
+          >
+            {ERROR_SCREEN_COPY.primaryAction}
+          </button>
+          <a
+            href={ERROR_SCREEN_COPY.homeHref}
+            style={{
+              border: "1px solid rgba(255,255,255,0.2)",
+              borderRadius: "3px",
+              color: "rgba(255,255,255,0.78)",
+              padding: "12px 24px",
+              fontWeight: 700,
+              textDecoration: "none",
+              textTransform: "uppercase",
+              letterSpacing: "0.2em",
+            }}
+          >
+            {ERROR_SCREEN_COPY.secondaryAction}
+          </a>
+        </div>
       </body>
     </html>
   );

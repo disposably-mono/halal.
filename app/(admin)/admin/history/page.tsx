@@ -6,7 +6,7 @@ import { HistoryIndexClient } from "./HistoryIndexClient";
 export const dynamic = "force-dynamic";
 
 const HISTORY_LIMIT = 255;
-const ACCOUNT_LOG_LIMIT = 255;
+const ACCOUNT_LOG_LIMIT = 125;
 
 export default async function AdminHistoryPage() {
   await requireCapability("history:view");

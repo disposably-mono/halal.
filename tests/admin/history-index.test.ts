@@ -1,7 +1,12 @@
 import { describe, expect, test } from "vitest";
 import {
+  filterAccountLogs,
   filterLoginHistory,
+  summarizeAccountLogs,
   summarizeLoginHistory,
+  type AccountActionFilter,
+  type AccountLogIndexRow,
+  type AccountRoleFilter,
   type HistoryDateFilter,
   type HistoryPersonFilter,
   type LoginHistoryIndexRow,
@@ -33,6 +38,49 @@ const rows: LoginHistoryIndexRow[] = [
     officerEmail: "dina@olps.edu.ph",
     verifierName: "Eli Tan",
     verifierEmail: "eli@olps.edu.ph",
+  },
+];
+
+const accountLogs: AccountLogIndexRow[] = [
+  {
+    id: "account-1",
+    createdAt: "2026-07-03T07:45:00.000Z",
+    action: "Created account",
+    actorName: "Ana Santos",
+    actorEmail: "ana@olps.edu.ph",
+    targetName: "Ben Cruz",
+    targetEmail: "ben@olps.edu.ph",
+    targetRole: "COMMISSIONER",
+  },
+  {
+    id: "account-2",
+    createdAt: "2026-07-01T04:00:00.000Z",
+    action: "Reset officer key (target role: OFFICER)",
+    actorName: "Carlo Reyes",
+    actorEmail: "carlo@olps.edu.ph",
+    targetName: "Dina Lim",
+    targetEmail: "dina@olps.edu.ph",
+    targetRole: "OFFICER",
+  },
+  {
+    id: "account-3",
+    createdAt: "2026-06-15T01:00:00.000Z",
+    action: "Changed role: OFFICER to CANVASSER",
+    actorName: "Eli Tan",
+    actorEmail: "eli@olps.edu.ph",
+    targetName: "Faye Yu",
+    targetEmail: "faye@olps.edu.ph",
+    targetRole: "CANVASSER",
+  },
+  {
+    id: "account-4",
+    createdAt: "2026-06-10T01:00:00.000Z",
+    action: "Deleted account",
+    actorName: "Eli Tan",
+    actorEmail: "eli@olps.edu.ph",
+    targetName: "Gina Sy",
+    targetEmail: "gina@olps.edu.ph",
+    targetRole: "CANVASSER",
   },
 ];
 
@@ -119,5 +167,56 @@ describe("history index helpers", () => {
     );
 
     expect(filtered.map((row) => row.id)).not.toContain("history-future-today");
+  });
+
+  test("summarizes visible account logs without mutating rows", () => {
+    const summary = summarizeAccountLogs(accountLogs);
+
+    expect(summary).toEqual({
+      total: 4,
+      uniqueActors: 3,
+      uniqueTargets: 4,
+    });
+    expect(accountLogs[0]).toEqual({
+      id: "account-1",
+      createdAt: "2026-07-03T07:45:00.000Z",
+      action: "Created account",
+      actorName: "Ana Santos",
+      actorEmail: "ana@olps.edu.ph",
+      targetName: "Ben Cruz",
+      targetEmail: "ben@olps.edu.ph",
+      targetRole: "COMMISSIONER",
+    });
+  });
+
+  test("filters account logs by query, action, role, and date window", () => {
+    const filtered = filterAccountLogs(accountLogs, {
+      query: "dina",
+      action: "CREDENTIAL",
+      role: "OFFICER",
+      date: "7D",
+      now: baseNow,
+    });
+
+    expect(filtered.map((row) => row.id)).toEqual(["account-2"]);
+  });
+
+  test.each([
+    ["ALL", ["account-1", "account-2", "account-3", "account-4"]],
+    ["ACCOUNT_CREATED", ["account-1"]],
+    ["CREDENTIAL", ["account-2"]],
+    ["ROLE_CHANGED", ["account-3"]],
+    ["ACCOUNT_DELETED", ["account-4"]],
+  ] satisfies [AccountActionFilter, string[]][])("filters %s account actions", (action, expectedIds) => {
+    expect(filterAccountLogs(accountLogs, { query: "", action, role: "ALL", date: "ALL", now: baseNow }).map((row) => row.id)).toEqual(expectedIds);
+  });
+
+  test.each([
+    ["ALL", ["account-1", "account-2", "account-3", "account-4"]],
+    ["COMMISSIONER", ["account-1"]],
+    ["OFFICER", ["account-2"]],
+    ["CANVASSER", ["account-3", "account-4"]],
+  ] satisfies [AccountRoleFilter, string[]][])("filters %s target roles", (role, expectedIds) => {
+    expect(filterAccountLogs(accountLogs, { query: "", action: "ALL", role, date: "ALL", now: baseNow }).map((row) => row.id)).toEqual(expectedIds);
   });
 });
