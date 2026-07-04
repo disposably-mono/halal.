@@ -35,10 +35,10 @@ export function VotersTableClient({
 
   return (
     <div className="overflow-hidden rounded-xl border border-white/8 bg-admin-surface">
-      <div className="flex flex-col gap-3 border-b border-white/[0.07] px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-[13px] border-b border-white/[0.07] px-[18px] py-[13px] sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50">Registered Voters</p>
-          <p className="mt-1 text-[10px] text-white/35">{filteredVoters.length} of {voters.length} shown</p>
+          <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/50">Registered Voters</p>
+          <p className="mt-[4px] text-[11px] text-white/35">{filteredVoters.length} of {voters.length} shown</p>
         </div>
         <SearchInput onSearch={onSearch} placeholder="Search voters" />
       </div>
@@ -52,7 +52,7 @@ export function VotersTableClient({
             key: "voterCode",
             header: "Voter Code",
             priority: 1,
-            render: (voter) => <span className="font-mono text-[10px] text-gold/80">{voter.voterCode}</span>,
+            render: (voter) => <span className="font-mono text-[11px] text-gold/80">{voter.voterCode}</span>,
           },
           {
             key: "studentId",
@@ -66,15 +66,15 @@ export function VotersTableClient({
             key: "voted",
             header: "Voted",
             render: (voter) => voter.hasVoted
-              ? <span className="text-[10px] font-semibold text-emerald-400">Voted</span>
-              : <span className="text-[10px] text-white/60">No</span>,
+              ? <span className="text-[11px] font-semibold text-emerald-400">Voted</span>
+              : <span className="text-[11px] text-white/60">No</span>,
           },
         ]}
         actions={canRemove ? (voter) => (
           <form action={removeVoterById.bind(null, voter.id, electionId)}>
             <button
               type="submit"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-[6px] text-white/25 transition-colors hover:text-red-400 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/40"
+              className="flex h-[45px] w-[45px] shrink-0 items-center justify-center rounded-[7px] text-white/25 transition-colors hover:text-red-400 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/40"
               title="Remove voter"
               aria-label={`Remove voter ${voter.studentId}`}
             >

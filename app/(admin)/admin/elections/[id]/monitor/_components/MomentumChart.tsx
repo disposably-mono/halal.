@@ -16,8 +16,8 @@ export function MomentumChart({ snapshots }: { snapshots: Snapshot[] }) {
   const barW = Math.floor((W - (visible.length - 1) * 2) / visible.length);
 
   return (
-    <div className="mt-4">
-      <p className="mb-1.5 text-[9px] uppercase tracking-[0.12em] text-white/35">
+    <div className="mt-[18px]">
+      <p className="mb-[7px] text-[10px] uppercase tracking-[0.12em] text-white/35">
         Vote momentum
       </p>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: H }}>

@@ -31,7 +31,7 @@ export function AccountLogTable({ logs, query }: { logs: readonly AccountLogRow[
       mobile="stack"
       empty={
         <EmptyState
-          icon={<UserCog aria-hidden="true" className="h-[18px] w-[18px]" />}
+          icon={<UserCog aria-hidden="true" className="h-[20px] w-[20px]" />}
           title="No account changes yet"
           hint="Account creations, role changes, credential resets, and deletions will appear here."
         />
@@ -41,9 +41,9 @@ export function AccountLogTable({ logs, query }: { logs: readonly AccountLogRow[
           key: "time",
           header: "Time",
           priority: 1,
-          className: "w-[190px]",
+          className: "w-[213px]",
           render: (entry) => (
-            <span className="whitespace-nowrap font-mono text-[11px] text-white/45">
+            <span className="whitespace-nowrap font-mono text-[12px] text-white/45">
               {dateFormatter.format(new Date(entry.createdAt))}
             </span>
           ),
@@ -54,8 +54,8 @@ export function AccountLogTable({ logs, query }: { logs: readonly AccountLogRow[
           priority: 1,
           render: (entry) => (
             <div>
-              <p className="text-[12px] font-medium text-white/80">{highlightMatch(entry.action, query)}</p>
-              <p className="mt-0.5 text-[10px] text-white/45">
+              <p className="text-[13px] font-medium text-white/80">{highlightMatch(entry.action, query)}</p>
+              <p className="mt-[2px] text-[11px] text-white/45">
                 {highlightMatch(entry.targetName, query)} ({highlightMatch(entry.targetRole, query)}) · {highlightMatch(entry.targetEmail, query)}
               </p>
             </div>
@@ -66,8 +66,8 @@ export function AccountLogTable({ logs, query }: { logs: readonly AccountLogRow[
           header: "Performed by",
           render: (entry) => (
             <div>
-              <p className="text-[12px] font-medium text-white/80">{highlightMatch(entry.actorName, query)}</p>
-              <p className="mt-0.5 font-mono text-[10px] text-white/60">{highlightMatch(entry.actorEmail, query)}</p>
+              <p className="text-[13px] font-medium text-white/80">{highlightMatch(entry.actorName, query)}</p>
+              <p className="mt-[2px] font-mono text-[11px] text-white/60">{highlightMatch(entry.actorEmail, query)}</p>
             </div>
           ),
         },

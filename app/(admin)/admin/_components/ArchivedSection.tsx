@@ -31,20 +31,20 @@ export function ArchivedSection({
   }
 
   return (
-    <div className="bg-admin-surface border border-white/[0.07] rounded-[12px] overflow-hidden">
+    <div className="bg-admin-surface border border-white/[0.07] rounded-[13px] overflow-hidden">
       <button
         onClick={() => setOpen((v) => !v)}
         aria-expanded={open}
-        className="flex items-center gap-2 px-[14px] py-[10px] cursor-pointer border-b border-white/[0.07] bg-transparent w-full hover:bg-white/2.5 focus-visible:outline-hidden focus-visible:bg-white/4 transition-colors"
+        className="flex items-center gap-[9px] px-[16px] py-[11px] cursor-pointer border-b border-white/[0.07] bg-transparent w-full hover:bg-white/2.5 focus-visible:outline-hidden focus-visible:bg-white/4 transition-colors"
       >
-        <span className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/40 flex-1 text-left">
+        <span className="text-[11px] font-semibold uppercase tracking-[0.07em] text-white/40 flex-1 text-left">
           Archived
         </span>
-        <span className="text-[10px] bg-white/6 text-white/40 rounded-full px-[7px] py-px">
+        <span className="text-[11px] bg-white/6 text-white/40 rounded-full px-[8px] py-px">
           {elections.length}
         </span>
         <svg
-          className={`w-3 h-3 text-white/40 ml-[6px] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
+          className={`w-[13px] h-[13px] text-white/40 ml-[7px] transition-transform duration-200 ${open ? "rotate-180" : ""}`}
           viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
         >
           <polyline points="6 9 12 15 18 9" />
@@ -54,11 +54,11 @@ export function ArchivedSection({
         elections.map((e) => (
           <div
             key={e.id}
-            className="flex items-center gap-3 px-[14px] py-[10px] border-b border-white/4 last:border-0"
+            className="flex items-center gap-[13px] px-[16px] py-[11px] border-b border-white/4 last:border-0"
           >
-            <div className="flex-1 min-w-0">
-              <div className="text-[12px] font-medium text-white/70 truncate">{e.name}</div>
-              <div className="text-[10px] text-white/30 mt-px">
+            <div className="flex-1 min-w-[0px]">
+              <div className="text-[13px] font-medium text-white/70 truncate">{e.name}</div>
+              <div className="text-[11px] text-white/30 mt-px">
                 {DIVISION_LABELS[e.division] ?? e.division} · archived {fmt(e.archivedAt)}
               </div>
             </div>
@@ -67,7 +67,7 @@ export function ArchivedSection({
                 type="button"
                 onClick={() => handleRestore(e.id)}
                 disabled={isPending}
-                className="text-[10px] text-gold bg-gold/8 border border-gold/20 rounded-[5px] px-[9px] py-[4px] hover:bg-gold/15 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/40 transition-all disabled:opacity-40"
+                className="text-[11px] text-gold bg-gold/8 border border-gold/20 rounded-[6px] px-[10px] py-[4px] hover:bg-gold/15 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/40 transition-all disabled:opacity-40"
               >
                 Restore
               </button>

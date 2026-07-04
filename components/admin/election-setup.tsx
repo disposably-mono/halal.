@@ -7,7 +7,7 @@ import { ADMIN_STATUS_LABELS, type AdminStatus } from "./types";
 
 function BarsIcon() {
   return (
-    <svg style={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <svg style={{ width: 13, height: 13 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
       <line x1="18" y1="20" x2="18" y2="10" />
       <line x1="12" y1="20" x2="12" y2="4" />
       <line x1="6" y1="20" x2="6" y2="14" />
@@ -17,7 +17,7 @@ function BarsIcon() {
 
 function CheckIcon() {
   return (
-    <svg style={{ width: 9, height: 9 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <svg style={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
@@ -45,11 +45,11 @@ export function ElectionSubNav({
 
   return (
     <div className="overflow-x-auto border-b border-white/6 bg-admin-bg">
-      <div className="mx-auto flex h-[42px] min-w-max max-w-7xl items-center gap-1 px-4 sm:px-6" aria-label="Election setup navigation">
+      <div className="mx-auto flex h-[47px] min-w-max max-w-7xl items-center gap-[4px] px-[18px] sm:px-[27px]" aria-label="Election setup navigation">
         {tabs.map((tab) => {
           const isActive = pathname.startsWith(tab.href);
           const marker = tab.step ? (
-            <span className={`flex h-[17px] w-[17px] items-center justify-center rounded-full border text-[9px] font-bold ${tab.done
+            <span className={`flex h-[19px] w-[19px] items-center justify-center rounded-full border text-[10px] font-bold ${tab.done
               ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-400"
               : isActive
                 ? "border-gold/40 bg-gold/10 text-gold"
@@ -60,16 +60,16 @@ export function ElectionSubNav({
           ) : <BarsIcon />;
 
           return tab.disabled ? (
-            <span key={tab.label} className="ml-2 flex cursor-not-allowed select-none items-center gap-[5px] border-l border-white/8 px-[12px] py-[5px] text-[11px] text-white/60" title="Available once the election opens">
+            <span key={tab.label} className="ml-[9px] flex cursor-not-allowed select-none items-center gap-[6px] border-l border-white/8 px-[13px] py-[6px] text-[12px] text-white/60" title="Available once the election opens">
               {marker}
               {tab.label}
             </span>
           ) : (
-            <Link key={tab.label} href={tab.href} className={`relative flex items-center gap-[6px] rounded-[6px] px-[10px] py-[6px] text-[11px] no-underline transition-all ${tab.step === null ? "ml-2 border-l border-white/8 pl-[14px]" : ""} ${isActive ? "bg-white/6 text-white/90" : "text-white/50 hover:bg-white/3 hover:text-white/70"}`}>
-              {isActive && <span className="absolute bottom-0 left-2 right-2 h-[2px] rounded-t-[2px] bg-gold" />}
+            <Link key={tab.label} href={tab.href} className={`relative flex items-center gap-[7px] rounded-[7px] px-[11px] py-[7px] text-[12px] no-underline transition-all ${tab.step === null ? "ml-[9px] border-l border-white/8 pl-[16px]" : ""} ${isActive ? "bg-white/6 text-white/90" : "text-white/50 hover:bg-white/3 hover:text-white/70"}`}>
+              {isActive && <span className="absolute bottom-[0px] left-[9px] right-[9px] h-[2px] rounded-t-[2px] bg-gold" />}
               {marker}
               {tab.label}
-              {tab.step && tab.step < 3 && <span className="ml-1 text-white/12">›</span>}
+              {tab.step && tab.step < 3 && <span className="ml-[4px] text-white/12">›</span>}
             </Link>
           );
         })}
@@ -96,17 +96,17 @@ export function SetupStepper({
   const firstIncomplete = steps.findIndex((step) => !step.done);
 
   return (
-    <div className="flex items-center gap-0">
+    <div className="flex items-center gap-[0px]">
       {steps.map((step, i) => {
         const isCurrent = !step.done && i === firstIncomplete;
         return (
           <div key={step.label} className="flex items-center">
-            {i > 0 && <div className={`h-px w-8 ${steps[i - 1].done ? "bg-emerald-400/40" : "bg-white/8"}`} />}
-            <div className="flex items-center gap-[6px]">
-              <div className={`flex h-[18px] w-[18px] shrink-0 items-center justify-center rounded-full border text-[9px] font-bold transition-all ${step.done ? "border-emerald-400/40 bg-emerald-400/20 text-emerald-400" : isCurrent ? "border-gold/40 bg-gold/15 text-gold" : "border-white/10 bg-white/4 text-white/60"}`}>
+            {i > 0 && <div className={`h-px w-[36px] ${steps[i - 1].done ? "bg-emerald-400/40" : "bg-white/8"}`} />}
+            <div className="flex items-center gap-[7px]">
+              <div className={`flex h-[20px] w-[20px] shrink-0 items-center justify-center rounded-full border text-[10px] font-bold transition-all ${step.done ? "border-emerald-400/40 bg-emerald-400/20 text-emerald-400" : isCurrent ? "border-gold/40 bg-gold/15 text-gold" : "border-white/10 bg-white/4 text-white/60"}`}>
                 {step.done ? <CheckIcon /> : <span>{i + 1}</span>}
               </div>
-              <span className={`text-[11px] font-medium ${step.done ? "text-emerald-400/70" : isCurrent ? "text-gold/80" : "text-white/60"}`}>
+              <span className={`text-[12px] font-medium ${step.done ? "text-emerald-400/70" : isCurrent ? "text-gold/80" : "text-white/60"}`}>
                 {step.label}
               </span>
             </div>
@@ -129,10 +129,10 @@ export function SetupNextStep({
   label: string;
 }) {
   return (
-    <div className="flex flex-col gap-3 rounded-xl border border-gold/20 bg-gold/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
+    <div className="flex flex-col gap-[13px] rounded-xl border border-gold/20 bg-gold/5 px-[18px] py-[13px] sm:flex-row sm:items-center sm:justify-between">
       <div>
-        <p className="text-[12px] font-semibold text-white/80">{title}</p>
-        <p className="mt-0.5 text-[10px] text-white/40">{description}</p>
+        <p className="text-[13px] font-semibold text-white/80">{title}</p>
+        <p className="mt-[2px] text-[11px] text-white/40">{description}</p>
       </div>
       <Button asChild variant="adminPrimary" size="adminMd" className="shrink-0">
         <Link href={href}>

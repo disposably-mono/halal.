@@ -75,7 +75,7 @@ export default async function AdminLayout({ children }: { children: ReactNode })
       <button
         type="submit"
         aria-label="Sign out"
-        className="text-[11px] text-white/40 hover:text-white/70 transition-colors cursor-pointer bg-transparent border-0 rounded-[4px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/50"
+        className="text-[12px] text-white/40 hover:text-white/70 transition-colors cursor-pointer bg-transparent border-0 rounded-[4px] focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/50"
       >
         Sign out
       </button>

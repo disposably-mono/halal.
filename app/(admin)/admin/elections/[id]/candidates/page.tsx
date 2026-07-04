@@ -69,16 +69,16 @@ export default async function CandidatesPage(props: { params: Promise<{ id: stri
 
   return (
     <>
-      <nav className="sticky top-0 z-10 border-b border-white/8 bg-admin-surface">
-        <div className="mx-auto flex min-h-[52px] max-w-7xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0">
-          <div className="flex min-w-0 items-center gap-2">
-            <Link href="/admin" className="text-[11px] text-white/40 transition-colors hover:text-white/60">
+      <nav className="sticky top-[0px] z-10 border-b border-white/8 bg-admin-surface">
+        <div className="mx-auto flex min-h-[58px] max-w-7xl flex-col gap-[9px] px-[18px] py-[13px] sm:flex-row sm:items-center sm:justify-between sm:px-[27px] sm:py-[0px]">
+          <div className="flex min-w-[0px] items-center gap-[9px]">
+            <Link href="/admin" className="text-[12px] text-white/40 transition-colors hover:text-white/60">
               ← Dashboard
             </Link>
             <span className="text-white/10">/</span>
-            <span className="min-w-0 max-w-[180px] truncate text-[11px] text-white/60 sm:max-w-[200px]">{election.name}</span>
+            <span className="min-w-[0px] max-w-[202px] truncate text-[12px] text-white/60 sm:max-w-[224px]">{election.name}</span>
             <span className="text-white/10">/</span>
-            <span className="text-[11px] text-white/45">Candidates</span>
+            <span className="text-[12px] text-white/45">Candidates</span>
           </div>
           <StatusPill status={status} />
         </div>
@@ -90,7 +90,7 @@ export default async function CandidatesPage(props: { params: Promise<{ id: stri
         />
       </nav>
 
-      <PageContainer className="max-w-5xl space-y-5">
+      <PageContainer className="max-w-5xl space-y-[22px]">
         <PageHeader
           eyebrow={election.name}
           title="Candidates"
@@ -135,7 +135,7 @@ export default async function CandidatesPage(props: { params: Promise<{ id: stri
 
         {canEditCandidates && (
           <Card title="Manage Positions">
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-[9px]">
               {positions.length === 0 && (
                 <form action={seedAllPositions}>
                   <input type="hidden" name="electionId" value={election.id} />
@@ -144,7 +144,7 @@ export default async function CandidatesPage(props: { params: Promise<{ id: stri
                 </form>
               )}
               {availablePositions.length > 0 && (
-                <form action={addSinglePosition} className="flex items-center gap-2">
+                <form action={addSinglePosition} className="flex items-center gap-[9px]">
                   <input type="hidden" name="electionId" value={election.id} />
                   <input type="hidden" name="division" value={election.division} />
                   <ThemedSelect
@@ -160,9 +160,9 @@ export default async function CandidatesPage(props: { params: Promise<{ id: stri
                 <form key={pos.id} action={removePosition}>
                   <input type="hidden" name="positionId" value={pos.id} />
                   <input type="hidden" name="electionId" value={election.id} />
-                  <button type="submit" className="inline-flex cursor-pointer items-center gap-[6px] rounded-[6px] border border-white/8 bg-white/5 px-[10px] py-[5px] text-[11px] text-white/60 transition-all hover:border-red-400/25 hover:text-red-400">
+                  <button type="submit" className="inline-flex cursor-pointer items-center gap-[7px] rounded-[7px] border border-white/8 bg-white/5 px-[11px] py-[6px] text-[12px] text-white/60 transition-all hover:border-red-400/25 hover:text-red-400">
                     {pos.title}
-                    <span className="text-[13px] leading-none text-white/18">×</span>
+                    <span className="text-[15px] leading-none text-white/18">×</span>
                   </button>
                 </form>
               ))}

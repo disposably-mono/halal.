@@ -34,7 +34,7 @@ export default async function AdminAccountsPage() {
   }));
 
   return (
-    <PageContainer className="flex flex-col gap-[18px]">
+    <PageContainer className="flex flex-col gap-[20px]">
       <PageHeader
         eyebrow="Administration"
         title="Admin Accounts"
@@ -45,7 +45,7 @@ export default async function AdminAccountsPage() {
           </span>
         }
         actions={
-        <span className="rounded-[6px] border border-gold/20 bg-gold/[0.07] px-[9px] py-[4px] text-[11px] text-gold/80">
+        <span className="rounded-[7px] border border-gold/20 bg-gold/[0.07] px-[10px] py-[4px] text-[12px] text-gold/80">
           {summary.totalLabel}
         </span>
         }

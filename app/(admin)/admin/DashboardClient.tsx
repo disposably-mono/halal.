@@ -76,7 +76,7 @@ export default function DashboardClient({
         )}
       />
 
-      <div className="grid grid-cols-1 gap-[10px] sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-[11px] sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Total Elections" value={summary.totalElections} sub={summary.statusBreakdown || "No elections yet"} accent="gold" />
         <MetricCard label="Active Now" value={summary.openCount} sub={summary.openCount > 0 ? `${summary.activeNames} · ${summary.activeTurnout}% voted` : "None active"} accent={summary.openCount > 0 ? "emerald" : undefined} />
         <MetricCard label="Registered Voters" value={summary.uniqueStudentCount.toLocaleString()} sub={summary.uniqueStudentCount === summary.totalRegistrations ? "unique students" : `unique students · ${summary.totalRegistrations.toLocaleString()} registrations`} accent="blue" />
@@ -87,10 +87,10 @@ export default function DashboardClient({
 
       {attnElections.length > 0 && (
         <div>
-          <div className="text-[10px] font-semibold uppercase tracking-[0.07em] text-white/40 mb-2">
+          <div className="text-[11px] font-semibold uppercase tracking-[0.07em] text-white/40 mb-[9px]">
             Active &amp; Upcoming
           </div>
-          <div className="grid gap-[10px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
+          <div className="grid gap-[11px]" style={{ gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
             {attnElections.map((e) => <AttnCard key={e.id} e={e} />)}
           </div>
         </div>
@@ -101,12 +101,12 @@ export default function DashboardClient({
           title="No active elections"
           hint={canLifecycle ? "Create an election or restore one from the archive." : "No elections are currently active."}
           icon={
-            <svg style={{ width: 18, height: 18 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+            <svg style={{ width: 20, height: 20 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" />
               <line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
             </svg>
           }
-          action={canLifecycle && <Link href="/admin/elections/new" className="text-[11px] text-gold no-underline transition-all hover:opacity-80">Create election →</Link>}
+          action={canLifecycle && <Link href="/admin/elections/new" className="text-[12px] text-gold no-underline transition-all hover:opacity-80">Create election →</Link>}
         />
       )}
 
@@ -118,7 +118,7 @@ export default function DashboardClient({
           >
             <SearchInput onSearch={onSearch} placeholder="Search elections" className="sm:max-w-none" />
             <FilterGroup
-              icon={<ListFilter aria-hidden="true" className="h-4 w-4" />}
+              icon={<ListFilter aria-hidden="true" className="h-[18px] w-[18px]" />}
               label="Election status"
               value={statusFilter === "ALL" ? "All statuses" : statusFilter}
             >
@@ -133,7 +133,7 @@ export default function DashboardClient({
               ))}
             </FilterGroup>
           </FilterPanel>
-          <div className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface">
+          <div className="overflow-hidden rounded-[13px] border border-white/[0.07] bg-admin-surface">
           <DataTable
             rows={filteredElections}
             getRowKey={(election) => election.id}
@@ -145,19 +145,19 @@ export default function DashboardClient({
                 header: "Election",
                 priority: 1,
                 render: (election) => (
-                  <div className="min-w-0">
-                    <p className="truncate text-[12px] font-medium text-white/80">{election.name}</p>
-                    <p className="mt-px text-[10px] text-white/40">{DIVISION_LABELS[election.division] ?? election.division}</p>
+                  <div className="min-w-[0px]">
+                    <p className="truncate text-[13px] font-medium text-white/80">{election.name}</p>
+                    <p className="mt-px text-[11px] text-white/40">{DIVISION_LABELS[election.division] ?? election.division}</p>
                   </div>
                 ),
               },
-              { key: "status", header: "Status", priority: 1, className: "w-[100px]", render: (election) => <StatusPill status={election.status} /> },
-              { key: "voters", header: "Voters", className: "w-[80px]", render: (election) => election._count.voters.toLocaleString() },
-              { key: "setup", header: "Setup", className: "w-[130px]", render: (election) => `${election._count.positions} pos. · ${election._count.candidates} cand.` },
+              { key: "status", header: "Status", priority: 1, className: "w-[112px]", render: (election) => <StatusPill status={election.status} /> },
+              { key: "voters", header: "Voters", className: "w-[90px]", render: (election) => election._count.voters.toLocaleString() },
+              { key: "setup", header: "Setup", className: "w-[146px]", render: (election) => `${election._count.positions} pos. · ${election._count.candidates} cand.` },
               {
                 key: "turnout",
                 header: "Turnout",
-                className: "w-[90px]",
+                className: "w-[101px]",
                 render: (election) => election.status === "OPEN" || election.status === "CLOSED"
                   ? `${pct(election.votedCount, election._count.voters)}%`
                   : "—",
@@ -165,14 +165,14 @@ export default function DashboardClient({
               {
                 key: "schedule",
                 header: "Schedule",
-                className: "w-[130px]",
+                className: "w-[146px]",
                 render: (election) => election.status === "SCHEDULED" && election.scheduledOpen ? fmt(election.scheduledOpen) : "—",
               },
             ]}
-            actionsClassName="w-[140px]"
+            actionsClassName="w-[157px]"
             actions={(election) => (
-              <div className="flex items-center justify-end gap-1">
-                <Link href={`/admin/elections/${election.id}/control`} className="rounded-[5px] border border-gold/20 bg-gold/8 px-[7px] py-[5px] text-[10px] text-gold no-underline transition-all hover:bg-gold/15">
+              <div className="flex items-center justify-end gap-[4px]">
+                <Link href={`/admin/elections/${election.id}/control`} className="rounded-[6px] border border-gold/20 bg-gold/8 px-[8px] py-[6px] text-[11px] text-gold no-underline transition-all hover:bg-gold/15">
                   Control
                 </Link>
                 <RowActions e={election} onToast={onToast} canLifecycle={canLifecycle} />

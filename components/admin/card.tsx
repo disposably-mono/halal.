@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
 
 export const CARD_TITLE_CLASS =
-  "text-[10px] font-semibold uppercase tracking-[0.08em] text-white/50";
+  "text-[11px] font-semibold uppercase tracking-[0.08em] text-white/50";
 
 export function AdminCardTitle({
   className,
@@ -32,12 +32,12 @@ export function Card({
   return (
     <div className="overflow-hidden rounded-xl border border-white/8 bg-admin-surface">
       {title && (
-        <div className="flex items-center justify-between border-b border-white/[0.07] px-4 py-3">
+        <div className="flex items-center justify-between border-b border-white/[0.07] px-[18px] py-[13px]">
           <AdminCardTitle>{title}</AdminCardTitle>
-          {meta && <div className="flex items-center gap-2">{meta}</div>}
+          {meta && <div className="flex items-center gap-[9px]">{meta}</div>}
         </div>
       )}
-      <div className={noPad ? "" : "p-4"}>{children}</div>
+      <div className={noPad ? "" : "p-[18px]"}>{children}</div>
     </div>
   );
 }
@@ -64,13 +64,13 @@ export function MetricCard({
           "text-white/90";
 
   return (
-    <div className="relative overflow-hidden rounded-[8px] border border-white/[0.07] bg-white/3 px-[13px] py-[10px]">
-      {accent && <div className={cn("absolute inset-x-0 top-0 h-[2px]", valColor.replace("text-", "bg-"))} />}
-      <p className="mb-[5px] text-[9px] uppercase tracking-[0.12em] text-white/40">{label}</p>
-      <p className={cn("text-[18px] font-bold leading-none", valColor, mono && "font-mono text-[13px]")}>
+    <div className="relative overflow-hidden rounded-[9px] border border-white/[0.07] bg-white/3 px-[15px] py-[11px]">
+      {accent && <div className={cn("absolute inset-x-[0px] top-[0px] h-[2px]", valColor.replace("text-", "bg-"))} />}
+      <p className="mb-[6px] text-[10px] uppercase tracking-[0.12em] text-white/40">{label}</p>
+      <p className={cn("text-[20px] font-bold leading-none", valColor, mono && "font-mono text-[15px]")}>
         {value}
       </p>
-      {sub && <p className="mt-[5px] text-[9px] text-white/60">{sub}</p>}
+      {sub && <p className="mt-[6px] text-[10px] text-white/60">{sub}</p>}
     </div>
   );
 }

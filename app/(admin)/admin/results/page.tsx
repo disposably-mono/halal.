@@ -33,7 +33,7 @@ export default async function AdminResultsPage() {
 
   if (closedFirst.length === 0) {
     return (
-      <PageContainer className="flex flex-col gap-[18px]">
+      <PageContainer className="flex flex-col gap-[20px]">
         <ResultsIndexClient elections={[]} />
       </PageContainer>
     );
@@ -151,7 +151,7 @@ export default async function AdminResultsPage() {
   }));
 
   return (
-    <PageContainer className="flex flex-col gap-[18px]">
+    <PageContainer className="flex flex-col gap-[20px]">
       <ResultsIndexClient elections={resultsElections} />
     </PageContainer>
   );

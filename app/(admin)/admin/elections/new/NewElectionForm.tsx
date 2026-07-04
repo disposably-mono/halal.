@@ -24,7 +24,7 @@ export function NewElectionForm() {
 
   return (
     <Card title="Election Details">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-[27px]">
         <Field
           label="Election Name"
           htmlFor="election-name"
@@ -58,7 +58,7 @@ export function NewElectionForm() {
           />
         </Field>
 
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-[13px] sm:grid-cols-2">
           <Field
             label="Opens"
             htmlFor="scheduled-open"
@@ -83,7 +83,7 @@ export function NewElectionForm() {
           <p className="text-sm text-red-400" role="alert">{submitError}</p>
         )}
 
-        <div className="flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+        <div className="flex flex-col-reverse gap-[9px] sm:flex-row sm:justify-end">
           <Button asChild variant="adminGhost" size="adminMd">
             <Link href="/admin">Cancel</Link>
           </Button>

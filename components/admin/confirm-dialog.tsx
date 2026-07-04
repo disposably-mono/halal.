@@ -43,12 +43,12 @@ export function ConfirmDialog({
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-9999 flex items-center justify-center bg-black/70" onClick={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
-      <div role="dialog" aria-modal="true" aria-labelledby="admin-confirm-title" aria-describedby="admin-confirm-body" className="w-[90%] max-w-[360px] animate-in rounded-[14px] border border-white/12 bg-admin-raised p-[22px] duration-150 zoom-in-95">
-        {icon && <div className="mb-3 flex h-[38px] w-[38px] items-center justify-center rounded-[9px]">{icon}</div>}
-        <p id="admin-confirm-title" className="mb-[7px] text-[15px] font-bold text-white/90">{title}</p>
-        <p id="admin-confirm-body" className="mb-[18px] text-[12px] leading-relaxed text-white/60">{body}</p>
-        <div className="flex justify-end gap-[7px]">
+    <div className="fixed inset-[0px] z-9999 flex items-center justify-center bg-black/70" onClick={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
+      <div role="dialog" aria-modal="true" aria-labelledby="admin-confirm-title" aria-describedby="admin-confirm-body" className="w-[90%] max-w-[403px] animate-in rounded-[16px] border border-white/12 bg-admin-raised p-[25px] duration-150 zoom-in-95">
+        {icon && <div className="mb-[13px] flex h-[43px] w-[43px] items-center justify-center rounded-[10px]">{icon}</div>}
+        <p id="admin-confirm-title" className="mb-[8px] text-[17px] font-bold text-white/90">{title}</p>
+        <p id="admin-confirm-body" className="mb-[20px] text-[13px] leading-relaxed text-white/60">{body}</p>
+        <div className="flex justify-end gap-[8px]">
           <Button ref={cancelRef} onClick={onCancel} variant="adminGhost" size="adminMd">Cancel</Button>
           <Button onClick={onConfirm} disabled={isPending} variant={confirmVariant} size="adminMd">
             {isPending ? "Working…" : confirmLabel}

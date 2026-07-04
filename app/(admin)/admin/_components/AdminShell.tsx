@@ -111,14 +111,14 @@ export function AdminShell({
     <div className="min-h-screen flex flex-col bg-admin-bg">
       <a
         href="#admin-main"
-        className="sr-only focus:not-sr-only focus:absolute focus:left-3 focus:top-3 focus:z-9999 focus:rounded-[7px] focus:bg-gold focus:px-4 focus:py-2 focus:text-[12px] focus:font-semibold focus:text-admin-bg focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden"
+        className="sr-only focus:not-sr-only focus:absolute focus:left-[13px] focus:top-[13px] focus:z-9999 focus:rounded-[8px] focus:bg-gold focus:px-[18px] focus:py-[9px] focus:text-[13px] focus:font-semibold focus:text-admin-bg focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden"
       >
         Skip to content
       </a>
 
       {/* Topbar */}
-      <nav className="h-14 flex items-center justify-between px-4 sm:px-5 sticky top-0 z-50 shrink-0 border-b border-white/[0.07] bg-admin-surface/95 backdrop-blur-sm transition-colors">
-        <div className="flex items-center gap-2">
+      <nav className="h-[63px] flex items-center justify-between px-[18px] sm:px-[22px] sticky top-[0px] z-50 shrink-0 border-b border-white/[0.07] bg-admin-surface/95 backdrop-blur-sm transition-colors">
+        <div className="flex items-center gap-[9px]">
           <button
             ref={hamburgerRef}
             type="button"
@@ -126,33 +126,33 @@ export function AdminShell({
             aria-controls="admin-drawer"
             aria-label={drawerOpen ? "Close menu" : "Open menu"}
             onClick={() => setDrawerOpen((open) => !open)}
-            className="flex h-11 w-11 items-center justify-center rounded-[7px] text-white/70 hover:bg-white/6 hover:text-white/90 transition-colors lg:hidden focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden"
+            className="flex h-[49px] w-[49px] items-center justify-center rounded-[8px] text-white/70 hover:bg-white/6 hover:text-white/90 transition-colors lg:hidden focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden"
           >
             {drawerOpen ? (
-              <X aria-hidden="true" className="h-5 w-5" />
+              <X aria-hidden="true" className="h-[22px] w-[22px]" />
             ) : (
-              <Menu aria-hidden="true" className="h-5 w-5" />
+              <Menu aria-hidden="true" className="h-[22px] w-[22px]" />
             )}
           </button>
           <div className="flex items-baseline gap-[2px] font-display">
-            <span className="text-[19px] tracking-[-0.4px] text-white/90">
+            <span className="text-[21px] tracking-[-0.4px] text-white/90">
               halal<span className="text-gold">.</span>
             </span>
-            <span className="hidden sm:inline text-[11px] text-white/40 ml-2 font-sans font-normal">Admin Panel</span>
+            <span className="hidden sm:inline text-[12px] text-white/40 ml-[9px] font-sans font-normal">Admin Panel</span>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <span className="hidden sm:inline text-[11px] text-white/50">
+        <div className="flex items-center gap-[13px]">
+          <span className="hidden sm:inline text-[12px] text-white/50">
             {new Date().toLocaleDateString("en-PH", {
               weekday: "short",
               month: "short",
               day: "numeric",
             })}
           </span>
-          <div className="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-gold shrink-0 border border-gold/30 bg-linear-to-br from-gold/30 to-gold/10">
+          <div className="w-[31px] h-[31px] rounded-full flex items-center justify-center text-[11px] font-bold text-gold shrink-0 border border-gold/30 bg-linear-to-br from-gold/30 to-gold/10">
             {adminInitial}
           </div>
-          <span className="hidden sm:inline max-w-[140px] truncate text-[11px] text-white/50">{adminName}</span>
+          <span className="hidden sm:inline max-w-[157px] truncate text-[12px] text-white/50">{adminName}</span>
           {signOutForm}
         </div>
       </nav>
@@ -163,31 +163,31 @@ export function AdminShell({
         <nav
           aria-label="Admin navigation"
           className={cn(
-            "hidden shrink-0 flex-col overflow-hidden border-r border-white/[0.07] bg-admin-surface transition-[width] duration-200 lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)]",
-            sidebarCollapsed ? "w-[64px]" : "w-[220px]",
+            "hidden shrink-0 flex-col overflow-hidden border-r border-white/[0.07] bg-admin-surface transition-[width] duration-200 lg:sticky lg:top-[63px] lg:flex lg:h-[calc(100vh-3.5rem)]",
+            sidebarCollapsed ? "w-[72px]" : "w-[246px]",
           )}
         >
-          <div className="min-h-0 flex-1 overflow-y-auto py-4">
+          <div className="min-h-[0px] flex-1 overflow-y-auto py-[18px]">
             {navContent(sidebarCollapsed)}
           </div>
-          <div className={cn("flex border-t border-white/[0.07] px-3 py-3", sidebarCollapsed ? "justify-center" : "justify-end")}>
+          <div className={cn("flex border-t border-white/[0.07] px-[13px] py-[13px]", sidebarCollapsed ? "justify-center" : "justify-end")}>
             <button
               type="button"
               aria-label={sidebarCollapsed ? "Expand admin panel" : "Collapse admin panel"}
               title={sidebarCollapsed ? "Expand admin panel" : "Collapse admin panel"}
               onClick={() => setSidebarCollapsed((value) => !value)}
               className={cn(
-                "inline-flex h-9 items-center justify-center rounded-[7px] border border-white/8 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45 transition-colors hover:bg-white/5 hover:text-white/75 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/45",
-                sidebarCollapsed ? "w-9" : "px-3",
+                "inline-flex h-[40px] items-center justify-center rounded-[8px] border border-white/8 text-[12px] font-semibold uppercase tracking-[0.08em] text-white/45 transition-colors hover:bg-white/5 hover:text-white/75 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/45",
+                sidebarCollapsed ? "w-[40px]" : "px-[13px]",
               )}
             >
               {sidebarCollapsed ? (
-                <PanelLeftOpen aria-hidden="true" className="h-4 w-4" />
+                <PanelLeftOpen aria-hidden="true" className="h-[18px] w-[18px]" />
               ) : (
                 <>
                   <span>Collapse</span>
-                  <span className="mx-2 h-4 w-px bg-white/15" aria-hidden="true" />
-                  <PanelLeftClose aria-hidden="true" className="h-4 w-4" />
+                  <span className="mx-[9px] h-[18px] w-px bg-white/15" aria-hidden="true" />
+                  <PanelLeftClose aria-hidden="true" className="h-[18px] w-[18px]" />
                 </>
               )}
             </button>
@@ -198,7 +198,7 @@ export function AdminShell({
         {drawerOpen && (
           <>
             <div
-              className="fixed inset-0 z-40 bg-black/60 lg:hidden"
+              className="fixed inset-[0px] z-40 bg-black/60 lg:hidden"
               onClick={() => setDrawerOpen(false)}
               aria-hidden="true"
             />
@@ -208,7 +208,7 @@ export function AdminShell({
               role="dialog"
               aria-modal="true"
               aria-label="Admin navigation"
-              className="fixed inset-y-0 left-0 z-50 flex w-[260px] max-w-[80vw] flex-col gap-[2px] overflow-y-auto border-r border-white/[0.07] bg-admin-surface py-4 shadow-2xl animate-in slide-in-from-left duration-200 lg:hidden"
+              className="fixed inset-y-[0px] left-[0px] z-50 flex w-[291px] max-w-[80vw] flex-col gap-[2px] overflow-y-auto border-r border-white/[0.07] bg-admin-surface py-[18px] shadow-2xl animate-in slide-in-from-left duration-200 lg:hidden"
             >
               {navContent(false)}
             </div>
@@ -216,7 +216,7 @@ export function AdminShell({
         )}
 
         {/* Page content */}
-        <main id="admin-main" className="min-w-0 flex-1 overflow-auto scroll-smooth lg:h-[calc(100vh-3.5rem)]">
+        <main id="admin-main" className="min-w-[0px] flex-1 overflow-auto scroll-smooth lg:h-[calc(100vh-3.5rem)]">
           <div key={pathname} className="min-h-full animate-in fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
             {children}
           </div>
@@ -228,11 +228,11 @@ export function AdminShell({
 
 function NavSectionLabel({ label, collapsed }: { label: string; collapsed: boolean }) {
   if (collapsed) {
-    return <div className="mx-auto my-3 h-px w-7 bg-white/10" aria-hidden="true" />;
+    return <div className="mx-auto my-[13px] h-px w-[31px] bg-white/10" aria-hidden="true" />;
   }
 
   return (
-    <div className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/40 px-4 pt-3 pb-1">
+    <div className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/40 px-[18px] pt-[13px] pb-[4px]">
       {label}
     </div>
   );

@@ -20,8 +20,8 @@ export function TurnoutSparkline({ snapshots }: { snapshots: Snapshot[] }) {
   const lastY = H - (last / max) * (H - 4);
 
   return (
-    <div className="mt-3">
-      <p className="mb-1.5 text-[9px] uppercase tracking-[0.12em] text-white/35">
+    <div className="mt-[13px]">
+      <p className="mb-[7px] text-[10px] uppercase tracking-[0.12em] text-white/35">
         Turnout over session
       </p>
       <svg viewBox={`0 0 ${W} ${H}`} className="w-full" style={{ height: H }}>

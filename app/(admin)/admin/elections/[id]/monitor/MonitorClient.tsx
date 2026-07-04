@@ -34,7 +34,7 @@ export default function MonitorClient({
 
   return (
     <main>
-      <PageContainer className="space-y-5">
+      <PageContainer className="space-y-[22px]">
         <PageHeader
           eyebrow={DIVISION_LABELS[division] ?? division}
           title={electionName}
@@ -47,7 +47,7 @@ export default function MonitorClient({
             />
           }
           meta={
-            <div className="flex flex-wrap items-center gap-2">
+            <div className="flex flex-wrap items-center gap-[9px]">
               <StatusPill status={status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} />
               <PollingStatus
                 updatedAt={lastUpdated}
@@ -74,9 +74,9 @@ export default function MonitorClient({
           }
         />
 
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-[9px]">
           {!replay.isLive && (
-            <span className="rounded-full border border-gold/25 bg-gold/[0.07] px-2 py-[3px] font-mono text-[10px] text-gold">
+            <span className="rounded-full border border-gold/25 bg-gold/[0.07] px-[9px] py-[3px] font-mono text-[11px] text-gold">
               Replaying {snapshots[replay.replayIndex!]?.label}
             </span>
           )}
@@ -89,22 +89,22 @@ export default function MonitorClient({
 
         {/* ── Loading ── */}
         {loading && !displayData && (
-          <div className="flex items-center justify-center py-20">
-            <RotateCw aria-hidden="true" className="h-5 w-5 animate-spin text-white/60" />
+          <div className="flex items-center justify-center py-[90px]">
+            <RotateCw aria-hidden="true" className="h-[22px] w-[22px] animate-spin text-white/60" />
           </div>
         )}
 
         {/* ── Main layout ── */}
         {displayData && (
-          <div className="grid grid-cols-1 items-start gap-5 2xl:grid-cols-[1fr_340px]">
+          <div className="grid grid-cols-1 items-start gap-[22px] 2xl:grid-cols-[1fr_340px]">
             {/* Positions grid */}
             <div>
               {displayData.positions.length === 0 ? (
-                <div className="rounded-xl border border-white/8 bg-admin-surface px-6 py-16 text-center">
-                  <p className="text-[13px] text-white/40">No positions found for this election.</p>
+                <div className="rounded-xl border border-white/8 bg-admin-surface px-[27px] py-[72px] text-center">
+                  <p className="text-[15px] text-white/40">No positions found for this election.</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-1 gap-4 xl:grid-cols-2">
+                <div className="grid grid-cols-1 gap-[18px] xl:grid-cols-2">
                   {displayData.positions.map((position) => (
                     <PositionCard key={position.id} position={position} />
                   ))}
@@ -113,7 +113,7 @@ export default function MonitorClient({
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-4">
+            <div className="space-y-[18px]">
               {displayData.turnout && (
                 <TurnoutCard turnout={displayData.turnout} snapshots={snapshots} />
               )}

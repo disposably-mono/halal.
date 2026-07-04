@@ -25,7 +25,7 @@ export default async function AdminCandidatesPage() {
   });
 
   return (
-    <PageContainer className="flex flex-col gap-[18px]">
+    <PageContainer className="flex flex-col gap-[20px]">
       <CandidatesIndexClient positions={positions} />
     </PageContainer>
   );

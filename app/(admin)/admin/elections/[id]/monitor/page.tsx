@@ -28,16 +28,16 @@ export default async function MonitorPage(props: { params: Promise<{ id: string 
   return (
     <div className="min-h-screen bg-admin-bg font-sans">
       {/* ── Topbar ── */}
-      <nav className="sticky top-0 z-10 border-b border-white/8 bg-admin-surface">
-        <div className="mx-auto flex min-h-[52px] max-w-7xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0">
-          <div className="flex min-w-0 items-center gap-2">
-            <Link href="/admin" className="text-[11px] text-white/40 transition-colors hover:text-white/60">
+      <nav className="sticky top-[0px] z-10 border-b border-white/8 bg-admin-surface">
+        <div className="mx-auto flex min-h-[58px] max-w-7xl flex-col gap-[9px] px-[18px] py-[13px] sm:flex-row sm:items-center sm:justify-between sm:px-[27px] sm:py-[0px]">
+          <div className="flex min-w-[0px] items-center gap-[9px]">
+            <Link href="/admin" className="text-[12px] text-white/40 transition-colors hover:text-white/60">
               ← Dashboard
             </Link>
             <span className="text-white/10">/</span>
-            <span className="min-w-0 max-w-[180px] truncate text-[11px] text-white/60 sm:max-w-[200px]">{election.name}</span>
+            <span className="min-w-[0px] max-w-[202px] truncate text-[12px] text-white/60 sm:max-w-[224px]">{election.name}</span>
             <span className="text-white/10">/</span>
-            <span className="text-[11px] text-white/45">Monitor</span>
+            <span className="text-[12px] text-white/45">Monitor</span>
           </div>
           <StatusPill status={election.status as "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED"} />
         </div>

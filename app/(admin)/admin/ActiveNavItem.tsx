@@ -26,9 +26,9 @@ export function ActiveNavItem({
       href={href}
       aria-label={label}
       title={collapsed ? label : undefined}
-      className={`flex min-h-[40px] items-center gap-2 px-4 py-[7px] text-[12px] transition-all no-underline relative
+      className={`flex min-h-[45px] items-center gap-[9px] px-[18px] py-[8px] text-[13px] transition-all no-underline relative
         focus-visible:ring-2 focus-visible:ring-gold/50 focus-visible:outline-hidden
-        ${collapsed ? "justify-center px-0" : ""}
+        ${collapsed ? "justify-center px-[0px]" : ""}
         ${isActive
           ? "text-white/90 bg-white/5 border-l-2 border-gold"
           : "text-white/40 hover:text-white/70 hover:bg-white/3 border-l-2 border-transparent"

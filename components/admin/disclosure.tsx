@@ -67,7 +67,7 @@ export function Disclosure({
 
 export function DisclosureChevron({ open, className }: { open: boolean; className?: string }) {
   return (
-    <span className={cn("text-[12px] text-gold transition-transform duration-200", open && "rotate-90", className)}>
+    <span className={cn("text-[13px] text-gold transition-transform duration-200", open && "rotate-90", className)}>
       ›
     </span>
   );

@@ -29,17 +29,17 @@ interface ThemedSelectProps {
 }
 
 const triggerClass =
-  "group inline-flex w-full items-center justify-between gap-2 rounded-[7px] border border-white/10 bg-white/4 px-[10px] py-[7px] text-[12px] font-mono text-white/80 outline-hidden transition-colors hover:border-white/20 focus:border-gold/50 focus:ring-2 focus:ring-gold/10 disabled:cursor-not-allowed disabled:opacity-40 data-placeholder:text-white/40";
+  "group inline-flex w-full items-center justify-between gap-[9px] rounded-[8px] border border-white/10 bg-white/4 px-[11px] py-[8px] text-[13px] font-mono text-white/80 outline-hidden transition-colors hover:border-white/20 focus:border-gold/50 focus:ring-2 focus:ring-gold/10 disabled:cursor-not-allowed disabled:opacity-40 data-placeholder:text-white/40";
 
 const contentClass =
-  "z-10000 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden rounded-[8px] border border-white/10 bg-admin-raised shadow-xl origin-(--radix-select-content-transform-origin) data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out";
+  "z-10000 max-h-(--radix-select-content-available-height) min-w-(--radix-select-trigger-width) overflow-hidden rounded-[9px] border border-white/10 bg-admin-raised shadow-xl origin-(--radix-select-content-transform-origin) data-[state=open]:animate-dropdown-in data-[state=closed]:animate-dropdown-out";
 
 const itemClass =
-  "relative flex cursor-pointer select-none items-center justify-between gap-3 rounded-[5px] px-[10px] py-[6px] text-[12px] font-mono text-white/75 outline-hidden data-highlighted:bg-gold/15 data-highlighted:text-gold data-[state=checked]:text-gold data-disabled:opacity-40";
+  "relative flex cursor-pointer select-none items-center justify-between gap-[13px] rounded-[6px] px-[11px] py-[7px] text-[13px] font-mono text-white/75 outline-hidden data-highlighted:bg-gold/15 data-highlighted:text-gold data-[state=checked]:text-gold data-disabled:opacity-40";
 
 function ChevronIcon() {
   return (
-    <svg style={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg style={{ width: 13, height: 13 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="6 9 12 15 18 9" />
     </svg>
   );
@@ -47,7 +47,7 @@ function ChevronIcon() {
 
 function CheckIcon() {
   return (
-    <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+    <svg style={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="20 6 9 17 4 12" />
     </svg>
   );
@@ -92,7 +92,7 @@ export function ThemedSelect({
 
       <SelectPrimitive.Portal>
         <SelectPrimitive.Content position="popper" sideOffset={4} className={contentClass}>
-          <SelectPrimitive.Viewport className="p-1">
+          <SelectPrimitive.Viewport className="p-[4px]">
             {options.map((opt) => (
               <SelectPrimitive.Item key={opt.value} value={opt.value} className={itemClass}>
                 <SelectPrimitive.ItemText>{opt.label}</SelectPrimitive.ItemText>

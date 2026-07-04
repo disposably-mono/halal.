@@ -9,7 +9,7 @@ type AdminButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["varia
 
 export function AdminBadge() {
   return (
-    <span className="rounded-[3px] border border-gold/20 bg-gold/10 px-[6px] py-px text-[9px] font-semibold text-gold">
+    <span className="rounded-[3px] border border-gold/20 bg-gold/10 px-[7px] py-px text-[10px] font-semibold text-gold">
       Admin only
     </span>
   );
@@ -17,7 +17,7 @@ export function AdminBadge() {
 
 export function AutoBadge() {
   return (
-    <span className="rounded-[3px] border border-gold/20 bg-gold/10 px-[5px] py-px text-[9px] font-semibold text-gold">
+    <span className="rounded-[3px] border border-gold/20 bg-gold/10 px-[6px] py-px text-[10px] font-semibold text-gold">
       auto
     </span>
   );
@@ -25,8 +25,8 @@ export function AutoBadge() {
 
 export function WarnBanner({ children }: { children: ReactNode }) {
   return (
-    <div className="flex items-start gap-[7px] rounded-[7px] border border-gold/18 bg-gold/6 px-3 py-[9px] text-[11px] leading-relaxed text-gold/80">
-      <svg style={{ width: 12, height: 12, flexShrink: 0, marginTop: 1 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <div className="flex items-start gap-[8px] rounded-[8px] border border-gold/18 bg-gold/6 px-[13px] py-[10px] text-[12px] leading-relaxed text-gold/80">
+      <svg style={{ width: 13, height: 13, flexShrink: 0, marginTop: 1 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
         <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
         <line x1="12" y1="9" x2="12" y2="13" />
         <line x1="12" y1="17" x2="12.01" y2="17" />
@@ -38,7 +38,7 @@ export function WarnBanner({ children }: { children: ReactNode }) {
 
 export function ErrorBanner({ message }: { message: string }) {
   return (
-    <div className="rounded-[9px] border border-red-400/25 bg-red-400/8 px-4 py-3 text-[12px] text-red-400">
+    <div className="rounded-[10px] border border-red-400/25 bg-red-400/8 px-[18px] py-[13px] text-[13px] text-red-400">
       {message}
     </div>
   );
@@ -67,20 +67,20 @@ export function FinalizeBanner({
 }) {
   if (!locked) {
     return (
-      <div className="flex items-center justify-between gap-3 rounded-xl border border-emerald-500/25 bg-emerald-500/[0.07] px-4 py-3">
+      <div className="flex items-center justify-between gap-[13px] rounded-xl border border-emerald-500/25 bg-emerald-500/[0.07] px-[18px] py-[13px]">
         <div>
-          <p className="text-[12px] font-semibold text-emerald-400/90">{unlockedText}</p>
-          <p className="mt-0.5 text-[10px] text-emerald-400/45">{unlockedSub}</p>
+          <p className="text-[13px] font-semibold text-emerald-400/90">{unlockedText}</p>
+          <p className="mt-[2px] text-[11px] text-emerald-400/45">{unlockedSub}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex items-center justify-between gap-3 rounded-xl border border-gold/20 bg-gold/6 px-4 py-3">
+    <div className="flex items-center justify-between gap-[13px] rounded-xl border border-gold/20 bg-gold/6 px-[18px] py-[13px]">
       <div>
-        <p className="text-[12px] font-semibold text-gold/90">{lockedText}</p>
-        <p className="mt-0.5 text-[10px] text-gold/45">{lockedSub}</p>
+        <p className="text-[13px] font-semibold text-gold/90">{lockedText}</p>
+        <p className="mt-[2px] text-[11px] text-gold/45">{lockedSub}</p>
       </div>
       {unlockAction && electionId && canUnlock && (
         <form action={async (formData: FormData) => { await unlockAction(null, formData); }}>
@@ -117,16 +117,16 @@ export function FinalizeButton({
   );
 
   return (
-    <div className="flex flex-col items-end gap-2">
+    <div className="flex flex-col items-end gap-[9px]">
       {state && !state.success && state.error && (
-        <div role="alert" className="flex w-full items-start gap-2 rounded-lg border border-red-500/20 bg-red-500/10 px-4 py-3">
-          <span className="mt-px shrink-0 text-[13px] text-red-400">⚠</span>
-          <p className="text-[11px] leading-relaxed text-red-300">{state.error}</p>
+        <div role="alert" className="flex w-full items-start gap-[9px] rounded-lg border border-red-500/20 bg-red-500/10 px-[18px] py-[13px]">
+          <span className="mt-px shrink-0 text-[15px] text-red-400">⚠</span>
+          <p className="text-[12px] leading-relaxed text-red-300">{state.error}</p>
         </div>
       )}
-      <form onSubmit={handleSubmit} className="flex items-center gap-3">
+      <form onSubmit={handleSubmit} className="flex items-center gap-[13px]">
         <input type="hidden" name="electionId" value={electionId} />
-        {hint && <p className="text-[11px] text-white/40">{hint}</p>}
+        {hint && <p className="text-[12px] text-white/40">{hint}</p>}
         <Button type="submit" disabled={isPending} variant="adminPrimary" size="adminMd" className="disabled:cursor-not-allowed disabled:opacity-50">
           {isPending ? "Saving…" : label}
         </Button>

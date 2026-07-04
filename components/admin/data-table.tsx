@@ -34,7 +34,7 @@ export function DataTable<T>({
   return (
     <div className={cn(mobile === "scroll" && "overflow-x-auto")}>
       {mobile === "stack" && (
-        <div className="grid gap-2 md:hidden">
+        <div className="grid gap-[9px] md:hidden">
           {rows.map((row) => (
             <DataTableCard key={getRowKey(row)} row={row} columns={columns} actions={actions} />
           ))}
@@ -52,22 +52,22 @@ export function DataTable<T>({
         <thead>
           <tr className="border-b border-white/6">
             {columns.map((column) => (
-              <th key={column.key} className={cn("px-4 py-[7px] text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-white/35", column.className)}>
+              <th key={column.key} className={cn("px-[18px] py-[8px] text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white/35", column.className)}>
                 {column.header}
               </th>
             ))}
-            {actions && <th className={cn("px-4 py-[7px] text-right text-[10px] font-semibold uppercase tracking-[0.06em] text-white/35", actionsClassName)}>Actions</th>}
+            {actions && <th className={cn("px-[18px] py-[8px] text-right text-[11px] font-semibold uppercase tracking-[0.06em] text-white/35", actionsClassName)}>Actions</th>}
           </tr>
         </thead>
         <tbody>
           {rows.map((row) => (
             <tr key={getRowKey(row)} className="border-b border-white/4 last:border-0">
               {columns.map((column) => (
-                <td key={column.key} className={cn("px-4 py-[10px] text-[12px] text-white/70", column.cellClassName)}>
+                <td key={column.key} className={cn("px-[18px] py-[11px] text-[13px] text-white/70", column.cellClassName)}>
                   {column.render(row)}
                 </td>
               ))}
-              {actions && <td className="px-4 py-[10px] text-right">{actions(row)}</td>}
+              {actions && <td className="px-[18px] py-[11px] text-right">{actions(row)}</td>}
             </tr>
           ))}
         </tbody>
@@ -89,17 +89,17 @@ function DataTableCard<T>({
   const secondary = columns.filter((column) => column.priority !== 1);
 
   return (
-    <div className="rounded-[8px] border border-white/[0.07] bg-white/3 p-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0 space-y-1">
+    <div className="rounded-[9px] border border-white/[0.07] bg-white/3 p-[13px]">
+      <div className="flex items-start justify-between gap-[13px]">
+        <div className="min-w-[0px] space-y-[4px]">
           {primary.map((column) => <div key={column.key}>{column.render(row)}</div>)}
         </div>
         {actions && <div className="shrink-0">{actions(row)}</div>}
       </div>
       {secondary.length > 0 && (
-        <dl className="mt-3 grid gap-2">
+        <dl className="mt-[13px] grid gap-[9px]">
           {secondary.map((column) => (
-            <div key={column.key} className="flex items-center justify-between gap-3 text-[11px]">
+            <div key={column.key} className="flex items-center justify-between gap-[13px] text-[12px]">
               <dt className="text-white/35">{column.header}</dt>
               <dd className="text-right text-white/65">{column.render(row)}</dd>
             </div>

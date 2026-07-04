@@ -19,8 +19,8 @@ export function StatusPill({ status }: { status: AdminStatus }) {
   };
 
   return (
-    <span className={`inline-flex items-center gap-[5px] rounded-full border px-2 py-[3px] text-[10px] font-semibold uppercase tracking-widest ${styles[status]}`}>
-      <span className={`h-[6px] w-[6px] rounded-full ${dotStyles[status]}`} />
+    <span className={`inline-flex items-center gap-[6px] rounded-full border px-[9px] py-[3px] text-[11px] font-semibold uppercase tracking-widest ${styles[status]}`}>
+      <span className={`h-[7px] w-[7px] rounded-full ${dotStyles[status]}`} />
       {ADMIN_STATUS_LABELS[status]}
     </span>
   );
@@ -38,13 +38,13 @@ export function FlowTrack({ status }: { status: AdminStatus }) {
 
         return (
           <span key={item} className="flex items-center gap-[3px]">
-            {i > 0 && <span className="text-[9px] text-white/12">›</span>}
+            {i > 0 && <span className="text-[10px] text-white/12">›</span>}
             {isActive ? (
-              <span className="rounded-[5px] border border-white/20 bg-white/6 px-[9px] py-[3px] text-[10px] font-semibold text-white/80">
+              <span className="rounded-[6px] border border-white/20 bg-white/6 px-[10px] py-[3px] text-[11px] font-semibold text-white/80">
                 {ADMIN_STATUS_LABELS[item]}
               </span>
             ) : (
-              <span className={`px-[9px] py-[3px] text-[10px] font-semibold ${isDone ? "text-white/60" : "text-white/10"}`}>
+              <span className={`px-[10px] py-[3px] text-[11px] font-semibold ${isDone ? "text-white/60" : "text-white/10"}`}>
                 {ADMIN_STATUS_LABELS[item]}
               </span>
             )}

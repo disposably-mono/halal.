@@ -124,13 +124,13 @@ export function HistoryIndexClient({
           </span>
         }
         actions={
-          <span className="rounded-[6px] border border-gold/20 bg-gold/[0.07] px-[9px] py-[4px] text-[11px] text-gold/80">
+          <span className="rounded-[7px] border border-gold/20 bg-gold/[0.07] px-[10px] py-[4px] text-[12px] text-gold/80">
             Latest {totalSummary.total}
           </span>
         }
       />
 
-      <div className="grid grid-cols-1 gap-[10px] sm:grid-cols-2 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-[11px] sm:grid-cols-2 xl:grid-cols-5">
         <MetricCard label="Sign-ins" value={totalSummary.total.toLocaleString()} sub="latest 255 retained" accent="gold" />
         <MetricCard label="Officers" value={totalSummary.uniqueOfficers.toLocaleString()} sub="logged-in accounts" />
         <MetricCard label="Verifiers" value={totalSummary.uniqueVerifiers.toLocaleString()} sub="second-officer checks" />
@@ -142,7 +142,7 @@ export function HistoryIndexClient({
         <SearchInput onSearch={onSearch} placeholder="Search officer, verifier, actor, target, action, or email" className="sm:max-w-none" />
         <FilterGrid>
           <FilterGroup
-            icon={<UserRound aria-hidden="true" className="h-4 w-4" />}
+            icon={<UserRound aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Sign-in person"
             value={PERSON_LABELS[person]}
           >
@@ -153,7 +153,7 @@ export function HistoryIndexClient({
             ))}
           </FilterGroup>
           <FilterGroup
-            icon={<CalendarClock aria-hidden="true" className="h-4 w-4" />}
+            icon={<CalendarClock aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Date range"
             value={DATE_LABELS[date]}
           >
@@ -164,7 +164,7 @@ export function HistoryIndexClient({
             ))}
           </FilterGroup>
           <FilterGroup
-            icon={<KeyRound aria-hidden="true" className="h-4 w-4" />}
+            icon={<KeyRound aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Account action"
             value={ACCOUNT_ACTION_LABELS[accountAction]}
           >
@@ -175,7 +175,7 @@ export function HistoryIndexClient({
             ))}
           </FilterGroup>
           <FilterGroup
-            icon={<ShieldCheck aria-hidden="true" className="h-4 w-4" />}
+            icon={<ShieldCheck aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Target role"
             value={ACCOUNT_ROLE_LABELS[accountRole]}
           >
@@ -186,7 +186,7 @@ export function HistoryIndexClient({
             ))}
           </FilterGroup>
           <FilterGroup
-            icon={<ListOrdered aria-hidden="true" className="h-4 w-4" />}
+            icon={<ListOrdered aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Show sign-ins"
             value={LIMIT_LABELS[limit]}
           >
@@ -197,7 +197,7 @@ export function HistoryIndexClient({
             ))}
           </FilterGroup>
           <FilterGroup
-            icon={<UserCog aria-hidden="true" className="h-4 w-4" />}
+            icon={<UserCog aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Show account changes"
             value={LIMIT_LABELS[accountLimit]}
           >
@@ -212,25 +212,25 @@ export function HistoryIndexClient({
 
       <Card
         title="Recent sign-ins"
-        meta={<span className="text-[10px] text-white/45">{visible.length} of {matchedSummary.total} shown</span>}
+        meta={<span className="text-[11px] text-white/45">{visible.length} of {matchedSummary.total} shown</span>}
         noPad
       >
         {history.length === 0 ? (
           <EmptyState
-            icon={<UserCheck aria-hidden="true" className="h-[18px] w-[18px]" />}
+            icon={<UserCheck aria-hidden="true" className="h-[20px] w-[20px]" />}
             title="No login history yet"
             hint="Successful admin sign-ins will appear here after the first 2FA login."
           />
         ) : filtered.length === 0 ? (
           <EmptyState
-            icon={<UserCheck aria-hidden="true" className="h-[18px] w-[18px]" />}
+            icon={<UserCheck aria-hidden="true" className="h-[20px] w-[20px]" />}
             title="No history rows match"
             hint="Try a different search, person, or date filter."
           />
         ) : (
           <>
             <HistoryTable history={visible} query={query} />
-            <p className="border-t border-white/[0.07] px-4 py-3 text-[10px] text-white/40">
+            <p className="border-t border-white/[0.07] px-[18px] py-[13px] text-[11px] text-white/40">
               Times are shown in Philippine Standard Time. The latest 255 sign-ins are displayed.
             </p>
           </>
@@ -239,25 +239,25 @@ export function HistoryIndexClient({
 
       <Card
         title="Account changes"
-        meta={<span className="text-[10px] text-white/45">{visibleAccountLogs.length} of {matchedAccountSummary.total} shown</span>}
+        meta={<span className="text-[11px] text-white/45">{visibleAccountLogs.length} of {matchedAccountSummary.total} shown</span>}
         noPad
       >
         {accountLogs.length === 0 ? (
           <EmptyState
-            icon={<UserCog aria-hidden="true" className="h-[18px] w-[18px]" />}
+            icon={<UserCog aria-hidden="true" className="h-[20px] w-[20px]" />}
             title="No account changes yet"
             hint="Account creations, role changes, credential resets, and deletions will appear here."
           />
         ) : filteredAccountLogs.length === 0 ? (
           <EmptyState
-            icon={<UserCog aria-hidden="true" className="h-[18px] w-[18px]" />}
+            icon={<UserCog aria-hidden="true" className="h-[20px] w-[20px]" />}
             title="No account changes match"
             hint="Try a different search, action, role, or date filter."
           />
         ) : (
           <>
             <AccountLogTable logs={visibleAccountLogs} query={query} />
-            <p className="border-t border-white/[0.07] px-4 py-3 text-[10px] text-white/40">
+            <p className="border-t border-white/[0.07] px-[18px] py-[13px] text-[11px] text-white/40">
               Times are shown in Philippine Standard Time. The latest 125 account changes are displayed.
             </p>
           </>

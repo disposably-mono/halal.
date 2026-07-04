@@ -16,9 +16,9 @@ export function PollingStatus({
   const label = getPollingLabel({ updatedAt, isFetching, error });
 
   return (
-    <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/50">
-      <span className="inline-flex items-center gap-2">
-        <span className={`h-2 w-2 rounded-full ${error ? "bg-red-400" : isFetching ? "bg-gold" : "bg-emerald-400"}`} />
+    <div className="flex flex-wrap items-center gap-[9px] text-[12px] text-white/50">
+      <span className="inline-flex items-center gap-[9px]">
+        <span className={`h-[9px] w-[9px] rounded-full ${error ? "bg-red-400" : isFetching ? "bg-gold" : "bg-emerald-400"}`} />
         {label}
       </span>
       {onRefresh && (

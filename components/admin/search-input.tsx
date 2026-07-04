@@ -36,9 +36,9 @@ export function SearchInput({
         value={value}
         onChange={(event) => setValue(event.target.value)}
         placeholder={placeholder}
-        className="h-10 w-full rounded-[7px] border border-white/10 bg-white/4 px-9 pr-10 text-[12px] text-white/80 outline-hidden transition-colors placeholder:text-white/35 focus:border-gold/50 focus:ring-2 focus:ring-gold/10"
+        className="h-[45px] w-full rounded-[8px] border border-white/10 bg-white/4 px-[40px] pr-[45px] text-[13px] text-white/80 outline-hidden transition-colors placeholder:text-white/35 focus:border-gold/50 focus:ring-2 focus:ring-gold/10"
       />
-      <svg aria-hidden="true" className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/35" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <svg aria-hidden="true" className="pointer-events-none absolute left-[13px] top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-white/35" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
         <circle cx="11" cy="11" r="7" />
         <path d="M21 21l-4.3-4.3" />
       </svg>
@@ -47,7 +47,7 @@ export function SearchInput({
           type="button"
           aria-label="Clear search"
           onClick={() => setValue("")}
-          className="absolute right-0 top-0 flex h-10 w-10 items-center justify-center rounded-[7px] text-white/45 transition-colors hover:text-white/80 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/40"
+          className="absolute right-[0px] top-[0px] flex h-[45px] w-[45px] items-center justify-center rounded-[8px] text-white/45 transition-colors hover:text-white/80 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/40"
         >
           ×
         </button>

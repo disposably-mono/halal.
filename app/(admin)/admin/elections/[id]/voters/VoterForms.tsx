@@ -51,16 +51,16 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
   );
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-[13px]">
       <input type="hidden" name="electionId" value={electionId} />
       <input type="hidden" name="schoolYear" value={schoolYear} />
 
-      <div className="flex items-center justify-between gap-3">
-        <p className="text-[10px] text-white/50">
+      <div className="flex items-center justify-between gap-[13px]">
+        <p className="text-[11px] text-white/50">
           Format: <code className="font-mono text-white/55">studentId, gradeLevel, section</code>
         </p>
         {isFinalized && (
-          <span className="text-[9px] font-semibold uppercase tracking-wider text-gold/80">
+          <span className="text-[10px] font-semibold uppercase tracking-wider text-gold/80">
             Locked
           </span>
         )}
@@ -92,7 +92,7 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
 
       {result && (
         <div
-          className={`rounded-[8px] border px-4 py-3 text-[11px] ${result.rejected > 0 || result.skippedDuplicates > 0
+          className={`rounded-[9px] border px-[18px] py-[13px] text-[12px] ${result.rejected > 0 || result.skippedDuplicates > 0
               ? "border-gold/20 bg-gold/[0.07]"
               : "border-emerald-500/20 bg-emerald-500/[0.07]"
             }`}
@@ -101,7 +101,7 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
             <p className="text-emerald-300">✓ {result.added} voters added.</p>
           )}
           {result.reasons.slice(result.added === 0 && result.rejected === 0 ? 1 : 0).map((reason, i) => (
-            <p key={i} className="mt-0.5 text-gold">
+            <p key={i} className="mt-[2px] text-gold">
               ⚠ {reason}
             </p>
           ))}
@@ -112,7 +112,7 @@ export function CSVUploadForm({ electionId, schoolYear, isFinalized }: VoterForm
       )}
 
       {submitError && (
-        <p role="alert" className="text-[11px] text-red-400">✗ {submitError}</p>
+        <p role="alert" className="text-[12px] text-red-400">✗ {submitError}</p>
       )}
     </form>
   );
@@ -128,8 +128,8 @@ export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterForm
   );
 
   return (
-    <div className="flex flex-col gap-2">
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_80px_96px_auto]">
+    <div className="flex flex-col gap-[9px]">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 items-end gap-[9px] sm:grid-cols-[1fr_80px_96px_auto]">
         <input type="hidden" name="electionId" value={electionId} />
         <input type="hidden" name="schoolYear" value={schoolYear} />
 
@@ -172,13 +172,13 @@ export function ManualAddForm({ electionId, schoolYear, isFinalized }: VoterForm
       </form>
 
       {result && !result.success && (
-        <p className="text-[11px] text-red-400">✗ {result.error}</p>
+        <p className="text-[12px] text-red-400">✗ {result.error}</p>
       )}
       {result?.success && (
-        <p className="text-[11px] text-emerald-400">✓ Voter added successfully.</p>
+        <p className="text-[12px] text-emerald-400">✓ Voter added successfully.</p>
       )}
       {submitError && (
-        <p role="alert" className="text-[11px] text-red-400">✗ {submitError}</p>
+        <p role="alert" className="text-[12px] text-red-400">✗ {submitError}</p>
       )}
     </div>
   );

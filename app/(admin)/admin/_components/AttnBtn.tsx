@@ -13,7 +13,7 @@ export function AttnBtn({
   primary?: boolean;
   danger?: boolean;
 }) {
-  const base = "flex-1 py-[5px] text-center text-[10px] rounded-[6px] transition-all no-underline";
+  const base = "flex-1 py-[6px] text-center text-[11px] rounded-[7px] transition-all no-underline";
   if (primary)
     return (
       <Link href={href} onClick={(e) => e.stopPropagation()} className={`${base} text-gold bg-gold/10 border border-gold/20 hover:bg-gold/20`}>

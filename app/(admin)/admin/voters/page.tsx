@@ -24,7 +24,7 @@ export default async function AdminVotersPage() {
   });
 
   return (
-    <PageContainer className="flex flex-col gap-[18px]">
+    <PageContainer className="flex flex-col gap-[20px]">
       <VotersIndexClient voters={voters} />
     </PageContainer>
   );

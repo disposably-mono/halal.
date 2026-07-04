@@ -76,7 +76,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
         meta={`${visibleSummary.voters.toLocaleString()} of ${totalSummary.voters.toLocaleString()} control numbers visible`}
       />
 
-      <div className="grid grid-cols-1 gap-[10px] sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-[11px] sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Control Numbers" value={totalSummary.voters.toLocaleString()} sub={`${totalSummary.elections} elections`} accent="gold" />
         <MetricCard label="Voted" value={totalSummary.voted.toLocaleString()} sub={`${turnout(totalSummary.voted, totalSummary.voters)}% turnout`} accent="emerald" />
         <MetricCard label="Pending" value={totalSummary.pending.toLocaleString()} sub="not yet voted" />
@@ -90,7 +90,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
         <SearchInput onSearch={onSearch} placeholder="Search control no., student ID, section" className="sm:max-w-none" />
         <FilterGrid>
           <FilterGroup
-            icon={<Layers aria-hidden="true" className="h-4 w-4" />}
+            icon={<Layers aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Division"
             value={divisionLabel}
           >
@@ -106,7 +106,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
             ))}
           </FilterGroup>
           <FilterGroup
-            icon={<ListFilter aria-hidden="true" className="h-4 w-4" />}
+            icon={<ListFilter aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Election status"
             value={statusLabel}
           >
@@ -117,7 +117,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
             ))}
           </FilterGroup>
           <FilterGroup
-            icon={<CalendarClock aria-hidden="true" className="h-4 w-4" />}
+            icon={<CalendarClock aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Recent elections"
             value={recentElectionLabel}
           >
@@ -132,7 +132,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
             ))}
           </FilterGroup>
           <FilterGroup
-            icon={<Vote aria-hidden="true" className="h-4 w-4" />}
+            icon={<Vote aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Vote state"
             value={voteStatusLabel}
           >
@@ -150,23 +150,23 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
       ) : filtered.length === 0 ? (
         <EmptyState title="No voters match" hint="Try a different search, status, division, or voting filter." />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-[18px]">
           {filtered.map((divisionGroup) => (
             <Disclosure
               key={divisionGroup.division}
               defaultOpen={isFiltering}
-              className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface/70"
-              contentClassName="grid gap-3 border-t border-white/6 p-3"
+              className="overflow-hidden rounded-[13px] border border-white/[0.07] bg-admin-surface/70"
+              contentClassName="grid gap-[13px] border-t border-white/6 p-[13px]"
               trigger={({ open }) => (
-                <div className="flex items-center gap-3 px-4 py-3">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
+                <div className="flex items-center gap-[13px] px-[18px] py-[13px]">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
                     {highlightMatch(divisionGroup.label, query)}
                   </span>
                   <span className="h-px flex-1 bg-white/5" />
-                  <span className="text-[10px] text-white/55">
+                  <span className="text-[11px] text-white/55">
                     {divisionGroup.voterCount} voters · {divisionGroup.votedCount} voted
                   </span>
-                  <span className="hidden rounded-full border border-white/8 bg-white/3 px-2 py-1 text-[10px] text-white/40 sm:inline">
+                  <span className="hidden rounded-full border border-white/8 bg-white/3 px-[9px] py-[4px] text-[11px] text-white/40 sm:inline">
                     {open ? "Click to collapse" : "Click to expand"}
                   </span>
                   <DisclosureChevron open={open} />
@@ -177,24 +177,24 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
                 <Disclosure
                   key={election.id}
                   defaultOpen={isFiltering}
-                  className="overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface"
+                  className="overflow-hidden rounded-[11px] border border-white/[0.07] bg-admin-surface"
                   trigger={({ open }) => (
-                    <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
-                      <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex items-center justify-between gap-[13px] border-b border-white/[0.07] px-[18px] py-[13px]">
+                      <div className="flex min-w-[0px] items-center gap-[13px]">
                         <StatusDot status={election.status} />
-                        <span className="truncate text-[12px] font-semibold text-white/80">
+                        <span className="truncate text-[13px] font-semibold text-white/80">
                           {highlightMatch(election.name, query)}
                         </span>
                       </div>
-                      <div className="flex shrink-0 items-center gap-3 text-[10px] text-white/50">
+                      <div className="flex shrink-0 items-center gap-[13px] text-[11px] text-white/50">
                         <span>{election.voterCount} voters · {turnout(election.votedCount, election.voterCount)}%</span>
-                        <span className="hidden rounded-full border border-white/8 bg-white/3 px-2 py-1 text-white/40 lg:inline">
+                        <span className="hidden rounded-full border border-white/8 bg-white/3 px-[9px] py-[4px] text-white/40 lg:inline">
                           {open ? "Click to collapse" : "Click to expand"}
                         </span>
                         <Link
                           href={`/admin/elections/${election.id}/voters`}
                           onClick={(event) => event.stopPropagation()}
-                          className="rounded-[5px] border border-gold/20 bg-gold/[0.07] px-[7px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]"
+                          className="rounded-[6px] border border-gold/20 bg-gold/[0.07] px-[8px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]"
                         >
                           Manage
                         </Link>
@@ -221,7 +221,7 @@ function VoterRows({ voters, query }: { voters: VoterIndexRow[]; query?: string 
         <thead>
           <tr className="border-b border-white/4">
             {["#", "Control No.", "Student ID", "Grade", "Section", "Status"].map((heading) => (
-              <th key={heading} className="px-4 py-[7px] text-left text-[10px] font-semibold uppercase tracking-[0.06em] text-white/35">
+              <th key={heading} className="px-[18px] py-[8px] text-left text-[11px] font-semibold uppercase tracking-[0.06em] text-white/35">
                 {heading}
               </th>
             ))}
@@ -230,12 +230,12 @@ function VoterRows({ voters, query }: { voters: VoterIndexRow[]; query?: string 
         <tbody>
           {voters.map((voter, index) => (
             <tr key={voter.id} className="border-b border-white/3 last:border-0 hover:bg-white/2">
-              <td className="px-4 py-[8px] font-mono text-[10px] text-white/35">{index + 1}</td>
-              <td className="px-4 py-[8px] font-mono text-[11px] font-medium text-white/70">{highlightMatch(voter.voterCode, query)}</td>
-              <td className="px-4 py-[8px] font-mono text-[11px] text-white/55">{highlightMatch(voter.studentId, query)}</td>
-              <td className="px-4 py-[8px] text-[11px] text-white/55">{highlightMatch(`Grade ${voter.gradeLevel}`, query)}</td>
-              <td className="px-4 py-[8px] text-[11px] text-white/55">{highlightMatch(`Section ${voter.section}`, query)}</td>
-              <td className="px-4 py-[8px]"><VoteBadge hasVoted={voter.hasVoted} /></td>
+              <td className="px-[18px] py-[9px] font-mono text-[11px] text-white/35">{index + 1}</td>
+              <td className="px-[18px] py-[9px] font-mono text-[12px] font-medium text-white/70">{highlightMatch(voter.voterCode, query)}</td>
+              <td className="px-[18px] py-[9px] font-mono text-[12px] text-white/55">{highlightMatch(voter.studentId, query)}</td>
+              <td className="px-[18px] py-[9px] text-[12px] text-white/55">{highlightMatch(`Grade ${voter.gradeLevel}`, query)}</td>
+              <td className="px-[18px] py-[9px] text-[12px] text-white/55">{highlightMatch(`Section ${voter.section}`, query)}</td>
+              <td className="px-[18px] py-[9px]"><VoteBadge hasVoted={voter.hasVoted} /></td>
             </tr>
           ))}
         </tbody>
@@ -246,13 +246,13 @@ function VoterRows({ voters, query }: { voters: VoterIndexRow[]; query?: string 
 
 function VoteBadge({ hasVoted }: { hasVoted: boolean }) {
   return hasVoted ? (
-    <span className="inline-flex items-center gap-1 text-[10px] text-emerald-400">
-      <span className="h-[5px] w-[5px] rounded-full bg-emerald-400" />
+    <span className="inline-flex items-center gap-[4px] text-[11px] text-emerald-400">
+      <span className="h-[6px] w-[6px] rounded-full bg-emerald-400" />
       Voted
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 text-[10px] text-white/60">
-      <span className="h-[5px] w-[5px] rounded-full bg-white/15" />
+    <span className="inline-flex items-center gap-[4px] text-[11px] text-white/60">
+      <span className="h-[6px] w-[6px] rounded-full bg-white/15" />
       Pending
     </span>
   );
@@ -266,8 +266,8 @@ function StatusDot({ status }: { status: VoterIndexStatus }) {
     CLOSED: "bg-white/10",
   };
   return (
-    <span className="inline-flex shrink-0 items-center gap-1 text-[10px] text-white/50">
-      <span className={`h-[6px] w-[6px] rounded-full ${colors[status]}`} />
+    <span className="inline-flex shrink-0 items-center gap-[4px] text-[11px] text-white/50">
+      <span className={`h-[7px] w-[7px] rounded-full ${colors[status]}`} />
       {status}
     </span>
   );

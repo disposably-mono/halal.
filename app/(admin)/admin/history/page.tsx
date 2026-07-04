@@ -23,7 +23,7 @@ export default async function AdminHistoryPage() {
   ]);
 
   return (
-    <PageContainer className="flex flex-col gap-[18px]">
+    <PageContainer className="flex flex-col gap-[20px]">
       <HistoryIndexClient
         history={history.map((entry) => ({
           id: entry.id,

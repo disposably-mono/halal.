@@ -70,7 +70,7 @@ export default async function AdminDashboard(
   const archivedElections = electionsWithVoted.filter((e) => e.archivedAt !== null);
 
   return (
-    <PageContainer className="flex flex-col gap-[18px]">
+    <PageContainer className="flex flex-col gap-[20px]">
       <PermissionNotice denied={deniedParam} />
       <DashboardClient
         elections={activeElections}

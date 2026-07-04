@@ -74,7 +74,7 @@ export function AccountsManager({
   const { toast, showToast, dismissToast } = useToast();
 
   return (
-    <div className="flex flex-col gap-[18px]">
+    <div className="flex flex-col gap-[20px]">
       <CreateAdminForm onResult={showToast} />
 
       <Card title="Accounts" noPad>
@@ -85,7 +85,7 @@ export function AccountsManager({
                 {["Account", "Role", "Last login", "Actions"].map((h) => (
                   <th
                     key={h}
-                    className="text-left px-4 py-[7px] text-[10px] font-semibold uppercase tracking-[0.06em] text-white/35"
+                    className="text-left px-[18px] py-[8px] text-[11px] font-semibold uppercase tracking-[0.06em] text-white/35"
                   >
                     {h}
                   </th>
@@ -137,8 +137,8 @@ function CreateAdminForm({ onResult }: { onResult: (toast: ToastInput) => void }
 
   return (
     <Card title="New account">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-3">
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-[13px]">
+        <div className="grid grid-cols-1 gap-[13px] sm:grid-cols-2">
           <Field label="Full name">
             <AdminInput name="name" placeholder="Juan Dela Cruz" required autoComplete="name" />
           </Field>
@@ -162,18 +162,18 @@ function CreateAdminForm({ onResult }: { onResult: (toast: ToastInput) => void }
           </Field>
         </div>
 
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-[11px] text-white/40">
+        <div className="flex items-center justify-between gap-[13px]">
+          <p className="text-[12px] text-white/40">
             Share the password and officer key with the officer out-of-band.
           </p>
           <CreateSubmit isPending={isPending} />
         </div>
 
         {result && !result.success && (
-          <p className="text-[11px] text-red-400">✗ {result.error}</p>
+          <p className="text-[12px] text-red-400">✗ {result.error}</p>
         )}
         {submitError && (
-          <p className="text-[11px] text-red-400">✗ {submitError}</p>
+          <p className="text-[12px] text-red-400">✗ {submitError}</p>
         )}
       </form>
     </Card>
@@ -255,19 +255,19 @@ function AccountRow({
   return (
     <tr className="border-b border-white/3 last:border-0 align-top">
       {/* Account */}
-      <td className="px-4 py-[10px]">
-        <div className="text-[12px] font-medium text-white/85">
+      <td className="px-[18px] py-[11px]">
+        <div className="text-[13px] font-medium text-white/85">
           {account.name}
-          {isSelf && <span className="ml-2 text-[9px] text-gold/80">you</span>}
+          {isSelf && <span className="ml-[9px] text-[10px] text-gold/80">you</span>}
         </div>
-        <div className="font-mono text-[11px] text-white/45">{account.email}</div>
+        <div className="font-mono text-[12px] text-white/45">{account.email}</div>
       </td>
 
       {/* Role */}
-      <td className="px-4 py-[10px]">
+      <td className="px-[18px] py-[11px]">
         {isSuperadmin ? (
-          <div className="inline-flex items-center gap-[6px] rounded-[7px] border border-gold/25 bg-gold/[0.07] px-[10px] py-[7px] text-[12px] font-medium text-gold/90">
-            <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <div className="inline-flex items-center gap-[7px] rounded-[8px] border border-gold/25 bg-gold/[0.07] px-[11px] py-[8px] text-[13px] font-medium text-gold/90">
+            <svg style={{ width: 12, height: 12 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" /><path d="M7 11V7a5 5 0 0110 0v4" />
             </svg>
             {ROLE_LABELS.SUPERADMIN}
@@ -278,22 +278,22 @@ function AccountRow({
             disabled={pending}
             onValueChange={onRoleChange}
             options={ROLE_SELECT_OPTIONS}
-            className="min-w-[170px]"
+            className="min-w-[190px]"
           />
         )}
-        <div className="mt-[3px] text-[10px] text-white/35">
+        <div className="mt-[3px] text-[11px] text-white/35">
           {isSuperadmin ? "COMELEC tier — locked" : ROLE_HINTS[account.role]}
         </div>
       </td>
 
       {/* Last login */}
-      <td className="px-4 py-[10px] text-[11px] text-white/50">
+      <td className="px-[18px] py-[11px] text-[12px] text-white/50">
         {formatDate(account.lastLogin)}
       </td>
 
       {/* Actions */}
-      <td className="px-4 py-[10px]">
-        <div className="flex flex-wrap gap-[6px]">
+      <td className="px-[18px] py-[11px]">
+        <div className="flex flex-wrap gap-[7px]">
           <RowButton onClick={() => { setSecretOpen("password"); setSecretValue(""); }}>
             Reset password
           </RowButton>
@@ -310,7 +310,7 @@ function AccountRow({
         </div>
 
         {secretOpen && (
-          <div className="mt-2 flex flex-wrap items-center gap-2">
+          <div className="mt-[9px] flex flex-wrap items-center gap-[9px]">
             <AdminSecretInput
               secretLabel={secretOpen === "password" ? "password" : "officer key"}
               autoFocus
@@ -318,7 +318,7 @@ function AccountRow({
               onChange={(e) => setSecretValue(e.target.value)}
               placeholder={secretOpen === "password" ? "New password" : "New officer key"}
               autoComplete="new-password"
-              className="min-w-[180px]"
+              className="min-w-[202px]"
             />
             <Button
               onClick={submitSecret}
@@ -339,7 +339,7 @@ function AccountRow({
         )}
       </td>
 
-      <td className="p-0">
+      <td className="p-[0px]">
         <ConfirmDialog
           open={confirmDelete}
           title="Delete account?"
@@ -367,7 +367,7 @@ function RowButton({
   tone?: "default" | "danger";
 }) {
   const base =
-    "rounded-[5px] border px-[8px] py-[3px] text-[10px] transition-all disabled:opacity-40 disabled:cursor-not-allowed";
+    "rounded-[6px] border px-[9px] py-[3px] text-[11px] transition-all disabled:opacity-40 disabled:cursor-not-allowed";
   const tones =
     tone === "danger"
       ? "border-red-400/20 bg-red-400/6 text-red-300 hover:bg-red-400/12"

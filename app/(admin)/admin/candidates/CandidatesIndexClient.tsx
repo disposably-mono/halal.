@@ -69,7 +69,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
         meta={`${visibleSummary.candidates.toLocaleString()} of ${totalSummary.candidates.toLocaleString()} candidates visible`}
       />
 
-      <div className="grid grid-cols-1 gap-[10px] sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-[11px] sm:grid-cols-2 xl:grid-cols-4">
         <MetricCard label="Candidates" value={totalSummary.candidates.toLocaleString()} sub={`${totalSummary.positions} positions`} accent="gold" />
         <MetricCard label="Elections" value={totalSummary.elections.toLocaleString()} sub={`${totalSummary.divisions} divisions`} />
         <MetricCard label="Visible" value={visibleSummary.candidates.toLocaleString()} sub={`${visibleSummary.elections} elections shown`} accent="blue" />
@@ -87,7 +87,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
         <SearchInput onSearch={onSearch} placeholder="Search candidate, position, election" className="sm:max-w-none" />
         <FilterGrid>
           <FilterGroup
-            icon={<Layers aria-hidden="true" className="h-4 w-4" />}
+            icon={<Layers aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Division"
             value={divisionLabel}
           >
@@ -103,7 +103,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
             ))}
           </FilterGroup>
           <FilterGroup
-            icon={<ListFilter aria-hidden="true" className="h-4 w-4" />}
+            icon={<ListFilter aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Election status"
             value={statusLabel}
           >
@@ -114,7 +114,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
             ))}
           </FilterGroup>
           <FilterGroup
-            icon={<CalendarClock aria-hidden="true" className="h-4 w-4" />}
+            icon={<CalendarClock aria-hidden="true" className="h-[18px] w-[18px]" />}
             label="Recent elections"
             value={recentElectionLabel}
             className="lg:col-span-2"
@@ -137,23 +137,23 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
       ) : filtered.length === 0 ? (
         <EmptyState title="No candidates match" hint="Try a different search, status, or division filter." />
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-[18px]">
           {filtered.map((divisionGroup) => (
             <Disclosure
               key={divisionGroup.division}
               defaultOpen={isFiltering}
-              className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface/70"
-              contentClassName="grid gap-3 border-t border-white/6 p-3"
+              className="overflow-hidden rounded-[13px] border border-white/[0.07] bg-admin-surface/70"
+              contentClassName="grid gap-[13px] border-t border-white/6 p-[13px]"
               trigger={({ open }) => (
-                <div className="flex items-center gap-3 px-4 py-3">
-                  <span className="text-[10px] font-semibold uppercase tracking-[0.08em] text-white/45">
+                <div className="flex items-center gap-[13px] px-[18px] py-[13px]">
+                  <span className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45">
                     {highlightMatch(divisionGroup.label, query)}
                   </span>
                   <span className="h-px flex-1 bg-white/5" />
-                  <span className="text-[10px] text-white/55">
+                  <span className="text-[11px] text-white/55">
                     {divisionGroup.totalCandidates} candidates · {divisionGroup.positionCount} positions
                   </span>
-                  <span className="hidden rounded-full border border-white/8 bg-white/3 px-2 py-1 text-[10px] text-white/40 sm:inline">
+                  <span className="hidden rounded-full border border-white/8 bg-white/3 px-[9px] py-[4px] text-[11px] text-white/40 sm:inline">
                     {open ? "Click to collapse" : "Click to expand"}
                   </span>
                   <DisclosureChevron open={open} />
@@ -164,24 +164,24 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
                 <Disclosure
                   key={election.id}
                   defaultOpen={isFiltering}
-                  className="overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface"
+                  className="overflow-hidden rounded-[11px] border border-white/[0.07] bg-admin-surface"
                   trigger={({ open }) => (
-                    <div className="flex items-center justify-between gap-3 border-b border-white/[0.07] px-4 py-3">
-                      <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex items-center justify-between gap-[13px] border-b border-white/[0.07] px-[18px] py-[13px]">
+                      <div className="flex min-w-[0px] items-center gap-[13px]">
                         <StatusDot status={election.status} />
-                        <span className="truncate text-[12px] font-semibold text-white/80">
+                        <span className="truncate text-[13px] font-semibold text-white/80">
                           {highlightMatch(election.name, query)}
                         </span>
                       </div>
-                      <div className="flex shrink-0 items-center gap-3 text-[10px] text-white/50">
+                      <div className="flex shrink-0 items-center gap-[13px] text-[11px] text-white/50">
                         <span>{election.totalCandidates} cand. · {election.positionCount} pos.</span>
-                        <span className="hidden rounded-full border border-white/8 bg-white/3 px-2 py-1 text-white/40 lg:inline">
+                        <span className="hidden rounded-full border border-white/8 bg-white/3 px-[9px] py-[4px] text-white/40 lg:inline">
                           {open ? "Click to collapse" : "Click to expand"}
                         </span>
                         <Link
                           href={`/admin/elections/${election.id}/candidates`}
                           onClick={(event) => event.stopPropagation()}
-                          className="rounded-[5px] border border-gold/20 bg-gold/[0.07] px-[7px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]"
+                          className="rounded-[6px] border border-gold/20 bg-gold/[0.07] px-[8px] py-[3px] text-gold no-underline transition-all hover:bg-gold/[0.14]"
                         >
                           Manage
                         </Link>
@@ -211,24 +211,24 @@ function PositionBlock({ position, query }: { position: CandidateIndexPosition; 
   const candidateGrades = formatGradeList(parseGrades(position.candidateGrade), fullGrades);
 
   return (
-    <section className="px-4 py-3">
-      <div className="flex flex-col gap-1 sm:flex-row sm:items-center sm:justify-between">
-        <h3 className="text-[11px] font-semibold uppercase tracking-wider text-white/65">
+    <section className="px-[18px] py-[13px]">
+      <div className="flex flex-col gap-[4px] sm:flex-row sm:items-center sm:justify-between">
+        <h3 className="text-[12px] font-semibold uppercase tracking-wider text-white/65">
           {highlightMatch(position.title, query)}
         </h3>
-        <p className="text-[10px] text-white/45">Votes: {votingGrades} · Runs: {candidateGrades}</p>
+        <p className="text-[11px] text-white/45">Votes: {votingGrades} · Runs: {candidateGrades}</p>
       </div>
       {position.candidates.length === 0 ? (
-        <p className="mt-2 text-[11px] italic text-white/45">No candidates encoded</p>
+        <p className="mt-[9px] text-[12px] italic text-white/45">No candidates encoded</p>
       ) : (
-        <div className="mt-2 grid gap-1.5 sm:grid-cols-2 xl:grid-cols-3">
+        <div className="mt-[9px] grid gap-[7px] sm:grid-cols-2 xl:grid-cols-3">
           {position.candidates.map((candidate, index) => (
-            <div key={candidate.id} className="flex min-w-0 items-center gap-3 rounded-[7px] bg-white/2.5 px-3 py-2">
-              <span className="w-5 shrink-0 text-right font-mono text-[10px] text-white/45">{index + 1}</span>
-              <span className="min-w-0 flex-1 truncate text-[12px] font-medium text-white/80">
+            <div key={candidate.id} className="flex min-w-[0px] items-center gap-[13px] rounded-[8px] bg-white/2.5 px-[13px] py-[9px]">
+              <span className="w-[22px] shrink-0 text-right font-mono text-[11px] text-white/45">{index + 1}</span>
+              <span className="min-w-[0px] flex-1 truncate text-[13px] font-medium text-white/80">
                 {highlightMatch(candidate.fullName, query)}
               </span>
-              <span className="shrink-0 font-mono text-[10px] text-white/40">
+              <span className="shrink-0 font-mono text-[11px] text-white/40">
                 {highlightMatch(`Gr. ${candidate.gradeLevel}`, query)}
               </span>
             </div>
@@ -247,8 +247,8 @@ function StatusDot({ status }: { status: CandidateStatusFilter }) {
     CLOSED: "bg-white/10",
   };
   return (
-    <span className="inline-flex shrink-0 items-center gap-1 text-[10px] text-white/50">
-      <span className={`h-[6px] w-[6px] rounded-full ${colors[status as Exclude<CandidateStatusFilter, "ALL">]}`} />
+    <span className="inline-flex shrink-0 items-center gap-[4px] text-[11px] text-white/50">
+      <span className={`h-[7px] w-[7px] rounded-full ${colors[status as Exclude<CandidateStatusFilter, "ALL">]}`} />
       {status}
     </span>
   );

@@ -116,9 +116,9 @@ function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
   const pct = total > 0 ? Math.round((voted / total) * 100) : 0;
 
   const icons = {
-    open: <Play aria-hidden="true" className="h-[18px] w-[18px]" />,
-    close: <Square aria-hidden="true" className="h-[18px] w-[18px]" />,
-    calendar: <CalendarClock aria-hidden="true" className="h-[18px] w-[18px]" />,
+    open: <Play aria-hidden="true" className="h-[20px] w-[20px]" />,
+    close: <Square aria-hidden="true" className="h-[20px] w-[20px]" />,
+    calendar: <CalendarClock aria-hidden="true" className="h-[20px] w-[20px]" />,
   };
 
   switch (type) {
@@ -260,7 +260,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
   };
 
   return (
-    <PageContainer className="flex max-w-4xl flex-col gap-5">
+    <PageContainer className="flex max-w-4xl flex-col gap-[22px]">
       <PageHeader
         eyebrow={DIVISION_LABELS[election.division] ?? election.division}
         title={election.name}
@@ -273,11 +273,11 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
           />
         }
         meta={
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap items-center gap-[9px]">
             <StatusPill status={status} />
             {!canLifecycle && !canClose && (
-              <span className="inline-flex items-center gap-1 rounded-full border border-white/8 bg-white/3 px-2 py-1 text-[10px] text-white/50">
-                <Lock aria-hidden="true" className="h-3 w-3" />
+              <span className="inline-flex items-center gap-[4px] rounded-full border border-white/8 bg-white/3 px-[9px] py-[4px] text-[11px] text-white/50">
+                <Lock aria-hidden="true" className="h-[13px] w-[13px]" />
                 Read-only
               </span>
             )}
@@ -300,17 +300,17 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
         meta={<FlowTrack status={status} />}
       >
         {/* Quick stats */}
-        <div className="mb-4 grid grid-cols-2 gap-2 sm:grid-cols-4">
+        <div className="mb-[18px] grid grid-cols-2 gap-[9px] sm:grid-cols-4">
           <StatCell label="Scheduled Open" value={fmt(election.scheduledOpen)} mono />
           <StatCell label="Scheduled Close" value={fmt(election.scheduledClose)} mono />
           <StatCell label="Registered Voters" value={voters.toString()} />
-          <div className="rounded-[8px] border border-white/[0.07] bg-white/3 px-[13px] py-[10px]">
-            <p className="mb-[5px] text-[9px] uppercase tracking-[0.12em] text-white/40">Turnout</p>
-            <p className="text-[13px] font-semibold text-white/80">
+          <div className="rounded-[9px] border border-white/[0.07] bg-white/3 px-[15px] py-[11px]">
+            <p className="mb-[6px] text-[10px] uppercase tracking-[0.12em] text-white/40">Turnout</p>
+            <p className="text-[15px] font-semibold text-white/80">
               {voted}{" "}
-              <span className="text-[11px] font-normal text-white/45">/ {voters} ({pct}%)</span>
+              <span className="text-[12px] font-normal text-white/45">/ {voters} ({pct}%)</span>
             </p>
-            <div className="mt-[6px] h-[3px] overflow-hidden rounded-full bg-white/6">
+            <div className="mt-[7px] h-[3px] overflow-hidden rounded-full bg-white/6">
               <div
                 className="h-full rounded-full bg-emerald-400 transition-all"
                 style={{ width: `${pct}%` }}
@@ -320,7 +320,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
         </div>
 
         {/* Action row */}
-        <div className="flex flex-wrap items-center gap-2 border-t border-white/[0.07] pt-4">
+        <div className="flex flex-wrap items-center gap-[9px] border-t border-white/[0.07] pt-[18px]">
           {/* Open Now — Commissioner (lifecycle) */}
           {canLifecycle && (
             <Button
@@ -331,7 +331,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
               disabled={status !== "SCHEDULED" || isPending}
               variant="adminEmerald"
               size="adminMd"
-              className="min-h-11"
+              className="min-h-[49px]"
             >
               <Play aria-hidden="true" />
               Open Now
@@ -345,7 +345,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
               disabled={isPending}
               variant="adminBlue"
               size="adminMd"
-              className="min-h-11"
+              className="min-h-[49px]"
             >
               <CalendarClock aria-hidden="true" />
               Advance to Scheduled
@@ -362,7 +362,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
               disabled={status !== "OPEN" || isPending}
               variant="adminGhost"
               size="adminMd"
-              className="min-h-11"
+              className="min-h-[49px]"
             >
               <Square aria-hidden="true" />
               Close Election
@@ -370,23 +370,23 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
           )}
 
           {!canLifecycle && !canClose && (
-            <span className="text-[11px] text-white/40">
+            <span className="text-[12px] text-white/40">
               You have read-only access to this election.
             </span>
           )}
 
-          <span className="text-[10px] text-white/40 md:ml-1">{contextHint[status]}</span>
+          <span className="text-[11px] text-white/40 md:ml-[4px]">{contextHint[status]}</span>
         </div>
       </Card>
 
       {/* ── Schedule override ── Commissioner (lifecycle) only */}
       {canLifecycle && status !== "CLOSED" && (
         <Card title="Override Schedule" meta={<AdminBadge />}>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-[13px]">
             <WarnBanner>
               Overriding times bypasses the scheduler. All changes are logged with your admin credentials and timestamp.
             </WarnBanner>
-            <div className="grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
+            <div className="grid grid-cols-1 gap-[13px] md:grid-cols-[1fr_1fr_auto] md:items-end">
               <Field label="Open date & time">
                 <AdminInput
                   type="datetime-local"
@@ -406,7 +406,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
                 disabled={isPending}
                 variant="adminPrimary"
                 size="adminMd"
-                className="min-h-11"
+                className="min-h-[49px]"
               >
                 <CalendarClock aria-hidden="true" />
                 Save Override
@@ -418,46 +418,46 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
 
       <Card
         title="Ballot Integrity & Recounts"
-        meta={election.auditVersion ? <span className="text-[10px] text-emerald-400/70">Verifiable v{election.auditVersion}</span> : <span className="text-[10px] text-gold/70">Legacy</span>}
+        meta={election.auditVersion ? <span className="text-[11px] text-emerald-400/70">Verifiable v{election.auditVersion}</span> : <span className="text-[11px] text-gold/70">Legacy</span>}
       >
         {!election.auditVersion ? (
           <WarnBanner>This election predates verifiable ballots. Existing votes remain available, but receipts and cryptographic recounts are not supported.</WarnBanner>
         ) : (
-          <div className="flex flex-col gap-4">
-            <div className="rounded-[8px] border border-white/[0.07] bg-white/2.5 p-3">
-              <div className="text-[9px] uppercase tracking-[0.14em] text-white/35">Public audit fingerprint</div>
-              <div className="mt-1 break-all font-mono text-[10px] text-white/60">{election.auditFingerprint}</div>
+          <div className="flex flex-col gap-[18px]">
+            <div className="rounded-[9px] border border-white/[0.07] bg-white/2.5 p-[13px]">
+              <div className="text-[10px] uppercase tracking-[0.14em] text-white/35">Public audit fingerprint</div>
+              <div className="mt-[4px] break-all font-mono text-[11px] text-white/60">{election.auditFingerprint}</div>
             </div>
             {election.certification ? (
-              <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center justify-between gap-[13px]">
                 <div>
-                  <div className="text-[12px] font-medium text-emerald-300">Official tally certified</div>
-                  <div className="mt-1 text-[10px] text-white/40">{fmt(election.certification.createdAt)} by {election.certification.createdBy}</div>
+                  <div className="text-[13px] font-medium text-emerald-300">Official tally certified</div>
+                  <div className="mt-[4px] text-[11px] text-white/40">{fmt(election.certification.createdAt)} by {election.certification.createdBy}</div>
                 </div>
                 {canRecount && (
-                  <Button onClick={() => setDlg("recount")} disabled={isPending || status !== "CLOSED"} variant="adminPrimary" size="adminMd" className="min-h-11">
+                  <Button onClick={() => setDlg("recount")} disabled={isPending || status !== "CLOSED"} variant="adminPrimary" size="adminMd" className="min-h-[49px]">
                     <RotateCcw aria-hidden="true" />
                     Initiate Recount
                   </Button>
                 )}
               </div>
             ) : (
-              <p className="text-[11px] text-white/45">The official snapshot will be frozen when this election closes.</p>
+              <p className="text-[12px] text-white/45">The official snapshot will be frozen when this election closes.</p>
             )}
             {election.recounts.length > 0 && (
-              <div className="border-t border-white/[0.07] pt-3">
-                <div className="mb-2 text-[9px] uppercase tracking-[0.14em] text-white/35">Recount history</div>
-                <div className="flex flex-col gap-2">
+              <div className="border-t border-white/[0.07] pt-[13px]">
+                <div className="mb-[9px] text-[10px] uppercase tracking-[0.14em] text-white/35">Recount history</div>
+                <div className="flex flex-col gap-[9px]">
                   {election.recounts.map((recount) => {
                     const discrepancies = Array.isArray(recount.discrepancies) ? recount.discrepancies.filter((item): item is string => typeof item === "string") : [];
                     return (
-                      <div key={recount.id} className={`rounded-[7px] border px-3 py-2 ${recount.matchesOfficial ? "border-emerald-400/15 bg-emerald-400/4" : "border-red-400/25 bg-red-400/5"}`}>
-                        <div className="flex justify-between gap-3 text-[11px]">
+                      <div key={recount.id} className={`rounded-[8px] border px-[13px] py-[9px] ${recount.matchesOfficial ? "border-emerald-400/15 bg-emerald-400/4" : "border-red-400/25 bg-red-400/5"}`}>
+                        <div className="flex justify-between gap-[13px] text-[12px]">
                           <span className={recount.matchesOfficial ? "text-emerald-300" : "text-red-300"}>{recount.matchesOfficial ? "Matched official tally" : "Integrity discrepancy"}</span>
                           <span className="text-white/35">{fmt(recount.createdAt)}</span>
                         </div>
-                        <div className="mt-1 text-[10px] text-white/40">{recount.ballotCount} ballots · {recount.validBallots} valid · {recount.invalidBallots} invalid · {recount.initiatedBy}</div>
-                        {discrepancies.map((item) => <div key={item} className="mt-1 text-[10px] text-red-300/80">{item}</div>)}
+                        <div className="mt-[4px] text-[11px] text-white/40">{recount.ballotCount} ballots · {recount.validBallots} valid · {recount.invalidBallots} invalid · {recount.initiatedBy}</div>
+                        {discrepancies.map((item) => <div key={item} className="mt-[4px] text-[11px] text-red-300/80">{item}</div>)}
                       </div>
                     );
                   })}
@@ -469,23 +469,23 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
       </Card>
 
       {/* ── Audit trail ── */}
-      <Card title="Audit Trail" meta={<span className="text-[10px] text-white/35">{auditLogs.length} events</span>} noPad>
+      <Card title="Audit Trail" meta={<span className="text-[11px] text-white/35">{auditLogs.length} events</span>} noPad>
         {auditLogs.length === 0 ? (
-          <p className="py-6 text-center text-[11px] text-white/40">No events yet</p>
+          <p className="py-[27px] text-center text-[12px] text-white/40">No events yet</p>
         ) : (
           <div>
             {[...auditLogs].reverse().map((log) => {
               const dot = log.toStatus ? (DOT_COLORS[log.toStatus] ?? "bg-gold") : "bg-gold";
               const isAuto = log.adminEmail === "scheduler";
               return (
-                <div key={log.id} className="flex items-start gap-[10px] border-b border-white/4 px-4 py-[9px] last:border-0">
-                  <span className={`mt-[4px] h-[7px] w-[7px] shrink-0 rounded-full ${dot}`} />
+                <div key={log.id} className="flex items-start gap-[11px] border-b border-white/4 px-[18px] py-[10px] last:border-0">
+                  <span className={`mt-[4px] h-[8px] w-[8px] shrink-0 rounded-full ${dot}`} />
                   <div>
-                    <div className="flex items-center gap-1.5 text-[11px] font-medium text-white/70">
+                    <div className="flex items-center gap-[7px] text-[12px] font-medium text-white/70">
                       {log.action}
                       {isAuto && <AutoBadge />}
                     </div>
-                    <div className="mt-[2px] text-[10px] text-white/50">
+                    <div className="mt-[2px] text-[11px] text-white/50">
                       {log.adminEmail} ·{" "}
                       {new Date(log.createdAt).toLocaleString("en-PH", {
                         month: "short",
@@ -505,8 +505,8 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
       {/* ── Archive ── */}
       {canLifecycle && <Card title="Archive">
         {election.archivedAt ? (
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[11px] text-white/50">
+          <div className="flex flex-wrap items-center justify-between gap-[13px]">
+            <p className="text-[12px] text-white/50">
               Archived{election.archivedBy ? ` by ${election.archivedBy}` : ""} on {fmt(election.archivedAt)}.
               Hidden from the active dashboard and public results.
             </p>
@@ -516,8 +516,8 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
             </Button>
           </div>
         ) : (
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <p className="text-[11px] text-white/50">
+          <div className="flex flex-wrap items-center justify-between gap-[13px]">
+            <p className="text-[12px] text-white/50">
               {canArchive(status, election.archivedAt).ok
                 ? "Hide this election from the active dashboard and public results. Reversible."
                 : "Close or unschedule the election before it can be archived."}
@@ -547,7 +547,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
         onConfirm={confirmDlg}
         icon={
           dlg ? (
-            <div className={`flex h-[38px] w-[38px] items-center justify-center rounded-[9px] ${dlgConfig.iconBg}`}>
+            <div className={`flex h-[43px] w-[43px] items-center justify-center rounded-[10px] ${dlgConfig.iconBg}`}>
               {dlgConfig.icon}
             </div>
           ) : undefined

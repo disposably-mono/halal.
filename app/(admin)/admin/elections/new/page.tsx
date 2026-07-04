@@ -8,7 +8,7 @@ export default async function NewElectionPage() {
   if (!session) redirect("/admin/login");
 
   return (
-    <PageContainer className="max-w-3xl space-y-6">
+    <PageContainer className="max-w-3xl space-y-[27px]">
       <PageHeader
         eyebrow="Setup"
         title="Create Election"

@@ -24,11 +24,11 @@ export default function PermissionNotice({ denied }: { denied?: string }) {
   return (
     <div
       role="alert"
-      className="flex items-start justify-between gap-3 rounded-xl border border-gold/25 bg-gold/8 px-4 py-3"
+      className="flex items-start justify-between gap-[13px] rounded-xl border border-gold/25 bg-gold/8 px-[18px] py-[13px]"
     >
-      <div className="flex items-start gap-2.5">
+      <div className="flex items-start gap-[11px]">
         <svg
-          style={{ width: 15, height: 15, flexShrink: 0, marginTop: 1 }}
+          style={{ width: 17, height: 17, flexShrink: 0, marginTop: 1 }}
           viewBox="0 0 24 24"
           fill="none"
           stroke="currentColor"
@@ -42,10 +42,10 @@ export default function PermissionNotice({ denied }: { denied?: string }) {
           <line x1="12" y1="17" x2="12.01" y2="17" />
         </svg>
         <div>
-          <p className="text-[12px] font-semibold text-gold/90">
+          <p className="text-[13px] font-semibold text-gold/90">
             Permission denied
           </p>
-          <p className="mt-0.5 text-[11px] leading-relaxed text-gold/70">
+          <p className="mt-[2px] text-[12px] leading-relaxed text-gold/70">
             {message}
           </p>
         </div>
@@ -54,7 +54,7 @@ export default function PermissionNotice({ denied }: { denied?: string }) {
         type="button"
         onClick={() => setMessage(null)}
         aria-label="Dismiss"
-        className="shrink-0 rounded-[5px] px-[6px] py-[2px] text-[13px] leading-none text-gold/60 transition-colors hover:bg-gold/10 hover:text-gold"
+        className="shrink-0 rounded-[6px] px-[7px] py-[2px] text-[15px] leading-none text-gold/60 transition-colors hover:bg-gold/10 hover:text-gold"
       >
         ✕
       </button>

@@ -37,9 +37,9 @@ export function HistoryTable({ history, query }: { history: readonly LoginHistor
           key: "time",
           header: "Time",
           priority: 1,
-          className: "w-[190px]",
+          className: "w-[213px]",
           render: (entry) => (
-            <span className="whitespace-nowrap font-mono text-[11px] text-white/45">
+            <span className="whitespace-nowrap font-mono text-[12px] text-white/45">
               {dateFormatter.format(new Date(entry.createdAt))}
             </span>
           ),
@@ -63,8 +63,8 @@ export function HistoryTable({ history, query }: { history: readonly LoginHistor
 function OfficerCell({ name, email, query }: { name: string; email: string; query?: string }) {
   return (
     <div>
-      <p className="text-[12px] font-medium text-white/80">{highlightMatch(name, query)}</p>
-      <p className="mt-0.5 font-mono text-[10px] text-white/60">{highlightMatch(email, query)}</p>
+      <p className="text-[13px] font-medium text-white/80">{highlightMatch(name, query)}</p>
+      <p className="mt-[2px] font-mono text-[11px] text-white/60">{highlightMatch(email, query)}</p>
     </div>
   );
 }

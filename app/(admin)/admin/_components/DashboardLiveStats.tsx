@@ -78,8 +78,8 @@ export function DashboardLiveStats({ elections }: { elections: DashboardElection
   if (openElections.length === 0) return null;
 
   return (
-    <Card title="Live Turnout" meta={<span className="text-[10px] text-white/45">Auto-refreshes</span>}>
-      <div className="grid gap-3 md:grid-cols-2">
+    <Card title="Live Turnout" meta={<span className="text-[11px] text-white/45">Auto-refreshes</span>}>
+      <div className="grid gap-[13px] md:grid-cols-2">
         {openElections.map((election) => {
           const trend = trends[election.id] ?? [];
           const trendError = trendErrors[election.id];
@@ -89,18 +89,18 @@ export function DashboardLiveStats({ elections }: { elections: DashboardElection
           const total = latest?.total ?? election._count.voters;
 
           return (
-            <div key={election.id} className="rounded-[8px] border border-white/[0.07] bg-white/3 p-3">
-              <div className="flex items-start justify-between gap-3">
-                <div className="min-w-0">
-                  <p className="truncate text-[12px] font-semibold text-white/85">{election.name}</p>
-                  <p className="mt-0.5 text-[10px] text-white/45">
+            <div key={election.id} className="rounded-[9px] border border-white/[0.07] bg-white/3 p-[13px]">
+              <div className="flex items-start justify-between gap-[13px]">
+                <div className="min-w-[0px]">
+                  <p className="truncate text-[13px] font-semibold text-white/85">{election.name}</p>
+                  <p className="mt-[2px] text-[11px] text-white/45">
                     {currentVoted.toLocaleString()} of {total.toLocaleString()} voted
                   </p>
                   {trendError && (
-                    <p className="mt-0.5 text-[10px] text-amber-300/80">{trendError}</p>
+                    <p className="mt-[2px] text-[11px] text-amber-300/80">{trendError}</p>
                   )}
                 </div>
-                <p className={`font-mono text-[18px] font-bold ${trendError ? "text-amber-300" : "text-emerald-400"}`}>
+                <p className={`font-mono text-[20px] font-bold ${trendError ? "text-amber-300" : "text-emerald-400"}`}>
                   {currentPct}%
                 </p>
               </div>
@@ -125,12 +125,12 @@ function Sparkline({
   const bars = points.length > 0 ? points : [{ label: "Now", pct: fallbackPct, voted: 0, total: 0 }];
 
   return (
-    <div className="mt-3 flex h-12 items-end gap-1" aria-label="Turnout trend">
+    <div className="mt-[13px] flex h-[54px] items-end gap-[4px]" aria-label="Turnout trend">
       {bars.map((point, index) => (
         <div
           key={`${point.label}-${index}`}
           title={`${point.label}: ${point.pct}%`}
-          className={`min-w-0 flex-1 rounded-t-[3px] ${isStale ? "bg-amber-300/70" : "bg-emerald-400/70"}`}
+          className={`min-w-[0px] flex-1 rounded-t-[3px] ${isStale ? "bg-amber-300/70" : "bg-emerald-400/70"}`}
           style={{ height: `${Math.max(8, point.pct)}%` }}
         />
       ))}

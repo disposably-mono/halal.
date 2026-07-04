@@ -41,29 +41,29 @@ export function VoteBar({
       : "text-white/60";
 
   return (
-    <div className={`relative overflow-hidden rounded-[7px] border transition-colors ${wrapCls}`}>
+    <div className={`relative overflow-hidden rounded-[8px] border transition-colors ${wrapCls}`}>
       <div
-        className={`absolute inset-y-0 left-0 transition-all duration-700 ease-out ${fillCls}`}
+        className={`absolute inset-y-[0px] left-[0px] transition-all duration-700 ease-out ${fillCls}`}
         style={{ width: `${displayPct}%` }}
       />
-      <div className="relative flex items-center gap-3 px-3 py-2.5">
-        <span className="flex-1 truncate font-mono text-[11px] font-medium text-white/90">
+      <div className="relative flex items-center gap-[13px] px-[13px] py-[11px]">
+        <span className="flex-1 truncate font-mono text-[12px] font-medium text-white/90">
           {candidate.fullName}
         </span>
-        <span className="shrink-0 font-mono text-[10px] text-white/40">
+        <span className="shrink-0 font-mono text-[11px] text-white/40">
           Gr.{candidate.gradeLevel}
         </span>
-        <span className={`min-w-[32px] shrink-0 text-right font-mono text-[12px] font-bold tabular-nums ${countColor}`}>
+        <span className={`min-w-[36px] shrink-0 text-right font-mono text-[13px] font-bold tabular-nums ${countColor}`}>
           {candidate.votes}
         </span>
-        <span className="w-[38px] shrink-0 text-right font-mono text-[10px] text-white/60">
+        <span className="w-[43px] shrink-0 text-right font-mono text-[11px] text-white/60">
           {pct.toFixed(1)}%
         </span>
         {isTie && candidate.votes > 0 && (
-          <span className="shrink-0 font-mono text-[11px] font-bold text-sky-400">=</span>
+          <span className="shrink-0 font-mono text-[12px] font-bold text-sky-400">=</span>
         )}
         {isLeader && !isTie && candidate.votes > 0 && (
-          <span className="shrink-0 text-[11px] text-gold">★</span>
+          <span className="shrink-0 text-[12px] text-gold">★</span>
         )}
       </div>
     </div>

@@ -18,22 +18,22 @@ export function ElectionRow({
   const p = pct(e.votedCount, e._count.voters);
   const showProg = e.status === "OPEN" || e.status === "CLOSED";
 
-  const goldBtn = "text-[10px] text-gold bg-gold/8 border border-gold/20 rounded-[5px] px-[7px] py-[3px] hover:bg-gold/15 transition-all no-underline";
+  const goldBtn = "text-[11px] text-gold bg-gold/8 border border-gold/20 rounded-[6px] px-[8px] py-[3px] hover:bg-gold/15 transition-all no-underline";
 
   return (
-    <div className="flex items-center gap-3 px-[14px] py-[10px] border-b border-white/4 last:border-0 hover:bg-white/2.5 transition-colors group">
+    <div className="flex items-center gap-[13px] px-[16px] py-[11px] border-b border-white/4 last:border-0 hover:bg-white/2.5 transition-colors group">
       <StatusPill status={e.status} />
 
       {/* Name + division */}
-      <div className="flex-1 min-w-0">
-        <div className="text-[12px] font-medium text-white/80 truncate group-hover:text-white/90 transition-colors">{e.name}</div>
-        <div className="text-[10px] text-white/40 mt-px">{DIVISION_LABELS[e.division] ?? e.division}</div>
+      <div className="flex-1 min-w-[0px]">
+        <div className="text-[13px] font-medium text-white/80 truncate group-hover:text-white/90 transition-colors">{e.name}</div>
+        <div className="text-[11px] text-white/40 mt-px">{DIVISION_LABELS[e.division] ?? e.division}</div>
       </div>
 
       {/* Stats */}
-      <div className="hidden md:flex items-center gap-4 shrink-0 text-[10px] text-white/50">
-        <span className="flex items-center gap-[5px]">
-          <svg style={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <div className="hidden md:flex items-center gap-[18px] shrink-0 text-[11px] text-white/50">
+        <span className="flex items-center gap-[6px]">
+          <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
             <circle cx="9" cy="7" r="4" />
             <path d="M23 21v-2a4 4 0 00-3-3.87" />
@@ -41,26 +41,26 @@ export function ElectionRow({
           </svg>
           {e._count.voters.toLocaleString()}
         </span>
-        <span className="flex items-center gap-[5px]">
-          <svg style={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <span className="flex items-center gap-[6px]">
+          <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2" />
             <circle cx="12" cy="7" r="4" />
           </svg>
           {e._count.candidates} cand.
         </span>
-        <span className="flex items-center gap-[5px]">
-          <svg style={{ width: 10, height: 10 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <span className="flex items-center gap-[6px]">
+          <svg style={{ width: 11, height: 11 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <rect x="2" y="7" width="20" height="14" rx="2" />
             <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2" />
           </svg>
           {e._count.positions} pos.
         </span>
         {showProg && (
-          <span className="flex items-center gap-[6px]">
-            <div className="w-9 h-[3px] bg-white/6 rounded-full overflow-hidden">
+          <span className="flex items-center gap-[7px]">
+            <div className="w-[40px] h-[3px] bg-white/6 rounded-full overflow-hidden">
               <div className={`h-full rounded-full ${e.status === "OPEN" ? "bg-emerald-400" : "bg-white/25"}`} style={{ width: `${p}%` }} />
             </div>
-            <span className="min-w-[26px] text-right">{p}%</span>
+            <span className="min-w-[29px] text-right">{p}%</span>
           </span>
         )}
         {e.status === "SCHEDULED" && e.scheduledOpen && (
@@ -69,7 +69,7 @@ export function ElectionRow({
       </div>
 
       {/* Actions — primary Control + overflow menu */}
-      <div className="flex items-center gap-1 shrink-0">
+      <div className="flex items-center gap-[4px] shrink-0">
         <Link href={`/admin/elections/${e.id}/control`} className={goldBtn}>⚡ Control</Link>
         <RowActions e={e} onToast={onToast} canLifecycle={canLifecycle} />
       </div>
