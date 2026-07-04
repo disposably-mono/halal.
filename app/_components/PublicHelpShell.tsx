@@ -33,7 +33,7 @@ export function PublicHelpShell({
     <div className="min-h-screen overflow-x-hidden font-body text-white" style={PAGE_BACKGROUND}>
       <LandingNav />
       <main>
-        <section className="relative flex min-h-[56svh] items-center justify-center overflow-hidden border-b border-gold/10 px-6 pb-16 pt-28 text-center">
+        <section className="relative flex min-h-screen items-center justify-center overflow-hidden border-b border-gold/10 px-6 pb-16 pt-28 text-center">
           <HelpRibbons />
           <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
             <div
