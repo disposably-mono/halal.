@@ -116,4 +116,18 @@ describe("scaleFileContents", () => {
       `<div className="-translate-y-[4px] md:h-[18px] hover:text-[16px]">`,
     );
   });
+
+  test("scales space-x/space-y utilities like gap-x/gap-y", () => {
+    const input = `<div className="space-y-3 px-4 space-x-2">`;
+    // space-y-3 = 12px -> 12*1.12=13.44 -> 13; space-x-2 = 8px -> 8*1.12=8.96 -> 9
+    expect(scaleFileContents(input)).toBe(
+      `<div className="space-y-[13px] px-[18px] space-x-[9px]">`,
+    );
+  });
+
+  test("scales arbitrary space-x/space-y values", () => {
+    const input = `<div className="space-y-[10px]">`;
+    // 10 * 1.12 = 11.2 -> 11
+    expect(scaleFileContents(input)).toBe(`<div className="space-y-[11px]">`);
+  });
 });

@@ -20,7 +20,7 @@ export function scaleSemanticToken(prefix, n, factor = SCALE_FACTOR) {
 // "px" never collide regardless of list order).
 const PREFIXES = [
   "min-h", "max-h", "min-w", "max-w",
-  "gap-x", "gap-y", "inset-x", "inset-y", "translate-x", "translate-y",
+  "gap-x", "gap-y", "space-x", "space-y", "inset-x", "inset-y", "translate-x", "translate-y",
   "text", "leading", "rounded", "size", "gap", "inset",
   "top", "left", "right", "bottom",
   "h", "w",
