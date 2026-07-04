@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import PrivacyClient from "./PrivacyClient";
 
 export const metadata: Metadata = {
-  title: "Data & Privacy Policy · OLPS COMELEC",
+  title: "Privacy | halal. OLPS COMELEC",
   description:
-    "How the OLPS COMELEC HALAL voting system handles student and admin data, cookies, and voter anonymity under the Data Privacy Act (RA 10173).",
+    "How HALAL handles OLPS COMELEC voter records, anonymous ballots, receipt verification, admin access, cookies, and operational logs.",
 };
 
 export default function PrivacyPage() {

@@ -33,16 +33,23 @@ export function PublicHelpShell({
     <div className="min-h-screen overflow-x-hidden font-body text-white" style={PAGE_BACKGROUND}>
       <LandingNav />
       <main>
-        <section className="relative flex min-h-screen items-center justify-center overflow-hidden border-b border-white/6 px-6 pb-20 pt-28 text-center">
+        <section className="relative flex min-h-[56svh] items-center justify-center overflow-hidden border-b border-gold/10 px-6 pb-16 pt-28 text-center">
           <HelpRibbons />
-          <div className="relative z-10 mx-auto max-w-3xl">
-            <p className="text-[10px] uppercase tracking-[0.38em] text-gold/70">{eyebrow}</p>
-            <h1 className="mt-4 font-display text-5xl uppercase tracking-wide text-white sm:text-7xl">{title}</h1>
-            <p className="mx-auto mt-5 max-w-2xl text-sm leading-7 text-white/55 sm:text-base">{description}</p>
+          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+            <div
+              className="h-[32rem] w-[32rem] rounded-full"
+              style={{ background: "radial-gradient(ellipse, rgba(27,31,94,0.72) 0%, transparent 70%)" }}
+            />
           </div>
-          <div className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-2 opacity-30">
-            <span className="text-[10px] uppercase tracking-[0.3em] text-white">Scroll</span>
-            <div className="h-8 w-px bg-white/50" />
+          <div className="relative z-10 mx-auto max-w-3xl">
+            <div className="mb-4 flex items-center justify-center gap-4">
+              <div className="h-px w-8 bg-gold/55" />
+              <p className="text-[10px] uppercase tracking-[0.34em] text-gold/70">{eyebrow}</p>
+              <div className="h-px w-8 bg-gold/55" />
+            </div>
+            <h1 className="font-tagline text-5xl font-bold uppercase leading-none tracking-wider text-white sm:text-7xl">{title}</h1>
+            <div className="mx-auto my-6 h-px w-16 bg-gold/45" />
+            <p className="mx-auto max-w-2xl text-sm leading-7 text-white/55 sm:text-base">{description}</p>
           </div>
         </section>
         {children}
@@ -106,7 +113,7 @@ export function HelpSectionHeading({
   return (
     <div className="max-w-2xl">
       <p className="text-[10px] uppercase tracking-[0.32em] text-gold/65">{eyebrow}</p>
-      <h2 className="mt-3 font-display text-4xl uppercase tracking-wide text-white sm:text-5xl">{title}</h2>
+      <h2 className="mt-3 font-tagline text-3xl font-bold uppercase tracking-wide text-white sm:text-4xl">{title}</h2>
       <p className="mt-4 text-sm leading-6 text-white/50">{body}</p>
     </div>
   );

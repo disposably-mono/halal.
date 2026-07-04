@@ -30,3 +30,20 @@ test("officers page images include responsive sizes hints", async ({ page }) => 
 
   expect(imageWarnings).toEqual([]);
 });
+
+test("help and privacy pages explain current ballot privacy flows", async ({ page }) => {
+  await page.goto("/voter-help");
+  await expect(page.getByRole("heading", { name: "Voter Help" })).toBeVisible();
+  await expect(page.locator("body")).toContainText("Receipt code");
+  await expect(page.locator("body")).toContainText("Verify your receipt");
+
+  await page.goto("/admin-help");
+  await expect(page.getByRole("heading", { name: "Officer Help" })).toBeVisible();
+  await expect(page.locator("body")).toContainText("two-officer sign-in");
+  await expect(page.locator("body")).toContainText("Officer verification is required");
+
+  await page.goto("/privacy");
+  await expect(page.getByRole("heading", { name: "Privacy" })).toBeVisible();
+  await expect(page.locator("body")).toContainText("Receipt hashes");
+  await expect(page.locator("body")).toContainText("Operational logs do not contain ballot choices");
+});
