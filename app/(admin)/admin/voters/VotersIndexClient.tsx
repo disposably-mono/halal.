@@ -153,7 +153,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
         <div className="space-y-4">
           {filtered.map((divisionGroup) => (
             <Disclosure
-              key={`${divisionGroup.division}-${isFiltering}`}
+              key={divisionGroup.division}
               defaultOpen={isFiltering}
               className="overflow-hidden rounded-[12px] border border-white/[0.07] bg-admin-surface/70"
               contentClassName="grid gap-3 border-t border-white/6 p-3"
@@ -175,7 +175,7 @@ export function VotersIndexClient({ voters }: { voters: VoterIndexRow[] }) {
             >
               {divisionGroup.elections.map((election) => (
                 <Disclosure
-                  key={`${election.id}-${isFiltering}`}
+                  key={election.id}
                   defaultOpen={isFiltering}
                   className="overflow-hidden rounded-[10px] border border-white/[0.07] bg-admin-surface"
                   trigger={({ open }) => (

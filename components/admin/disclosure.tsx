@@ -1,6 +1,6 @@
 "use client";
 
-import { useId, useState, type ReactNode } from "react";
+import { useEffect, useId, useState, type ReactNode } from "react";
 import { cn } from "@/lib/utils";
 import { AnimatedCollapse } from "./animated-collapse";
 
@@ -26,6 +26,13 @@ export function Disclosure({
   const [open, setOpen] = useState(defaultOpen);
   const contentId = useId();
   const toggle = () => setOpen((value) => !value);
+
+  // Re-sync when the caller's defaultOpen flips (e.g. isFiltering turning on/off)
+  // instead of forcing a remount via `key` — a remount would swap in an
+  // already-closed instance for the collapse case, skipping the animation.
+  useEffect(() => {
+    setOpen(defaultOpen);
+  }, [defaultOpen]);
 
   return (
     <div className={className}>
