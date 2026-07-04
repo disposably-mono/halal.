@@ -107,18 +107,18 @@ export default function AdminLoginPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-admin-bg p-4 font-sans">
-      <div className="relative w-full max-w-[360px] space-y-5">
+    <div className="flex min-h-screen items-center justify-center bg-admin-bg p-[18px] font-sans">
+      <div className="relative w-full max-w-[403px] space-y-[22px]">
 
         {/* ── Wordmark ── */}
-        <div className="space-y-1.5 text-center">
-          <p className="font-mono text-[10px] font-semibold uppercase tracking-[0.18em] text-gold">
+        <div className="space-y-[7px] text-center">
+          <p className="font-mono text-[11px] font-semibold uppercase tracking-[0.18em] text-gold">
             OLPS COMELEC
           </p>
-          <h1 className="text-[42px] font-semibold leading-none tracking-normal text-white/90">
+          <h1 className="text-[47px] font-semibold leading-none tracking-normal text-white/90">
             halal.
           </h1>
-          <p className="text-[12px] italic tracking-[0.06em] text-white/60">
+          <p className="text-[13px] italic tracking-[0.06em] text-white/60">
             VOX POPULI VOX DEI
           </p>
         </div>
@@ -127,11 +127,11 @@ export default function AdminLoginPage() {
         <div className="overflow-hidden rounded-2xl border border-white/8 bg-admin-surface">
 
           {/* Card header */}
-          <div className="border-b border-white/8 px-6 py-5">
-            <h2 className="text-[14px] font-semibold text-white/90">
+          <div className="border-b border-white/8 px-[27px] py-[22px]">
+            <h2 className="text-[16px] font-semibold text-white/90">
               {step === 1 ? "Admin Sign In" : "Officer Verification"}
             </h2>
-            <p className="mt-0.5 text-[12px] text-white/40">
+            <p className="mt-[2px] text-[13px] text-white/40">
               {step === 1
                 ? "Enter your COMELEC admin credentials."
                 : "Ask another COMELEC officer to enter their personal key."}
@@ -139,13 +139,13 @@ export default function AdminLoginPage() {
           </div>
 
           {/* Form body */}
-          <div className="px-6 py-5">
+          <div className="px-[27px] py-[22px]">
             {step === 1 ? (
-              <form onSubmit={handleStep1} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
+              <form onSubmit={handleStep1} className="flex flex-col gap-[18px]">
+                <div className="flex flex-col gap-[7px]">
                   <label
                     htmlFor="admin-email"
-                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/40"
+                    className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/40"
                   >
                     Email
                   </label>
@@ -163,13 +163,13 @@ export default function AdminLoginPage() {
                     autoComplete="username"
                     aria-invalid={hasCredentialsError}
                     aria-describedby={hasCredentialsError ? "admin-credentials-error" : undefined}
-                    className="h-10 rounded-lg border border-white/8 bg-white/5 px-3 text-[13px] text-white/90 placeholder:text-white/40 outline-hidden transition-colors focus:border-gold/50 focus:bg-gold/4 focus-visible:ring-2 focus-visible:ring-gold/20"
+                    className="h-[45px] rounded-lg border border-white/8 bg-white/5 px-[13px] text-[15px] text-white/90 placeholder:text-white/40 outline-hidden transition-colors focus:border-gold/50 focus:bg-gold/4 focus-visible:ring-2 focus-visible:ring-gold/20"
                   />
                 </div>
-                <div className="flex flex-col gap-1.5">
+                <div className="flex flex-col gap-[7px]">
                   <label
                     htmlFor="admin-password"
-                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/40"
+                    className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/40"
                   >
                     Password
                   </label>
@@ -186,14 +186,14 @@ export default function AdminLoginPage() {
                     autoComplete="current-password"
                     aria-invalid={hasCredentialsError}
                     aria-describedby={hasCredentialsError ? "admin-credentials-error" : undefined}
-                    className="h-10 rounded-lg border border-white/8 bg-white/5 px-3 text-[13px] text-white/90 placeholder:text-white/40 outline-hidden transition-colors focus:border-gold/50 focus:bg-gold/4 focus-visible:ring-2 focus-visible:ring-gold/20"
+                    className="h-[45px] rounded-lg border border-white/8 bg-white/5 px-[13px] text-[15px] text-white/90 placeholder:text-white/40 outline-hidden transition-colors focus:border-gold/50 focus:bg-gold/4 focus-visible:ring-2 focus-visible:ring-gold/20"
                   />
                 </div>
                 {credentialsError && (
                   <div
                     id="admin-credentials-error"
                     role="alert"
-                    className="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2.5 text-[12px] text-red-400"
+                    className="rounded-lg border border-red-500/20 bg-red-500/10 px-[13px] py-[11px] text-[13px] text-red-400"
                   >
                     {credentialsError}
                   </div>
@@ -203,18 +203,18 @@ export default function AdminLoginPage() {
                   disabled={verifying}
                   variant="adminPrimary"
                   size="adminMd"
-                  className="mt-1 min-h-11 w-full"
+                  className="mt-[4px] min-h-[49px] w-full"
                 >
                   {verifying ? "Checking..." : "Continue"}
                   {!verifying && <ArrowRight aria-hidden="true" />}
                 </Button>
               </form>
             ) : (
-              <form onSubmit={handleStep2} className="flex flex-col gap-4">
-                <div className="flex flex-col gap-1.5">
+              <form onSubmit={handleStep2} className="flex flex-col gap-[18px]">
+                <div className="flex flex-col gap-[7px]">
                   <label
                     htmlFor="admin-officer-key"
-                    className="text-[11px] font-medium uppercase tracking-[0.06em] text-white/40"
+                    className="text-[12px] font-medium uppercase tracking-[0.06em] text-white/40"
                   >
                     Another Officer&apos;s Key
                   </label>
@@ -232,7 +232,7 @@ export default function AdminLoginPage() {
                     autoComplete="one-time-code"
                     aria-invalid={hasOfficerKeyError}
                     aria-describedby={hasOfficerKeyError ? "admin-officer-key-error" : undefined}
-                    className="h-10 rounded-lg border border-white/8 bg-white/5 px-3 font-mono text-[13px] tracking-[0.06em] text-white/90 placeholder:text-white/40 outline-hidden transition-colors focus:border-gold/50 focus:bg-gold/4 focus-visible:ring-2 focus-visible:ring-gold/20"
+                    className="h-[45px] rounded-lg border border-white/8 bg-white/5 px-[13px] font-mono text-[15px] tracking-[0.06em] text-white/90 placeholder:text-white/40 outline-hidden transition-colors focus:border-gold/50 focus:bg-gold/4 focus-visible:ring-2 focus-visible:ring-gold/20"
                   />
                 </div>
 
@@ -240,13 +240,13 @@ export default function AdminLoginPage() {
                   <div
                     id="admin-officer-key-error"
                     role="alert"
-                    className="rounded-lg border border-gold/20 bg-gold/8 px-3 py-2.5 text-[12px] text-gold"
+                    className="rounded-lg border border-gold/20 bg-gold/8 px-[13px] py-[11px] text-[13px] text-gold"
                   >
                     {officerKeyError}
                   </div>
                 )}
 
-                <div className="mt-1 flex gap-2.5">
+                <div className="mt-[4px] flex gap-[11px]">
                   <Button
                     type="button"
                     onClick={() => {
@@ -258,7 +258,7 @@ export default function AdminLoginPage() {
                     }}
                     variant="adminGhost"
                     size="adminMd"
-                    className="min-h-11 flex-1"
+                    className="min-h-[49px] flex-1"
                   >
                     <ArrowLeft aria-hidden="true" />
                     Back
@@ -268,7 +268,7 @@ export default function AdminLoginPage() {
                     disabled={loading}
                     variant="adminPrimary"
                     size="adminMd"
-                    className="min-h-11 flex-1"
+                    className="min-h-[49px] flex-1"
                   >
                     {loading ? "Signing in..." : "Sign In"}
                     {!loading && <ShieldCheck aria-hidden="true" />}
@@ -280,17 +280,17 @@ export default function AdminLoginPage() {
         </div>
 
         {/* ── Step indicator ── */}
-        <div className="flex justify-center gap-2">
+        <div className="flex justify-center gap-[9px]">
           <div
-            className={`h-[5px] rounded-full transition-all duration-300 ${step === 1
-              ? "w-8 bg-gold"
-              : "w-6 bg-gold/30"
+            className={`h-[6px] rounded-full transition-all duration-300 ${step === 1
+              ? "w-[36px] bg-gold"
+              : "w-[27px] bg-gold/30"
               }`}
           />
           <div
-            className={`h-[5px] rounded-full transition-all duration-300 ${step === 2
-              ? "w-8 bg-gold"
-              : "w-6 bg-white/10"
+            className={`h-[6px] rounded-full transition-all duration-300 ${step === 2
+              ? "w-[36px] bg-gold"
+              : "w-[27px] bg-white/10"
               }`}
           />
         </div>

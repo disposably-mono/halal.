@@ -1,5 +1,7 @@
 export const SMALL_SCALE_FACTOR = 1.2;
 export const LARGE_SCALE_FACTOR = 1.13;
+export const BALLOT_SCALE_FACTOR = 1.13;
+export const ADMIN_SCALE_FACTOR = 1.12;
 export const SMALL_SIZE_THRESHOLD_PX = 16;
 export const SPACING_UNIT_PX = 4;
 
@@ -25,6 +27,10 @@ function selectScaleFactor(px) {
 
 function scalePx(px) {
   return Math.round(px * selectScaleFactor(px));
+}
+
+function scaleFixedPx(px, factor) {
+  return Math.round(px * factor);
 }
 
 export function scalePublicArbitraryToken(prefix, px) {
@@ -72,18 +78,30 @@ const SEMANTIC_TEXT_RE = new RegExp(
 
 const SVG_SIZE_RE = /(<svg[^>]*\swidth=")(\d+)("\s+height=")(\d+)(")/g;
 
-export function scalePublicFileContents(source) {
+function scaleFileContents(source, scaleTokenPx) {
   let result = source.replace(ARBITRARY_RE, (_match, sign, prefix, px) =>
-    `${sign}${scalePublicArbitraryToken(prefix, px)}`,
+    `${sign}${prefix}-[${scaleTokenPx(Number(px))}px]`,
   );
   result = result.replace(SEMANTIC_TEXT_RE, (_match, token) =>
-    scalePublicSemanticTextToken(token),
+    `text-[${scaleTokenPx(SEMANTIC_TEXT_PX[token])}px]`,
   );
   result = result.replace(SEMANTIC_RE, (_match, sign, prefix, n) =>
-    `${sign}${scalePublicSemanticToken(prefix, n)}`,
+    `${sign}${prefix}-[${scaleTokenPx(Number(n) * SPACING_UNIT_PX)}px]`,
   );
   result = result.replace(SVG_SIZE_RE, (_match, start, width, middle, height, end) =>
-    `${start}${scalePx(Number(width))}${middle}${scalePx(Number(height))}${end}`,
+    `${start}${scaleTokenPx(Number(width))}${middle}${scaleTokenPx(Number(height))}${end}`,
   );
   return result;
+}
+
+export function scalePublicFileContents(source) {
+  return scaleFileContents(source, scalePx);
+}
+
+export function scaleBallotFileContents(source) {
+  return scaleFileContents(source, (px) => scaleFixedPx(px, BALLOT_SCALE_FACTOR));
+}
+
+export function scaleAdminLoginFileContents(source) {
+  return scaleFileContents(source, (px) => scaleFixedPx(px, ADMIN_SCALE_FACTOR));
 }

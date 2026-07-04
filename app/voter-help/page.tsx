@@ -25,7 +25,7 @@ export default function VoterHelpPage() {
       title="Voter Help"
       description="Use this guide when you receive your voter slip, cast your OLPS COMELEC ballot, and keep your receipt code for later verification."
     >
-      <section className="px-6 py-16">
+      <section className="px-[27px] py-[72px]">
         <div className="mx-auto max-w-5xl">
           <HelpSectionHeading
             eyebrow="Your Voter Slip"
@@ -33,7 +33,7 @@ export default function VoterHelpPage() {
             body="Your Student ID identifies the roster entry. Your Control Number authorizes one ballot for that election. The submitted ballot is stored separately from both details."
           />
 
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
+          <div className="mt-[45px] grid gap-[23px] md:grid-cols-2">
             <CredentialCard
               label="Student ID"
               example="2026-0001"
@@ -56,16 +56,16 @@ export default function VoterHelpPage() {
             />
           </div>
 
-          <div className="mt-6 border border-gold/20 bg-gold/5 p-5">
-            <p className="font-heading text-sm font-bold uppercase tracking-[0.12em] text-gold">Why both are required</p>
-            <p className="mt-2 text-sm leading-6 text-white/55">
+          <div className="mt-[27px] border border-gold/20 bg-gold/5 p-[23px]">
+            <p className="font-heading text-[17px] font-bold uppercase tracking-[0.12em] text-gold">Why both are required</p>
+            <p className="mt-[10px] text-[17px] leading-[27px] text-white/55">
               The Student ID identifies the registered student, while the Control Number authorizes that student&apos;s one ballot for a specific election. Voter records track whether the roster entry has voted. Candidate choices are stored under an anonymous ballot record, not under the Student ID or Control Number.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-y border-gold/10 px-6 py-16">
+      <section className="relative overflow-hidden border-y border-gold/10 px-[27px] py-[72px]">
         <HelpTexturedBand />
         <div className="relative z-10 mx-auto max-w-5xl">
           <HelpSectionHeading
@@ -73,26 +73,26 @@ export default function VoterHelpPage() {
             title="From voter slip to receipt"
             body="Voting is available only while your division's election is open. Once accepted, the same Control Number cannot be used again."
           />
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-[45px] grid gap-[19px] sm:grid-cols-2 lg:grid-cols-4">
             {steps.map(([number, title, body]) => (
-              <article key={number} className="border border-white/8 bg-navy/50 p-5">
-                <span className="font-mono text-xs text-gold/60">{number}</span>
-                <h3 className="mt-4 font-heading text-base font-bold text-white/90">{title}</h3>
-                <p className="mt-2 text-xs leading-5 text-white/45">{body}</p>
+              <article key={number} className="border border-white/8 bg-navy/50 p-[23px]">
+                <span className="font-mono text-[14px] text-gold/60">{number}</span>
+                <h3 className="mt-[19px] font-heading text-[19px] font-bold text-white/90">{title}</h3>
+                <p className="mt-[10px] text-[14px] leading-[23px] text-white/45">{body}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="px-6 py-16">
+      <section className="px-[27px] py-[72px]">
         <div className="mx-auto max-w-5xl">
           <HelpSectionHeading
             eyebrow="Receipt & Verification"
             title="Keep the code private"
             body="The confirmation page shows your receipt code once. Anyone with that code can verify that receipt, so treat it like election paperwork."
           />
-          <div className="mt-10 grid gap-5 md:grid-cols-3">
+          <div className="mt-[45px] grid gap-[23px] md:grid-cols-3">
             <ReceiptCard title="Receipt code">
               The receipt code is shown after your ballot is accepted. It cannot be recovered later because the system stores only its hash.
             </ReceiptCard>
@@ -106,14 +106,14 @@ export default function VoterHelpPage() {
         </div>
       </section>
 
-      <section className="px-6 pb-16">
+      <section className="px-[27px] pb-[72px]">
         <div className="mx-auto max-w-5xl">
           <HelpSectionHeading
             eyebrow="Common Questions"
             title="When something goes wrong"
             body="Do not try another student's credentials. Contact COMELEC so the roster can be checked safely."
           />
-          <div className="mt-10 grid gap-4 md:grid-cols-2">
+          <div className="mt-[45px] grid gap-[19px] md:grid-cols-2">
             <Question title="My credentials are rejected">
               Check the Student ID format, uppercase the Control Number, and confirm that your division&apos;s election is open. If it still fails, bring the voter slip to COMELEC.
             </Question>
@@ -128,12 +128,12 @@ export default function VoterHelpPage() {
             </Question>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border border-white/8 bg-white/2.5 p-5">
+          <div className="mt-[36px] flex flex-wrap items-center justify-between gap-[19px] border border-white/8 bg-white/2.5 p-[23px]">
             <div>
               <h3 className="font-heading font-bold text-white/90">Have your voter slip ready?</h3>
-              <p className="mt-1 text-xs text-white/45">Continue when your division&apos;s election is open.</p>
+              <p className="mt-[5px] text-[14px] text-white/45">Continue when your division&apos;s election is open.</p>
             </div>
-            <Link href="/vote" className="bg-gold px-5 py-3 font-heading text-xs font-bold uppercase tracking-[0.16em] text-navy-deep transition-opacity hover:opacity-90">
+            <Link href="/vote" className="bg-gold px-[23px] py-[14px] font-heading text-[14px] font-bold uppercase tracking-[0.16em] text-navy-deep transition-opacity hover:opacity-90">
               Open voting page
             </Link>
           </div>
@@ -155,14 +155,14 @@ function CredentialCard({
   points: string[];
 }) {
   return (
-    <article className="border border-white/8 bg-navy/50 p-6">
-      <p className="text-[10px] uppercase tracking-[0.25em] text-gold/60">{label}</p>
-      <div className="mt-4 border border-white/8 bg-[#090c20] px-4 py-3 font-mono text-xl tracking-[0.16em] text-white/85">{example}</div>
-      <p className="mt-5 text-sm leading-6 text-white/50">{body}</p>
-      <ul className="mt-4 space-y-2 border-t border-white/6 pt-4">
+    <article className="border border-white/8 bg-navy/50 p-[27px]">
+      <p className="text-[12px] uppercase tracking-[0.25em] text-gold/60">{label}</p>
+      <div className="mt-[19px] border border-white/8 bg-[#090c20] px-[19px] py-[14px] font-mono text-[23px] tracking-[0.16em] text-white/85">{example}</div>
+      <p className="mt-[23px] text-[17px] leading-[27px] text-white/50">{body}</p>
+      <ul className="mt-[19px] space-y-[10px] border-t border-white/6 pt-[19px]">
         {points.map((point) => (
-          <li key={point} className="flex gap-2 text-xs leading-5 text-white/40">
-            <span className="mt-[7px] h-1 w-1 shrink-0 bg-gold/60" />
+          <li key={point} className="flex gap-[10px] text-[14px] leading-[23px] text-white/40">
+            <span className="mt-[8px] h-[5px] w-[5px] shrink-0 bg-gold/60" />
             <span>{point}</span>
           </li>
         ))}
@@ -173,18 +173,18 @@ function CredentialCard({
 
 function ReceiptCard({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <article className="border border-gold/15 bg-gold/5 p-5">
-      <h3 className="font-heading text-sm font-bold uppercase tracking-[0.12em] text-gold/80">{title}</h3>
-      <p className="mt-3 text-xs leading-5 text-white/50">{children}</p>
+    <article className="border border-gold/15 bg-gold/5 p-[23px]">
+      <h3 className="font-heading text-[17px] font-bold uppercase tracking-[0.12em] text-gold/80">{title}</h3>
+      <p className="mt-[14px] text-[14px] leading-[23px] text-white/50">{children}</p>
     </article>
   );
 }
 
 function Question({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <article className="border border-white/8 bg-navy/45 p-5">
+    <article className="border border-white/8 bg-navy/45 p-[23px]">
       <h3 className="font-heading font-bold text-white/85">{title}</h3>
-      <p className="mt-2 text-xs leading-5 text-white/45">{children}</p>
+      <p className="mt-[10px] text-[14px] leading-[23px] text-white/45">{children}</p>
     </article>
   );
 }

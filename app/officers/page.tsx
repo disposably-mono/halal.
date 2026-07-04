@@ -110,7 +110,7 @@ export const OFFICER_PHOTO_SIZES =
 function HeroRibbons() {
   return (
     <svg
-      className="absolute inset-0 w-full h-full pointer-events-none"
+      className="absolute inset-[0px] w-full h-full pointer-events-none"
       preserveAspectRatio="none"
       viewBox="0 0 1440 600"
       aria-hidden="true"
@@ -133,7 +133,7 @@ function HeroRibbons() {
 
 function SectionDivider({ label }: { label: string }) {
   return (
-    <div className="flex items-center gap-4 my-8">
+    <div className="flex items-center gap-[19px] my-[36px]">
       <div className="flex-1 h-px bg-white/5" />
       <span className="font-body text-[0.58rem] tracking-[0.28em] uppercase text-gold/50 whitespace-nowrap">
         {label}
@@ -161,7 +161,7 @@ function OfficerCard({ officer, past = false, year }: { officer: Officer; past?:
       `}
     >
       {/* Top accent bar */}
-      <div className="h-[3px] shrink-0" style={{ background: accentColor }} />
+      <div className="h-[4px] shrink-0" style={{ background: accentColor }} />
 
       {/* Photo area — 4:5 aspect ratio */}
       <div className="relative w-full shrink-0" style={{ aspectRatio: "4/5" }}>
@@ -169,11 +169,11 @@ function OfficerCard({ officer, past = false, year }: { officer: Officer; past?:
           <Image src={officer.photo} alt={officer.name} fill sizes={OFFICER_PHOTO_SIZES} className="object-cover object-top" />
         ) : (
           <div
-            className="absolute inset-0 flex flex-col items-center justify-center gap-2"
+            className="absolute inset-[0px] flex flex-col items-center justify-center gap-[10px]"
             style={{ background: "linear-gradient(160deg, #1b1f5e 0%, #0f1235 100%)" }}
           >
             <div className="relative flex items-center justify-center">
-              <svg viewBox="0 0 80 80" className="absolute w-20 h-20 opacity-10" aria-hidden="true">
+              <svg viewBox="0 0 80 80" className="absolute w-[90px] h-[90px] opacity-10" aria-hidden="true">
                 {Array.from({ length: 12 }).map((_, i) => {
                   const angle = (i / 12) * 360;
                   const rad = (angle * Math.PI) / 180;
@@ -186,52 +186,52 @@ function OfficerCard({ officer, past = false, year }: { officer: Officer; past?:
                 <circle cx="40" cy="40" r="22" fill="none" stroke="#F5C000" strokeWidth="0.75" />
               </svg>
               <div
-                className="w-14 h-14 rounded-full flex items-center justify-center z-10"
+                className="w-[63px] h-[63px] rounded-full flex items-center justify-center z-10"
                 style={{ border: "1.5px solid rgba(245,192,0,0.3)", background: "rgba(15,18,53,0.7)" }}
               >
-                <span className="font-mono text-sm font-bold text-gold/50 tracking-wider">
+                <span className="font-mono text-[17px] font-bold text-gold/50 tracking-wider">
                   {officer.initials}
                 </span>
               </div>
             </div>
-            <span className="font-body text-[9px] tracking-[0.2em] uppercase text-white/30 mt-1">
+            <span className="font-body text-[11px] tracking-[0.2em] uppercase text-white/30 mt-[5px]">
               Add pubmat
             </span>
           </div>
         )}
 
         {!officer.photo && (
-          <div className="absolute top-2 right-2 border border-gold/20 bg-gold/8 rounded-sm px-1.5 py-0.5">
-            <span className="font-body text-[8px] tracking-[0.15em] uppercase text-gold/50">Pubmat</span>
+          <div className="absolute top-[10px] right-[10px] border border-gold/20 bg-gold/8 rounded-sm px-[7px] py-[2px]">
+            <span className="font-body text-[10px] tracking-[0.15em] uppercase text-gold/50">Pubmat</span>
           </div>
         )}
 
         {isFeatured && (
           <div
-            className="absolute inset-0 pointer-events-none"
+            className="absolute inset-[0px] pointer-events-none"
             style={{ background: "linear-gradient(to top, rgba(27,31,94,0.6) 0%, transparent 50%)" }}
           />
         )}
       </div>
 
       {/* Info */}
-      <div className="p-3 flex flex-col gap-1 flex-1">
+      <div className="p-[14px] flex flex-col gap-[5px] flex-1">
         {isFeatured && (
-          <div className="inline-flex items-center self-start border border-gold/20 bg-gold/8 rounded-sm px-1.5 py-0.5 mb-0.5">
-            <span className="font-body text-[8px] tracking-[0.2em] uppercase text-gold/70">
+          <div className="inline-flex items-center self-start border border-gold/20 bg-gold/8 rounded-sm px-[7px] py-[2px] mb-[2px]">
+            <span className="font-body text-[10px] tracking-[0.2em] uppercase text-gold/70">
               {officer.role}
             </span>
           </div>
         )}
         {!isFeatured && (
-          <p className="font-body text-[9px] tracking-[0.18em] uppercase text-gold/[0.55] leading-tight">
+          <p className="font-body text-[11px] tracking-[0.18em] uppercase text-gold/[0.55] leading-tight">
             {officer.role}
           </p>
         )}
         <p className={`font-tagline font-bold leading-snug text-white ${isFeatured ? "text-[0.9rem]" : "text-[0.8rem]"}`}>
           {officer.name}
         </p>
-        <p className="font-mono text-[9px] text-white/35 mt-auto pt-1">
+        <p className="font-mono text-[11px] text-white/35 mt-auto pt-[5px]">
           {year}
         </p>
       </div>
@@ -247,19 +247,19 @@ function OfficersGrid({ officers, past = false, year }: { officers: Officer[]; p
   return (
     <div>
       <SectionDivider label="Leadership" />
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-2">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[19px] mb-[10px]">
         {leadership.map((o) => <OfficerCard key={o.role} officer={o} past={past} year={year} />)}
       </div>
 
       <SectionDivider label="Committee Heads" />
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[14px]">
         {heads.map((o) => <OfficerCard key={o.role} officer={o} past={past} year={year} />)}
       </div>
 
       {infoOfficers.length > 0 && (
         <>
           <SectionDivider label="Information Officers" />
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-[14px]">
             {infoOfficers.map((o) => <OfficerCard key={o.role} officer={o} past={past} year={year} />)}
           </div>
         </>
@@ -287,32 +287,32 @@ export default function OfficersPage() {
     >
       {/* ── NAV ──────────────────────────────────────────── */}
       <nav
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4"
+        className="fixed top-[0px] left-[0px] right-[0px] z-50 flex items-center justify-between px-[36px] py-[19px]"
         style={{
           background: "rgba(13,15,43,0.88)",
           backdropFilter: "blur(12px)",
           borderBottom: "1px solid rgba(245,192,0,0.1)",
         }}
       >
-        <Link href="/" className="flex items-center gap-2.5 no-underline" aria-label="OLPS COMELEC home">
+        <Link href="/" className="flex items-center gap-[12px] no-underline" aria-label="OLPS COMELEC home">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center"
+            className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
             style={{ background: "#1b1f5e", border: "1px solid rgba(245,192,0,0.4)" }}
           >
             <NavBirdIcon />
           </div>
-          <span className="font-tagline text-sm font-bold tracking-[0.15em] text-gold">
+          <span className="font-tagline text-[17px] font-bold tracking-[0.15em] text-gold">
             OLPS COMELEC
           </span>
         </Link>
 
-        <div className="hidden sm:flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-[19px]">
           {[
             { label: "COMELEC", href: "/about" },
             { label: "LEADERSHIP", href: "/officers", active: true },
             { label: "MAKER", href: "/creator" },
           ].map((link, index) => (
-            <div key={link.label} className="flex items-center gap-4">
+            <div key={link.label} className="flex items-center gap-[19px]">
               {index > 0 && (
                 <span className="font-body text-[0.65rem] text-gold/25" aria-hidden="true">
                   |
@@ -332,18 +332,18 @@ export default function OfficersPage() {
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────── */}
-      <section className="relative min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-6 pt-28 pb-8 overflow-hidden">
+      <section className="relative min-h-[calc(100vh-3.5rem)] flex flex-col items-center justify-center px-[27px] pt-[127px] pb-[36px] overflow-hidden">
         {/* Radial glow */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-[0px] flex items-center justify-center pointer-events-none">
           <div
-            className="w-[700px] h-[700px] rounded-full"
+            className="w-[791px] h-[791px] rounded-full"
             style={{ background: "radial-gradient(ellipse, rgba(27,31,94,0.7) 0%, transparent 70%)" }}
           />
         </div>
         <HeroRibbons />
 
         {/* Fade-in content */}
-        <FadeInSection className="relative z-10 text-center max-w-[640px] w-full">
+        <FadeInSection className="relative z-10 text-center max-w-[723px] w-full">
           <Eyebrow label="OLPS COMELEC" />
 
           <h1
@@ -353,14 +353,14 @@ export default function OfficersPage() {
             Officers
           </h1>
 
-          <div className="w-12 h-px bg-gold/50 mx-auto my-5" />
+          <div className="w-[54px] h-px bg-gold/50 mx-auto my-[23px]" />
 
-          <p className="font-tagline italic text-gold/60 text-sm sm:text-base tracking-wider mb-3">
+          <p className="font-tagline italic text-gold/60 text-[17px] sm:text-[19px] tracking-wider mb-[14px]">
             VOX POPULI VOX DEI
           </p>
 
           <p
-            className="font-body text-[0.8rem] leading-relaxed mb-10"
+            className="font-body text-[0.8rem] leading-relaxed mb-[45px]"
             style={{ color: "rgba(255,255,255,0.4)" }}
           >
             Meet the OLPS COMELEC officers.
@@ -378,7 +378,7 @@ export default function OfficersPage() {
                   setActiveTab(tab.key);
                   gridRef.current?.scrollIntoView({ behavior: "smooth" });
                 }}
-                className={`px-4 sm:px-6 py-2 font-body text-[0.6rem] sm:text-[0.65rem] tracking-[0.2em] uppercase transition-all duration-200 outline-hidden cursor-pointer ${i > 0 ? "border-l" : "border-none"}`}
+                className={`px-[19px] sm:px-[27px] py-[10px] font-body text-[0.6rem] sm:text-[0.65rem] tracking-[0.2em] uppercase transition-all duration-200 outline-hidden cursor-pointer ${i > 0 ? "border-l" : "border-none"}`}
                 style={{
                   borderColor: "rgba(245,192,0,0.2)",
                   background: activeTab === tab.key ? "#F5C000" : "transparent",
@@ -394,7 +394,7 @@ export default function OfficersPage() {
       </section>
 
       {/* ── OFFICERS GRID ────────────────────────────────── */}
-      <main ref={gridRef} className="max-w-6xl mx-auto px-6 py-10">
+      <main ref={gridRef} className="max-w-6xl mx-auto px-[27px] py-[45px]">
         {activeTab === "upcoming" ? (
           <OfficersGrid officers={OFFICERS_2627} past={false} year="S.Y. 2026–2027" />
         ) : activeTab === "current" ? (

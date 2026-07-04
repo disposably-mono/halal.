@@ -1,8 +1,12 @@
 import { describe, expect, test } from "vitest";
 import {
+  ADMIN_SCALE_FACTOR,
+  BALLOT_SCALE_FACTOR,
   LARGE_SCALE_FACTOR,
   SMALL_SCALE_FACTOR,
   SMALL_SIZE_THRESHOLD_PX,
+  scaleAdminLoginFileContents,
+  scaleBallotFileContents,
   scalePublicArbitraryToken,
   scalePublicFileContents,
   scalePublicSemanticTextToken,
@@ -60,5 +64,29 @@ describe("scalePublicFileContents", () => {
       `<div className="text-white/70 bg-navy rounded-sm border-white/10 shadow-lg">Safe</div>`;
 
     expect(scalePublicFileContents(input)).toBe(input);
+  });
+});
+
+describe("special-case file scaling", () => {
+  test("scales ballot files with a fixed 13 percent factor", () => {
+    expect(BALLOT_SCALE_FACTOR).toBe(1.13);
+
+    const input =
+      `<div className="text-[10px] px-4 py-[9px] gap-3"><svg width="14" height="14"></svg></div>`;
+
+    expect(scaleBallotFileContents(input)).toBe(
+      `<div className="text-[11px] px-[18px] py-[10px] gap-[14px]"><svg width="16" height="16"></svg></div>`,
+    );
+  });
+
+  test("scales admin login files with the admin 12 percent factor", () => {
+    expect(ADMIN_SCALE_FACTOR).toBe(1.12);
+
+    const input =
+      `<div className="max-w-[360px] text-[42px] px-6 py-5 text-sm"><svg width="14" height="14"></svg></div>`;
+
+    expect(scaleAdminLoginFileContents(input)).toBe(
+      `<div className="max-w-[403px] text-[47px] px-[27px] py-[22px] text-[16px]"><svg width="16" height="16"></svg></div>`,
+    );
   });
 });

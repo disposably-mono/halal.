@@ -19,7 +19,7 @@ const SOCIALS = [
     color: "rgba(0,119,181,0.25)",
     border: "rgba(0,119,181,0.4)",
     icon: (
-      <svg viewBox="0 0 24 24" fill="#0077B5" className="w-[18px] h-[18px]" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="#0077B5" className="w-[20px] h-[20px]" aria-hidden="true">
         <path d="M16 8a6 6 0 016 6v7h-4v-7a2 2 0 00-2-2 2 2 0 00-2 2v7h-4v-7a6 6 0 016-6zM2 9h4v12H2z" />
         <circle cx="4" cy="4" r="2" />
       </svg>
@@ -33,7 +33,7 @@ const SOCIALS = [
     color: "rgba(24,119,242,0.25)",
     border: "rgba(24,119,242,0.4)",
     icon: (
-      <svg viewBox="0 0 24 24" fill="#1877F2" className="w-[18px] h-[18px]" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="#1877F2" className="w-[20px] h-[20px]" aria-hidden="true">
         <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
       </svg>
     ),
@@ -46,7 +46,7 @@ const SOCIALS = [
     color: "rgba(225,48,108,0.25)",
     border: "rgba(225,48,108,0.4)",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="#E1306C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#E1306C" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]" aria-hidden="true">
         <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
         <circle cx="12" cy="12" r="4" />
         <circle cx="17.5" cy="6.5" r="0.5" fill="#E1306C" stroke="none" />
@@ -61,7 +61,7 @@ const SOCIALS = [
     color: "rgba(245,192,0,0.1)",
     border: "rgba(245,192,0,0.3)",
     icon: (
-      <svg viewBox="0 0 24 24" fill="none" stroke="#F5C000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[18px] h-[18px]" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#F5C000" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[20px] h-[20px]" aria-hidden="true">
         <rect x="2" y="4" width="20" height="16" rx="2" />
         <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
       </svg>
@@ -75,7 +75,7 @@ const SOCIALS = [
     color: "rgba(255,255,255,0.1)",
     border: "rgba(255,255,255,0.25)",
     icon: (
-      <svg viewBox="0 0 24 24" fill="#ffffff" className="w-[18px] h-[18px]" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="#ffffff" className="w-[20px] h-[20px]" aria-hidden="true">
         <path d="M12 2C6.477 2 2 6.477 2 12c0 4.418 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.009-.868-.013-1.703-2.782.604-3.369-1.341-3.369-1.341-.454-1.155-1.11-1.463-1.11-1.463-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0 1 12 6.836a9.59 9.59 0 0 1 2.504.337c1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.203 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.742 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z" />
       </svg>
     ),
@@ -135,7 +135,7 @@ const PAGE_BACKGROUND = {
 function HeroRibbons() {
   return (
     <svg
-      className="absolute inset-0 w-full h-full pointer-events-none"
+      className="absolute inset-[0px] w-full h-full pointer-events-none"
       preserveAspectRatio="none"
       viewBox="0 0 1440 700"
       aria-hidden="true"
@@ -165,32 +165,32 @@ export default function AboutCreatorClient() {
     >
       {/* ── NAV ──────────────────────────────────────────── */}
       <nav
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4"
+        className="fixed top-[0px] left-[0px] right-[0px] z-50 flex items-center justify-between px-[36px] py-[19px]"
         style={{
           background: "rgba(13,15,43,0.88)",
           backdropFilter: "blur(12px)",
           borderBottom: "1px solid rgba(245,192,0,0.1)",
         }}
       >
-        <Link href="/" className="flex items-center gap-2.5 no-underline" aria-label="OLPS COMELEC home">
+        <Link href="/" className="flex items-center gap-[12px] no-underline" aria-label="OLPS COMELEC home">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center"
+            className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
             style={{ background: "#1b1f5e", border: "1px solid rgba(245,192,0,0.4)" }}
           >
             <NavBirdIcon />
           </div>
-          <span className="font-tagline text-sm font-bold tracking-[0.15em] text-gold">
+          <span className="font-tagline text-[17px] font-bold tracking-[0.15em] text-gold">
             OLPS COMELEC
           </span>
         </Link>
 
-        <div className="hidden sm:flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-[19px]">
           {[
             { label: "COMELEC", href: "/about" },
             { label: "LEADERSHIP", href: "/officers" },
             { label: "MAKER", href: "/creator", active: true },
           ].map((link, index) => (
-            <div key={link.label} className="flex items-center gap-4">
+            <div key={link.label} className="flex items-center gap-[19px]">
               {index > 0 && (
                 <span className="font-body text-[0.65rem] text-gold/25" aria-hidden="true">
                   |
@@ -210,11 +210,11 @@ export default function AboutCreatorClient() {
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-28 pb-16 overflow-hidden">
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-[27px] pt-[127px] pb-[72px] overflow-hidden">
         {/* Radial glow */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-[0px] flex items-center justify-center pointer-events-none">
           <div
-            className="w-[700px] h-[700px] rounded-full"
+            className="w-[791px] h-[791px] rounded-full"
             style={{ background: "radial-gradient(ellipse, rgba(27,31,94,0.75) 0%, transparent 70%)" }}
           />
         </div>
@@ -222,7 +222,7 @@ export default function AboutCreatorClient() {
 
         <FadeInSection className="relative z-10 flex flex-col items-center text-center max-w-2xl w-full">
           {/* Photo placeholder */}
-          <div className="relative mb-8">
+          <div className="relative mb-[36px]">
             <div
               className="absolute rounded-full pointer-events-none"
               style={{ inset: "-14px", border: "1px solid rgba(245,192,0,0.15)" }}
@@ -232,7 +232,7 @@ export default function AboutCreatorClient() {
               style={{ inset: "-6px", border: "2px solid rgba(245,192,0,0.45)" }}
             />
             <div
-              className="w-40 h-40 rounded-full flex items-center justify-center overflow-hidden"
+              className="w-[181px] h-[181px] rounded-full flex items-center justify-center overflow-hidden"
               style={{
                 background: "linear-gradient(135deg, #1b1f5e 0%, #252a7a 100%)",
                 border: "1px solid rgba(245,192,0,0.3)",
@@ -243,7 +243,7 @@ export default function AboutCreatorClient() {
                 <Image src="/creator-photo.jpg" alt="Mikel Taopa" width={160} height={160} className="w-full h-full object-cover" />
               */}
               <span
-                className="font-tagline font-bold tracking-widest text-3xl select-none"
+                className="font-tagline font-bold tracking-widest text-[34px] select-none"
                 style={{ color: "rgba(245,192,0,0.35)" }}
                 aria-hidden="true"
               >
@@ -253,21 +253,21 @@ export default function AboutCreatorClient() {
           </div>
 
           <p
-            className="font-body text-[0.6rem] tracking-[0.3em] uppercase mb-2"
+            className="font-body text-[0.6rem] tracking-[0.3em] uppercase mb-[10px]"
             style={{ color: "rgba(245,192,0,0.7)" }}
           >
             OLPS COMELEC — Developer &amp; Designer
           </p>
 
           <h1
-            className="font-tagline font-bold leading-none tracking-wider uppercase mb-1"
+            className="font-tagline font-bold leading-none tracking-wider uppercase mb-[5px]"
             style={{ fontSize: "clamp(2.5rem, 6vw, 4rem)", color: "#ffffff" }}
           >
             Mikel Taopa
           </h1>
 
           <p
-            className="font-tagline text-base italic mb-8"
+            className="font-tagline text-[19px] italic mb-[36px]"
             style={{ color: "rgba(255,255,255,0.4)" }}
           >
             Commission on Elections · S.Y. 2024–2026
@@ -276,7 +276,7 @@ export default function AboutCreatorClient() {
           <GoldRule />
 
           <p
-            className="font-body text-[0.9rem] leading-[1.85] mt-8 max-w-[540px]"
+            className="font-body text-[0.9rem] leading-[1.85] mt-[36px] max-w-[610px]"
             style={{ color: "rgba(255,255,255,0.6)" }}
           >
             I am an OLPS alumnus who built and designed this platform for COMELEC. The goal was
@@ -289,23 +289,23 @@ export default function AboutCreatorClient() {
       </section>
 
       {/* ── SOCIAL LINKS ─────────────────────────────────── */}
-      <section className="flex flex-col items-center px-6 py-20">
+      <section className="flex flex-col items-center px-[27px] py-[90px]">
         <Eyebrow label="Connect" />
         <h2
-          className="font-tagline font-bold text-center mb-10"
+          className="font-tagline font-bold text-center mb-[45px]"
           style={{ fontSize: "clamp(1.5rem, 4vw, 2.25rem)", color: "#ffffff" }}
         >
           Get in Touch
         </h2>
 
-        <div className="flex flex-wrap gap-4 justify-center max-w-2xl">
+        <div className="flex flex-wrap gap-[19px] justify-center max-w-2xl">
           {SOCIALS.map((s) => (
             <a
               key={s.id}
               href={s.href}
               target={s.id !== "email" ? "_blank" : undefined}
               rel={s.id !== "email" ? "noopener noreferrer" : undefined}
-              className="flex items-center gap-3 no-underline border border-gold/20 bg-navy/30 transition-all duration-200 hover:-translate-y-0.5 hover:border-gold/50 hover:bg-navy/60"
+              className="flex items-center gap-[14px] no-underline border border-gold/20 bg-navy/30 transition-all duration-200 hover:-translate-y-[2px] hover:border-gold/50 hover:bg-navy/60"
               style={{
                 padding: "0.875rem 1.5rem",
                 borderRadius: "2px",
@@ -315,7 +315,7 @@ export default function AboutCreatorClient() {
               aria-label={`${s.platform}: ${s.handle}`}
             >
               <div
-                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                className="w-[41px] h-[41px] rounded-full flex items-center justify-center shrink-0"
                 style={{ background: s.color, border: `1px solid ${s.border}` }}
               >
                 {s.icon}
@@ -327,7 +327,7 @@ export default function AboutCreatorClient() {
                 >
                   {s.platform}
                 </span>
-                <span className="font-body text-sm font-semibold" style={{ color: "#ffffff" }}>
+                <span className="font-body text-[17px] font-semibold" style={{ color: "#ffffff" }}>
                   {s.handle}
                 </span>
               </div>
@@ -337,17 +337,17 @@ export default function AboutCreatorClient() {
       </section>
 
       {/* ── WHAT I BUILT ─────────────────────────────────── */}
-      <section className="flex flex-col items-center px-6 pb-24">
+      <section className="flex flex-col items-center px-[27px] pb-[108px]">
         <Eyebrow label="About This Project" />
         <h2
-          className="font-tagline font-bold text-center mb-3"
+          className="font-tagline font-bold text-center mb-[14px]"
           style={{ fontSize: "clamp(1.5rem, 4vw, 2.25rem)", color: "#ffffff" }}
         >
           What I Built
         </h2>
 
         <div
-          className="grid gap-4 mt-10 w-full"
+          className="grid gap-[19px] mt-[45px] w-full"
           style={{
             maxWidth: "860px",
             gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
@@ -364,12 +364,12 @@ export default function AboutCreatorClient() {
               }}
             >
               <div
-                className="absolute left-0 top-3 bottom-3 w-0.5 rounded-full bg-gold opacity-0 transition-opacity duration-250 group-hover:opacity-60"
+                className="absolute left-[0px] top-[14px] bottom-[14px] w-[2px] rounded-full bg-gold opacity-0 transition-opacity duration-250 group-hover:opacity-60"
               />
-              <p className="font-mono text-[0.65rem] mb-2" style={{ color: "rgba(245,192,0,0.45)" }}>
+              <p className="font-mono text-[0.65rem] mb-[10px]" style={{ color: "rgba(245,192,0,0.45)" }}>
                 {h.num}
               </p>
-              <p className="font-tagline text-[0.875rem] font-bold mb-1.5" style={{ color: "#ffffff" }}>
+              <p className="font-tagline text-[0.875rem] font-bold mb-[7px]" style={{ color: "#ffffff" }}>
                 {h.title}
               </p>
               <p className="font-body text-[0.75rem] leading-[1.6]" style={{ color: "#8a8fbb" }}>

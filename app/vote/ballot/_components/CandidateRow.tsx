@@ -22,7 +22,7 @@ export function CandidateRow({
       disabled={disabled}
       aria-pressed={selected}
       className={`
-        group w-full flex items-center gap-3 px-4 py-[9px]
+        group w-full flex items-center gap-[14px] px-[18px] py-[10px]
         border-b border-ballot-rule last:border-b-0
         transition-colors duration-100 text-left
         focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gold/55
@@ -35,7 +35,7 @@ export function CandidateRow({
     >
       <span
         className={`
-          shrink-0 w-[22px] h-[22px] rounded-full border-2 transition-all duration-150
+          shrink-0 w-[25px] h-[25px] rounded-full border-2 transition-all duration-150
           ${selected
             ? "bg-navy border-navy"
             : "bg-transparent border-navy/35 group-hover:border-navy/70"
@@ -45,7 +45,7 @@ export function CandidateRow({
       />
       <span
         className={`
-          font-ballot-mono text-[10px] w-[18px] text-right shrink-0
+          font-ballot-mono text-[11px] w-[20px] text-right shrink-0
           ${selected ? "text-navy/50" : "text-navy/30"}
         `}
       >
@@ -53,8 +53,8 @@ export function CandidateRow({
       </span>
       <span
         className={`
-          flex-1 font-ballot-serif text-[13px] uppercase tracking-[0.06em]
-          min-w-0 overflow-hidden text-ellipsis whitespace-nowrap
+          flex-1 font-ballot-serif text-[15px] uppercase tracking-[0.06em]
+          min-w-[0px] overflow-hidden text-ellipsis whitespace-nowrap
           ${selected ? "text-navy font-semibold" : "text-navy/72"}
         `}
       >
@@ -62,7 +62,7 @@ export function CandidateRow({
       </span>
       <span
         className={`
-          shrink-0 font-ballot-mono text-[9px] tracking-[0.16em]
+          shrink-0 font-ballot-mono text-[10px] tracking-[0.16em]
           ${selected ? "text-navy/50" : "text-navy/25"}
         `}
       >
