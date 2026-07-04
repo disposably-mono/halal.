@@ -43,14 +43,29 @@ function revalidateAfterTransition(electionId: string) {
   revalidateElectionControl(electionId);
 }
 
+/**
+ * Row-lock + fetch + not-found preamble shared by openElectionNow,
+ * closeElectionNow, rescheduleElection, and advanceToScheduled: take a
+ * `FOR UPDATE` lock on the election row (so a concurrent transition can't
+ * race the status re-check below) and load the full row. `initiateRecount`
+ * is deliberately NOT routed through this helper — it selects a narrower
+ * column set and throws a plain `Error` (not `TransitionValidationError`)
+ * on a missing election, per its own documented "never surface the reason"
+ * behavior.
+ */
+async function lockElection(tx: Prisma.TransactionClient, electionId: string) {
+  await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
+  const election = await tx.election.findUnique({ where: { id: electionId } });
+  if (!election) throw new TransitionValidationError("Election not found");
+  return election;
+}
+
 const runOpenElectionNow = auditedAction<[electionId: string]>({
   name: "openElectionNow",
   capability: "election:lifecycle",
   errorMessage: "Failed to open election",
   run: async (tx, session, electionId) => {
-    await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
-    const election = await tx.election.findUnique({ where: { id: electionId } });
-    if (!election) throw new TransitionValidationError("Election not found");
+    const election = await lockElection(tx, electionId);
     if (!election.auditVersion || !election.auditKeyEncrypted) {
       throw new TransitionValidationError("Legacy elections are read-only and cannot be opened");
     }
@@ -89,9 +104,7 @@ const runCloseElectionNow = auditedAction<[electionId: string]>({
   capability: "election:close",
   errorMessage: "Failed to certify and close election",
   run: async (tx, session, electionId) => {
-    await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
-    const election = await tx.election.findUnique({ where: { id: electionId } });
-    if (!election) throw new TransitionValidationError("Election not found");
+    const election = await lockElection(tx, electionId);
 
     const check = canManuallyClose(election.status);
     if (!check.ok) throw new TransitionValidationError(check.reason);
@@ -191,9 +204,7 @@ const runRescheduleElection = auditedAction<
   capability: "election:lifecycle",
   errorMessage: "Failed to reschedule election",
   run: async (tx, session, electionId, openDate, closeDate) => {
-    await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
-    const election = await tx.election.findUnique({ where: { id: electionId } });
-    if (!election) throw new TransitionValidationError("Election not found");
+    const election = await lockElection(tx, electionId);
 
     const check = canReschedule(election.status, openDate, closeDate, election.archivedAt);
     if (!check.ok) throw new TransitionValidationError(check.reason);
@@ -236,9 +247,7 @@ const runAdvanceToScheduled = auditedAction<[electionId: string]>({
   capability: "election:lifecycle",
   errorMessage: "Failed to advance election to scheduled",
   run: async (tx, session, electionId) => {
-    await tx.$queryRaw`SELECT "id" FROM "Election" WHERE "id" = ${electionId} FOR UPDATE`;
-    const election = await tx.election.findUnique({ where: { id: electionId } });
-    if (!election) throw new TransitionValidationError("Election not found");
+    const election = await lockElection(tx, electionId);
 
     const check = canAdvanceToScheduled(election.status, election.scheduledOpen, election.archivedAt);
     if (!check.ok) throw new TransitionValidationError(check.reason);
