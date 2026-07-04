@@ -1,14 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDelayedPercent } from "@/lib/client/use-delayed-percent";
 import type { TurnoutData } from "./results-shared";
 
 export function TurnoutBadge({ turnout }: { turnout: TurnoutData }) {
-  const [displayPct, setDisplayPct] = useState(0);
-  useEffect(() => {
-    const t = setTimeout(() => setDisplayPct(turnout.pct), 120);
-    return () => clearTimeout(t);
-  }, [turnout.pct]);
+  const displayPct = useDelayedPercent(turnout.pct, 120);
 
   return (
     <div className="rounded-sm border border-gold/15 bg-navy/35 px-4 py-3 shadow-[0_14px_35px_rgba(0,0,0,0.14)]">

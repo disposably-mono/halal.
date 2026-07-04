@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDelayedPercent } from "@/lib/client/use-delayed-percent";
 import type { CandidateResult } from "./monitor-shared";
 
 export function VoteBar({
@@ -15,12 +15,7 @@ export function VoteBar({
   isTie: boolean;
 }) {
   const pct = totalVotes > 0 ? (candidate.votes / totalVotes) * 100 : 0;
-  const [displayPct, setDisplayPct] = useState(0);
-
-  useEffect(() => {
-    const t = setTimeout(() => setDisplayPct(pct), 80);
-    return () => clearTimeout(t);
-  }, [pct]);
+  const displayPct = useDelayedPercent(pct, 80);
 
   const wrapCls = isLeader && !isTie
     ? "border-gold/30 bg-[#1d2a3a]"
