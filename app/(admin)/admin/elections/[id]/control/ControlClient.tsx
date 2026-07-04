@@ -32,6 +32,7 @@ import {
   type ToastVariant,
 } from "@/components/admin/ui";
 import { Button, type buttonVariants } from "@/components/ui/button";
+import { calcTurnoutPercent } from "@/lib/domain/tally";
 import { DIVISION_LABELS } from "@/lib/ui/division-labels";
 import { getControlSuccessToast, type ControlToastAction } from "./toast-messages";
 import type { VariantProps } from "class-variance-authority";
@@ -113,7 +114,7 @@ interface DlgConfig {
 }
 
 function getDlgConfig(type: DlgType, voted: number, total: number): DlgConfig {
-  const pct = total > 0 ? Math.round((voted / total) * 100) : 0;
+  const pct = calcTurnoutPercent(voted, total);
 
   const icons = {
     open: <Play aria-hidden="true" className="h-[20px] w-[20px]" />,
@@ -213,7 +214,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
   const { status } = election;
   const voters = election._count.voters;
   const voted = election.votedCount;
-  const pct = voters > 0 ? Math.round((voted / voters) * 100) : 0;
+  const pct = calcTurnoutPercent(voted, voters);
 
   function notify(msg: string, variant: ToastVariant) {
     showToast({ msg, variant });
