@@ -1,4 +1,7 @@
-export type ElectionStatus = "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED";
+// Canonical status union: Prisma's ElectionStatus enum already has exactly
+// these 4 values, so alias/re-export its type instead of redeclaring the union.
+import type { ElectionStatus } from "@prisma/client";
+export type { ElectionStatus };
 
 export type Election = {
   id: string;
