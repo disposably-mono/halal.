@@ -12,7 +12,13 @@ const positions: CandidateIndexPosition[] = [
     title: "President",
     eligibleGrades: [11, 12],
     candidateGrade: "12",
-    election: { id: "election-shs", name: "SHS Elections", division: "SHS", status: "DRAFT" },
+    election: {
+      id: "election-shs",
+      name: "SHS Elections",
+      division: "SHS",
+      createdAt: new Date("2026-03-01T00:00:00.000Z"),
+      status: "DRAFT",
+    },
     candidates: [
       { id: "candidate-ana", fullName: "Ana Reyes", gradeLevel: 12 },
       { id: "candidate-ben", fullName: "Ben Santos", gradeLevel: 12 },
@@ -23,7 +29,13 @@ const positions: CandidateIndexPosition[] = [
     title: "House Prefect",
     eligibleGrades: [11, 12],
     candidateGrade: "12",
-    election: { id: "election-house", name: "House Elections", division: "HC", status: "OPEN" },
+    election: {
+      id: "election-house",
+      name: "House Elections",
+      division: "HC",
+      createdAt: new Date("2026-02-01T00:00:00.000Z"),
+      status: "OPEN",
+    },
     candidates: [{ id: "candidate-cam", fullName: "Cam Cruz", gradeLevel: 12 }],
   },
   {
@@ -35,6 +47,7 @@ const positions: CandidateIndexPosition[] = [
       id: "election-archived",
       name: "Archived Election",
       division: "HC",
+      createdAt: new Date("2026-01-01T00:00:00.000Z"),
       status: "CLOSED",
       archivedAt: "2026-07-01T00:00:00.000Z",
     },
@@ -67,6 +80,28 @@ describe("candidate index helpers", () => {
     ]);
   });
 
+  test("filters to the most recent elections by creation date", () => {
+    const recentPositions = [
+      positionForElection("old-position", "old-house", "House Elections", "HC", "2026-01-01T00:00:00.000Z"),
+      positionForElection("latest-position", "latest-shs", "SHS Elections", "SHS", "2026-03-01T00:00:00.000Z"),
+      positionForElection("middle-position", "middle-gs", "GS Elections", "GS", "2026-02-01T00:00:00.000Z"),
+    ] satisfies CandidateIndexPosition[];
+    const groups = buildCandidateIndex(recentPositions);
+    const filtered = filterCandidateIndex(groups, {
+      query: "",
+      status: "ALL",
+      division: "ALL",
+      recentElectionCount: 2,
+    });
+
+    const electionIds = filtered.flatMap((group) => group.elections.map((election) => election.id));
+
+    expect(electionIds).toHaveLength(2);
+    expect(electionIds).toEqual(expect.arrayContaining(["latest-shs", "middle-gs"]));
+    expect(electionIds).not.toContain("old-house");
+    expect(summarizeCandidateIndex(filtered).positions).toBe(2);
+  });
+
   test("summarizes the visible index", () => {
     expect(summarizeCandidateIndex(buildCandidateIndex(positions))).toEqual({
       divisions: 2,
@@ -76,3 +111,26 @@ describe("candidate index helpers", () => {
     });
   });
 });
+
+function positionForElection(
+  id: string,
+  electionId: string,
+  electionName: string,
+  division: string,
+  createdAt: string,
+): CandidateIndexPosition & { election: CandidateIndexPosition["election"] & { createdAt: Date } } {
+  return {
+    id,
+    title: id,
+    eligibleGrades: [11, 12],
+    candidateGrade: "12",
+    election: {
+      id: electionId,
+      name: electionName,
+      division,
+      status: "OPEN",
+      createdAt: new Date(createdAt),
+    },
+    candidates: [{ id: `${id}-candidate`, fullName: "Student Candidate", gradeLevel: 12 }],
+  };
+}

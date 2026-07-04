@@ -1,4 +1,9 @@
 import { DIVISION_LABELS, DIVISION_ORDER } from "@/lib/ui/division-labels";
+import {
+  getRecentElectionIds,
+  includesRecentElection,
+  type RecentElectionFilter,
+} from "../shared/recent-election-filter";
 
 export type VoterIndexStatus = "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED";
 export type VoterStatusFilter = VoterIndexStatus | "ALL";
@@ -17,6 +22,7 @@ export type VoterIndexRow = {
     id: string;
     name: string;
     division: string;
+    createdAt: Date | string;
     status: VoterIndexStatus;
     archivedAt?: Date | string | null;
   };
@@ -26,6 +32,7 @@ export type VoterElectionGroup = {
   id: string;
   name: string;
   division: string;
+  createdAt: Date | string;
   status: VoterIndexStatus;
   voters: VoterIndexRow[];
   voterCount: number;
@@ -45,6 +52,7 @@ export type VoterIndexFilters = {
   status: VoterStatusFilter;
   division: VoterDivisionFilter;
   voteStatus: VoteStatusFilter;
+  recentElectionCount?: RecentElectionFilter;
 };
 
 export function buildVoterIndex(voters: readonly VoterIndexRow[]): VoterDivisionGroup[] {
@@ -60,6 +68,7 @@ export function buildVoterIndex(voters: readonly VoterIndexRow[]): VoterDivision
       id: electionId,
       name: voter.election.name,
       division,
+      createdAt: voter.election.createdAt,
       status: voter.election.status,
       voters: [],
       voterCount: 0,
@@ -86,11 +95,13 @@ export function filterVoterIndex(
   filters: VoterIndexFilters,
 ): VoterDivisionGroup[] {
   const query = normalize(filters.query);
+  const recentElectionIds = getRecentElectionIds(groups, filters.recentElectionCount ?? "ALL");
 
   return groups
     .filter((group) => filters.division === "ALL" || group.division === filters.division)
     .map((group) => {
       const elections = group.elections
+        .filter((election) => includesRecentElection(election.id, recentElectionIds))
         .filter((election) => filters.status === "ALL" || election.status === filters.status)
         .map((election) => filterVoterElection(election, query, filters.voteStatus))
         .filter((election): election is VoterElectionGroup => election !== null);
@@ -121,13 +132,14 @@ function filterVoterElection(
 }
 
 function buildVoterElectionGroup(
-  election: Pick<VoterElectionGroup, "id" | "name" | "division" | "status">,
+  election: Pick<VoterElectionGroup, "id" | "name" | "division" | "createdAt" | "status">,
   voters: VoterIndexRow[],
 ): VoterElectionGroup {
   return {
     id: election.id,
     name: election.name,
     division: election.division,
+    createdAt: election.createdAt,
     status: election.status,
     voters,
     voterCount: voters.length,

@@ -19,6 +19,11 @@ import { formatGradeList, parseGrades } from "@/lib/domain/grade-format";
 import { gradesForDivision } from "@/lib/elections/constants";
 import { DIVISION_CODES } from "@/lib/ui/division-labels";
 import {
+  formatRecentElectionFilter,
+  RECENT_ELECTION_OPTIONS,
+  type RecentElectionFilter,
+} from "../shared/recent-election-filter";
+import {
   buildCandidateIndex,
   filterCandidateIndex,
   summarizeCandidateIndex,
@@ -26,20 +31,22 @@ import {
   type CandidateIndexPosition,
   type CandidateStatusFilter,
 } from "./candidate-index";
-import { Layers, ListFilter } from "lucide-react";
+import { CalendarClock, Layers, ListFilter } from "lucide-react";
 
 const STATUS_OPTIONS: CandidateStatusFilter[] = ["ALL", "OPEN", "SCHEDULED", "DRAFT", "CLOSED"];
+const RECENT_OPTIONS: RecentElectionFilter[] = ["ALL", ...RECENT_ELECTION_OPTIONS];
 
 export function CandidatesIndexClient({ positions }: { positions: CandidateIndexPosition[] }) {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState<CandidateStatusFilter>("ALL");
   const [division, setDivision] = useState<CandidateDivisionFilter>("ALL");
+  const [recentElectionCount, setRecentElectionCount] = useState<RecentElectionFilter>("ALL");
   const onSearch = useCallback((value: string) => setQuery(value), []);
 
   const index = useMemo(() => buildCandidateIndex(positions), [positions]);
   const filtered = useMemo(
-    () => filterCandidateIndex(index, { query, status, division }),
-    [division, index, query, status],
+    () => filterCandidateIndex(index, { query, status, division, recentElectionCount }),
+    [division, index, query, recentElectionCount, status],
   );
   const totalSummary = useMemo(() => summarizeCandidateIndex(index), [index]);
   const visibleSummary = useMemo(() => summarizeCandidateIndex(filtered), [filtered]);
@@ -51,7 +58,8 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
     ? "All divisions"
     : divisionOptions.find((option) => option.value === division)?.label ?? division;
   const statusLabel = status === "ALL" ? "All statuses" : status;
-  const isFiltering = query.trim().length > 0 || status !== "ALL" || division !== "ALL";
+  const recentElectionLabel = formatRecentElectionFilter(recentElectionCount);
+  const isFiltering = query.trim().length > 0 || status !== "ALL" || division !== "ALL" || recentElectionCount !== "ALL";
 
   return (
     <>
@@ -65,7 +73,11 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
         <MetricCard label="Candidates" value={totalSummary.candidates.toLocaleString()} sub={`${totalSummary.positions} positions`} accent="gold" />
         <MetricCard label="Elections" value={totalSummary.elections.toLocaleString()} sub={`${totalSummary.divisions} divisions`} />
         <MetricCard label="Visible" value={visibleSummary.candidates.toLocaleString()} sub={`${visibleSummary.elections} elections shown`} accent="blue" />
-        <MetricCard label="Open Filters" value={activeFilterCount({ query, status, division }).toString()} sub="search, status, division" />
+        <MetricCard
+          label="Open Filters"
+          value={activeFilterCount({ query, status, division, recentElectionCount }).toString()}
+          sub="search, status, division, recent"
+        />
       </div>
 
       <FilterPanel
@@ -98,6 +110,22 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
             {STATUS_OPTIONS.map((option) => (
               <FilterOption key={option} active={status === option} onClick={() => setStatus(option)}>
                 {option === "ALL" ? "All statuses" : option}
+              </FilterOption>
+            ))}
+          </FilterGroup>
+          <FilterGroup
+            icon={<CalendarClock aria-hidden="true" className="h-4 w-4" />}
+            label="Recent elections"
+            value={recentElectionLabel}
+            className="lg:col-span-2"
+          >
+            {RECENT_OPTIONS.map((option) => (
+              <FilterOption
+                key={option}
+                active={recentElectionCount === option}
+                onClick={() => setRecentElectionCount(option)}
+              >
+                {formatRecentElectionFilter(option)}
               </FilterOption>
             ))}
           </FilterGroup>
@@ -230,6 +258,12 @@ function activeFilterCount(filters: {
   query: string;
   status: CandidateStatusFilter;
   division: CandidateDivisionFilter;
+  recentElectionCount: RecentElectionFilter;
 }) {
-  return [filters.query.trim().length > 0, filters.status !== "ALL", filters.division !== "ALL"].filter(Boolean).length;
+  return [
+    filters.query.trim().length > 0,
+    filters.status !== "ALL",
+    filters.division !== "ALL",
+    filters.recentElectionCount !== "ALL",
+  ].filter(Boolean).length;
 }

@@ -132,6 +132,7 @@ export default async function AdminResultsPage() {
     id: el.id,
     name: el.name,
     division: el.division,
+    createdAt: el.createdAt,
     status: el.status as ResultsIndexStatus,
     votedCount: el.votedCount,
     voterCount: el._count.voters,

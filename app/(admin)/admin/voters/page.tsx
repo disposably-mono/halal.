@@ -18,7 +18,7 @@ export default async function AdminVotersPage() {
       hasVoted: true,
       division: true,
       election: {
-        select: { id: true, name: true, division: true, status: true, archivedAt: true },
+        select: { id: true, name: true, division: true, createdAt: true, status: true, archivedAt: true },
       },
     },
   });

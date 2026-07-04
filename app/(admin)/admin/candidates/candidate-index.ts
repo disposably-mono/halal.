@@ -1,4 +1,9 @@
 import { DIVISION_LABELS, DIVISION_ORDER } from "@/lib/ui/division-labels";
+import {
+  getRecentElectionIds,
+  includesRecentElection,
+  type RecentElectionFilter,
+} from "../shared/recent-election-filter";
 
 export type CandidateIndexStatus = "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED";
 export type CandidateStatusFilter = CandidateIndexStatus | "ALL";
@@ -19,6 +24,7 @@ export type CandidateIndexPosition = {
     id: string;
     name: string;
     division: string;
+    createdAt: Date | string;
     status: CandidateIndexStatus;
     archivedAt?: Date | string | null;
   };
@@ -29,6 +35,7 @@ export type CandidateElectionGroup = {
   id: string;
   name: string;
   division: string;
+  createdAt: Date | string;
   status: CandidateIndexStatus;
   positions: CandidateIndexPosition[];
   positionCount: number;
@@ -47,6 +54,7 @@ export type CandidateIndexFilters = {
   query: string;
   status: CandidateStatusFilter;
   division: CandidateDivisionFilter;
+  recentElectionCount?: RecentElectionFilter;
 };
 
 export function buildCandidateIndex(positions: readonly CandidateIndexPosition[]): CandidateDivisionGroup[] {
@@ -62,6 +70,7 @@ export function buildCandidateIndex(positions: readonly CandidateIndexPosition[]
       id: electionId,
       name: position.election.name,
       division,
+      createdAt: position.election.createdAt,
       status: position.election.status,
       positions: [],
       positionCount: 0,
@@ -95,11 +104,13 @@ export function filterCandidateIndex(
   filters: CandidateIndexFilters,
 ): CandidateDivisionGroup[] {
   const query = normalize(filters.query);
+  const recentElectionIds = getRecentElectionIds(groups, filters.recentElectionCount ?? "ALL");
 
   return groups
     .filter((group) => filters.division === "ALL" || group.division === filters.division)
     .map((group) => {
       const elections = group.elections
+        .filter((election) => includesRecentElection(election.id, recentElectionIds))
         .filter((election) => filters.status === "ALL" || election.status === filters.status)
         .map((election) => filterCandidateElection(election, query))
         .filter((election): election is CandidateElectionGroup => election !== null);

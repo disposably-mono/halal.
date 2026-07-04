@@ -1,4 +1,9 @@
 import { DIVISION_LABELS, DIVISION_ORDER } from "@/lib/ui/division-labels";
+import {
+  getRecentElectionIds,
+  includesRecentElection,
+  type RecentElectionFilter,
+} from "../shared/recent-election-filter";
 
 export type ResultsIndexStatus = "OPEN" | "CLOSED";
 export type ResultsDivisionFilter = string | "ALL";
@@ -23,6 +28,7 @@ export type ResultsIndexElection = {
   id: string;
   name: string;
   division: string;
+  createdAt: Date | string;
   status: ResultsIndexStatus;
   votedCount: number;
   voterCount: number;
@@ -42,6 +48,7 @@ export type ResultsIndexFilters = {
   query: string;
   division: ResultsDivisionFilter;
   status: ResultsStatusFilter;
+  recentElectionCount?: RecentElectionFilter;
 };
 
 export function buildResultsIndex(elections: readonly ResultsIndexElection[]): ResultsDivisionGroup[] {
@@ -65,6 +72,7 @@ export function filterResultsIndex(
   filters: ResultsIndexFilters,
 ): ResultsDivisionGroup[] {
   const query = normalize(filters.query);
+  const recentElectionIds = getRecentElectionIds(groups, filters.recentElectionCount ?? "ALL");
 
   return groups
     .filter((group) => filters.division === "ALL" || group.division === filters.division)
@@ -72,6 +80,7 @@ export function filterResultsIndex(
       division: group.division,
       label: group.label,
       elections: group.elections
+        .filter((election) => includesRecentElection(election.id, recentElectionIds))
         .filter((election) => filters.status === "ALL" || election.status === filters.status)
         .map((election) => filterResultsElection(election, query))
         .filter((election): election is ResultsElectionGroup => election !== null),

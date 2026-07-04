@@ -42,6 +42,7 @@ export function FilterGroup({
   value,
   children,
   defaultOpen = true,
+  className,
 }: {
   icon: ReactNode;
   label: string;
@@ -49,12 +50,13 @@ export function FilterGroup({
   children: ReactNode;
   /** Groups start expanded (matching prior always-visible behavior) unless opted out. */
   defaultOpen?: boolean;
+  className?: string;
 }) {
   const [open, setOpen] = useState(defaultOpen);
   const contentId = useId();
 
   return (
-    <div className="overflow-hidden rounded-[8px] border border-white/10 bg-white/2.5">
+    <div className={cn("overflow-hidden rounded-[8px] border border-white/10 bg-white/2.5", className)}>
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
