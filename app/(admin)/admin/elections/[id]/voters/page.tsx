@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { requireCapability } from "@/lib/server/auth";
 import { prisma } from "@/lib/prisma";
 import {
@@ -58,12 +59,26 @@ export default async function VotersPage(props: { params: Promise<{ id: string }
 
   return (
     <>
-      <ElectionSubNav
-        electionId={election.id}
-        status={status}
-        candidatesFinalized={election.candidatesFinalized}
-        votersFinalized={election.votersFinalized}
-      />
+      <nav className="sticky top-0 z-10 border-b border-white/8 bg-admin-surface">
+        <div className="mx-auto flex min-h-[52px] max-w-7xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-6 sm:py-0">
+          <div className="flex min-w-0 items-center gap-2">
+            <Link href="/admin" className="text-[11px] text-white/40 transition-colors hover:text-white/60">
+              ← Dashboard
+            </Link>
+            <span className="text-white/10">/</span>
+            <span className="min-w-0 max-w-[180px] truncate text-[11px] text-white/60 sm:max-w-[200px]">{election.name}</span>
+            <span className="text-white/10">/</span>
+            <span className="text-[11px] text-white/45">Voters</span>
+          </div>
+          <StatusPill status={status} />
+        </div>
+        <ElectionSubNav
+          electionId={election.id}
+          status={status}
+          candidatesFinalized={election.candidatesFinalized}
+          votersFinalized={election.votersFinalized}
+        />
+      </nav>
 
       <PageContainer className="max-w-5xl space-y-5">
         <PageHeader
