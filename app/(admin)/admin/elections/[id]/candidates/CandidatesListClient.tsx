@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { parseGrades, formatGradeList } from "@/lib/domain/grade-format";
 import {
   AdminCardTitle,
@@ -31,7 +31,6 @@ export function CandidatesListClient({
   canEditCandidates: boolean;
 }) {
   const [query, setQuery] = useState("");
-  const onSearch = useCallback((value: string) => setQuery(value), []);
   const filteredPositions = useMemo(
     () => filterCandidatePositions(positions, query),
     [positions, query],
@@ -48,7 +47,7 @@ export function CandidatesListClient({
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/50">Positions &amp; Candidates</p>
           <p className="mt-[4px] text-[11px] text-white/35">{filteredPositions.length} of {positions.length} positions shown</p>
         </div>
-        <SearchInput onSearch={onSearch} placeholder="Search positions or candidates" />
+        <SearchInput onSearch={setQuery} placeholder="Search positions or candidates" />
       </div>
       {filteredPositions.length === 0 ? (
         <EmptyState title="No candidates match" hint="Try a different position, name, or grade." />

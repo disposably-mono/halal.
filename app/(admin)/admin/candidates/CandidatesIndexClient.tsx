@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
   AccordionCard,
   ElectionAccordionRow,
@@ -42,7 +42,6 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
   const [status, setStatus] = useState<CandidateStatusFilter>("ALL");
   const [division, setDivision] = useState<CandidateDivisionFilter>("ALL");
   const [recentElectionCount, setRecentElectionCount] = useState<RecentElectionFilter>("ALL");
-  const onSearch = useCallback((value: string) => setQuery(value), []);
 
   const index = useMemo(() => buildCandidateIndex(positions), [positions]);
   const filtered = useMemo(
@@ -86,7 +85,7 @@ export function CandidatesIndexClient({ positions }: { positions: CandidateIndex
         title="Filter candidates"
         meta={`${visibleSummary.positions} positions matched`}
       >
-        <SearchInput onSearch={onSearch} placeholder="Search candidate, position, election" className="sm:max-w-none" />
+        <SearchInput onSearch={setQuery} placeholder="Search candidate, position, election" className="sm:max-w-none" />
         <FilterGrid>
           <FilterGroup
             icon={<Layers aria-hidden="true" className="h-[18px] w-[18px]" />}

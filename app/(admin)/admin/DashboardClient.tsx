@@ -75,10 +75,6 @@ export default function DashboardClient({
     [showToast],
   );
 
-  const onSearch = useCallback((value: string) => {
-    setQuery(value);
-  }, []);
-
   const summary = useMemo(
     () => buildDashboardSummary(elections, uniqueStudentCount, totalRegistrations),
     [elections, uniqueStudentCount, totalRegistrations],
@@ -257,7 +253,7 @@ export default function DashboardClient({
             meta={`${buckets.totalVisible} of ${buckets.totalScoped} shown`}
           >
             <SearchInput
-              onSearch={onSearch}
+              onSearch={setQuery}
               placeholder="Search elections"
               className="sm:max-w-none"
             />

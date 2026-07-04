@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { BarChart3, CalendarClock, FileText, Layers, ListFilter } from "lucide-react";
 import {
   AccordionCard,
@@ -41,7 +41,6 @@ export function ResultsIndexClient({ elections }: { elections: ResultsIndexElect
   const [division, setDivision] = useState<ResultsDivisionFilter>("ALL");
   const [status, setStatus] = useState<ResultsStatusFilter>("ALL");
   const [recentElectionCount, setRecentElectionCount] = useState<RecentElectionFilter>("ALL");
-  const onSearch = useCallback((value: string) => setQuery(value), []);
 
   const index = useMemo(() => buildResultsIndex(elections), [elections]);
   const filtered = useMemo(
@@ -76,7 +75,7 @@ export function ResultsIndexClient({ elections }: { elections: ResultsIndexElect
       </div>
 
       <FilterPanel title="Filter results" meta={`${visibleSummary.elections} elections matched`}>
-        <SearchInput onSearch={onSearch} placeholder="Search election, position, or candidate" className="sm:max-w-none" />
+        <SearchInput onSearch={setQuery} placeholder="Search election, position, or candidate" className="sm:max-w-none" />
         <FilterGrid>
           <FilterGroup
             icon={<Layers aria-hidden="true" className="h-[18px] w-[18px]" />}
