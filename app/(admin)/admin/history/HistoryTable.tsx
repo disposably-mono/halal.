@@ -37,6 +37,7 @@ export function HistoryTable({ history, query }: { history: readonly LoginHistor
           key: "time",
           header: "Time",
           priority: 1,
+          className: "w-[190px]",
           render: (entry) => (
             <span className="whitespace-nowrap font-mono text-[11px] text-white/45">
               {dateFormatter.format(new Date(entry.createdAt))}

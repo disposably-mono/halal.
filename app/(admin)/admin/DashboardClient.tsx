@@ -151,12 +151,13 @@ export default function DashboardClient({
                   </div>
                 ),
               },
-              { key: "status", header: "Status", priority: 1, render: (election) => <StatusPill status={election.status} /> },
-              { key: "voters", header: "Voters", render: (election) => election._count.voters.toLocaleString() },
-              { key: "setup", header: "Setup", render: (election) => `${election._count.positions} pos. · ${election._count.candidates} cand.` },
+              { key: "status", header: "Status", priority: 1, className: "w-[100px]", render: (election) => <StatusPill status={election.status} /> },
+              { key: "voters", header: "Voters", className: "w-[80px]", render: (election) => election._count.voters.toLocaleString() },
+              { key: "setup", header: "Setup", className: "w-[130px]", render: (election) => `${election._count.positions} pos. · ${election._count.candidates} cand.` },
               {
                 key: "turnout",
                 header: "Turnout",
+                className: "w-[90px]",
                 render: (election) => election.status === "OPEN" || election.status === "CLOSED"
                   ? `${pct(election.votedCount, election._count.voters)}%`
                   : "—",
@@ -164,9 +165,11 @@ export default function DashboardClient({
               {
                 key: "schedule",
                 header: "Schedule",
+                className: "w-[130px]",
                 render: (election) => election.status === "SCHEDULED" && election.scheduledOpen ? fmt(election.scheduledOpen) : "—",
               },
             ]}
+            actionsClassName="w-[140px]"
             actions={(election) => (
               <div className="flex items-center justify-end gap-1">
                 <Link href={`/admin/elections/${election.id}/control`} className="rounded-[5px] border border-gold/20 bg-gold/8 px-[7px] py-[5px] text-[10px] text-gold no-underline transition-all hover:bg-gold/15">

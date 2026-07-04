@@ -17,6 +17,7 @@ export function DataTable<T>({
   columns,
   getRowKey,
   actions,
+  actionsClassName,
   mobile = "scroll",
   empty,
 }: {
@@ -24,6 +25,7 @@ export function DataTable<T>({
   columns: readonly DataTableColumn<T>[];
   getRowKey: (row: T) => string;
   actions?: (row: T) => ReactNode;
+  actionsClassName?: string;
   mobile?: "scroll" | "stack";
   empty?: ReactNode;
 }) {
@@ -38,7 +40,15 @@ export function DataTable<T>({
           ))}
         </div>
       )}
-      <table className={cn("w-full", mobile === "stack" && "hidden md:table")}>
+      {/*
+        table-fixed: column widths come only from the header row (via
+        column.className), not from whichever rows happen to be rendered.
+        Without it, table-layout:auto recomputes each column's width from the
+        current row set, so switching a show-limit/search filter (a different
+        set of names/emails becomes the widest cell) visibly shifts every
+        column boundary.
+      */}
+      <table className={cn("w-full table-fixed", mobile === "stack" && "hidden md:table")}>
         <thead>
           <tr className="border-b border-white/6">
             {columns.map((column) => (
@@ -46,7 +56,7 @@ export function DataTable<T>({
                 {column.header}
               </th>
             ))}
-            {actions && <th className="px-4 py-[7px] text-right text-[10px] font-semibold uppercase tracking-[0.06em] text-white/35">Actions</th>}
+            {actions && <th className={cn("px-4 py-[7px] text-right text-[10px] font-semibold uppercase tracking-[0.06em] text-white/35", actionsClassName)}>Actions</th>}
           </tr>
         </thead>
         <tbody>
