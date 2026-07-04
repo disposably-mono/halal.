@@ -16,6 +16,23 @@ test("public and admin entry pages render", async ({ page }) => {
   await expect(page.locator("body")).toContainText(/Results|Election|Pending/i);
 });
 
+test("about page does not log hydration mismatches", async ({ page }) => {
+  const consoleErrors: string[] = [];
+
+  page.on("console", (message) => {
+    if (message.type() !== "error") return;
+    const text = message.text();
+    if (text.includes("hydrated but some attributes of the server rendered HTML didn't match")) {
+      consoleErrors.push(text);
+    }
+  });
+
+  await page.goto("/about");
+  await expect(page.getByRole("heading", { name: "COMELEC", exact: true })).toBeVisible();
+
+  expect(consoleErrors).toEqual([]);
+});
+
 test("officers page images include responsive sizes hints", async ({ page }) => {
   const imageWarnings: string[] = [];
   page.on("console", (message) => {

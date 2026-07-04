@@ -21,8 +21,10 @@ const SECURITY_HEADERS = [
 const nextConfig = {
   distDir: process.env.NEXT_DIST_DIR ?? ".next",
   // Lets the dev server accept requests (including HMR) from other devices on the
-  // LAN, e.g. testing from a phone/tablet at http://192.168.1.122:3000.
-  allowedDevOrigins: ["192.168.1.122"],
+  // LAN, plus the common loopback hosts used by local browsers and Playwright.
+  // Without these, the browser can miss HMR updates and end up hydrating with a
+  // stale client bundle after local edits.
+  allowedDevOrigins: ["localhost", "127.0.0.1", "192.168.1.122"],
   // Baseline security headers applied to every route. A full CSP is intentionally
   // omitted — Next.js injects inline bootstrap scripts, so a correct CSP needs
   // nonce plumbing that is out of scope here.
