@@ -25,13 +25,13 @@ import {
 import {
   buildDashboardSummary,
   filterDashboardBuckets,
+  getDashboardAccordionOpenState,
   type DashboardArchiveFilter,
   type DashboardStatusFilter,
 } from "./_components/dashboard-helpers";
 import { DIVISION_LABELS, fmt, pct, type Election } from "./_components/shared";
 import { Button } from "@/components/ui/button";
 import { Archive, CalendarClock, ListFilter } from "lucide-react";
-import { hasActiveFilters } from "./shared/filter-state";
 import {
   ALL_RECENT_ELECTION_FILTER_OPTIONS as RECENT_OPTIONS,
   formatRecentElectionFilter,
@@ -80,12 +80,6 @@ export default function DashboardClient({
     [elections, uniqueStudentCount, totalRegistrations],
   );
 
-  const hasSearchFilters = hasActiveFilters([
-    query.trim().length > 0,
-    statusFilter !== "ALL",
-    recentElectionCount !== "ALL",
-  ]);
-
   const buckets = useMemo(
     () =>
       filterDashboardBuckets(elections, archivedElections, {
@@ -121,9 +115,10 @@ export default function DashboardClient({
   const archivedScopedTotal =
     archiveScope === "ACTIVE" ? 0 : archivedElections.length;
 
-  const shouldOpenActive = archiveScope !== "ARCHIVED";
-  const shouldOpenArchived =
-    archiveScope === "ARCHIVED" || (archiveScope === "ALL" && hasSearchFilters);
+  const { shouldOpenActive, shouldOpenArchived } =
+    getDashboardAccordionOpenState({
+      archiveScope,
+    });
 
   const totalElectionCount = elections.length + archivedElections.length;
 

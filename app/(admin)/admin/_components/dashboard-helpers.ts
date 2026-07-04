@@ -112,6 +112,17 @@ export function filterDashboardBuckets(
   };
 }
 
+export function getDashboardAccordionOpenState({
+  archiveScope,
+}: {
+  archiveScope: DashboardArchiveFilter;
+}) {
+  return {
+    shouldOpenActive: archiveScope !== "ARCHIVED",
+    shouldOpenArchived: archiveScope !== "ACTIVE",
+  };
+}
+
 export function snapshotsToTurnoutTrend(
   snapshots: readonly PersistedMonitorSnapshot[],
   limit: number = 12,
