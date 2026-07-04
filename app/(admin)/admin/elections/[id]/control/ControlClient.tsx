@@ -36,12 +36,11 @@ import { calcTurnoutPercent } from "@/lib/domain/tally";
 import { DIVISION_LABELS } from "@/lib/ui/division-labels";
 import { getControlSuccessToast, type ControlToastAction } from "./toast-messages";
 import type { VariantProps } from "class-variance-authority";
+import type { ElectionStatus } from "@prisma/client";
 
 type AdminButtonVariant = NonNullable<VariantProps<typeof buttonVariants>["variant"]>;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-
-type ElectionStatus = "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED";
 
 type AuditEntry = {
   id: string;
