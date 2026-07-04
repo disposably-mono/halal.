@@ -487,12 +487,7 @@ export default function ControlClient({ election, auditLogs, canLifecycle, canCl
                     </div>
                     <div className="mt-[2px] text-[11px] text-white/50">
                       {log.adminEmail} ·{" "}
-                      {new Date(log.createdAt).toLocaleString("en-PH", {
-                        month: "short",
-                        day: "numeric",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {fmt(log.createdAt)}
                     </div>
                   </div>
                 </div>

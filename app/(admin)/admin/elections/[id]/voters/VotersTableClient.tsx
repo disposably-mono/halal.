@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { DataTable, EmptyState, SearchInput } from "@/components/admin/ui";
 import { removeVoterById } from "./actions";
 
@@ -23,7 +23,6 @@ export function VotersTableClient({
   canRemove: boolean;
 }) {
   const [query, setQuery] = useState("");
-  const onSearch = useCallback((value: string) => setQuery(value), []);
   const filteredVoters = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase();
     if (!normalizedQuery) return voters;
@@ -40,7 +39,7 @@ export function VotersTableClient({
           <p className="text-[11px] font-semibold uppercase tracking-[0.08em] text-white/50">Registered Voters</p>
           <p className="mt-[4px] text-[11px] text-white/35">{filteredVoters.length} of {voters.length} shown</p>
         </div>
-        <SearchInput onSearch={onSearch} placeholder="Search voters" />
+        <SearchInput onSearch={setQuery} placeholder="Search voters" />
       </div>
       <DataTable
         rows={filteredVoters}

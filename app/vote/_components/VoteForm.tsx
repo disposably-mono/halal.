@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Spinner } from "@/components/ui/spinner";
 import { useServerActionForm } from "@/lib/client/use-server-action-form";
 import { validateVoterCode, VoterLoginResult } from "../actions";
 
@@ -20,10 +21,7 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
     >
       {isPending ? (
         <>
-          <svg className="animate-spin w-4 h-4" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
-            <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-          </svg>
+          <Spinner className="w-4 h-4" />
           Verifying…
         </>
       ) : (

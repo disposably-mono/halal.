@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { CalendarClock, KeyRound, ListOrdered, ShieldCheck, UserCheck, UserCog, UserRound } from "lucide-react";
 import {
   AccordionCard,
@@ -87,7 +87,6 @@ export function HistoryIndexClient({
   const [accountRole, setAccountRole] = useState<AccountRoleFilter>("ALL");
   const [limit, setLimit] = useState<ShowLimit>(DEFAULT_LIMIT);
   const [accountLimit, setAccountLimit] = useState<ShowLimit>(DEFAULT_LIMIT);
-  const onSearch = useCallback((value: string) => setQuery(value), []);
 
   const filtered = useMemo(
     () => filterLoginHistory(history, { query, person, date }),
@@ -163,7 +162,7 @@ export function HistoryIndexClient({
       </div>
 
       <FilterPanel title="Filter history" meta={`${matchedSummary.total} sign-ins and ${matchedAccountSummary.total} account changes matched`}>
-        <SearchInput onSearch={onSearch} placeholder="Search officer, verifier, actor, target, action, or email" className="sm:max-w-none" />
+        <SearchInput onSearch={setQuery} placeholder="Search officer, verifier, actor, target, action, or email" className="sm:max-w-none" />
         <FilterGrid>
           <FilterGroup
             icon={<UserRound aria-hidden="true" className="h-[18px] w-[18px]" />}

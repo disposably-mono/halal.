@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import { Spinner } from "@/components/ui/spinner";
 import { PublicFooter } from "@/app/_components/PublicFooter";
 import { PublicNav } from "@/app/_components/PublicNav";
 import { PUBLIC_PAGE_BACKGROUND } from "@/app/_components/public-page";
@@ -132,10 +133,7 @@ export default function ResultsClient({
         {loading && !data ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="flex flex-col items-center gap-4">
-              <svg className="animate-spin w-6 h-6 text-gold/40" viewBox="0 0 24 24" fill="none">
-                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="3" strokeOpacity="0.3" />
-                <path d="M12 2a10 10 0 0 1 10 10" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
-              </svg>
+              <Spinner className="w-6 h-6 text-gold/40" />
               <p className="font-body text-white/40 text-xs tracking-widest uppercase">Loading…</p>
             </div>
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import type { AdminRole } from "@prisma/client";
 import { ShieldCheck, UserCheck } from "lucide-react";
 import { useServerActionForm } from "@/lib/client/use-server-action-form";
@@ -103,7 +103,6 @@ export function AccountsManager({
   const [query, setQuery] = useState(DEFAULT_ACCOUNT_FILTERS.query);
   const [role, setRole] = useState<AccountFilterState["role"]>(DEFAULT_ACCOUNT_FILTERS.role);
   const [loginState, setLoginState] = useState<AccountFilterState["loginState"]>(DEFAULT_ACCOUNT_FILTERS.loginState);
-  const onSearch = useCallback((value: string) => setQuery(value), []);
   const filters = useMemo(() => ({ query, role, loginState }), [loginState, query, role]);
   const filteredAccounts = useMemo(() => filterAccounts(accounts, filters), [accounts, filters]);
   const activeFilters = countActiveAccountFilters(filters);
@@ -113,7 +112,7 @@ export function AccountsManager({
       <CreateAdminForm onResult={showToast} />
 
       <FilterPanel title="Filter accounts" meta={`${filteredAccounts.length} of ${accounts.length} shown · ${activeFilters} active`}>
-        <SearchInput onSearch={onSearch} placeholder="Search name or email" className="sm:max-w-none" />
+        <SearchInput onSearch={setQuery} placeholder="Search name or email" className="sm:max-w-none" />
         <FilterGrid>
           <FilterGroup
             icon={<ShieldCheck aria-hidden="true" className="h-[18px] w-[18px]" />}

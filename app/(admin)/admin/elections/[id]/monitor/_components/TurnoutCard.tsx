@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useDelayedPercent } from "@/lib/client/use-delayed-percent";
 import { Card } from "@/components/admin/ui";
 import { MomentumChart } from "./MomentumChart";
 import { TurnoutSparkline } from "./TurnoutSparkline";
@@ -13,11 +13,7 @@ export function TurnoutCard({
   turnout: TurnoutData;
   snapshots: Snapshot[];
 }) {
-  const [displayPct, setDisplayPct] = useState(0);
-  useEffect(() => {
-    const t = setTimeout(() => setDisplayPct(turnout.pct), 120);
-    return () => clearTimeout(t);
-  }, [turnout.pct]);
+  const displayPct = useDelayedPercent(turnout.pct, 120);
 
   return (
     <Card title="Voter Turnout" meta={<span className="text-[11px] text-white/40">{turnout.voted} / {turnout.total}</span>}>
