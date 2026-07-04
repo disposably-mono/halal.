@@ -1,8 +1,9 @@
 import { redirect } from "next/navigation";
+import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import type { Session } from "next-auth";
 import type { AdminRole } from "@prisma/client";
-import { can, type Capability } from "@/lib/auth/permissions";
+import { can, permissionErrorMessage, type Capability } from "@/lib/auth/permissions";
 
 export async function requireAdminSession(): Promise<Session> {
   const session = await auth();
@@ -65,4 +66,28 @@ export async function requireCapabilityOrError(
   if (!session) return { ok: false, error: "Unauthorized" };
   if (!can(session.user?.role, cap)) return { ok: false, error: "Forbidden" };
   return { ok: true, session };
+}
+
+export type CapabilityJsonGuardResult =
+  | { ok: true; session: Session }
+  | { ok: false; response: NextResponse };
+
+/**
+ * API-route capability guard: same rules as `requireCapabilityOrError`, but
+ * pre-packages the failure as the `NextResponse` every route was hand-rolling
+ * (401 for `Unauthorized`, 403 for `Forbidden`) so callers just
+ * `if (!guard.ok) return guard.response;`.
+ */
+export async function requireCapabilityOrJsonError(
+  cap: Capability,
+): Promise<CapabilityJsonGuardResult> {
+  const guard = await requireCapabilityOrError(cap);
+  if (guard.ok) return guard;
+  return {
+    ok: false,
+    response: NextResponse.json(
+      { error: permissionErrorMessage(guard.error) },
+      { status: guard.error === "Forbidden" ? 403 : 401 },
+    ),
+  };
 }

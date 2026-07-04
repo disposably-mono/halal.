@@ -1,5 +1,4 @@
-import { requireCapabilityOrError } from "@/lib/server/auth";
-import { permissionErrorMessage } from "@/lib/auth/permissions";
+import { requireCapabilityOrJsonError } from "@/lib/server/auth";
 import { rowsToCsv } from "@/lib/domain/csv";
 import { prisma } from "@/lib/prisma";
 import { NextResponse } from "next/server";
@@ -14,13 +13,8 @@ function unexpectedExportErrorResponse() {
 export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    const guard = await requireCapabilityOrError("voters:export");
-    if (!guard.ok) {
-      return NextResponse.json(
-        { error: permissionErrorMessage(guard.error) },
-        { status: guard.error === "Forbidden" ? 403 : 401 },
-      );
-    }
+    const guard = await requireCapabilityOrJsonError("voters:export");
+    if (!guard.ok) return guard.response;
 
     const voters = await prisma.voter.findMany({
       where: { electionId: params.id },

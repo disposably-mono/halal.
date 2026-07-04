@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireCapabilityOrError } from "@/lib/server/auth";
-import { permissionErrorMessage } from "@/lib/auth/permissions";
+import { requireCapabilityOrJsonError } from "@/lib/server/auth";
 import { subscribe, getLatest } from "@/lib/server/monitor-hub";
 import { computeAdminMonitorPayload } from "@/lib/server/results-aggregate";
 import { tryAcquire, release } from "@/lib/server/sse-connections";
@@ -28,13 +27,8 @@ const HEARTBEAT_MS = 25_000;
  */
 export async function GET(req: NextRequest, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
-  const guard = await requireCapabilityOrError("admin:view");
-  if (!guard.ok) {
-    return NextResponse.json(
-      { error: permissionErrorMessage(guard.error) },
-      { status: guard.error === "Forbidden" ? 403 : 401 },
-    );
-  }
+  const guard = await requireCapabilityOrJsonError("admin:view");
+  if (!guard.ok) return guard.response;
 
   const { id } = params;
   const election = await prisma.election.findUnique({

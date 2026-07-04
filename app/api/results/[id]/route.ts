@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireCapabilityOrError } from "@/lib/server/auth";
-import { permissionErrorMessage } from "@/lib/auth/permissions";
+import { requireCapabilityOrJsonError } from "@/lib/server/auth";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
 import { computePositionTally } from "@/lib/domain/tally";
 import { verifyStoredCertification } from "@/lib/server/election-audit";
@@ -37,13 +36,8 @@ export async function GET(req: NextRequest, props: { params: Promise<{ id: strin
 
     // Verify admin access if requesting admin (live/embargoed) data
     if (isAdminRequest) {
-      const guard = await requireCapabilityOrError("admin:view");
-      if (!guard.ok) {
-        return NextResponse.json(
-          { error: permissionErrorMessage(guard.error) },
-          { status: guard.error === "Forbidden" ? 403 : 401 },
-        );
-      }
+      const guard = await requireCapabilityOrJsonError("admin:view");
+      if (!guard.ok) return guard.response;
     }
 
     const election = await prisma.election.findUnique({

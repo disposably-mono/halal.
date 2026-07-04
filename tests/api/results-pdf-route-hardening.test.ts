@@ -33,7 +33,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/server/auth", () => ({
-  requireCapabilityOrError: vi.fn(async () => ({ ok: true })),
+  requireCapabilityOrJsonError: vi.fn(async () => ({ ok: true })),
 }));
 
 vi.mock("@react-pdf/renderer", () => ({
