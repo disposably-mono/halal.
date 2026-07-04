@@ -1,6 +1,7 @@
 "use client";
 
 import type { ReactNode } from "react";
+import { AlertTriangle } from "lucide-react";
 import { Button, type buttonVariants } from "@/components/ui/button";
 import { useServerActionForm } from "@/lib/client/use-server-action-form";
 import type { VariantProps } from "class-variance-authority";
@@ -26,11 +27,7 @@ export function AutoBadge() {
 export function WarnBanner({ children }: { children: ReactNode }) {
   return (
     <div className="flex items-start gap-[8px] rounded-[8px] border border-gold/18 bg-gold/6 px-[13px] py-[10px] text-[12px] leading-relaxed text-gold/80">
-      <svg style={{ width: 13, height: 13, flexShrink: 0, marginTop: 1 }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-        <line x1="12" y1="9" x2="12" y2="13" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-      </svg>
+      <AlertTriangle aria-hidden="true" size={13} strokeWidth={2.5} className="mt-px shrink-0" />
       {children}
     </div>
   );
