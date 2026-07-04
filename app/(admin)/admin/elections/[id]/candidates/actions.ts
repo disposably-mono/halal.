@@ -3,12 +3,10 @@
 import { prisma } from "@/lib/prisma";
 import { DIVISION_POSITIONS } from "@/lib/elections/constants";
 import { pickCandidateDefaultGrade } from "@/lib/domain/ballot";
-import {
-  canEditCandidateRoster,
-  canFinalizeUnlock,
-} from "@/lib/domain/election-state";
+import { canEditCandidateRoster } from "@/lib/domain/election-state";
 import { requireCapability } from "@/lib/server/auth";
 import { revalidateElectionCandidates } from "@/lib/server/revalidate";
+import { guardEditableRoster, unfinalizeRoster } from "../roster-guard";
 import {
   AddCandidateSchema,
   AddSinglePositionSchema,
@@ -39,12 +37,13 @@ export async function seedAllPositions(formData: FormData) {
   const parsed = safeParseFormData(SeedPositionsSchema, formData);
   if (!parsed.success) return;
   const { electionId } = parsed.data;
-  const election = await prisma.election.findUnique({
-    where: { id: electionId },
-    select: { division: true, status: true, candidatesFinalized: true },
-  });
-  if (!election) return;
-  if (!canEditCandidateRoster(election.status, election.candidatesFinalized).ok) return;
+  const guard = await guardEditableRoster(
+    electionId,
+    { division: true, status: true, candidatesFinalized: true },
+    (e) => canEditCandidateRoster(e.status, e.candidatesFinalized),
+  );
+  if (!guard.ok) return;
+  const election = guard.election;
 
   const definitions = DIVISION_POSITIONS[election.division] ?? [];
   const activePositions = await prisma.position.findMany({
@@ -80,12 +79,13 @@ export async function addSinglePosition(formData: FormData) {
   if (!parsed.success) return;
   const { electionId, title } = parsed.data;
 
-  const election = await prisma.election.findUnique({
-    where: { id: electionId },
-    select: { division: true, status: true, candidatesFinalized: true },
-  });
-  if (!election) return;
-  if (!canEditCandidateRoster(election.status, election.candidatesFinalized).ok) return;
+  const guard = await guardEditableRoster(
+    electionId,
+    { division: true, status: true, candidatesFinalized: true },
+    (e) => canEditCandidateRoster(e.status, e.candidatesFinalized),
+  );
+  if (!guard.ok) return;
+  const election = guard.election;
 
   const positionDef = (DIVISION_POSITIONS[election.division] ?? []).find((p) => p.title === title);
   if (!positionDef) return;
@@ -293,25 +293,7 @@ export async function unfinalizeCandidates(
   }
   const { electionId } = parsed.data;
 
-  const election = await prisma.election.findUnique({
-    where: { id: electionId },
-    select: { status: true, archivedAt: true },
-  });
-  if (!election) return { success: false, error: "Election not found." };
-
-  const guard = canFinalizeUnlock(election.status, election.archivedAt);
-  if (!guard.ok) {
-    return {
-      success: false,
-      error: guard.reason.replace("Cannot unlock", "Cannot unlock candidates"),
-    };
-  }
-
-  await prisma.election.update({
-    where: { id: electionId },
-    data: { candidatesFinalized: false },
-  });
-
-  revalidateElectionCandidates(electionId);
-  return { success: true };
+  const result = await unfinalizeRoster(electionId, "candidatesFinalized", "candidates");
+  if (result.success) revalidateElectionCandidates(electionId);
+  return result;
 }

@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { requireCapabilityOrError } from "@/lib/server/auth";
-import { permissionErrorMessage } from "@/lib/auth/permissions";
+import { requireCapabilityOrJsonError } from "@/lib/server/auth";
 import { loadSnapshots } from "@/lib/server/monitor-snapshots";
 
 export const runtime = "nodejs";
@@ -23,13 +22,8 @@ function unexpectedSnapshotsErrorResponse() {
 export async function GET(_req: Request, props: { params: Promise<{ id: string }> }) {
   const params = await props.params;
   try {
-    const guard = await requireCapabilityOrError("admin:view");
-    if (!guard.ok) {
-      return NextResponse.json(
-        { error: permissionErrorMessage(guard.error) },
-        { status: guard.error === "Forbidden" ? 403 : 401 },
-      );
-    }
+    const guard = await requireCapabilityOrJsonError("admin:view");
+    if (!guard.ok) return guard.response;
 
     const { id } = params;
 

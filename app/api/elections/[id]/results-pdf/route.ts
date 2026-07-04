@@ -12,8 +12,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { renderToBuffer, type DocumentProps } from "@react-pdf/renderer";
 import React from "react";
-import { requireCapabilityOrError } from "@/lib/server/auth";
-import { permissionErrorMessage } from "@/lib/auth/permissions";
+import { requireCapabilityOrJsonError } from "@/lib/server/auth";
 import { prisma } from "@/lib/prisma";
 import { ResultsPDF, type ResultPosition } from "@/lib/pdf/ResultsPDF";
 import type { AuditSnapshot } from "@/lib/domain/audit-tally";
@@ -67,13 +66,8 @@ export async function GET(_req: NextRequest, props: { params: Promise<{ id: stri
   try {
     // ── Auth ──────────────────────────────────────────────────────────────────
     // Results export is the Canvassing Head's domain.
-    const guard = await requireCapabilityOrError("results:export");
-    if (!guard.ok) {
-      return NextResponse.json(
-        { error: permissionErrorMessage(guard.error) },
-        { status: guard.error === "Forbidden" ? 403 : 401 },
-      );
-    }
+    const guard = await requireCapabilityOrJsonError("results:export");
+    if (!guard.ok) return guard.response;
 
     const { id: electionId } = params;
 

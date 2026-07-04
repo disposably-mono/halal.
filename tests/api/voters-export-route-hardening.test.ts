@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { NextResponse } from "next/server";
 
 const prismaMock = vi.hoisted(() => ({
   voter: {
@@ -7,7 +8,7 @@ const prismaMock = vi.hoisted(() => ({
 }));
 
 const guardMock = vi.hoisted(() => ({
-  requireCapabilityOrError: vi.fn(),
+  requireCapabilityOrJsonError: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -15,11 +16,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 vi.mock("@/lib/server/auth", () => ({
-  requireCapabilityOrError: guardMock.requireCapabilityOrError,
-}));
-
-vi.mock("@/lib/auth/permissions", () => ({
-  permissionErrorMessage: vi.fn(() => "Access denied"),
+  requireCapabilityOrJsonError: guardMock.requireCapabilityOrJsonError,
 }));
 
 vi.mock("@/lib/domain/csv", () => ({
@@ -30,14 +27,14 @@ import { GET } from "@/app/api/elections/[id]/voters/export/route";
 
 beforeEach(() => {
   prismaMock.voter.findMany.mockReset();
-  guardMock.requireCapabilityOrError.mockReset();
+  guardMock.requireCapabilityOrJsonError.mockReset();
 });
 
 describe("/api/elections/[id]/voters/export hardening", () => {
   it("keeps forbidden responses JSON-shaped", async () => {
-    guardMock.requireCapabilityOrError.mockResolvedValue({
+    guardMock.requireCapabilityOrJsonError.mockResolvedValue({
       ok: false,
-      error: "Forbidden",
+      response: NextResponse.json({ error: "Access denied" }, { status: 403 }),
     });
 
     const response = await GET(new Request("http://localhost/api/elections/e1/voters/export"), {
@@ -52,7 +49,7 @@ describe("/api/elections/[id]/voters/export hardening", () => {
   });
 
   it("returns JSON when voter export throws", async () => {
-    guardMock.requireCapabilityOrError.mockResolvedValue({
+    guardMock.requireCapabilityOrJsonError.mockResolvedValue({
       ok: true,
     });
     prismaMock.voter.findMany.mockRejectedValue(new Error("database unavailable"));

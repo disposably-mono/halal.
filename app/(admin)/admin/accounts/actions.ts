@@ -2,6 +2,7 @@
 
 import bcrypt from "bcryptjs";
 import { Prisma } from "@prisma/client";
+import type { Session } from "next-auth";
 import {
   adminEmailFromSession,
   adminIdFromSession,
@@ -31,6 +32,14 @@ import {
 } from "@/lib/server/audited-action";
 
 const HASH_ROUNDS = 12;
+
+function actorFromSession(session: Session): AccountLogActor {
+  return {
+    id: adminIdFromSession(session),
+    email: adminEmailFromSession(session),
+    name: adminNameFromSession(session),
+  };
+}
 
 // H2 audit-trail tradeoff: credential resets (resetAdminPassword,
 // resetAdminOfficerKey) are deliberately NOT blocked against SUPERADMIN
@@ -141,11 +150,7 @@ const runCreateAdmin = auditedAction<[prev: AccountActionResult | null, formData
       bcrypt.hash(officerKey, HASH_ROUNDS),
     ]);
 
-    const actor: AccountLogActor = {
-      id: adminIdFromSession(session),
-      email: adminEmailFromSession(session),
-      name: adminNameFromSession(session),
-    };
+    const actor = actorFromSession(session);
     const created = await tx.adminUser.create({
       data: { email, name, role, passwordHash, officerKey: officerKeyHash },
     });
@@ -196,11 +201,7 @@ const runUpdateAdminRole = auditedAction<[adminId: string, role: string]>({
 
     await assertNotLastSuperadmin(tx, target.role);
 
-    const actor: AccountLogActor = {
-      id: adminIdFromSession(session),
-      email: adminEmailFromSession(session),
-      name: adminNameFromSession(session),
-    };
+    const actor = actorFromSession(session);
     await tx.adminUser.update({
       where: { id: parsed.data.adminId },
       data: { role: parsed.data.role },
@@ -243,11 +244,7 @@ const runResetAdminPassword = auditedAction<[adminId: string, password: string]>
     if (!target) throw new TransitionValidationError("Account not found.");
 
     const passwordHash = await bcrypt.hash(parsed.data.password, HASH_ROUNDS);
-    const actor: AccountLogActor = {
-      id: adminIdFromSession(session),
-      email: adminEmailFromSession(session),
-      name: adminNameFromSession(session),
-    };
+    const actor = actorFromSession(session);
 
     await tx.adminUser.update({
       where: { id: parsed.data.adminId },
@@ -298,11 +295,7 @@ const runResetAdminOfficerKey = auditedAction<[adminId: string, officerKey: stri
     }
 
     const officerKeyHash = await bcrypt.hash(parsed.data.officerKey, HASH_ROUNDS);
-    const actor: AccountLogActor = {
-      id: adminIdFromSession(session),
-      email: adminEmailFromSession(session),
-      name: adminNameFromSession(session),
-    };
+    const actor = actorFromSession(session);
 
     await tx.adminUser.update({
       where: { id: parsed.data.adminId },
@@ -344,11 +337,7 @@ const runDeleteAdmin = auditedAction<[adminId: string]>({
 
     await assertNotLastSuperadmin(tx, target.role);
 
-    const actor: AccountLogActor = {
-      id: adminIdFromSession(session),
-      email: adminEmailFromSession(session),
-      name: adminNameFromSession(session),
-    };
+    const actor = actorFromSession(session);
     await tx.adminUser.delete({ where: { id: parsed.data.adminId } });
     await tx.adminAccountLog.create({
       data: deletedAccountEntry(actor, target),

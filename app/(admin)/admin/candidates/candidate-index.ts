@@ -1,11 +1,15 @@
-import { DIVISION_LABELS, DIVISION_ORDER } from "@/lib/ui/division-labels";
+import { DIVISION_LABELS } from "@/lib/ui/division-labels";
 import {
   getRecentElectionIds,
   includesRecentElection,
   type RecentElectionFilter,
 } from "../shared/recent-election-filter";
+import { matches, normalize, orderDivisions } from "../shared/division-index";
+import type { ElectionStatus } from "@prisma/client";
 
-export type CandidateIndexStatus = "DRAFT" | "SCHEDULED" | "OPEN" | "CLOSED";
+// Canonical status union: Prisma's ElectionStatus enum already has exactly
+// these 4 values, so alias it instead of redeclaring the union.
+export type CandidateIndexStatus = ElectionStatus;
 export type CandidateStatusFilter = CandidateIndexStatus | "ALL";
 export type CandidateDivisionFilter = string | "ALL";
 
@@ -179,23 +183,4 @@ function clonePosition(position: CandidateIndexPosition): CandidateIndexPosition
     election: { ...position.election },
     candidates: position.candidates.map((candidate) => ({ ...candidate })),
   };
-}
-
-function orderDivisions<T>(entries: [string, T][]) {
-  return [...entries].sort(
-    ([a], [b]) => divisionRank(a) - divisionRank(b) || a.localeCompare(b),
-  );
-}
-
-function divisionRank(division: string) {
-  const index = DIVISION_ORDER.findIndex((value) => value === division);
-  return index === -1 ? Number.MAX_SAFE_INTEGER : index;
-}
-
-function matches(value: string, query: string) {
-  return normalize(value).includes(query);
-}
-
-function normalize(value: string) {
-  return value.trim().toLowerCase();
 }
