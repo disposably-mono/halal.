@@ -8,29 +8,29 @@ import {
 
 export const metadata: Metadata = {
   title: "Voter Help | halal. OLPS COMELEC",
-  description: "A guide to Student IDs, Control Numbers, and voting in OLPS elections.",
+  description: "A practical guide to OLPS COMELEC voter credentials, ballots, receipts, and receipt verification.",
 };
 
 const steps = [
-  ["01", "Receive your voter slip", "COMELEC provides your Student ID and election-specific Control Number. Keep the slip private."],
-  ["02", "Open the voting page", "Visit the website while your division's election is open, then select Cast Your Vote."],
-  ["03", "Enter both credentials", "Use your Student ID in 0000-0000 format and the Control Number printed on your slip."],
-  ["04", "Review and submit", "Choose candidates, review blank positions, and submit once. A used Control Number cannot vote again."],
+  ["01", "Receive your voter slip", "COMELEC provides your Student ID and election-specific Control Number. Keep both private."],
+  ["02", "Open your ballot", "Go to the voting page while your division's election is open and enter the details exactly as printed."],
+  ["03", "Review every position", "Choose candidates, leave positions blank only if you mean to abstain, then check the final review screen."],
+  ["04", "Save the receipt code", "After submission, copy or print the one-time receipt code shown on the confirmation page."],
 ];
 
 export default function VoterHelpPage() {
   return (
     <PublicHelpShell
       eyebrow="Student Voter Guide"
-      title="How to cast your vote"
-      description="Understand the two details on your voter slip, how they protect the election, and what to expect before submitting your ballot."
+      title="Voter Help"
+      description="Use this guide when you receive your voter slip, cast your OLPS COMELEC ballot, and keep your receipt code for later verification."
     >
-      <section className="px-6 py-20">
+      <section className="px-6 py-16">
         <div className="mx-auto max-w-5xl">
           <HelpSectionHeading
             eyebrow="Your Voter Slip"
-            title="Two details, one ballot"
-            body="Your Student ID and Control Number work together to open the correct ballot. Neither detail is stored with your candidate choices."
+            title="Two details open one ballot"
+            body="Your Student ID identifies the roster entry. Your Control Number authorizes one ballot for that election. The submitted ballot is stored separately from both details."
           />
 
           <div className="mt-10 grid gap-5 md:grid-cols-2">
@@ -41,7 +41,7 @@ export default function VoterHelpPage() {
               points={[
                 "Format: four digits, a hyphen, then four digits",
                 "Always use your own Student ID",
-                "A Student ID by itself cannot open a ballot",
+                "A Student ID alone cannot open a ballot",
               ]}
             />
             <CredentialCard
@@ -51,31 +51,31 @@ export default function VoterHelpPage() {
               points={[
                 "26 = year, 11 = grade, A = section, 001 = sequence",
                 "Letters are entered in uppercase",
-                "The code becomes unusable after ballot submission",
+                "The code cannot cast another ballot after submission",
               ]}
             />
           </div>
 
-          <div className="mt-6 rounded-xl border border-gold/20 bg-gold/5 p-5">
+          <div className="mt-6 border border-gold/20 bg-gold/5 p-5">
             <p className="font-heading text-sm font-bold uppercase tracking-[0.12em] text-gold">Why both are required</p>
             <p className="mt-2 text-sm leading-6 text-white/55">
-              The Student ID identifies the registered student, while the Control Number authorizes that student&apos;s one ballot for a specific election. Voter records only track whether a ballot was used. Candidate choices are stored separately, so the website cannot connect a submitted vote back to a Student ID.
+              The Student ID identifies the registered student, while the Control Number authorizes that student&apos;s one ballot for a specific election. Voter records track whether the roster entry has voted. Candidate choices are stored under an anonymous ballot record, not under the Student ID or Control Number.
             </p>
           </div>
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-y border-gold/10 px-6 py-20">
+      <section className="relative overflow-hidden border-y border-gold/10 px-6 py-16">
         <HelpTexturedBand />
         <div className="relative z-10 mx-auto max-w-5xl">
           <HelpSectionHeading
             eyebrow="Voting Steps"
-            title="From slip to submission"
-            body="Voting is available only while your division's election is open."
+            title="From voter slip to receipt"
+            body="Voting is available only while your division's election is open. Once accepted, the same Control Number cannot be used again."
           />
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {steps.map(([number, title, body]) => (
-              <article key={number} className="rounded-xl border border-white/8 bg-navy/50 p-5">
+              <article key={number} className="border border-white/8 bg-navy/50 p-5">
                 <span className="font-mono text-xs text-gold/60">{number}</span>
                 <h3 className="mt-4 font-heading text-base font-bold text-white/90">{title}</h3>
                 <p className="mt-2 text-xs leading-5 text-white/45">{body}</p>
@@ -85,7 +85,28 @@ export default function VoterHelpPage() {
         </div>
       </section>
 
-      <section className="px-6 py-20">
+      <section className="px-6 py-16">
+        <div className="mx-auto max-w-5xl">
+          <HelpSectionHeading
+            eyebrow="Receipt & Verification"
+            title="Keep the code private"
+            body="The confirmation page shows your receipt code once. Anyone with that code can verify that receipt, so treat it like election paperwork."
+          />
+          <div className="mt-10 grid gap-5 md:grid-cols-3">
+            <ReceiptCard title="Receipt code">
+              The receipt code is shown after your ballot is accepted. It cannot be recovered later because the system stores only its hash.
+            </ReceiptCard>
+            <ReceiptCard title="Recorded choices">
+              The confirmation page shows how your anonymous ballot was recorded. Review it before leaving the page.
+            </ReceiptCard>
+            <ReceiptCard title="Verify your receipt">
+              Use the Verify page later to check that the anonymous ballot remains included and unchanged. Each receipt can be verified once.
+            </ReceiptCard>
+          </div>
+        </div>
+      </section>
+
+      <section className="px-6 pb-16">
         <div className="mx-auto max-w-5xl">
           <HelpSectionHeading
             eyebrow="Common Questions"
@@ -103,16 +124,16 @@ export default function VoterHelpPage() {
               Stop and report the message to COMELEC. A Control Number is accepted only once, even if the browser is closed after submission.
             </Question>
             <Question title="When can I see results?">
-              Public results remain hidden while voting is open. They become available after the election is closed and released by COMELEC.
+              Public results remain hidden while voting is open. They become available after the election is closed and COMELEC releases the final results.
             </Question>
           </div>
 
-          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-xl border border-white/8 bg-white/2.5 p-5">
+          <div className="mt-8 flex flex-wrap items-center justify-between gap-4 border border-white/8 bg-white/2.5 p-5">
             <div>
               <h3 className="font-heading font-bold text-white/90">Have your voter slip ready?</h3>
               <p className="mt-1 text-xs text-white/45">Continue when your division&apos;s election is open.</p>
             </div>
-            <Link href="/vote" className="rounded-sm bg-gold px-5 py-3 font-heading text-xs font-bold uppercase tracking-[0.16em] text-navy-deep transition-opacity hover:opacity-90">
+            <Link href="/vote" className="bg-gold px-5 py-3 font-heading text-xs font-bold uppercase tracking-[0.16em] text-navy-deep transition-opacity hover:opacity-90">
               Open voting page
             </Link>
           </div>
@@ -134,14 +155,14 @@ function CredentialCard({
   points: string[];
 }) {
   return (
-    <article className="rounded-xl border border-white/8 bg-navy/50 p-6">
+    <article className="border border-white/8 bg-navy/50 p-6">
       <p className="text-[10px] uppercase tracking-[0.25em] text-gold/60">{label}</p>
-      <div className="mt-4 rounded-lg border border-white/8 bg-[#090c20] px-4 py-3 font-mono text-xl tracking-[0.16em] text-white/85">{example}</div>
+      <div className="mt-4 border border-white/8 bg-[#090c20] px-4 py-3 font-mono text-xl tracking-[0.16em] text-white/85">{example}</div>
       <p className="mt-5 text-sm leading-6 text-white/50">{body}</p>
       <ul className="mt-4 space-y-2 border-t border-white/6 pt-4">
         {points.map((point) => (
           <li key={point} className="flex gap-2 text-xs leading-5 text-white/40">
-            <span className="mt-[7px] h-1 w-1 shrink-0 rounded-full bg-gold/60" />
+            <span className="mt-[7px] h-1 w-1 shrink-0 bg-gold/60" />
             <span>{point}</span>
           </li>
         ))}
@@ -150,9 +171,18 @@ function CredentialCard({
   );
 }
 
+function ReceiptCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <article className="border border-gold/15 bg-gold/5 p-5">
+      <h3 className="font-heading text-sm font-bold uppercase tracking-[0.12em] text-gold/80">{title}</h3>
+      <p className="mt-3 text-xs leading-5 text-white/50">{children}</p>
+    </article>
+  );
+}
+
 function Question({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <article className="rounded-xl border border-white/8 bg-navy/45 p-5">
+    <article className="border border-white/8 bg-navy/45 p-5">
       <h3 className="font-heading font-bold text-white/85">{title}</h3>
       <p className="mt-2 text-xs leading-5 text-white/45">{children}</p>
     </article>
