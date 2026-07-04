@@ -3,7 +3,7 @@
 import { useEffect, useId, useState } from "react";
 import { cn } from "@/lib/utils";
 
-export const DEFAULT_SEARCH_DEBOUNCE_MS = 2_000;
+export const DEFAULT_SEARCH_DEBOUNCE_MS = 800;
 
 export function SearchInput({
   defaultValue = "",

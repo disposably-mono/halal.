@@ -101,6 +101,9 @@ const PAGE_BACKGROUND = {
   backgroundAttachment: "fixed",
 };
 
+export const OFFICER_PHOTO_SIZES =
+  "(max-width: 639px) calc(50vw - 2rem), (max-width: 1023px) calc(33vw - 2rem), 264px";
+
 // ── Decorative SVGs ──────────────────────────────────────────────
 
 function HeroRibbons() {
@@ -184,7 +187,7 @@ function OfficerCard({ officer, past = false, year }: { officer: Officer; past?:
       {/* Photo area — 4:5 aspect ratio */}
       <div className="relative w-full shrink-0" style={{ aspectRatio: "4/5" }}>
         {officer.photo ? (
-          <Image src={officer.photo} alt={officer.name} fill className="object-cover object-top" />
+          <Image src={officer.photo} alt={officer.name} fill sizes={OFFICER_PHOTO_SIZES} className="object-cover object-top" />
         ) : (
           <div
             className="absolute inset-0 flex flex-col items-center justify-center gap-2"

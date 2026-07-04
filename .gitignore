@@ -63,5 +63,8 @@ docker-compose.override.yml
 # graphify knowledge graph output
 /graphify-out/
 
+# local git worktrees for parallel agent branches
+/.worktrees/
+
 # generated load-test fixtures (voter ids for k6 / correctness harness)
 /scripts/load/.data/

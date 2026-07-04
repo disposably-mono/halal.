@@ -163,26 +163,35 @@ export function AdminShell({
         <nav
           aria-label="Admin navigation"
           className={cn(
-            "hidden shrink-0 flex-col gap-[2px] overflow-y-auto border-r border-white/[0.07] bg-admin-surface py-4 transition-[width] duration-200 lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)]",
+            "hidden shrink-0 flex-col overflow-hidden border-r border-white/[0.07] bg-admin-surface transition-[width] duration-200 lg:sticky lg:top-14 lg:flex lg:h-[calc(100vh-3.5rem)]",
             sidebarCollapsed ? "w-[64px]" : "w-[220px]",
           )}
         >
-          <div className={cn("mb-2 flex px-3", sidebarCollapsed ? "justify-center" : "justify-end")}>
+          <div className="min-h-0 flex-1 overflow-y-auto py-4">
+            {navContent(sidebarCollapsed)}
+          </div>
+          <div className={cn("flex border-t border-white/[0.07] px-3 py-3", sidebarCollapsed ? "justify-center" : "justify-end")}>
             <button
               type="button"
               aria-label={sidebarCollapsed ? "Expand admin panel" : "Collapse admin panel"}
               title={sidebarCollapsed ? "Expand admin panel" : "Collapse admin panel"}
               onClick={() => setSidebarCollapsed((value) => !value)}
-              className="flex h-9 w-9 items-center justify-center rounded-[7px] border border-white/8 text-white/45 transition-colors hover:bg-white/5 hover:text-white/75 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/45"
+              className={cn(
+                "inline-flex h-9 items-center justify-center rounded-[7px] border border-white/8 text-[11px] font-semibold uppercase tracking-[0.08em] text-white/45 transition-colors hover:bg-white/5 hover:text-white/75 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/45",
+                sidebarCollapsed ? "w-9" : "px-3",
+              )}
             >
               {sidebarCollapsed ? (
                 <PanelLeftOpen aria-hidden="true" className="h-4 w-4" />
               ) : (
-                <PanelLeftClose aria-hidden="true" className="h-4 w-4" />
+                <>
+                  <span>Collapse</span>
+                  <span className="mx-2 h-4 w-px bg-white/15" aria-hidden="true" />
+                  <PanelLeftClose aria-hidden="true" className="h-4 w-4" />
+                </>
               )}
             </button>
           </div>
-          {navContent(sidebarCollapsed)}
         </nav>
 
         {/* Off-canvas drawer (below lg) */}

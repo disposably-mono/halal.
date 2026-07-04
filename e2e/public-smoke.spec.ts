@@ -15,3 +15,18 @@ test("public and admin entry pages render", async ({ page }) => {
   await expect(page).toHaveTitle(/halal/i);
   await expect(page.locator("body")).toContainText(/Results|Election|Pending/i);
 });
+
+test("officers page images include responsive sizes hints", async ({ page }) => {
+  const imageWarnings: string[] = [];
+  page.on("console", (message) => {
+    const text = message.text();
+    if (text.includes('has "fill" but is missing "sizes" prop')) {
+      imageWarnings.push(text);
+    }
+  });
+
+  await page.goto("/officers");
+  await expect(page.getByRole("heading", { name: "Officers" })).toBeVisible();
+
+  expect(imageWarnings).toEqual([]);
+});
