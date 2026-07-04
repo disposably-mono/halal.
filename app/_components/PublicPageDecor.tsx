@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 import { cn } from "@/lib/utils";
 
 /* ─────────────────────────────────────────────
@@ -8,11 +10,7 @@ import { cn } from "@/lib/utils";
 
 export function NavBirdIcon() {
   return (
-    <svg viewBox="0 0 24 24" fill="none" className="w-[20px] h-[20px]" aria-hidden="true">
-      <circle cx="12" cy="12" r="10" stroke="#F5C000" strokeWidth="1.5" />
-      <path d="M8 14c1-2 3-4 4-4s3 2 4 4" stroke="#F5C000" strokeWidth="1.5" strokeLinecap="round" />
-      <circle cx="12" cy="9" r="1.5" fill="#F5C000" />
-    </svg>
+    <Image src="/comelec-bird.svg" alt="" width={24} height={24} className="w-[24px] h-[24px] object-contain" aria-hidden="true" />
   );
 }
 

@@ -1,8 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 600" role="img" aria-label="OLPS COMELEC">
-  <rect width="600" height="600" rx="128" fill="#0f1235"/>
-  <circle cx="300" cy="300" r="232" fill="#1B1F5E"/>
-  <g transform="translate(54 54) scale(0.82)">
-    <g transform="translate(0.000000,600.000000) scale(0.100000,-0.100000)"
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 20010904//EN"
+ "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg version="1.0" xmlns="http://www.w3.org/2000/svg"
+ width="600.000000pt" height="600.000000pt" viewBox="113 69 449 448"
+ preserveAspectRatio="xMidYMid meet">
+<g transform="translate(0.000000,600.000000) scale(0.100000,-0.100000)"
 fill="#F5C000" stroke="none">
 <path d="M2655 5237 c-33 -39 -95 -110 -137 -158 l-77 -86 44 -359 c25 -198
 52 -420 61 -493 9 -74 18 -144 20 -154 2 -10 6 -45 10 -77 l6 -57 -43 -8 c-24
@@ -757,5 +759,4 @@ m-51 -10 c-6 -2 -10 -9 -6 -14 3 -5 -4 -10 -15 -10 -39 -3 -43 -4 -54 -19 -7
 <path d="M2883 1105 c0 -8 4 -12 9 -9 5 3 6 10 3 15 -9 13 -12 11 -12 -6z"/>
 <path d="M2770 1100 c-9 -6 -10 -10 -3 -10 6 0 15 5 18 10 8 12 4 12 -15 0z"/>
 </g>
-  </g>
 </svg>
