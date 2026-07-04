@@ -33,30 +33,30 @@ export function PublicHelpShell({
     <div className="min-h-screen overflow-x-hidden font-body text-white" style={PAGE_BACKGROUND}>
       <LandingNav />
       <main>
-        <section className="relative flex min-h-screen items-center justify-center overflow-hidden border-b border-gold/10 px-6 pb-16 pt-28 text-center">
+        <section className="relative flex min-h-screen items-center justify-center overflow-hidden border-b border-gold/10 px-[27px] pb-[72px] pt-[127px] text-center">
           <HelpRibbons />
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="absolute inset-[0px] flex items-center justify-center pointer-events-none">
             <div
               className="h-[32rem] w-[32rem] rounded-full"
               style={{ background: "radial-gradient(ellipse, rgba(27,31,94,0.72) 0%, transparent 70%)" }}
             />
           </div>
           <div className="relative z-10 mx-auto max-w-3xl">
-            <div className="mb-4 flex items-center justify-center gap-4">
-              <div className="h-px w-8 bg-gold/55" />
-              <p className="text-[10px] uppercase tracking-[0.34em] text-gold/70">{eyebrow}</p>
-              <div className="h-px w-8 bg-gold/55" />
+            <div className="mb-[19px] flex items-center justify-center gap-[19px]">
+              <div className="h-px w-[36px] bg-gold/55" />
+              <p className="text-[12px] uppercase tracking-[0.34em] text-gold/70">{eyebrow}</p>
+              <div className="h-px w-[36px] bg-gold/55" />
             </div>
-            <h1 className="font-tagline text-5xl font-bold uppercase leading-none tracking-wider text-white sm:text-7xl">{title}</h1>
-            <div className="mx-auto my-6 h-px w-16 bg-gold/45" />
-            <p className="mx-auto max-w-2xl text-sm leading-7 text-white/55 sm:text-base">{description}</p>
+            <h1 className="font-tagline text-[54px] font-bold uppercase leading-none tracking-wider text-white sm:text-[81px]">{title}</h1>
+            <div className="mx-auto my-[27px] h-px w-[72px] bg-gold/45" />
+            <p className="mx-auto max-w-2xl text-[17px] leading-[32px] text-white/55 sm:text-[19px]">{description}</p>
           </div>
         </section>
         {children}
-        <div className="border-t border-white/6 px-6 py-10 text-center">
+        <div className="border-t border-white/6 px-[27px] py-[45px] text-center">
           <Link
             href="/"
-            className="font-body text-xs uppercase tracking-[0.16em] text-white/40 transition-colors hover:text-gold"
+            className="font-body text-[14px] uppercase tracking-[0.16em] text-white/40 transition-colors hover:text-gold"
           >
             ← Back to home
           </Link>
@@ -70,9 +70,9 @@ export function PublicHelpShell({
 export function HelpTexturedBand() {
   return (
     <>
-      <div className="pointer-events-none absolute inset-0 bg-navy/25" />
+      <div className="pointer-events-none absolute inset-[0px] bg-navy/25" />
       <div
-        className="pointer-events-none absolute inset-0 opacity-[0.045]"
+        className="pointer-events-none absolute inset-[0px] opacity-[0.045]"
         style={{
           backgroundImage:
             "repeating-linear-gradient(45deg, #F5C000 0px, #F5C000 1px, transparent 1px, transparent 12px)",
@@ -87,7 +87,7 @@ function HelpRibbons({ subtle = false }: { subtle?: boolean }) {
   return (
     <svg
       aria-hidden="true"
-      className="pointer-events-none absolute inset-0 h-full w-full"
+      className="pointer-events-none absolute inset-[0px] h-full w-full"
       preserveAspectRatio="none"
       viewBox="0 0 1440 720"
     >
@@ -112,16 +112,16 @@ export function HelpSectionHeading({
 }) {
   return (
     <div className="max-w-2xl">
-      <p className="text-[10px] uppercase tracking-[0.32em] text-gold/65">{eyebrow}</p>
-      <h2 className="mt-3 font-tagline text-3xl font-bold uppercase tracking-wide text-white sm:text-4xl">{title}</h2>
-      <p className="mt-4 text-sm leading-6 text-white/50">{body}</p>
+      <p className="text-[12px] uppercase tracking-[0.32em] text-gold/65">{eyebrow}</p>
+      <h2 className="mt-[14px] font-tagline text-[34px] font-bold uppercase tracking-wide text-white sm:text-[41px]">{title}</h2>
+      <p className="mt-[19px] text-[17px] leading-[27px] text-white/50">{body}</p>
     </div>
   );
 }
 
 export function HelpCheckIcon() {
   return (
-    <svg aria-hidden="true" className="mt-1 h-3.5 w-3.5 shrink-0 text-emerald-400/75" viewBox="0 0 16 16" fill="none">
+    <svg aria-hidden="true" className="mt-[5px] h-[17px] w-[17px] shrink-0 text-emerald-400/75" viewBox="0 0 16 16" fill="none">
       <path d="m3 8 3 3 7-7" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
   );
@@ -129,8 +129,8 @@ export function HelpCheckIcon() {
 
 export function HelpWorkflowArrow() {
   return (
-    <div aria-hidden="true" className="flex justify-center py-1 text-gold/35 lg:px-1 lg:py-0">
-      <svg className="h-5 w-5 rotate-90 lg:rotate-0" viewBox="0 0 24 24" fill="none">
+    <div aria-hidden="true" className="flex justify-center py-[5px] text-gold/35 lg:px-[5px] lg:py-[0px]">
+      <svg className="h-[23px] w-[23px] rotate-90 lg:rotate-0" viewBox="0 0 24 24" fill="none">
         <path d="M5 12h14m-5-5 5 5-5 5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </div>

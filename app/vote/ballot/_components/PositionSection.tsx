@@ -32,27 +32,27 @@ export function PositionSection({
       aria-label={`Position: ${position.title}`}
     >
       <div className="flex items-stretch border-b-2 border-navy">
-        <div className="w-11 min-w-[44px] flex items-center justify-center bg-navy shrink-0">
-          <span className="font-ballot-mono text-[11px] font-bold tracking-[0.08em] text-gold">
+        <div className="w-[50px] min-w-[50px] flex items-center justify-center bg-navy shrink-0">
+          <span className="font-ballot-mono text-[12px] font-bold tracking-[0.08em] text-gold">
             {String(positionNumber).padStart(2, "0")}
           </span>
         </div>
-        <div className="flex-1 px-3 py-[9px] min-w-0">
-          <h3 className="font-ballot-serif font-bold text-[13px] uppercase tracking-[0.14em] text-navy">
+        <div className="flex-1 px-[14px] py-[10px] min-w-[0px]">
+          <h3 className="font-ballot-serif font-bold text-[15px] uppercase tracking-[0.14em] text-navy">
             {position.title}
           </h3>
-          <p className="font-ballot-mono text-[9px] tracking-[0.14em] uppercase text-navy/40 mt-0.5">
+          <p className="font-ballot-mono text-[10px] tracking-[0.14em] uppercase text-navy/40 mt-[2px]">
             Vote for one · Candidates: {position.candidateGradeLabel}
             {position.voterLockLabel ? ` · ${position.voterLockLabel} only` : ""}
           </p>
         </div>
-        <div className="flex items-center pr-3 shrink-0">
+        <div className="flex items-center pr-[14px] shrink-0">
           {selectedCandidateId ? (
-            <span className="font-ballot-mono text-[9px] tracking-[0.2em] uppercase font-bold px-[7px] py-[3px] border-[1.5px] border-navy/40 bg-navy/6 text-navy">
+            <span className="font-ballot-mono text-[10px] tracking-[0.2em] uppercase font-bold px-[8px] py-[3px] border-[1.5px] border-navy/40 bg-navy/6 text-navy">
               ✓ Voted
             </span>
           ) : skipped ? (
-            <span className="font-ballot-mono text-[9px] tracking-[0.2em] uppercase font-bold px-[7px] py-[3px] border-[1.5px] border-amber-600/40 bg-amber-50 text-amber-700">
+            <span className="font-ballot-mono text-[10px] tracking-[0.2em] uppercase font-bold px-[8px] py-[3px] border-[1.5px] border-amber-600/40 bg-amber-50 text-amber-700">
               Blank
             </span>
           ) : null}
@@ -60,7 +60,7 @@ export function PositionSection({
       </div>
 
       {position.candidates.length === 0 ? (
-        <p className="font-ballot-mono text-navy/40 text-xs italic p-4 tracking-wide">
+        <p className="font-ballot-mono text-navy/40 text-[14px] italic p-[18px] tracking-wide">
           No candidates filed for this position.
         </p>
       ) : (

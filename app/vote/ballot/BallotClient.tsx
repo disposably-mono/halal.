@@ -86,40 +86,40 @@ export default function BallotClient({
         />
 
         {/* ── Ballot body ────────────────────────────────────────── */}
-        <main className="flex-1 px-4 sm:px-6 py-8">
+        <main className="flex-1 px-[18px] sm:px-[27px] py-[36px]">
           <div className="max-w-2xl mx-auto">
 
             {/* Document header block */}
-            <div className="bg-ballot-paper border-2 border-navy border-t-[3px] border-t-gold text-center px-6 py-5 mb-4">
-              <div className="flex items-center gap-[10px] mb-[10px]">
+            <div className="bg-ballot-paper border-2 border-navy border-t-[3px] border-t-gold text-center px-[27px] py-[23px] mb-[18px]">
+              <div className="flex items-center gap-[11px] mb-[11px]">
                 <div className="flex-1 h-px bg-navy/18" />
-                <span className="font-ballot-mono text-[9px] tracking-[0.38em] uppercase text-navy/38">
+                <span className="font-ballot-mono text-[10px] tracking-[0.38em] uppercase text-navy/38">
                   Official Document
                 </span>
                 <div className="flex-1 h-px bg-navy/18" />
               </div>
-              <p className="font-tagline italic text-[11px] text-navy/38 mb-[6px]">
+              <p className="font-tagline italic text-[12px] text-navy/38 mb-[7px]">
                 Vox Populi, Vox Dei
               </p>
-              <h1 className="font-ballot-display text-[30px] uppercase tracking-[0.15em] text-navy leading-none">
+              <h1 className="font-ballot-display text-[34px] uppercase tracking-[0.15em] text-navy leading-none">
                 Official Ballot
               </h1>
-              <p className="font-ballot-mono text-[10px] tracking-[0.16em] uppercase text-navy/45 mt-[9px]">
+              <p className="font-ballot-mono text-[11px] tracking-[0.16em] uppercase text-navy/45 mt-[10px]">
                 Mark the oval completely · One candidate per position
               </p>
-              <div className="flex items-center gap-[10px] mt-[10px]">
+              <div className="flex items-center gap-[11px] mt-[11px]">
                 <div className="flex-1 h-px bg-navy/18" />
-                <div className="w-[5px] h-[5px] rounded-full bg-gold/70" />
+                <div className="w-[6px] h-[6px] rounded-full bg-gold/70" />
                 <div className="flex-1 h-px bg-navy/18" />
               </div>
             </div>
 
             {/* Instruction strip */}
-            <div className="flex items-start gap-[10px] border border-navy bg-ballot-inst px-[13px] py-[9px] mb-4">
-              <span className="font-ballot-mono text-[10px] tracking-[0.2em] uppercase font-bold text-navy/65 whitespace-nowrap mt-px">
+            <div className="flex items-start gap-[11px] border border-navy bg-ballot-inst px-[15px] py-[10px] mb-[18px]">
+              <span className="font-ballot-mono text-[11px] tracking-[0.2em] uppercase font-bold text-navy/65 whitespace-nowrap mt-px">
                 Instr.
               </span>
-              <p className="font-ballot-mono text-[11px] leading-[1.55] tracking-[0.04em] text-navy/58">
+              <p className="font-ballot-mono text-[12px] leading-[1.55] tracking-[0.04em] text-navy/58">
                 Select one candidate per position by clicking the oval. Positions
                 left blank will be recorded as abstentions. Review your selections
                 before submitting.
@@ -130,14 +130,14 @@ export default function BallotClient({
             {serverError && (
               <div
                 role="alert"
-                className="border-l-4 border-red-600 bg-red-50 px-4 py-3 font-ballot-mono text-xs text-red-700 tracking-wide mb-4"
+                className="border-l-4 border-red-600 bg-red-50 px-[18px] py-[14px] font-ballot-mono text-[14px] text-red-700 tracking-wide mb-[18px]"
               >
                 ⚠ {serverError}
               </div>
             )}
 
             {/* Positions */}
-            <div className="space-y-3">
+            <div className="space-y-[14px]">
               {positions.map((position, idx) => (
                 <PositionSection
                   key={position.id}
@@ -152,14 +152,14 @@ export default function BallotClient({
             </div>
 
             {positions.length === 0 && (
-              <div className="border-2 border-navy bg-ballot-paper p-10 text-center">
-                <p className="font-ballot-mono text-navy/30 text-xs tracking-widest uppercase">
+              <div className="border-2 border-navy bg-ballot-paper p-[45px] text-center">
+                <p className="font-ballot-mono text-navy/30 text-[14px] tracking-widest uppercase">
                   No positions found for your grade level.
                 </p>
               </div>
             )}
 
-            <div className="h-4" />
+            <div className="h-[18px]" />
           </div>
         </main>
 

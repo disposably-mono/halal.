@@ -17,11 +17,11 @@ function SubmitButton({ isPending }: { isPending: boolean }) {
     <button
       type="submit"
       disabled={isPending}
-      className="w-full bg-gold text-navy font-heading font-bold text-sm tracking-[0.2em] uppercase py-3.5 rounded-sm hover:bg-gold/90 active:bg-gold/80 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+      className="w-full bg-gold text-navy font-heading font-bold text-[17px] tracking-[0.2em] uppercase py-[17px] rounded-sm hover:bg-gold/90 active:bg-gold/80 transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-gold/35 focus-visible:ring-offset-2 focus-visible:ring-offset-navy-deep disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-[10px]"
     >
       {isPending ? (
         <>
-          <Spinner className="w-4 h-4" />
+          <Spinner className="w-[19px] h-[19px]" />
           Verifying…
         </>
       ) : (
@@ -70,34 +70,34 @@ export function VoteForm() {
     <div className="w-full max-sm:max-w-xs sm:max-w-sm">
 
       {/* Branding */}
-      <div className="text-center mb-10">
-        <p className="font-tagline text-white/35 text-sm italic mb-2">
+      <div className="text-center mb-[45px]">
+        <p className="font-tagline text-white/35 text-[17px] italic mb-[10px]">
           VOX POPULI VOX DEI
         </p>
-        <h1 className="font-display text-5xl text-white tracking-wide mb-3 uppercase">
+        <h1 className="font-display text-[54px] text-white tracking-wide mb-[14px] uppercase">
           Cast Your Vote
         </h1>
-        <p className="font-body text-mid/60 text-sm leading-6">
+        <p className="font-body text-mid/60 text-[17px] leading-[27px]">
           Enter the details from your printed voter slip to receive your ballot.
         </p>
       </div>
 
-      <div className="flex items-center justify-center gap-4 mb-10">
-        <div className="w-8 h-px bg-gold/40" />
-        <span className="font-body text-gold/40 text-[10px] tracking-[0.3em] uppercase">
+      <div className="flex items-center justify-center gap-[19px] mb-[45px]">
+        <div className="w-[36px] h-px bg-gold/40" />
+        <span className="font-body text-gold/40 text-[12px] tracking-[0.3em] uppercase">
           Voter Login
         </span>
-        <div className="w-8 h-px bg-gold/40" />
+        <div className="w-[36px] h-px bg-gold/40" />
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form onSubmit={handleSubmit} className="space-y-[19px]">
 
         {/* Student ID */}
-        <div className="space-y-2">
+        <div className="space-y-[10px]">
           <label
             htmlFor="studentId"
-            className="block font-body text-white/60 text-xs tracking-[0.25em] uppercase"
+            className="block font-body text-white/60 text-[14px] tracking-[0.25em] uppercase"
           >
             Student ID
           </label>
@@ -115,15 +115,15 @@ export function VoteForm() {
             placeholder="0000-0000"
             aria-invalid={hasError}
             aria-describedby={fieldDescriptionId}
-            className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] outline-hidden transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25 ${errorBorderClass}`}
+            className={`w-full bg-navy border rounded-sm px-[19px] py-[17px] font-mono text-[20px] text-white placeholder-white/15 tracking-[0.15em] outline-hidden transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25 ${errorBorderClass}`}
           />
         </div>
 
         {/* Control Number */}
-        <div className="space-y-2">
+        <div className="space-y-[10px]">
           <label
             htmlFor="voterCode"
-            className="block font-body text-white/60 text-xs tracking-[0.25em] uppercase"
+            className="block font-body text-white/60 text-[14px] tracking-[0.25em] uppercase"
           >
             Control Number
           </label>
@@ -140,13 +140,13 @@ export function VoteForm() {
             placeholder="e.g. 2611A001"
             aria-invalid={hasError}
             aria-describedby={fieldDescriptionId}
-            className={`w-full bg-navy border rounded-sm px-4 py-3.5 font-mono text-lg text-white placeholder-white/15 tracking-[0.15em] uppercase outline-hidden transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25 ${errorBorderClass}`}
+            className={`w-full bg-navy border rounded-sm px-[19px] py-[17px] font-mono text-[20px] text-white placeholder-white/15 tracking-[0.15em] uppercase outline-hidden transition-all focus:border-gold/50 focus:ring-1 focus:ring-gold/20 focus-visible:ring-2 focus-visible:ring-gold/25 ${errorBorderClass}`}
           />
         </div>
 
         {/* Error / helper */}
         {!state && (
-          <p id="vote-login-helper" className="font-body text-mid/60 text-xs pt-1">
+          <p id="vote-login-helper" className="font-body text-mid/60 text-[14px] pt-[5px]">
             Both fields are required to continue.
           </p>
         )}
@@ -154,51 +154,51 @@ export function VoteForm() {
           <div
             id="vote-login-error"
             role="alert"
-            className={`flex items-start gap-2.5 rounded-sm border px-3.5 py-3 ${state.error === "ALREADY_VOTED"
+            className={`flex items-start gap-[12px] rounded-sm border px-[17px] py-[14px] ${state.error === "ALREADY_VOTED"
                 ? "border-maroon/40 bg-maroon/10 text-red-300"
                 : state.error === "ELECTION_NOT_OPEN"
                   ? "border-gold/30 bg-gold/8 text-gold/80"
                   : "border-red-500/30 bg-red-500/8 text-red-300"
               }`}
           >
-            <span className="font-mono text-sm mt-0.5 opacity-70 shrink-0">
+            <span className="font-mono text-[17px] mt-[2px] opacity-70 shrink-0">
               {ERROR_ICONS[state.error] ?? "!"}
             </span>
-            <p className="font-body text-xs leading-relaxed">{state.message}</p>
+            <p className="font-body text-[14px] leading-relaxed">{state.message}</p>
           </div>
         )}
 
         {submitError && (
-          <p role="alert" className="font-body text-xs text-red-300">{submitError}</p>
+          <p role="alert" className="font-body text-[14px] text-red-300">{submitError}</p>
         )}
 
         <SubmitButton isPending={isPending} />
       </form>
 
       {/* Format hints */}
-      <div className="mt-8 border border-white/5 rounded-sm p-4 space-y-4">
+      <div className="mt-[36px] border border-white/5 rounded-sm p-[19px] space-y-[19px]">
         <div>
-          <p className="font-body text-mid/50 text-[11px] tracking-[0.2em] uppercase mb-2">
+          <p className="font-body text-mid/50 text-[13px] tracking-[0.2em] uppercase mb-[10px]">
             Student ID Format
           </p>
-          <span className="font-mono text-xs text-gold/60 bg-gold/10 px-1.5 py-0.5 rounded-sm tracking-widest">
+          <span className="font-mono text-[14px] text-gold/60 bg-gold/10 px-[7px] py-[2px] rounded-sm tracking-widest">
             0000-0000
           </span>
         </div>
-        <div className="border-t border-white/5 pt-4">
-          <p className="font-body text-mid/50 text-[11px] tracking-[0.2em] uppercase mb-2">
+        <div className="border-t border-white/5 pt-[19px]">
+          <p className="font-body text-mid/50 text-[13px] tracking-[0.2em] uppercase mb-[10px]">
             Control Number Format
           </p>
-          <div className="flex items-center gap-0 font-mono text-xs">
-            <span className="text-gold/70 bg-gold/10 px-1.5 py-0.5 rounded-sm">YY</span>
-            <span className="text-white/30 px-0.5">·</span>
-            <span className="text-gold/70 bg-gold/10 px-1.5 py-0.5 rounded-sm">GG</span>
-            <span className="text-white/30 px-0.5">·</span>
-            <span className="text-gold/70 bg-gold/10 px-1.5 py-0.5 rounded-sm">S</span>
-            <span className="text-white/30 px-0.5">·</span>
-            <span className="text-gold/70 bg-gold/10 px-1.5 py-0.5 rounded-sm">NNN</span>
+          <div className="flex items-center gap-[0px] font-mono text-[14px]">
+            <span className="text-gold/70 bg-gold/10 px-[7px] py-[2px] rounded-sm">YY</span>
+            <span className="text-white/30 px-[2px]">·</span>
+            <span className="text-gold/70 bg-gold/10 px-[7px] py-[2px] rounded-sm">GG</span>
+            <span className="text-white/30 px-[2px]">·</span>
+            <span className="text-gold/70 bg-gold/10 px-[7px] py-[2px] rounded-sm">S</span>
+            <span className="text-white/30 px-[2px]">·</span>
+            <span className="text-gold/70 bg-gold/10 px-[7px] py-[2px] rounded-sm">NNN</span>
           </div>
-          <p className="font-body text-mid/40 text-[10px] mt-2">
+          <p className="font-body text-mid/40 text-[12px] mt-[10px]">
             Year · Grade · Section · Sequence
           </p>
         </div>

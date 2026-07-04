@@ -4,11 +4,11 @@ import Image from "next/image";
 
 export function ComelecBirdPlaceholder() {
   return (
-    <div className="w-24 h-24 sm:w-32 sm:h-32 relative flex items-center justify-center">
+    <div className="w-[108px] h-[108px] sm:w-[145px] sm:h-[145px] relative flex items-center justify-center">
       {/* Sun rays */}
       <svg
         viewBox="0 0 128 128"
-        className="absolute inset-0 w-full h-full opacity-20"
+        className="absolute inset-[0px] w-full h-full opacity-20"
         aria-hidden="true"
       >
         {Array.from({ length: 16 }).map((_, i) => {
@@ -33,7 +33,7 @@ export function ComelecBirdPlaceholder() {
         <circle cx="64" cy="64" r="26" fill="none" stroke="#F5C000" strokeWidth="1.5" />
       </svg>
       {/* Try real SVG first, fall back to initials */}
-      <div className="relative z-10 w-14 h-14 sm:w-18 sm:h-18">
+      <div className="relative z-10 w-[63px] h-[63px] sm:w-[81px] sm:h-[81px]">
         <Image
           src="/comelec-bird.svg"
           alt="OLPS COMELEC"
@@ -49,10 +49,10 @@ export function ComelecBirdPlaceholder() {
           }}
         />
         <div
-          className="bird-fallback hidden absolute inset-0 items-center justify-center"
+          className="bird-fallback hidden absolute inset-[0px] items-center justify-center"
           aria-hidden="true"
         >
-          <span className="font-heading text-gold text-2xl font-bold tracking-wider">
+          <span className="font-heading text-gold text-[27px] font-bold tracking-wider">
             OLPS
           </span>
         </div>

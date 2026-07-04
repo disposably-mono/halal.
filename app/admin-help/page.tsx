@@ -66,11 +66,11 @@ export default async function AdminHelpPage() {
     >
       {!unlocked ? (
         <>
-          <section className="px-6 py-16">
-            <div className="mx-auto max-w-3xl border border-white/[0.07] bg-navy/40 p-8 text-center">
-              <p className="text-[10px] uppercase tracking-[0.28em] text-gold/60">Restricted Guide</p>
-              <h2 className="mt-3 font-heading text-lg font-bold text-white/85">Officer verification is required</h2>
-              <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-white/45">
+          <section className="px-[27px] py-[72px]">
+            <div className="mx-auto max-w-3xl border border-white/[0.07] bg-navy/40 p-[36px] text-center">
+              <p className="text-[12px] uppercase tracking-[0.28em] text-gold/60">Restricted Guide</p>
+              <h2 className="mt-[14px] font-heading text-[20px] font-bold text-white/85">Officer verification is required</h2>
+              <p className="mx-auto mt-[14px] max-w-xl text-[17px] leading-[27px] text-white/45">
                 This page describes admin roles, turnout monitoring, election controls, and two-officer sign-in. Unlock it with a valid COMELEC officer key.
               </p>
             </div>
@@ -87,25 +87,25 @@ export default async function AdminHelpPage() {
 function AdminHelpContent() {
   return (
     <>
-      <section className="px-6 py-16">
+      <section className="px-[27px] py-[72px]">
         <div className="mx-auto max-w-5xl">
           <HelpSectionHeading
             eyebrow="Secure Access"
             title="Two officers open admin access"
             body="Admin login uses your own email and password, followed by a unique officer key belonging to a different COMELEC account."
           />
-          <div className="mt-8 grid gap-4 md:grid-cols-3">
+          <div className="mt-[36px] grid gap-[19px] md:grid-cols-3">
             <InfoCard number="01" title="Your credentials">Enter the email and password assigned to your own account.</InfoCard>
             <InfoCard number="02" title="Another officer's key">Ask another officer to enter their unique key. Your own key is rejected.</InfoCard>
             <InfoCard number="03" title="Role-based panel">After sign-in, the panel enables only the actions granted to your role.</InfoCard>
           </div>
-          <p className="mt-5 border border-amber-400/20 bg-amber-400/5 p-4 text-xs leading-5 text-white/50">
+          <p className="mt-[23px] border border-amber-400/20 bg-amber-400/5 p-[19px] text-[14px] leading-[23px] text-white/50">
             Officer keys and passwords should be entered in person. Do not send them through messages, save them in shared documents, or exchange accounts to work around a denied action.
           </p>
         </div>
       </section>
 
-      <section className="relative overflow-hidden border-y border-gold/10 px-6 py-16">
+      <section className="relative overflow-hidden border-y border-gold/10 px-[27px] py-[72px]">
         <HelpTexturedBand />
         <div className="relative z-10 mx-auto max-w-5xl">
           <HelpSectionHeading
@@ -113,47 +113,47 @@ function AdminHelpContent() {
             title="What each officer can do"
             body="A visible page does not grant permission to every action on it. Server-side capability checks remain the authorization boundary."
           />
-          <div className="mt-10 grid gap-5 md:grid-cols-2">
+          <div className="mt-[45px] grid gap-[23px] md:grid-cols-2">
             {roles.map((item) => (
-              <article key={item.role} className={`border p-6 ${item.accent}`}>
-                <p className="text-[10px] uppercase tracking-[0.22em] text-white/35">{item.title}</p>
-                <h3 className="mt-2 font-heading text-xl font-bold text-white/90">{item.role}</h3>
-                <ul className="mt-5 space-y-2.5">
+              <article key={item.role} className={`border p-[27px] ${item.accent}`}>
+                <p className="text-[12px] uppercase tracking-[0.22em] text-white/35">{item.title}</p>
+                <h3 className="mt-[10px] font-heading text-[23px] font-bold text-white/90">{item.role}</h3>
+                <ul className="mt-[23px] space-y-[12px]">
                   {item.permissions.map((permission) => (
-                    <li key={permission} className="flex gap-2.5 text-xs leading-5 text-white/55">
+                    <li key={permission} className="flex gap-[12px] text-[14px] leading-[23px] text-white/55">
                       <HelpCheckIcon />
                       <span>{permission}</span>
                     </li>
                   ))}
                 </ul>
-                <p className="mt-5 border-t border-white/[0.07] pt-4 text-xs leading-5 text-white/35"><span className="font-semibold text-white/50">Boundary:</span> {item.boundary}</p>
+                <p className="mt-[23px] border-t border-white/[0.07] pt-[19px] text-[14px] leading-[23px] text-white/35"><span className="font-semibold text-white/50">Boundary:</span> {item.boundary}</p>
               </article>
             ))}
           </div>
         </div>
       </section>
 
-      <section className="px-6 py-16">
+      <section className="px-[27px] py-[72px]">
         <div className="mx-auto max-w-5xl">
           <HelpSectionHeading
             eyebrow="Example Workflow"
             title="One election, start to finish"
             body="The workflow separates setup, voting, monitoring, closing, and publication so permissions stay clear at every stage."
           />
-          <div className="mt-12 grid gap-3 lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr] lg:items-center">
+          <div className="mt-[54px] grid gap-[14px] lg:grid-cols-[1fr_auto_1fr_auto_1fr_auto_1fr_auto_1fr] lg:items-center">
             {workflow.map(([owner, action, note], index) => (
               <div key={action} className="contents">
-                <article className="border border-white/8 bg-navy/55 p-4 text-center lg:flex lg:min-h-[150px] lg:flex-col lg:justify-center">
-                  <span className="font-mono text-[10px] text-gold/50">STEP {index + 1}</span>
-                  <p className="mt-2 text-[10px] uppercase tracking-[0.16em] text-white/35">{owner}</p>
-                  <h3 className="mt-2 font-heading text-sm font-bold text-white/85">{action}</h3>
-                  <p className="mt-2 text-[11px] leading-4 text-white/40">{note}</p>
+                <article className="border border-white/8 bg-navy/55 p-[19px] text-center lg:flex lg:min-h-[169px] lg:flex-col lg:justify-center">
+                  <span className="font-mono text-[12px] text-gold/50">STEP {index + 1}</span>
+                  <p className="mt-[10px] text-[12px] uppercase tracking-[0.16em] text-white/35">{owner}</p>
+                  <h3 className="mt-[10px] font-heading text-[17px] font-bold text-white/85">{action}</h3>
+                  <p className="mt-[10px] text-[13px] leading-[19px] text-white/40">{note}</p>
                 </article>
                 {index < workflow.length - 1 && <HelpWorkflowArrow />}
               </div>
             ))}
           </div>
-          <div className="mt-10 grid gap-4 md:grid-cols-2">
+          <div className="mt-[45px] grid gap-[19px] md:grid-cols-2">
             <Question title="Why was an action denied?">Your account lacks that capability. Confirm your assigned role with the Super-admin instead of borrowing another account.</Question>
             <Question title="What can officers see about voters?">Officers can monitor turnout and whether a roster entry voted, but submitted candidate choices are kept under anonymous ballot records.</Question>
             <Question title="Who closes an election?">The Canvassing Head performs the manual final close. Scheduled automation may also close an election at its configured end time.</Question>
@@ -167,19 +167,19 @@ function AdminHelpContent() {
 
 function InfoCard({ number, title, children }: { number: string; title: string; children: React.ReactNode }) {
   return (
-    <article className="border border-white/8 bg-navy/50 p-5">
-      <span className="font-mono text-xs text-gold/60">{number}</span>
-      <h3 className="mt-3 font-heading font-bold text-white/85">{title}</h3>
-      <p className="mt-2 text-xs leading-5 text-white/45">{children}</p>
+    <article className="border border-white/8 bg-navy/50 p-[23px]">
+      <span className="font-mono text-[14px] text-gold/60">{number}</span>
+      <h3 className="mt-[14px] font-heading font-bold text-white/85">{title}</h3>
+      <p className="mt-[10px] text-[14px] leading-[23px] text-white/45">{children}</p>
     </article>
   );
 }
 
 function Question({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <article className="border border-white/8 bg-white/2.5 p-5">
+    <article className="border border-white/8 bg-white/2.5 p-[23px]">
       <h3 className="font-heading font-bold text-white/85">{title}</h3>
-      <p className="mt-2 text-xs leading-5 text-white/45">{children}</p>
+      <p className="mt-[10px] text-[14px] leading-[23px] text-white/45">{children}</p>
     </article>
   );
 }

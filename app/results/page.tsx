@@ -28,7 +28,7 @@ export default async function ResultsPage() {
   if (elections.length === 0) {
     return (
       <div
-        className="min-h-screen flex items-center justify-center px-6 text-white"
+        className="min-h-screen flex items-center justify-center px-[27px] text-white"
         style={PUBLIC_PAGE_BACKGROUND}
       >
         <PublicEmptyState

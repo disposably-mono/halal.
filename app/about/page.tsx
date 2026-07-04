@@ -19,7 +19,7 @@ const MVV = [
     heading: "Organization Description",
     body: "The OLPS Commission on Elections manages school elections at Our Lady of Peace School and helps students understand civic responsibility. COMELEC trains student commissioners to uphold integrity, transparency, and accountability while conducting fair elections for the OLPS community.",
     icon: (
-      <svg viewBox="0 0 40 40" fill="none" className="w-10 h-10 opacity-70" aria-hidden="true">
+      <svg viewBox="0 0 40 40" fill="none" className="w-[45px] h-[45px] opacity-70" aria-hidden="true">
         <circle cx="20" cy="20" r="16" stroke="#F5C000" strokeWidth="1.5" />
         <circle cx="20" cy="20" r="8" stroke="#F5C000" strokeWidth="1.5" strokeOpacity="0.45" />
         <circle cx="20" cy="20" r="2" fill="#F5C000" />
@@ -33,7 +33,7 @@ const MVV = [
     heading: "A Fair School Election Culture",
     body: "The OLPS Commission on Elections envisions a school community where students take part in elections with integrity. We aim to make transparency and accountability part of how student elections are prepared, conducted, and reviewed. Through this work, COMELEC helps students practice responsible citizenship inside and beyond Our Lady of Peace School.",
     icon: (
-      <svg viewBox="0 0 40 40" fill="none" className="w-10 h-10 opacity-70" aria-hidden="true">
+      <svg viewBox="0 0 40 40" fill="none" className="w-[45px] h-[45px] opacity-70" aria-hidden="true">
         <path d="M20 6 L34 28 H6 Z" stroke="#F5C000" strokeWidth="1.5" fill="none" />
         <path d="M20 14 L28 26 H12 Z" stroke="#F5C000" strokeWidth="1" fill="none" strokeOpacity="0.35" />
         <circle cx="20" cy="20" r="2" fill="#F5C000" fillOpacity="0.65" />
@@ -47,7 +47,7 @@ const MVV = [
     heading: "Upholding Free, Honest & Orderly Elections",
     body: "The OLPS Commission on Elections upholds free, honest, and orderly elections within Our Lady of Peace School. We train commissioners to serve with responsibility, knowledge, and integrity. For the student body, we work to keep elections transparent, accurate, and worthy of trust.",
     icon: (
-      <svg viewBox="0 0 40 40" fill="none" className="w-10 h-10 opacity-70" aria-hidden="true">
+      <svg viewBox="0 0 40 40" fill="none" className="w-[45px] h-[45px] opacity-70" aria-hidden="true">
         <rect x="8" y="8" width="24" height="28" rx="2" stroke="#F5C000" strokeWidth="1.5" />
         <line x1="13" y1="16" x2="27" y2="16" stroke="#F5C000" strokeWidth="1" strokeOpacity="0.6" />
         <line x1="13" y1="21" x2="27" y2="21" stroke="#F5C000" strokeWidth="1" strokeOpacity="0.6" />
@@ -106,7 +106,7 @@ const PAGE_BACKGROUND = {
 function HeroRibbons() {
   return (
     <svg
-      className="absolute inset-0 w-full h-full pointer-events-none"
+      className="absolute inset-[0px] w-full h-full pointer-events-none"
       preserveAspectRatio="none"
       viewBox="0 0 1440 600"
       aria-hidden="true"
@@ -127,7 +127,7 @@ function HeroRibbons() {
 
 function HeroLogoPlaceholder() {
   return (
-    <div className="relative w-28 h-28 mx-auto mb-8">
+    <div className="relative w-[127px] h-[127px] mx-auto mb-[36px]">
       {/* Outer decorative ring */}
       <div
         className="absolute rounded-full pointer-events-none"
@@ -143,9 +143,9 @@ function HeroLogoPlaceholder() {
       >
         {/*
           Replace with actual logo:
-          <Image src="/comelec-bird.svg" alt="OLPS COMELEC" width={72} height={72} className="w-16 h-16 object-contain" />
+          <Image src="/comelec-bird.svg" alt="OLPS COMELEC" width={72} height={72} className="w-[72px] h-[72px] object-contain" />
         */}
-        <svg viewBox="0 0 64 64" fill="none" className="w-16 h-16" aria-label="OLPS COMELEC logo placeholder">
+        <svg viewBox="0 0 64 64" fill="none" className="w-[72px] h-[72px]" aria-label="OLPS COMELEC logo placeholder">
           <circle cx="32" cy="32" r="26" stroke="#F5C000" strokeWidth="1.5" strokeOpacity="0.55" />
           {[0, 45, 90, 135, 180, 225, 270, 315].map((deg) => {
             const rad = (deg * Math.PI) / 180;
@@ -193,32 +193,32 @@ export default function AboutComelecClient() {
     >
       {/* ── NAV ──────────────────────────────────────────── */}
       <nav
-        className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4"
+        className="fixed top-[0px] left-[0px] right-[0px] z-50 flex items-center justify-between px-[36px] py-[19px]"
         style={{
           background: "rgba(13,15,43,0.88)",
           backdropFilter: "blur(12px)",
           borderBottom: "1px solid rgba(245,192,0,0.1)",
         }}
       >
-        <Link href="/" className="flex items-center gap-2.5 no-underline" aria-label="OLPS COMELEC home">
+        <Link href="/" className="flex items-center gap-[12px] no-underline" aria-label="OLPS COMELEC home">
           <div
-            className="w-8 h-8 rounded-full flex items-center justify-center"
+            className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
             style={{ background: "#1b1f5e", border: "1px solid rgba(245,192,0,0.4)" }}
           >
             <NavBirdIcon />
           </div>
-          <span className="font-tagline text-sm font-bold tracking-[0.15em] text-gold">
+          <span className="font-tagline text-[17px] font-bold tracking-[0.15em] text-gold">
             OLPS COMELEC
           </span>
         </Link>
 
-        <div className="hidden sm:flex items-center gap-4">
+        <div className="hidden sm:flex items-center gap-[19px]">
           {[
             { label: "COMELEC", href: "/about", active: true },
             { label: "LEADERSHIP", href: "/officers" },
             { label: "MAKER", href: "/creator" },
           ].map((link, index) => (
-            <div key={link.label} className="flex items-center gap-4">
+            <div key={link.label} className="flex items-center gap-[19px]">
               {index > 0 && (
                 <span className="font-body text-[0.65rem] text-gold/25" aria-hidden="true">
                   |
@@ -238,36 +238,36 @@ export default function AboutComelecClient() {
       </nav>
 
       {/* ── HERO ─────────────────────────────────────────── */}
-      <section className="relative min-h-screen flex flex-col items-center justify-center px-6 pt-28 pb-16 overflow-hidden">
+      <section className="relative min-h-screen flex flex-col items-center justify-center px-[27px] pt-[127px] pb-[72px] overflow-hidden">
         {/* Radial glow */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <div className="absolute inset-[0px] flex items-center justify-center pointer-events-none">
           <div
-            className="w-[700px] h-[700px] rounded-full"
+            className="w-[791px] h-[791px] rounded-full"
             style={{ background: "radial-gradient(ellipse, rgba(27,31,94,0.7) 0%, transparent 70%)" }}
           />
         </div>
         <HeroRibbons />
 
-        <FadeInSection className="relative z-10 text-center max-w-[680px]">
+        <FadeInSection className="relative z-10 text-center max-w-[768px]">
           <HeroLogoPlaceholder />
 
-          <div className="flex items-center justify-center gap-4 mb-3">
-            <div className="w-8 h-px bg-gold opacity-50" />
+          <div className="flex items-center justify-center gap-[19px] mb-[14px]">
+            <div className="w-[36px] h-px bg-gold opacity-50" />
             <span
               className="font-body text-[0.6rem] tracking-[0.35em] uppercase"
               style={{ color: "rgba(245,192,0,0.65)" }}
             >
               Our Lady of Peace School
             </span>
-            <div className="w-8 h-px bg-gold opacity-50" />
+            <div className="w-[36px] h-px bg-gold opacity-50" />
           </div>
 
-          <p className="font-tagline text-[0.9rem] italic mb-3 tracking-[0.2em] text-gold/65">
+          <p className="font-tagline text-[0.9rem] italic mb-[14px] tracking-[0.2em] text-gold/65">
             VOX POPULI VOX DEI
           </p>
 
           <h1
-            className="font-tagline font-black leading-none tracking-wider uppercase mb-2"
+            className="font-tagline font-black leading-none tracking-wider uppercase mb-[10px]"
             style={{
               fontSize: "clamp(2.75rem, 8vw, 5.5rem)",
               color: "#ffffff",
@@ -277,13 +277,13 @@ export default function AboutComelecClient() {
           </h1>
 
           <p
-            className="font-tagline font-bold uppercase tracking-[0.22em] mb-8 text-gold"
+            className="font-tagline font-bold uppercase tracking-[0.22em] mb-[36px] text-gold"
             style={{ fontSize: "clamp(0.9rem, 2vw, 1.3rem)" }}
           >
             Commission on Elections
           </p>
 
-          <GoldRule className="mb-8" />
+          <GoldRule className="mb-[36px]" />
 
           <p
             className="font-body text-[0.875rem] leading-[1.85]"
@@ -297,8 +297,8 @@ export default function AboutComelecClient() {
       </section>
 
       {/* ── MISSION / VISION / DESCRIPTION ───────────────── */}
-      <section className="px-6 py-20">
-        <div className="text-center mb-14">
+      <section className="px-[27px] py-[90px]">
+        <div className="text-center mb-[63px]">
           <Eyebrow label="S.Y. 2025–2026" />
           <h2
             className="font-tagline font-bold"
@@ -309,7 +309,7 @@ export default function AboutComelecClient() {
         </div>
 
         <div
-          className="grid gap-6 mx-auto"
+          className="grid gap-[27px] mx-auto"
           style={{ maxWidth: "960px", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))" }}
         >
           {MVV.map((card) => (
@@ -324,18 +324,18 @@ export default function AboutComelecClient() {
             >
               {/* Top accent bar */}
               <div
-                className="absolute top-0 left-0 right-0 h-[3px]"
+                className="absolute top-[0px] left-[0px] right-[0px] h-[4px]"
                 style={{ background: `linear-gradient(90deg, ${card.accent}, transparent)` }}
               />
               {card.icon}
               <p
-                className="font-body text-[0.58rem] tracking-[0.3em] uppercase mt-5 mb-2"
+                className="font-body text-[0.58rem] tracking-[0.3em] uppercase mt-[23px] mb-[10px]"
                 style={{ color: "rgba(245,192,0,0.6)" }}
               >
                 {card.label}
               </p>
               <p
-                className="font-tagline font-bold mb-4"
+                className="font-tagline font-bold mb-[19px]"
                 style={{ fontSize: "1.2rem", color: "#ffffff" }}
               >
                 {card.heading}
@@ -353,10 +353,10 @@ export default function AboutComelecClient() {
 
       {/* ── CORE PRINCIPLES ──────────────────────────────── */}
       <section
-        className="px-6 py-16"
+        className="px-[27px] py-[72px]"
         style={{ background: "linear-gradient(180deg, transparent 0%, rgba(27,31,94,0.12) 50%, transparent 100%)" }}
       >
-        <div className="text-center mb-12">
+        <div className="text-center mb-[54px]">
           <Eyebrow label="Core Values" />
           <h2
             className="font-tagline font-bold"
@@ -367,13 +367,13 @@ export default function AboutComelecClient() {
         </div>
 
         <div
-          className="grid gap-4 mx-auto"
+          className="grid gap-[19px] mx-auto"
           style={{ maxWidth: "860px", gridTemplateColumns: "repeat(auto-fill, minmax(150px, 1fr))" }}
         >
           {PRINCIPLES.map((p) => (
             <div
               key={p.num}
-              className="text-center border border-gold/10 transition-all duration-250 hover:-translate-y-1 hover:border-gold/30"
+              className="text-center border border-gold/10 transition-all duration-250 hover:-translate-y-[5px] hover:border-gold/30"
               style={{
                 padding: "1.75rem 1.25rem",
                 background: "rgba(13,15,43,0.6)",
@@ -381,12 +381,12 @@ export default function AboutComelecClient() {
               }}
             >
               <p
-                className="font-mono text-[0.6rem] mb-3"
+                className="font-mono text-[0.6rem] mb-[14px]"
                 style={{ color: "rgba(245,192,0,0.38)" }}
               >
                 {p.num}
               </p>
-              <p className="font-heading text-[0.825rem] font-bold mb-2 tracking-[0.04em]" style={{ color: "#ffffff" }}>
+              <p className="font-heading text-[0.825rem] font-bold mb-[10px] tracking-[0.04em]" style={{ color: "#ffffff" }}>
                 {p.name}
               </p>
               <p className="font-body text-[0.7rem] leading-[1.55]" style={{ color: "#8a8fbb" }}>
@@ -398,8 +398,8 @@ export default function AboutComelecClient() {
       </section>
 
       {/* ── MILESTONES ───────────────────────────────────── */}
-      <section className="px-6 py-20">
-        <div className="text-center mb-14">
+      <section className="px-[27px] py-[90px]">
+        <div className="text-center mb-[63px]">
           <Eyebrow label="Our History" />
           <h2
             className="font-tagline font-bold"
@@ -410,25 +410,25 @@ export default function AboutComelecClient() {
         </div>
 
         {/* Timeline */}
-        <div className="relative max-w-[680px] mx-auto">
+        <div className="relative max-w-[768px] mx-auto">
           {/* Vertical line */}
           <div
-            className="absolute top-0 bottom-0"
+            className="absolute top-[0px] bottom-[0px]"
             style={{ left: "76px", width: "1px", background: "rgba(245,192,0,0.14)" }}
           />
 
           {MILESTONES.map((m) => (
-            <div key={m.year} className="flex gap-8 mb-10 items-start">
+            <div key={m.year} className="flex gap-[36px] mb-[45px] items-start">
               {/* Year */}
               <span
-                className="shrink-0 text-right font-mono text-[0.7rem] pt-0.5"
+                className="shrink-0 text-right font-mono text-[0.7rem] pt-[2px]"
                 style={{ width: "68px", color: "#F5C000", opacity: 0.7 }}
               >
                 {m.year}
               </span>
               {/* Dot */}
               <div
-                className="shrink-0 w-2 h-2 rounded-full mt-1"
+                className="shrink-0 w-[10px] h-[10px] rounded-full mt-[5px]"
                 style={{
                   background: "#F5C000",
                   opacity: m.highlight ? 1 : 0.45,
@@ -437,7 +437,7 @@ export default function AboutComelecClient() {
               />
               {/* Content */}
               <div className="flex-1">
-                <p className="font-heading font-bold text-[0.875rem] mb-1" style={{ color: "#ffffff" }}>
+                <p className="font-heading font-bold text-[0.875rem] mb-[5px]" style={{ color: "#ffffff" }}>
                   {m.title}
                 </p>
                 <p className="font-body text-[0.78rem] leading-[1.65]" style={{ color: "#8a8fbb" }}>
@@ -451,7 +451,7 @@ export default function AboutComelecClient() {
 
       {/* ── CONTACT BAND ─────────────────────────────────── */}
       <section
-        className="relative px-6 py-16 overflow-hidden"
+        className="relative px-[27px] py-[72px] overflow-hidden"
         style={{
           borderTop: "1px solid rgba(245,192,0,0.14)",
           borderBottom: "1px solid rgba(245,192,0,0.14)",
@@ -460,41 +460,41 @@ export default function AboutComelecClient() {
       >
         {/* Diagonal stripe texture */}
         <div
-          className="absolute inset-0 opacity-[0.04] pointer-events-none"
+          className="absolute inset-[0px] opacity-[0.04] pointer-events-none"
           style={{
             backgroundImage:
               "repeating-linear-gradient(45deg, #F5C000 0px, #F5C000 1px, transparent 1px, transparent 12px)",
           }}
         />
 
-        <div className="relative max-w-[680px] mx-auto text-center">
+        <div className="relative max-w-[768px] mx-auto text-center">
           <Eyebrow label="Reach Us" />
           <h2
-            className="font-tagline font-bold mb-4"
+            className="font-tagline font-bold mb-[19px]"
             style={{ fontSize: "clamp(1.5rem, 4vw, 2.25rem)", color: "#ffffff" }}
           >
             Connect with OLPS COMELEC
           </h2>
           <p
-            className="font-body text-[0.875rem] leading-[1.7] mb-10 mx-auto"
+            className="font-body text-[0.875rem] leading-[1.7] mb-[45px] mx-auto"
             style={{ maxWidth: "480px", color: "rgba(255,255,255,0.5)" }}
           >
             For inquiries, complaints, election-related concerns, or media requests,
             reach us through our official channels.
           </p>
 
-          <div className="flex flex-wrap gap-4 justify-center">
+          <div className="flex flex-wrap gap-[19px] justify-center">
             {/* Email */}
             <a
               href="mailto:comelec.club@olps.edu.ph"
-              className="inline-flex items-center gap-3 no-underline font-body font-semibold text-[0.75rem] tracking-widest uppercase bg-gold text-navy transition-all duration-200 hover:bg-gold/85"
+              className="inline-flex items-center gap-[14px] no-underline font-body font-semibold text-[0.75rem] tracking-widest uppercase bg-gold text-navy transition-all duration-200 hover:bg-gold/85"
               style={{
                 padding: "0.875rem 1.75rem",
                 borderRadius: "2px",
               }}
               aria-label="Email OLPS COMELEC at comelec.club@olps.edu.ph"
             >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-[19px] h-[19px]" aria-hidden="true">
                 <rect x="2" y="4" width="20" height="16" rx="2" />
                 <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
               </svg>
@@ -506,14 +506,14 @@ export default function AboutComelecClient() {
               href="https://www.facebook.com/comelec.olps"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 no-underline font-body font-semibold text-[0.75rem] tracking-widest uppercase border border-gold/30 text-white/70 transition-all duration-200 hover:border-gold/60 hover:text-white"
+              className="inline-flex items-center gap-[14px] no-underline font-body font-semibold text-[0.75rem] tracking-widest uppercase border border-gold/30 text-white/70 transition-all duration-200 hover:border-gold/60 hover:text-white"
               style={{
                 padding: "0.875rem 1.75rem",
                 borderRadius: "2px",
               }}
               aria-label="OLPS COMELEC on Facebook"
             >
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-4 h-4" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-[19px] h-[19px]" aria-hidden="true">
                 <path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z" />
               </svg>
               OLPS COMELEC on Facebook

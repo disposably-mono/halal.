@@ -5,7 +5,7 @@ import { Link } from "next-view-transitions";
 export function LandingNav() {
   return (
     <nav
-      className="fixed top-0 left-0 right-0 z-50 flex items-center justify-between px-8 py-4"
+      className="fixed top-[0px] left-[0px] right-[0px] z-50 flex items-center justify-between px-[36px] py-[19px]"
       style={{
         background: "rgba(13,15,43,0.88)",
         backdropFilter: "blur(12px)",
@@ -13,30 +13,30 @@ export function LandingNav() {
       }}
     >
       {/* Logo */}
-      <Link href="/" className="flex items-center gap-2.5" aria-label="OLPS COMELEC home">
+      <Link href="/" className="flex items-center gap-[12px]" aria-label="OLPS COMELEC home">
         <div
-          className="w-8 h-8 rounded-full flex items-center justify-center"
+          className="w-[36px] h-[36px] rounded-full flex items-center justify-center"
           style={{ background: "#1b1f5e", border: "1px solid rgba(245,192,0,0.4)" }}
         >
-          <svg viewBox="0 0 24 24" fill="none" className="w-[18px] h-[18px]" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" className="w-[20px] h-[20px]" aria-hidden="true">
             <circle cx="12" cy="12" r="10" stroke="#F5C000" strokeWidth="1.5" />
             <path d="M8 14c1-2 3-4 4-4s3 2 4 4" stroke="#F5C000" strokeWidth="1.5" strokeLinecap="round" />
             <circle cx="12" cy="9" r="1.5" fill="#F5C000" />
           </svg>
         </div>
-        <span className="font-tagline font-bold text-sm tracking-[0.15em] text-gold">
+        <span className="font-tagline font-bold text-[17px] tracking-[0.15em] text-gold">
           OLPS COMELEC
         </span>
       </Link>
 
       {/* Links */}
-      <div className="hidden sm:flex items-center gap-4">
+      <div className="hidden sm:flex items-center gap-[19px]">
         {[
           { label: "COMELEC", href: "/about" },
           { label: "LEADERSHIP", href: "/officers" },
           { label: "MAKER", href: "/creator" },
         ].map((link, index) => (
-          <div key={link.label} className="flex items-center gap-4">
+          <div key={link.label} className="flex items-center gap-[19px]">
             {index > 0 && (
               <span className="font-body text-[0.65rem] text-gold/25" aria-hidden="true">
                 |

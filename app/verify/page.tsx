@@ -17,7 +17,7 @@ export default async function VerifyPage() {
     return (
       <div className="min-h-screen flex flex-col text-white overflow-x-hidden" style={PUBLIC_PAGE_BACKGROUND}>
         <PublicNav label="Verify" />
-        <main className="flex-1 flex items-center justify-center px-6 py-12">
+        <main className="flex-1 flex items-center justify-center px-[27px] py-[54px]">
           <PublicEmptyState
             title="Verification Closed"
             message="Receipt verification is available only while an election is open. Please check back when polls are open."
@@ -32,23 +32,23 @@ export default async function VerifyPage() {
     <div className="min-h-screen flex flex-col text-white overflow-x-hidden" style={PUBLIC_PAGE_BACKGROUND}>
       <PublicNav label="Verify" />
 
-      <main className="flex-1 px-6 py-12">
+      <main className="flex-1 px-[27px] py-[54px]">
         <div className="mx-auto w-full max-w-xl">
           {/* Header */}
-          <p className="font-tagline text-white/35 text-sm italic mb-2">
+          <p className="font-tagline text-white/35 text-[17px] italic mb-[10px]">
             VOX POPULI VOX DEI
           </p>
-          <h1 className="font-display text-4xl sm:text-5xl text-white uppercase tracking-wide mb-3">
+          <h1 className="font-display text-[41px] sm:text-[54px] text-white uppercase tracking-wide mb-[14px]">
             Verify Ballot Receipt
           </h1>
-          <p className="font-body text-sm leading-6 text-white/55">
+          <p className="font-body text-[17px] leading-[27px] text-white/55">
             Enter the code printed after voting. Verification confirms that the anonymous ballot remains included and unchanged, then shows the recorded selections for that receipt. Each receipt can only be verified once.
           </p>
 
           {/* Gold rule */}
-          <div className="mt-6 flex items-center gap-4">
-            <div className="w-8 h-px bg-gold/40" />
-            <span className="font-body text-gold/40 text-[10px] tracking-[0.3em] uppercase">
+          <div className="mt-[27px] flex items-center gap-[19px]">
+            <div className="w-[36px] h-px bg-gold/40" />
+            <span className="font-body text-gold/40 text-[12px] tracking-[0.3em] uppercase">
               Receipt Verification
             </span>
           </div>
