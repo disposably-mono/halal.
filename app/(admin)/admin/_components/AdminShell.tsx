@@ -158,12 +158,12 @@ export function AdminShell({
       </nav>
 
       {/* Body */}
-      <div className="relative flex flex-1 overflow-hidden lg:h-[calc(100vh-3.5rem)]">
+      <div className="relative flex flex-1 overflow-hidden lg:h-[calc(100vh-63px)]">
         {/* Desktop sidebar (lg+) */}
         <nav
           aria-label="Admin navigation"
           className={cn(
-            "hidden shrink-0 flex-col overflow-hidden border-r border-white/[0.07] bg-admin-surface transition-[width] duration-200 lg:sticky lg:top-[63px] lg:flex lg:h-[calc(100vh-3.5rem)]",
+            "hidden shrink-0 flex-col overflow-hidden border-r border-white/[0.07] bg-admin-surface transition-[width] duration-200 lg:sticky lg:top-[63px] lg:flex lg:h-[calc(100vh-63px)]",
             sidebarCollapsed ? "w-[72px]" : "w-[246px]",
           )}
         >
@@ -216,7 +216,7 @@ export function AdminShell({
         )}
 
         {/* Page content */}
-        <main id="admin-main" className="min-w-[0px] flex-1 overflow-auto scroll-smooth lg:h-[calc(100vh-3.5rem)]">
+        <main id="admin-main" className="min-w-[0px] flex-1 overflow-auto scroll-smooth lg:h-[calc(100vh-63px)]">
           <div key={pathname} className="min-h-full animate-in fade-in slide-in-from-bottom-2 duration-300 motion-reduce:animate-none">
             {children}
           </div>
